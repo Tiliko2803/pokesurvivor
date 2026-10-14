@@ -1,5 +1,16 @@
 PokéSurvivor — licencias
 
+INTEGRACIÓN DEL EDITOR DE CONTROLES MÓVILES (14-10-2026)
+La funcionalidad adaptada del repositorio original JPTER78/pokesurvivor
+(commit 4de84950) es código de JPTER78 publicado bajo PolyForm
+Noncommercial License 1.0.0, disponible en LICENSE-NONCOMMERCIAL.md.
+Esta parte debe utilizarse exclusivamente con fines no comerciales.
+Required Notice: Copyright 2026 JPTER78 (https://github.com/JPTER78/pokesurvivor)
+
+La licencia MIT indicada a continuación corresponde al código anterior de
+PokéSurvivor y no reemplaza la licencia no comercial de la integración.
+
+
 1) CÓDIGO (todo lo que hay en js/, css/, index.html, tools/ y la música de
    js/data/music.js): licencia MIT.
 
