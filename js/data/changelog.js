@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-14', title: ['Botones móviles a tu gusto', 'Customize mobile controls'], new: [
+    ['En Ajustes > Controles > Colocar puedes arrastrar la barra de ataques con su objeto y el botón de pausa; también puedes elegir un joystick fijo o flotante y moverlo.',
+     'In Settings > Controls > Place, drag your attack bar with the item and pause button; choose a fixed or floating joystick and position it.'],
+    ['Tus preferencias se guardan en este dispositivo, sin alterar tus Pokémon, partidas ni tu cuenta en la nube.',
+     'Your control layout is saved on this device without changing your Pokémon, runs, or cloud account.']
+  ] },
   { d: '2026-10-14', title: ['Controles y pantalla de iPhone', 'iPhone controls and screen'], fix: [
     ['En iPhone, ya puedes cambiar de ataque mientras mueves al Pokémon con otro dedo. Los toques no se duplican ni quedan bloqueados al cambiar rápidamente.',
      'On iPhone, you can switch attacks while moving your Pokémon with another finger. Taps no longer duplicate or get blocked when switching quickly.'],
