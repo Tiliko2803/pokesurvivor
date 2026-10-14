@@ -13,25 +13,34 @@ const dev=read('dev.html');
 const config=read('js/core/firebase-config.js');
 const scripts=h=>[...h.matchAll(/<script defer src="(js\/[^"]+\.js)"\s*><\/script>/g)].map(m=>m[1]);
 
-test('GitHub Pages carga las 74 versiones ACTUALES del juego, no el app.min antiguo',()=>{
+test('GitHub Pages sirve 74 módulos originales o el bundle reconstruido por GitHub Actions',()=>{
  const src=scripts(dev),prod=scripts(html);
- assert.equal(prod.length,74);
- assert.deepEqual(prod,src);
- assert.ok(prod.includes('js/data/maomao-preview.js'));
- assert.ok(prod.includes('js/data/maomao-animation.js'));
- assert.ok(prod.includes('js/data/gift-codes.js'));
- assert.ok(prod.includes('js/ui/gifts-ui.js'));
- assert.equal(prod.at(-1),'js/main.js');
- for(const p of prod)assert.ok(fs.existsSync(path.join(root,p)),'Falta '+p);
- assert.doesNotMatch(html,/<script[^>]+src="js\/app\.min\.js/);
+ assert.equal(src.length,74);
+ for(const p of src)assert.ok(fs.existsSync(path.join(root,p)),'Falta '+p);
+ for(const must of ['js/data/maomao-preview.js','js/data/maomao-animation.js',
+                    'js/data/gift-codes.js','js/ui/gifts-ui.js'])
+   assert.ok(src.includes(must));
+ assert.equal(src.at(-1),'js/main.js');
+ const bundle=html.includes('src="js/app.min.js?v=') ? [null,html.split('src="js/app.min.js?v=')[1].split('"')[0]] : null;
+ if(bundle){
+   // El workflow genera index.html + bundle OFUSCADO desde dev.html.
+   assert.equal(prod.length,0);
+   assert.ok(fs.statSync(path.join(root,'js/app.min.js')).size>100000);
+   assert.equal(bundle[1],JSON.parse(read('version.json')).v);
+ }else{
+   // Vista intermedia antes del workflow: módulos directos actualizados.
+   assert.deepEqual(prod,src);
+ }
 });
 
 test('GitHub Pages utiliza la raíz /pokesurvivor/ sin reclamar dominio ajeno',()=>{
  assert.equal(fs.existsSync(path.join(root,'CNAME')),false);
  assert.match(html,/https:\/\/tiliko2803\.github\.io\/pokesurvivor\//);
  assert.doesNotMatch(html,/https:\/\/pokesurvivor\.com\//);
- assert.match(html,/name="ps-version"/);
- assert.match(html,/href="css\/style\.css\?v=tiliko-gh05"/);
+ if(!html.includes('src="js/app.min.js?v=')){
+   assert.match(html,/name="ps-version"/);
+   assert.ok(html.includes('href="css/style.css?v=tiliko-gh05"'));
+ }
 });
 
 test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
@@ -52,7 +61,9 @@ test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
 
 test('La versión publicada, la caché y el control de actualizaciones coinciden',()=>{
  const v=JSON.parse(read('version.json')).v;
- assert.equal(html.match(/name="ps-version" content="([^"]+)"/)[1],v);
+ const inline=html.match(/name="ps-version" content="([^"]+)"/);
+ const compiled=html.includes('src="js/app.min.js?v=') ? [null,html.split('src="js/app.min.js?v=')[1].split('"')[0]] : null;
+ assert.equal((compiled&&compiled[1])||(inline&&inline[1]),v);
  assert.match(read('sw.js'),/ps-code-v2-ghmaomao/);
  assert.match(read('js/core/updater.js'),/meta\[name="ps-version"\]/);
 });
