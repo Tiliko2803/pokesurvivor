@@ -96,7 +96,10 @@ jefe, la captura de un shiny salvaje y un shiny en el gacha.
 
 ## Licencia
 
-Código bajo MIT. Los sprites (CC BY-NC 4.0), la fuente (OFL) y las marcas de
+La versión base del código se publicó bajo MIT. El editor de controles móviles integrado
+del original (14-10-2026) se distribuye bajo PolyForm Noncommercial 1.0.0 (ver
+LICENSE-NONCOMMERCIAL.md y LICENSE), con atribución a JPTER78.
+Los sprites (CC BY-NC 4.0), la fuente (OFL) y las marcas de
 Pokémon tienen sus propias condiciones: ver [LICENSE](LICENSE) y
 [CREDITS.md](CREDITS.md). Proyecto de fan sin ánimo de lucro.
 
