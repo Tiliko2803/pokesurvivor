@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-14', title: ['Controles y pantalla de iPhone', 'iPhone controls and screen'], fix: [
+    ['En iPhone, ya puedes cambiar de ataque mientras mueves al Pokémon con otro dedo. Los toques no se duplican ni quedan bloqueados al cambiar rápidamente.',
+     'On iPhone, you can switch attacks while moving your Pokémon with another finger. Taps no longer duplicate or get blocked when switching quickly.'],
+    ['La pantalla de juego se adapta al espacio visible real de Safari, incluido el giro horizontal y los cambios de tamaño de las barras del navegador, sin estirar los gráficos.',
+     'The game screen now adapts to Safari’s actual visible area, including landscape rotation and changes to browser bars, without stretching the graphics.']
+  ] },
   { d: '2026-10-14', title: ['Maomao: prueba visual', 'Maomao: visual playtest'], new: [
     ['Prueba opcional de Maomao Veneno/Planta como invitado, con poses provisionales de movimiento, ataque y caída. Disponible sólo en la versión de pruebas con ?maomao=1.',
      'Optional guest playtest of Poison/Grass Maomao with provisional movement, attack and faint poses. Available only in the test version with ?maomao=1.']
