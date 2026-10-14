@@ -11,6 +11,10 @@ Proyecto correcto: `pokesurvivor-tiliko`. No usar `pokesurvivor-free` (original)
 - Ejecutar las pruebas de Firestore Emulator (proyecto DEMO solamente); aprobar únicamente si todas pasan.
 - Tener un respaldo del archivo original exportado `pokesurvivor-respaldo-*.json`.
 
+## Copiar reglas desde Android
+
+Usar la página de copiado en Cloudflare Pages de pruebas: https://pokesurvivor-tiliko-reglas-test.pages.dev/tools/migration/firebase-console.html . El botón lee `/firestore.rules` desde ese mismo despliegue y permite copiar el archivo completo con un toque. Se debe esperar a que el despliegue de pruebas termine exitosamente antes de usarlo.
+
 ## Reglas propuestas
 
 Rama: `test/firebase-migration-security-v0.3`; archivo `firestore.rules`.
