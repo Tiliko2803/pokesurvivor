@@ -45,7 +45,13 @@ body {
   -webkit-font-smoothing: none;
 }
 canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
-#game { display: block; width: 100vw; height: 100vh; height: 100dvh; touch-action: none; }
+/* Canvas anclado al área visible real: iOS puede hacer que 100vw/100vh
+   difieran de la zona que Safari muestra al girar o al ocultar sus barras. */
+#game {
+  position: fixed; inset: 0; display: block;
+  width: 100%; height: 100%; height: 100dvh;
+  touch-action: none; -webkit-touch-callout: none;
+}
 button { font: inherit; color: inherit; }
 input { font: inherit; }
 
