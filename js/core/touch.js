@@ -192,7 +192,7 @@ G.Touch = (() => {
 
   /** Dibuja el joystick (coordenadas de pantalla, CSS px). */
   function draw(ctx) {
-    const base = !stick && fixed() && active ? stickBase() : null;
+    const base = !stick && fixed() && active && G.Game && G.Game.state === 'playing' ? stickBase() : null;
     if (!stick && !base) return;
     const s = stick || { ox: base.x, oy: base.y, x: base.x, y: base.y };
     drawStick(ctx, s, R(), base ? 0.55 : 1);
