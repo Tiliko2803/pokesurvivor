@@ -39,7 +39,7 @@ test('GitHub Pages utiliza la raíz /pokesurvivor/ sin reclamar dominio ajeno',(
  assert.doesNotMatch(html,/https:\/\/pokesurvivor\.com\//);
  if(!html.includes('src="js/app.min.js?v=')){
    assert.match(html,/name="ps-version"/);
-   assert.match(html,/href="css\\/style\\.css\\?v=tiliko-gh05"/);
+   assert.ok(html.includes('href="css/style.css?v=tiliko-gh05"'));
  }
 });
 
