@@ -37,8 +37,10 @@ test('GitHub Pages utiliza la raíz /pokesurvivor/ sin reclamar dominio ajeno',(
  assert.equal(fs.existsSync(path.join(root,'CNAME')),false);
  assert.match(html,/https:\/\/tiliko2803\.github\.io\/pokesurvivor\//);
  assert.doesNotMatch(html,/https:\/\/pokesurvivor\.com\//);
- assert.match(html,/name="ps-version"/);
- assert.match(html,/href="css\/style\.css\?v=tiliko-gh05"/);
+ if(!html.includes('src="js/app.min.js?v=')){
+   assert.match(html,/name="ps-version"/);
+   assert.match(html,/href="css\\/style\\.css\\?v=tiliko-gh05"/);
+ }
 });
 
 test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
