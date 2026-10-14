@@ -106,6 +106,8 @@ test('Las reglas exigen grant administrativo y mantienen protección del ranking
   assert.match(rules,/authorizedMigration\(uid\)/);
   assert.match(rules,/migrationImported.*== false/);
   assert.match(rules,/migrationImported.*== true/);
+  // El sello irreversible se comprueba en TODO guardado, no solo en la importación.
+  assert.match(rules,/resource\.data\.save\.get\('migrationImported', false\) == false\s*\|\|\s*request\.resource\.data\.save\.get\('migrationImported', false\) == true/);
   assert.match(rules,/freshSave\(request\.resource\.data\.save\)/);
   assert.match(rules,/possibleSave\(resource\.data\.save,/);
   assert.match(rules,/get\('sus', false\) == false/);
