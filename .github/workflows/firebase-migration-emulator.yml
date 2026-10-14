@@ -1,0 +1,36 @@
+name: Verificar migracion Firebase (SOLO emulador)
+on:
+  push:
+    branches:
+      - test/firebase-migration-security-v0.3
+    paths:
+      - 'firestore.rules'
+      - 'tests/firebase/**'
+      - '.github/workflows/firebase-migration-emulator.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  firestore-emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Instalar dependencias de tests, no del juego
+        run: npm install --no-audit --no-fund
+        working-directory: tests/firebase
+      - name: Asegurar que nunca se use Firebase real
+        run: |
+          test "$EXPECTED_PROJECT" = "demo-tiliko-migration"
+          node -e "const f=require('fs').readFileSync('.firebaserc','utf8'); if(f.includes('pokesurvivor-free')) process.exit(1)"
+        env:
+          EXPECTED_PROJECT: demo-tiliko-migration
+      - name: Probar reglas contra emulador Firestore
+        run: tests/firebase/node_modules/.bin/firebase emulators:exec --project demo-tiliko-migration --only firestore "node --test tests/firebase/firestore-migration.emulator.cjs"
