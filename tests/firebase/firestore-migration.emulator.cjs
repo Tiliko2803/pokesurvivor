@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { initializeTestEnvironment, assertSucceeds, assertFails } = require('@firebase/rules-unit-testing');
-const { doc, getDoc, setDoc, Timestamp, serverTimestamp } = require('firebase/firestore');
+const { doc, getDoc, setDoc, deleteDoc, Timestamp, serverTimestamp } = require('firebase/firestore');
 
 const PROJECT = 'demo-tiliko-migration';
 if (process.env.GCLOUD_PROJECT && process.env.GCLOUD_PROJECT !== PROJECT)
@@ -129,4 +129,13 @@ test('No se permite crear una partida nueva con la marca de importación utiliza
   await env.clearFirestore();
   const save={...original(),migrationImported:true};
   await assertFails(put(save,'new_uid'));
+});
+
+test('El grant vigente impide borrar/recrear el guardado para importar dos veces',async()=>{
+  await env.clearFirestore();
+  const old=await seed({grant:true});
+  await assertSucceeds(put(migrated(old)));
+  await assertSucceeds(deleteDoc(doc(db(),'saves',UID)));
+  const fresh=original();
+  await assertFails(put(fresh));
 });
