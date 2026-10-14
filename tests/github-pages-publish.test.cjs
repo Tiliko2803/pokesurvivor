@@ -11,7 +11,7 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const html=read('index.html');
 const dev=read('dev.html');
 const config=read('js/core/firebase-config.js');
-const scripts=h=>[...h.matchAll(/<script defer src="(js\/[^"]+\.js)"\s*><\/script>/g)].map(m=>m[1]);
+const scripts=h=>[...h.matchAll(/<script defer src="(js\/[^"]+\.js)(?:\?[^"]+)?"\s*><\/script>/g)].map(m=>m[1]);
 
 test('GitHub Pages carga las 74 versiones ACTUALES del juego, no el app.min antiguo',()=>{
  const src=scripts(dev),prod=scripts(html);
@@ -31,7 +31,7 @@ test('GitHub Pages utiliza la raíz /pokesurvivor/ sin reclamar dominio ajeno',(
  assert.match(html,/https:\/\/tiliko2803\.github\.io\/pokesurvivor\//);
  assert.doesNotMatch(html,/https:\/\/pokesurvivor\.com\//);
  assert.match(html,/name="ps-version"/);
- assert.match(html,/href="css\/style\.css\?v=tiliko-gh05"/);
+ assert.match(html,/href="css\/style\.css\?v=tiliko-gh06-ios"/);
 });
 
 test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
@@ -53,7 +53,7 @@ test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
 test('La versión publicada, la caché y el control de actualizaciones coinciden',()=>{
  const v=JSON.parse(read('version.json')).v;
  assert.equal(html.match(/name="ps-version" content="([^"]+)"/)[1],v);
- assert.match(read('sw.js'),/ps-code-v2-ghmaomao/);
+ assert.match(read('sw.js'),/ps-code-v2-ghios/);
  assert.match(read('js/core/updater.js'),/meta\[name="ps-version"\]/);
 });
 
