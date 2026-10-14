@@ -15,12 +15,13 @@ const scripts=h=>[...h.matchAll(/<script defer src="(js\/[^"]+\.js)(?:\?[^"]+)?"
 
 test('GitHub Pages carga las 74 versiones ACTUALES del juego, no el app.min antiguo',()=>{
  const src=scripts(dev),prod=scripts(html);
- assert.equal(prod.length,74);
+ assert.equal(prod.length,75);
  assert.deepEqual(prod,src);
  assert.ok(prod.includes('js/data/maomao-preview.js'));
  assert.ok(prod.includes('js/data/maomao-animation.js'));
  assert.ok(prod.includes('js/data/gift-codes.js'));
  assert.ok(prod.includes('js/ui/gifts-ui.js'));
+ assert.ok(prod.includes('js/ui/layout-ui.js'));
  assert.equal(prod.at(-1),'js/main.js');
  for(const p of prod)assert.ok(fs.existsSync(path.join(root,p)),'Falta '+p);
  assert.doesNotMatch(html,/<script[^>]+src="js\/app\.min\.js/);
@@ -31,7 +32,7 @@ test('GitHub Pages utiliza la raíz /pokesurvivor/ sin reclamar dominio ajeno',(
  assert.match(html,/https:\/\/tiliko2803\.github\.io\/pokesurvivor\//);
  assert.doesNotMatch(html,/https:\/\/pokesurvivor\.com\//);
  assert.match(html,/name="ps-version"/);
- assert.match(html,/href="css\/style\.css\?v=tiliko-gh06-ios"/);
+ assert.match(html,/href="css\/style\.css\?v=tiliko-gh07-controls"/);
 });
 
 test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
@@ -53,7 +54,7 @@ test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
 test('La versión publicada, la caché y el control de actualizaciones coinciden',()=>{
  const v=JSON.parse(read('version.json')).v;
  assert.equal(html.match(/name="ps-version" content="([^"]+)"/)[1],v);
- assert.match(read('sw.js'),/ps-code-v2-ghios/);
+ assert.match(read('sw.js'),/ps-code-v2-ghcontrols/);
  assert.match(read('js/core/updater.js'),/meta\[name="ps-version"\]/);
 });
 
