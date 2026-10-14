@@ -25,7 +25,7 @@ No se toca `pokesurvivor-free` ni el repositorio original. El mismo inicio de se
 
 ## Versión y caché
 
-El `index.html` de GitHub Pages carga los 74 módulos actuales de `dev.html` en orden. Esto evita publicar una versión obsoleta de `js/app.min.js` después de fusionar ramas en GitHub sin reconstruir el bundle. Se usa la versión del HTML para actualizar automáticamente sin cancelar partidas activas; el Service Worker renovó su caché. Como contrapartida, este modo transitorio expone los módulos JavaScript en vez de usar el empaquetado ofuscado. Para una publicación permanente de mayor rendimiento conviene automatizar `node tools/build.js --sin-seo` en CI y generar el bundle antes de publicar.
+Al sincronizar `main` con `fix/friend-lookup`, la página carga inicialmente los 74 módulos actuales como respaldo. El workflow existente `.github/workflows/build-friend-test.yml` genera automáticamente un **bundle compilado y ofuscado** (`js/app.min.js`), el `index.html` correcto y `version.json`, y los publica mediante GitHub Pages. Por eso el resultado final es rápido y no expone el objeto global del juego. El archivo fuente `dev.html` contiene la URL canónica GitHub.io; los futuros builds no deben introducir el dominio del repositorio original. La caché del Service Worker usa una versión nueva para evitar que un Android conserve archivos anteriores.
 
 Mao Mao: **Veneno/Planta, Picotazo Veneno, ataque 1.52 (igual a Kyogre)**, animaciones V0.3 y código `MAO25`.
 
