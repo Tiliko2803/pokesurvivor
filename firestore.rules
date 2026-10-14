@@ -39,6 +39,11 @@ service cloud.firestore {
         // Sello irreversible: no se puede quitar para reutilizar un grant.
         && (resource.data.save.get('migrationImported', false) == false
             || request.resource.data.save.get('migrationImported', false) == true)
+        // Solo un permiso administrativo puede pasar de NO migrada a migrada.
+        // Ni una cuenta marcada ni un guardado normal pueden falsificar ese sello.
+        && (request.resource.data.save.get('migrationImported', false)
+              == resource.data.save.get('migrationImported', false)
+            || authorizedMigration(uid))
         && (authorizedMigration(uid) || marked() || (saneSave(request.resource.data.save)
               && possibleSave(resource.data.save, request.resource.data.save,
                               (request.time - resource.data.updatedAt).seconds())));
