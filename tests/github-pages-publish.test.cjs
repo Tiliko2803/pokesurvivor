@@ -21,7 +21,7 @@ test('GitHub Pages sirve 74 módulos originales o el bundle reconstruido por Git
                     'js/data/gift-codes.js','js/ui/gifts-ui.js'])
    assert.ok(src.includes(must));
  assert.equal(src.at(-1),'js/main.js');
- const bundle=html.match(/<script defer src="js\\/app\\.min\\.js\\?v=([0-9a-f]{10})"><\\/script>/);
+ const bundle=html.includes('src="js/app.min.js?v=') ? [null,html.split('src="js/app.min.js?v=')[1].split('"')[0]] : null;
  if(bundle){
    // El workflow genera index.html + bundle OFUSCADO desde dev.html.
    assert.equal(prod.length,0);
@@ -60,7 +60,7 @@ test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
 test('La versión publicada, la caché y el control de actualizaciones coinciden',()=>{
  const v=JSON.parse(read('version.json')).v;
  const inline=html.match(/name="ps-version" content="([^"]+)"/);
- const compiled=html.match(/src="js\\/app\\.min\\.js\\?v=([0-9a-f]{10})"/);
+ const compiled=html.includes('src="js/app.min.js?v=') ? [null,html.split('src="js/app.min.js?v=')[1].split('"')[0]] : null;
  assert.equal((compiled&&compiled[1])||(inline&&inline[1]),v);
  assert.match(read('sw.js'),/ps-code-v2-ghmaomao/);
  assert.match(read('js/core/updater.js'),/meta\[name="ps-version"\]/);
