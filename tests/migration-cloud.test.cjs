@@ -106,6 +106,7 @@ test('Las reglas exigen grant administrativo y mantienen protección del ranking
   assert.match(rules,/authorizedMigration\(uid\)/);
   assert.match(rules,/migrationImported.*== false/);
   assert.match(rules,/migrationImported.*== true/);
+  assert.match(rules,/resource\.data\.save\.get\('migrationImported', false\) == false\s*\|\| request\.resource\.data\.save\.get\('migrationImported', false\) == true/);
   assert.match(rules,/freshSave\(request\.resource\.data\.save\)/);
   assert.match(rules,/possibleSave\(resource\.data\.save,/);
   assert.match(rules,/get\('sus', false\) == false/);
