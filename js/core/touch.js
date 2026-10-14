@@ -13,6 +13,21 @@ G.Touch = (() => {
   let buttons = [];
 
   const R = () => 56 * (G.Settings.get('stick') || 1);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  /** Centros de botones en proporción al tamaño de pantalla, o null. */
+  function spot(k) {
+    const p = G.Settings.get('pad');
+    const v = p && p[k];
+    return Array.isArray(v) && v.length === 2 && v.every(n => typeof n === 'number' && Number.isFinite(n)) ? v : null;
+  }
+  const STICK_DEF = [0.14, 0.72];
+  const fixed = () => G.Settings.get('stickMode') === 'fixed';
+  /** Centro del joystick fijo, medido en píxeles CSS del canvas. */
+  function stickBase(w = cv.clientWidth, h = cv.clientHeight) {
+    const p = spot('stick') || STICK_DEF, rad = R();
+    return { x: clamp(p[0] * w, rad + 4, Math.max(rad + 4, w - rad - 4)),
+             y: clamp(p[1] * h, rad + 4, Math.max(rad + 4, h - rad - 4)) };
+  }
 
   // Se usan TouchEvents como fuente principal en iOS/Android: permiten que
   // un dedo mantenga el joystick y otro pulse movimientos sin competir con
@@ -69,13 +84,21 @@ G.Touch = (() => {
 
   function startStick(id, source, x, y) {
     if (stick || !G.Game || G.Game.state !== 'playing') return false;
-    stick = { id, source, ox: x, oy: y, x, y };
+    if (fixed()) {
+      const base = stickBase();
+      // En modo fijo, un toque lejano no mueve al Pokémon.
+      if (Math.hypot(x - base.x, y - base.y) > R() * 2.2) return false;
+      stick = { id, source, fixed: true, ox: base.x, oy: base.y, x, y };
+    } else {
+      stick = { id, source, ox: x, oy: y, x, y };
+    }
     return true;
   }
 
   function moveStick(x, y) {
     if (!stick) return;
     stick.x = x; stick.y = y;
+    if (stick.fixed) return; // el centro del joystick fijo no sigue al dedo
     const dx = x - stick.ox, dy = y - stick.oy, d = Math.hypot(dx, dy), r = R();
     if (d > r) { stick.ox = x - dx / d * r; stick.oy = y - dy / d * r; }
   }
@@ -169,23 +192,28 @@ G.Touch = (() => {
 
   /** Dibuja el joystick (coordenadas de pantalla, CSS px). */
   function draw(ctx) {
-    if (!stick) return;
-    const r = R();
+    const base = !stick && fixed() && active ? stickBase() : null;
+    if (!stick && !base) return;
+    const s = stick || { ox: base.x, oy: base.y, x: base.x, y: base.y };
+    drawStick(ctx, s, R(), base ? 0.55 : 1);
+  }
+
+  function drawStick(ctx, stick, r, opacity = 1) {
     const dx = stick.x - stick.ox, dy = stick.y - stick.oy, d = Math.hypot(dx, dy);
     const kx = stick.ox + (d > r ? dx / d * r : dx), ky = stick.oy + (d > r ? dy / d * r : dy);
     ctx.save();
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = 0.5 * opacity;
     ctx.fillStyle = 'rgba(10,20,48,.55)';
     ctx.beginPath(); ctx.arc(stick.ox, stick.oy, r, 0, 6.2832); ctx.fill();
     ctx.lineWidth = 3; ctx.strokeStyle = '#f4f8ff';
     ctx.stroke();
-    ctx.globalAlpha = 0.85;
+    ctx.globalAlpha = 0.85 * opacity;
     ctx.fillStyle = '#ffd23f';
     ctx.beginPath(); ctx.arc(kx, ky, r * 0.42, 0, 6.2832); ctx.fill();
     ctx.lineWidth = 3; ctx.strokeStyle = '#a55f00'; ctx.stroke();
     ctx.restore();
   }
 
-  return { init, vector, draw, clearButtons, addButton, reset, safeArea,
+  return { init, vector, draw, drawStick, clearButtons, addButton, reset, safeArea, spot, stickBase, R, STICK_DEF,
            get active() { return active; }, get stick() { return stick; } };
 })();
