@@ -229,6 +229,7 @@ G.HUD = (() => {
       const a = Math.min(1, ban.t * 1.6);
       ctx.save();
       ctx.globalAlpha = a;
+      ctx.textAlign = 'center'; // mensaje centrado, también en móvil
       ctx.font = F(800, 22);
       ctx.fillStyle = '#ffcb3d';
       ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.lineWidth = 4;
