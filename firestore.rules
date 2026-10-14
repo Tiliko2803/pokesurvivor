@@ -30,10 +30,15 @@ service cloud.firestore {
       allow read, delete: if signedIn() && me() == uid;
       allow read: if admin();
 
+      // No se permite crear partidas nuevas con la migración ya utilizada.
       allow create: if signedIn() && me() == uid && validSaveDoc()
+        && request.resource.data.save.get('migrationImported', false) == false
         && (marked() || (saneSave(request.resource.data.save) && freshSave(request.resource.data.save)));
       allow update: if signedIn() && me() == uid && validSaveDoc()
         && (resource.data.get('sus', false) == false || marked())       // la marca no se quita
+        // Sello irreversible: no se puede quitar para reutilizar un grant.
+        && (resource.data.save.get('migrationImported', false) == false
+            || request.resource.data.save.get('migrationImported', false) == true)
         && (authorizedMigration(uid) || marked() || (saneSave(request.resource.data.save)
               && possibleSave(resource.data.save, request.resource.data.save,
                               (request.time - resource.data.updatedAt).seconds())));
