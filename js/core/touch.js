@@ -14,25 +14,39 @@ G.Touch = (() => {
 
   const R = () => 56 * (G.Settings.get('stick') || 1);
 
+  // Se usan TouchEvents como fuente principal en iOS/Android: permiten que
+  // un dedo mantenga el joystick y otro pulse movimientos sin competir con
+  // pointer capture. PointerEvents quedan para ratón, lápiz y navegadores sin
+  // TouchEvents.
+  let lastTouchAt = -Infinity;
+
+  function enableTouch() {
+    if (!active) { active = true; document.body.classList.add('touch'); }
+  }
+
+  // El HUD y el joystick se dibujan en píxeles CSS del canvas, NO en
+  // coordenadas del viewport. Safari puede mover o redimensionar el canvas
+  // al mostrar/ocultar barras; convertir siempre desde su rectángulo real.
+  function point(clientX, clientY) {
+    const r = cv.getBoundingClientRect();
+    return {
+      x: (clientX - r.left) * (r.width ? cv.clientWidth / r.width : 1),
+      y: (clientY - r.top) * (r.height ? cv.clientHeight / r.height : 1)
+    };
+  }
+
   function init(canvas) {
     cv = canvas;
     if (active) document.body.classList.add('touch');
+    cv.addEventListener('touchstart', touchStart, { passive: false });
+    cv.addEventListener('touchmove', touchMove, { passive: false });
+    cv.addEventListener('touchend', touchEnd, { passive: false });
+    cv.addEventListener('touchcancel', touchEnd, { passive: false });
     cv.addEventListener('pointerdown', down);
     cv.addEventListener('pointermove', move);
     cv.addEventListener('pointerup', up);
     cv.addEventListener('pointercancel', up);
     cv.addEventListener('contextmenu', e => e.preventDefault());
-    // iPhone: la pulsación larga sobre el juego abría la lupa y el menú de
-    // "Copiar / Seleccionar todo". Cortar el toque aquí lo evita (los eventos
-    // pointer, que son los que usa el joystick, siguen llegando).
-    // Además, los botones (movimientos, pausa) se pulsan también desde aquí: en
-    // iPhone (Safari y Chrome usan WebKit) a veces no llegaba el pointerdown de
-    // un segundo dedo con el otro en el joystick y no se podía cambiar de movimiento.
-    cv.addEventListener('touchstart', e => {
-      if (e.cancelable) e.preventDefault();
-      if (!active) { active = true; document.body.classList.add('touch'); }
-      for (const t of e.changedTouches) { const b = hit(t.clientX, t.clientY); if (b) press(b); }
-    }, { passive: false });
     document.addEventListener('selectstart', e => {
       if (!e.target.closest || !e.target.closest('input, textarea, [contenteditable]')) e.preventDefault();
     });
@@ -43,39 +57,83 @@ G.Touch = (() => {
   function hit(x, y) {
     for (let i = buttons.length - 1; i >= 0; i--) {
       const b = buttons[i];
-      if (x >= b.x - b.pad && x <= b.x + b.w + b.pad && y >= b.y - b.pad && y <= b.y + b.h + b.pad) return b;
+      if (x >= b.x - b.pad && x <= b.x + b.w + b.pad &&
+          y >= b.y - b.pad && y <= b.y + b.h + b.pad) return b;
     }
     return null;
   }
 
-  // Un mismo toque llega por touchstart y por pointerdown: se pulsa una sola vez.
-  let lastKey = '', lastAt = 0;
-  function press(b) {
-    const k = Math.round(b.x) + ',' + Math.round(b.y), now = performance.now();
-    if (k === lastKey && now - lastAt < 350) return;
-    lastKey = k; lastAt = now;
-    b.fn();
+  // Cada pulsación física pasa por una sola ruta de eventos. No se aplica un
+  // bloqueo de 350 ms: también se puede alternar movimientos rápidamente.
+  function press(b) { b.fn(); }
+
+  function startStick(id, source, x, y) {
+    if (stick || !G.Game || G.Game.state !== 'playing') return false;
+    stick = { id, source, ox: x, oy: y, x, y };
+    return true;
+  }
+
+  function moveStick(x, y) {
+    if (!stick) return;
+    stick.x = x; stick.y = y;
+    const dx = x - stick.ox, dy = y - stick.oy, d = Math.hypot(dx, dy), r = R();
+    if (d > r) { stick.ox = x - dx / d * r; stick.oy = y - dy / d * r; }
+  }
+
+  function touchStart(e) {
+    lastTouchAt = performance.now();
+    if (e.cancelable) e.preventDefault();
+    enableTouch();
+    for (const t of e.changedTouches) {
+      const p = point(t.clientX, t.clientY);
+      const b = hit(p.x, p.y);
+      if (b) { press(b); continue; }
+      startStick(t.identifier, 'touch', p.x, p.y);
+    }
+  }
+
+  function touchMove(e) {
+    if (e.cancelable) e.preventDefault();
+    if (!stick || stick.source !== 'touch') return;
+    for (const t of e.changedTouches) {
+      if (t.identifier !== stick.id) continue;
+      const p = point(t.clientX, t.clientY);
+      moveStick(p.x, p.y);
+      break;
+    }
+  }
+
+  function touchEnd(e) {
+    if (e.cancelable) e.preventDefault();
+    if (!stick || stick.source !== 'touch') return;
+    for (const t of e.changedTouches) {
+      if (t.identifier === stick.id) { stick = null; break; }
+    }
   }
 
   function down(e) {
+    // En WebKit pointerdown y touchstart pueden llegar por el MISMO dedo.
+    if (e.pointerType === 'touch' && 'ontouchstart' in window) return;
+    if (e.pointerType === 'mouse' && performance.now() - lastTouchAt < 700) return;
     const touchy = e.pointerType !== 'mouse';
-    if (touchy && !active) { active = true; document.body.classList.add('touch'); }
-    const b = hit(e.clientX, e.clientY);
+    if (touchy) enableTouch();
+    const p = point(e.clientX, e.clientY);
+    const b = hit(p.x, p.y);
     if (b) { e.preventDefault(); press(b); return; }
-    if (!touchy || stick || !G.Game || G.Game.state !== 'playing') return;
+    if (!touchy || !startStick(e.pointerId, 'pointer', p.x, p.y)) return;
     e.preventDefault();
-    stick = { id: e.pointerId, ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY };
     try { cv.setPointerCapture(e.pointerId); } catch (err) { /* nada */ }
   }
 
   function move(e) {
-    if (!stick || e.pointerId !== stick.id) return;
-    stick.x = e.clientX; stick.y = e.clientY;
-    const dx = stick.x - stick.ox, dy = stick.y - stick.oy, d = Math.hypot(dx, dy), r = R();
-    if (d > r) { stick.ox = stick.x - dx / d * r; stick.oy = stick.y - dy / d * r; }
+    if (!stick || stick.source !== 'pointer' || e.pointerId !== stick.id) return;
+    const p = point(e.clientX, e.clientY);
+    moveStick(p.x, p.y);
   }
 
-  function up(e) { if (stick && e.pointerId === stick.id) stick = null; }
+  function up(e) {
+    if (stick && stick.source === 'pointer' && e.pointerId === stick.id) stick = null;
+  }
   function reset() { stick = null; }
 
   /** Dirección del joystick (con fuerza 0..1), o null si no se usa. */
