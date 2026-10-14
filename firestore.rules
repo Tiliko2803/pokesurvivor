@@ -33,6 +33,9 @@ service cloud.firestore {
       // No se permite crear partidas nuevas con la migración ya utilizada.
       allow create: if signedIn() && me() == uid && validSaveDoc()
         && request.resource.data.save.get('migrationImported', false) == false
+        // Un grant exige una partida existente. Impide borrar/recrear la
+        // partida para reutilizar una autorización todavía vigente.
+        && !exists(/databases/$(database)/documents/migrationGrants/$(uid))
         && (marked() || (saneSave(request.resource.data.save) && freshSave(request.resource.data.save)));
       allow update: if signedIn() && me() == uid && validSaveDoc()
         && (resource.data.get('sus', false) == false || marked())       // la marca no se quita
