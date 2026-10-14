@@ -56,8 +56,8 @@ G.Game = (() => {
     // Resolución interna como mucho ×1,5: en pantallas ×2 dibujar el doble de
     // píxeles era de lo que más costaba, y con el pixel art no se nota.
     const rect = cv.getBoundingClientRect();
-    const nextW = Math.max(1, rect.width || cv.clientWidth);
-    const nextH = Math.max(1, rect.height || cv.clientHeight);
+    const nextW = Math.max(1, cv.clientWidth || rect.width);
+    const nextH = Math.max(1, cv.clientHeight || rect.height);
     const nextDpr = Math.min(1.5, window.devicePixelRatio || 1);
     const pixelW = Math.round(nextW * nextDpr);
     const pixelH = Math.round(nextH * nextDpr);
