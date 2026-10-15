@@ -57,7 +57,7 @@ test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
 test('La versión publicada, la caché y el control de actualizaciones coinciden',()=>{
  const v=JSON.parse(read('version.json')).v;
  assert.equal(html.match(/name="ps-version" content="([^"]+)"/)[1],v);
- assert.match(read('sw.js'),/ps-code-v2-ghcoins/);
+ assert.match(read('sw.js'),/ps-code-v2-ghtickets/);
  assert.match(read('js/core/updater.js'),/meta\[name="ps-version"\]/);
 });
 
@@ -67,6 +67,7 @@ test('Mao Mao conserva poder Kyogre, regalo MAO25 y Picotazo Veneno',()=>{
  assert.match(mon,/start:\s*'poison-sting'/);
  assert.match(read('js/data/gift-codes.js'),/MAO25/);
  assert.match(read('js/data/gift-codes.js'),/20KPS/);
+ assert.match(read('js/data/gift-codes.js'),/10X10/);
  const tabs=read('js/ui/menu.js');
  assert.match(tabs,/Especial/);
 });
