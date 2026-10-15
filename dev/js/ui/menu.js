@@ -92,7 +92,7 @@ G.MenuUI = (() => {
       const unlocked=G.Mega.has(s),active=G.Mega.equipped(s,260);
       const best=Math.min(3,(s.megaProgress||{}).swampertBosses||0);
       megaBox.innerHTML='<div class="mega-title">💎 Swampertita</div>'+
-        (unlocked?'<div class="mega-help">Piedra permanente · 79 fotogramas animados por vista (frente y espalda).</div>':
+        (unlocked?'<div class="mega-help">Piedra permanente · Hoja 1 (8 direcciones) · Equipada: Terratemblor Nv. 2 desde el inicio.</div>':
         '<div class="mega-help">Misión: vence 3 jefes en una partida en solitario con Swampert. Mejor: '+best+'/3</div>')+
         '<button class="btn small '+(active?'gold':'')+'" type="button" '+(!unlocked?'disabled':'')+'>'+
         (!unlocked?'🔒 Por desbloquear':active?'Mega equipada · Quitar':'Equipar Swampertita')+'</button>';
