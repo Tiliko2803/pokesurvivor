@@ -8,8 +8,11 @@ G.GiftCodes = (() => {
   'use strict';
   const MAOMAO_CODE = 'MAO25';
   const MAOMAO_DEX = 10001;
+  const COINS_CODE = '20KPS';
+  const COINS_AMOUNT = 20000;
   const normalize = value => String(value || '').trim().toUpperCase();
   const validFormat = code => /^[A-Z0-9]{5}$/.test(code);
   const isMaomao = code => validFormat(code) && code === MAOMAO_CODE;
-  return { MAOMAO_CODE, MAOMAO_DEX, normalize, validFormat, isMaomao };
+  const isCoins = code => validFormat(code) && code === COINS_CODE;
+  return { MAOMAO_CODE, MAOMAO_DEX, COINS_CODE, COINS_AMOUNT, normalize, validFormat, isMaomao, isCoins };
 })();
