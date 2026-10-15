@@ -21,6 +21,9 @@ test('GitHub Pages carga las 74 versiones ACTUALES del juego, no el app.min anti
  assert.ok(prod.includes('js/data/maomao-animation.js'));
  assert.ok(prod.includes('js/data/gift-codes.js'));
  assert.ok(prod.includes('js/ui/gifts-ui.js'));
+ assert.match(html,/id="gift-form"/);
+ assert.match(html,/data-go="gifts"/);
+ assert.match(html,/id="gift-redeem"/);
  assert.ok(prod.includes('js/ui/layout-ui.js'));
  assert.equal(prod.at(-1),'js/main.js');
  for(const p of prod)assert.ok(fs.existsSync(path.join(root,p)),'Falta '+p);
@@ -54,7 +57,7 @@ test('Nube sólo en GitHub Pages de Tiliko, Cloudflare Tiliko y HTTPS',()=>{
 test('La versión publicada, la caché y el control de actualizaciones coinciden',()=>{
  const v=JSON.parse(read('version.json')).v;
  assert.equal(html.match(/name="ps-version" content="([^"]+)"/)[1],v);
- assert.match(read('sw.js'),/ps-code-v2-ghcontrols/);
+ assert.match(read('sw.js'),/ps-code-v2-ghcoins/);
  assert.match(read('js/core/updater.js'),/meta\[name="ps-version"\]/);
 });
 
@@ -63,6 +66,7 @@ test('Mao Mao conserva poder Kyogre, regalo MAO25 y Picotazo Veneno',()=>{
  assert.match(mon,/hp:\s*110,\s*spd:\s*112,\s*atk:\s*1\.52/);
  assert.match(mon,/start:\s*'poison-sting'/);
  assert.match(read('js/data/gift-codes.js'),/MAO25/);
+ assert.match(read('js/data/gift-codes.js'),/20KPS/);
  const tabs=read('js/ui/menu.js');
  assert.match(tabs,/Especial/);
 });
