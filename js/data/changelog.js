@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-14', title: ['Mega Swampert (pruebas)', 'Mega Swampert (testing)'], new: [
+    ['Vence a 3 jefes en una sola partida en solitario con Swampert y consigue la Swampertita. Equípala o quítala desde el menú y úsala durante toda la partida.',
+     'Beat three bosses in a single solo run with Swampert to earn Swampertite. Equip or remove it in the menu, and use it throughout each run.'],
+    ['Mega Swampert mejora estadísticas y tiene Nado Rápido bajo lluvia. Su sprite sigue pendiente: se usa un aura temporal.',
+     'Mega Swampert boosts stats and has Swift Swim in rain. Its sprite is pending and a temporary aura is used.']
+  ] },
   { d: '2026-10-14', title: ['Regalo de 10 Tickets ×10', 'Gift of ten x10 tickets'], new: [
     ['Nuevo código 10X10: consigue 10 Tickets x10, equivalentes a 100 tiradas de gacha. Cada cuenta puede usarlo una sola vez sin perder los demás códigos.',
      'New 10X10 gift code: claim ten x10 tickets, worth 100 gacha pulls. Each account can redeem it once independently of other gift codes.']

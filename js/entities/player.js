@@ -10,6 +10,7 @@ G.Player = class Player {
    */
   constructor(mon, perks = {}, shiny = false) {
     this.mon = mon;
+    this.mega = mon.megaStone || null;
     this.dex = mon.dex;
     this.shiny = shiny && G.Sprites.hasShiny(mon.dex);
     this.anim = new G.Sprites.Animator(mon.dex, 1, this.shiny);
@@ -20,7 +21,7 @@ G.Player = class Player {
     this.atkMul = perks.atkMul || 1;
     this.spdMul = perks.spdMul || 1;
     this.cdMul = perks.cdMul || 1;
-    this.dmgReduce = perks.dmgReduce || 0;
+    this.dmgReduce = (perks.dmgReduce || 0) + (this.mega ? 0.08 : 0);
     this.regenFlat = perks.regen || 0;
     this.magnet = 78 * (perks.magnetMul || 1);
     this.xpMul = perks.xpMul || 1;
@@ -91,7 +92,8 @@ G.Player = class Player {
     const s = this.baseSpd * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? 0.5 : 1);
     const w = G.Weather.speedFor(this.mon.types);
     const slow = this.inLiquid ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
-    return s * slow * w;
+    const swift=this.mega==='swampertite'&&G.Weather.current&&G.Weather.current.kind==='rain'?1.3:1;
+    return s * slow * w * swift;
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.buffs.def.n * this.buffs.def.amount); }
   get regen() { return this.regenFlat + this.buffs.regen.n * this.buffs.regen.amount; }
@@ -447,6 +449,13 @@ G.Player = class Player {
       ctx.restore();
     }
     G.Sprites.drawShadow(ctx, this.dex, this.x, this.y);
+    // Aura provisional hasta integrar hojas animadas de Mega Swampert.
+    if(this.mega&&!this.dead){
+      ctx.save();ctx.strokeStyle='#63dfff';ctx.lineWidth=3;
+      ctx.globalAlpha=.7+.12*Math.sin(performance.now()/220);
+      ctx.beginPath();ctx.ellipse(this.x,this.y,this.r*1.85,this.r*.75,0,0,6.2832);ctx.stroke();
+      ctx.restore();
+    }
     // Poder de altar: aro de su color latiendo bajo los pies.
     if (this.power && !this.dead) {
       ctx.save();

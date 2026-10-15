@@ -108,6 +108,7 @@ G.RunUI = (() => {
       ${r.challenge ? `<div class="challenge-result" style="grid-column:1/-1"><b>${r.challenge.name}</b>
         <p>Mejor marca: ${G.U.mmss(r.challenge.bestTime)} · ${r.challenge.completedAt ? 'Completado' : 'Pendiente'}</p>
         <p class="sub">Premio de 500 monedas pendiente de habilitación.</p></div>` : ''}
+      ${r.megaUnlocked ? '<div style="grid-column:1/-1"><span>¡Misión completada!</span><b class="gold">💎 Swampertita conseguida</b><p class="sub">Equípala en el menú de Swampert.</p></div>' : ''}
       <div><span>Tiempo</span><b>${G.U.mmss(r.time)}</b></div>
       <div><span>Nivel</span><b>${r.level}</b></div>
       <div><span>Derrotados</span><b>${r.kills}</b></div>

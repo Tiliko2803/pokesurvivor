@@ -114,7 +114,7 @@ G.Game = (() => {
     G.Challenges.begin(challengeId);
     holdBy = []; awayBy = null;
     const save = G.DB.save;
-    const mon = previewId ? G.MaomaoPreview.mon : G.DEX_BY[save.partner];
+    const mon = previewId ? G.MaomaoPreview.mon : G.Mega.form(G.DEX_BY[save.partner],save);
     const perks = G.Upgrades.perks(previewId ? {} : G.DB.upgradesOf(mon.dex));
 
     G.UI.hideAll();
@@ -332,6 +332,7 @@ G.Game = (() => {
     const judge = G.Judgment.summary();
     if (judge) G.Progress.event('judgeEnd', judge);
     G.Judgment.reset();
+    const megaUnlocked=G.Mega.finishRun(save,pl,{coop,challenge:!!challenge,clean:clean()});
     G.Progress.event('runEnd', { time: challenge ? challenge.time : time, challenge: !!challenge, level: pl.level, coins: pl.coins, types: pl.mon.types, group: coop });
     G.Progress.checkAch();
     // A la nube: un récord, enseguida; si no, al acabar la partida (como mucho cada 20 min).
@@ -347,7 +348,7 @@ G.Game = (() => {
 
     G.RunUI.showOver({
       dead, time: challenge ? challenge.time : time, challenge, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins, record, t1: pl.t1, t10: pl.t10, judge,
-      moves: pl.moves, caught,
+      moves: pl.moves, caught, megaUnlocked,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
                  (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '')
     }, () => { pl = null; G.Flow.afterRun(); });

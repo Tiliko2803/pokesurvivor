@@ -78,6 +78,7 @@ G.DB = (() => {
       shiny: {},              // dex -> { at, from } — variantes shiny conseguidas
       partner: null,          // dex del Pokémon con el que juegas
       partnerShiny: false,    // jugar con su versión shiny (si la tienes)
+      megaStones: {}, megaEquipped: {}, megaProgress: {},
       starter: null,          // dex que te tocó en el test
       personality: null,      // { trait, scores }
       upgrades: {},           // (antiguo) mejoras de la cuenta; ahora van por Pokémon
@@ -126,6 +127,7 @@ G.DB = (() => {
   function sanitize(s) {
     const n = v => (Number.isFinite(+v) && +v > 0 ? Math.floor(+v) : 0);
     s.challenges = G.Challenges.mergeProgress(s.challenges, {});
+    G.Mega.sanitize(s);
     s.coins = n(s.coins);
     s.tickets.t1 = n(s.tickets.t1);
     s.tickets.t10 = n(s.tickets.t10);
@@ -193,6 +195,14 @@ G.DB = (() => {
       r[coll] = r[coll] || {};
       for (const k in older[coll] || {}) if (!r[coll][k]) r[coll][k] = older[coll][k];
     }
+    // Preservar la piedra y progreso durante fusión de guardados/nube.
+    r.megaStones=r.megaStones||{};
+    for(const [id,at] of Object.entries(older.megaStones||{}))
+      if(!r.megaStones[id]||at<r.megaStones[id])r.megaStones[id]=at;
+    r.megaProgress=r.megaProgress||{};
+    r.megaProgress.swampertBosses=Math.max(r.megaProgress.swampertBosses||0,(older.megaProgress||{}).swampertBosses||0);
+    r.megaEquipped=Object.assign({},newer.megaEquipped||{});
+    G.Mega.sanitize(r);
     r.challenges = G.Challenges.mergeProgress(a.challenges, b.challenges);
     // Los regalos ya canjeados nunca se pierden por cambios de navegador.
     r.gifts = {};

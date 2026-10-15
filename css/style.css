@@ -248,6 +248,10 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 8px 0 4px;
 .partner-card { text-align: center; margin-top: 10px; }
 .partner-card .nm { font-size: 24px; font-weight: 700; text-shadow: 3px 3px 0 var(--shadow); }
 .partner-card .lv { color: var(--muted); font-size: 14px; text-shadow: 2px 2px 0 var(--shadow); }
+.mega-menu{margin:8px auto 0;padding:6px 10px;max-width:295px;background:rgba(24,58,85,.7);border:1px solid rgba(94,215,255,.45);border-radius:9px;font-size:12px;text-align:center}
+.mega-menu.hidden{display:none}.mega-title{color:#a9ebff;font-weight:800;font-size:14px}
+.mega-help{color:#bed5e4;margin:3px 0 6px;line-height:1.2}
+.mega-menu button{max-width:100%;font-size:12px;padding:5px 10px}
 .menu-right {
   width: min(380px, 100%); display: flex; flex-direction: column;
   /* Arriba deja sitio a la barra superior; si no cabe todo, se desplaza
