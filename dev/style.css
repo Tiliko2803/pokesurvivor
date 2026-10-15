@@ -901,3 +901,29 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
   #scr-gifts #gift-form { display: grid; gap: 6px; }
   #scr-gifts #gift-status { margin: 2px 0; }
 }
+
+/* Megapiedra visible y alcanzable en pantallas horizontales bajas. */
+.mega-menu{width:min(94%,320px);margin:6px auto 0;box-sizing:border-box}
+.mega-menu button{display:block;width:100%;max-width:100%;white-space:normal;line-height:1.18;min-height:34px;box-sizing:border-box}
+@media (max-height: 740px) and (min-width: 761px) {
+ #scr-menu .menu-left{height:100dvh;min-height:0;box-sizing:border-box;
+   overflow-y:auto;overflow-x:hidden;justify-content:flex-start;
+   padding:65px 10px 12px;overscroll-behavior:contain}
+ #scr-menu .menu-left .logo .t1{font-size:clamp(25px,3.7vw,43px)}
+ #scr-menu .menu-left .logo .t2{font-size:clamp(9px,1.2vw,13px)}
+ #scr-menu .partner-card{margin-top:3px;width:100%}
+ #menu-partner{height:clamp(95px,23dvh,155px);width:auto;max-width:100%}
+ #scr-menu .partner-card .nm{font-size:clamp(17px,2.2vw,22px)}
+ #scr-menu .partner-card .lv{font-size:12px}
+ #scr-menu .mega-menu{padding:5px 9px;max-width:270px;margin-top:4px}
+ #scr-menu .mega-help{font-size:11px;line-height:1.13;margin:3px 0 5px}
+ #scr-menu .mega-title{font-size:13px}
+ #scr-menu .mega-menu button{font-size:12px;padding:6px 8px}
+ #scr-menu .preview-flag{font-size:11px;margin:0 0 5px;padding:4px 8px;line-height:1.12}
+}
+@media (max-height: 460px) and (orientation: landscape) {
+ #scr-menu .menu-left{padding-top:57px}
+ #menu-partner{height:clamp(88px,21dvh,120px)}
+ #scr-menu .menu-left .logo .t1{font-size:27px}
+ #scr-menu .mega-menu{max-width:260px}
+}

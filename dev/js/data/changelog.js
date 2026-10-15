@@ -9,8 +9,8 @@ G.CHANGELOG = [
   { d: '2026-10-14', title: ['Mega Swampert (pruebas)', 'Mega Swampert (testing)'], new: [
     ['Vence a 3 jefes en una sola partida en solitario con Swampert y consigue la Swampertita. Equípala o quítala desde el menú y úsala durante toda la partida.',
      'Beat three bosses in a single solo run with Swampert to earn Swampertite. Equip or remove it in the menu, and use it throughout each run.'],
-    ['Mega Swampert mejora estadísticas y tiene Nado Rápido bajo lluvia. Su sprite sigue pendiente: se usa un aura temporal.',
-     'Mega Swampert boosts stats and has Swift Swim in rain. Its sprite is pending and a temporary aura is used.'],
+    ['Mega Swampert usa sprites auténticos de frente y espalda (normal y shiny) con animaciones adaptadas, en vez del aura provisional. Las perspectivas PMD completas aún no están disponibles.',
+     'Mega Swampert uses authentic front/back sprites (normal and shiny) with adapted animations, replacing the placeholder aura. Full PMD directions are not available yet.'],
     ['Nueva habilidad pasiva Llamada de la Tormenta: al iniciar la run invoca lluvia durante 30 segundos, que puede regresar cada 120 segundos. La recarga es compartida en cooperativo y respeta las arenas especiales.',
      'New Storm Call passive: summons rain for 30 seconds at the start of a run and can return every 120 seconds. Cooldown is shared in co-op, and special arenas keep their weather.']
   ] },
