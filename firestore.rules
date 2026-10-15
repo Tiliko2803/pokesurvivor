@@ -38,6 +38,7 @@ service cloud.firestore {
         && !('10001' in request.resource.data.save.get('owned', {}))
         && !('10001' in request.resource.data.save.get('shiny', {}))
         && !('maomao' in request.resource.data.save.get('gifts', {}))
+        && !('coins20k' in request.resource.data.save.get('gifts', {}))
         && (marked() || (saneSave(request.resource.data.save) && freshSave(request.resource.data.save)));
       allow update: if signedIn() && me() == uid && validSaveDoc()
         && (resource.data.get('sus', false) == false || marked())
@@ -47,8 +48,8 @@ service cloud.firestore {
         && (request.resource.data.save.get('migrationImported', false)
               == resource.data.save.get('migrationImported', false)
             || authorizedMigration(uid))
-        // El premio custom sólo puede añadirse por el canje exacto MAO25.
-        && (authorizedGift() || (giftUnchanged() && (authorizedMigration(uid) || marked()
+        // Los regalos sólo pueden añadirse mediante transacciones exactas.
+        && (authorizedGift() || authorizedCoinsGift() || (giftUnchanged() && (authorizedMigration(uid) || marked()
               || (saneSave(request.resource.data.save)
               && possibleSave(resource.data.save, request.resource.data.save,
                               (request.time - resource.data.updatedAt).seconds())))));
@@ -65,7 +66,8 @@ service cloud.firestore {
       let next = request.resource.data.save;
       return next.get('owned', {}).get('10001', null) == old.get('owned', {}).get('10001', null)
         && next.get('shiny', {}).get('10001', null) == old.get('shiny', {}).get('10001', null)
-        && next.get('gifts', {}).get('maomao', null) == old.get('gifts', {}).get('maomao', null);
+        && next.get('gifts', {}).get('maomao', null) == old.get('gifts', {}).get('maomao', null)
+        && next.get('gifts', {}).get('coins20k', null) == old.get('gifts', {}).get('coins20k', null);
     }
     function authorizedGift() {
       let old = resource.data.save;
@@ -87,6 +89,28 @@ service cloud.firestore {
         && next.get('name', '') == old.get('name', '')
         && next.get('updated', 0) is int
         && next.get('updated', 0) >= old.get('updated', 0)
+        && saneSave(next);
+    }
+
+    // Código 20KPS: +20,000 Pokémonedas exactamente, una sola vez por cuenta.
+    // Nunca se permite insertar/eliminar el sello mediante una partida normal,
+    // ni sumar monedas adicionales o cambiar cualquier otro campo en el canje.
+    function authorizedCoinsGift() {
+      let old = resource.data.save;
+      let next = request.resource.data.save;
+      return old.get('gifts', {}).get('coins20k', null) == null
+        && next.get('gifts', {}).get('coins20k', '') == '20KPS'
+        && old.get('coins', 0) is number
+        && next.get('coins', 0) is number
+        && next.get('coins', 0) == old.get('coins', 0) + 20000
+        && next.diff(old).affectedKeys().hasOnly(['coins', 'gifts', 'updated'])
+        && next.get('gifts', {}).diff(old.get('gifts', {})).affectedKeys().hasOnly(['coins20k'])
+        && next.get('created', 0) == old.get('created', 0)
+        && next.get('name', '') == old.get('name', '')
+        && next.get('updated', 0) is int
+        && next.get('updated', 0) >= old.get('updated', 0)
+        && next.get('updated', 0) >= request.time.toMillis() - 300000
+        && next.get('updated', 0) <= request.time.toMillis() + 300000
         && saneSave(next);
     }
 
