@@ -11,21 +11,54 @@ G.MegaArt = (() => {
   const count = {Idle:3,Walk:4,Attack:3,Shoot:3,Charge:3,Hurt:2,Faint:3};
   const duration = {Idle:.95,Walk:.45,Attack:.34,Shoot:.5,Charge:.78,Hurt:.34,Faint:.8};
   const atlas = new Image();
+  const atlasURL = new URL(PATH, document.baseURI).href;
+  const versionedURL = atlasURL + '?v=hoja1-v3';
   let ready = false, failed = false, requested = false;
+  let diagnostic = 'pendiente';
+
+  // Diagnóstico visible solo en el entorno de pruebas, incluso dentro de una run.
+  // Evita confundir el GIF de respaldo con la Hoja 1 cuando algo falla.
+  function status(message, ok = null) {
+    diagnostic = message;
+    let el = document.getElementById('mega-atlas-status');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'mega-atlas-status';
+      el.setAttribute('role', 'status');
+      el.style.cssText = [
+        'position:fixed','left:50%','bottom:calc(5px + env(safe-area-inset-bottom))',
+        'transform:translateX(-50%)','z-index:9999','pointer-events:none',
+        'background:rgba(4,15,29,.84)','border:1px solid #8994a8',
+        'color:#fff','border-radius:5px','padding:2px 8px',
+        'font:700 11px sans-serif','white-space:nowrap'
+      ].join(';');
+      document.body.appendChild(el);
+    }
+    el.textContent = 'Mega · ' + message;
+    el.style.borderColor = ok === true ? '#6bd696' : ok === false ? '#ff8b82' : '#8994a8';
+  }
   function preload(shiny = false) {
-    previous.preload(shiny);
     if (requested) return;
     requested = true;
+    status('Hoja 1 cargando…');
     atlas.onload = () => {
       ready = atlas.naturalWidth === 480 && atlas.naturalHeight === names.length * BAND;
       failed = !ready;
-      if (!ready) console.warn('[Mega Swampert] Atlas Hoja 1: dimensiones inesperadas');
+      if (ready) status('Hoja 1 cargada ✓', true);
+      else {
+        status('Error: atlas ' + atlas.naturalWidth + '×' + atlas.naturalHeight, false);
+        console.error('[Mega Swampert] Dimensiones inesperadas', atlas.naturalWidth, atlas.naturalHeight, versionedURL);
+      }
     };
     atlas.onerror = () => {
       failed = true;
-      console.info('[Mega Swampert] Falta Hoja 1; usando sprites animados de respaldo');
+      status('Error al cargar Hoja 1 — comprobando HTTP', false);
+      console.error('[Mega Swampert] Falló carga de atlas', versionedURL);
+      fetch(versionedURL, {cache:'no-store'}).then(r => {
+        status(r.ok ? 'Error al decodificar atlas (HTTP ' + r.status + ')' : 'Atlas HTTP ' + r.status, false);
+      }).catch(() => status('Atlas no disponible: conexión', false));
     };
-    atlas.src = PATH + '?v=hoja1-v2';
+    atlas.src = versionedURL;
   }
 
   class Animator {
@@ -41,7 +74,7 @@ G.MegaArt = (() => {
       this.once=false;
       this.done=false;
       this.hold=false;
-      this.backup = new previous.Animator(dex,scale,shiny);
+      this.backup = null;
       preload(shiny);
     }
     _start(anim,once=false) {
@@ -50,28 +83,30 @@ G.MegaArt = (() => {
       this.once=once;
       this.done=false;
       if(!once)this.hold=false;
-      this.backup._start(this.cur,once);
+      if (this.backup) this.backup._start(this.cur,once);
     }
     loop(anim,speed=1) {
       this.base=count[anim]?anim:'Idle';
       if(!this.once && this.cur!==this.base)this._start(this.base);
       if(!this.once)this.speed=speed;
-      this.backup.loop(anim,speed);
+      if (this.backup) this.backup.loop(anim,speed);
     }
     play(anim,opts={}) {
       this._start(anim,true);
       this.speed=opts.speed||1;
       this.hold=!!opts.hold;
-      this.backup.play(anim,opts);
+      if (this.backup) this.backup.play(anim,opts);
     }
     busy() { return this.once&&!this.done; }
     progress() {
       return this.done?1:Math.min(1,this.t/(duration[this.cur]||.5));
     }
     update(dt) {
-      this.backup.dir=this.dir;
-      this.backup.scale=this.scale;
-      this.backup.update(dt);
+      if (this.backup) {
+        this.backup.dir=this.dir;
+        this.backup.scale=this.scale;
+        this.backup.update(dt);
+      }
       if(!Number.isFinite(dt)||dt<=0||this.done)return;
       this.t += dt*this.speed;
       const d=duration[this.cur]||.5;
@@ -84,6 +119,13 @@ G.MegaArt = (() => {
     }
     draw(ctx,x,y,opts={}) {
       if(!ready || this.shiny) {
+        // GIF de respaldo: se crea solo cuando realmente se necesita.
+        if (!this.backup) {
+          this.backup = new previous.Animator(this.dex,this.scale,this.shiny);
+          this.backup.dir=this.dir;
+          this.backup.loop(this.base,this.speed);
+          if (this.once) this.backup.play(this.cur,{speed:this.speed,hold:this.hold});
+        }
         this.backup.dir=this.dir;
         this.backup.scale=this.scale;
         this.backup.draw(ctx,x,y,opts);
@@ -108,6 +150,6 @@ G.MegaArt = (() => {
     }
   }
   return {Animator,preload,source:'Hoja 1 aprobada por el usuario (8 direcciones, 7 animaciones)',
-    atlasReady:()=>ready,atlasFailed:()=>failed,
+    atlasReady:()=>ready,atlasFailed:()=>failed,atlasStatus:()=>diagnostic,atlasURL:()=>versionedURL,
     legacy:previous};
 })();
