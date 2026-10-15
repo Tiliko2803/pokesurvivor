@@ -10,7 +10,9 @@ G.CHANGELOG = [
     ['Vence a 3 jefes en una sola partida en solitario con Swampert y consigue la Swampertita. Equípala o quítala desde el menú y úsala durante toda la partida.',
      'Beat three bosses in a single solo run with Swampert to earn Swampertite. Equip or remove it in the menu, and use it throughout each run.'],
     ['Mega Swampert mejora estadísticas y tiene Nado Rápido bajo lluvia. Su sprite sigue pendiente: se usa un aura temporal.',
-     'Mega Swampert boosts stats and has Swift Swim in rain. Its sprite is pending and a temporary aura is used.']
+     'Mega Swampert boosts stats and has Swift Swim in rain. Its sprite is pending and a temporary aura is used.'],
+    ['Nueva habilidad pasiva Llamada de la Tormenta: al iniciar la run invoca lluvia durante 30 segundos, que puede regresar cada 120 segundos. La recarga es compartida en cooperativo y respeta las arenas especiales.',
+     'New Storm Call passive: summons rain for 30 seconds at the start of a run and can return every 120 seconds. Cooldown is shared in co-op, and special arenas keep their weather.']
   ] },
   { d: '2026-10-14', title: ['Regalo de 10 Tickets ×10', 'Gift of ten x10 tickets'], new: [
     ['Nuevo código 10X10: consigue 10 Tickets x10, equivalentes a 100 tiradas de gacha. Cada cuenta puede usarlo una sola vez sin perder los demás códigos.',

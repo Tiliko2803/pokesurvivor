@@ -1,6 +1,23 @@
 /* Mega Swampert: piedra permanente, equipo opcional, misión en solitario. */
 G.Mega=(()=>{
  const ID='swampertite', DEX=260, GOAL=3;
+ // Recarga compartida por todo el equipo para evitar lluvias encadenadas.
+ const RAIN_DURATION=30, RAIN_COOLDOWN=120;
+ let nextRainAt=0;
+ const resetRain=()=>{nextRainAt=0;};
+ function tickRain(time,players){
+  if(!Number.isFinite(time)||!Array.isArray(players))return false;
+  if(G.Coop.active&&!G.Coop.isHost)return false; // sólo el anfitrión decide el clima
+  if(G.Rift.inArena||G.Judgment.active)return false; // no sobreescribir climas especiales
+  if(time<nextRainAt)return false;
+  if(!players.some(p=>p&&p.mega===ID&&!p.dead))return false;
+  const climate=G.Weather.current;
+  if(climate&&climate.kind==='rain')return false; // no gastar la recarga si ya llueve
+  G.Weather.force('rain',RAIN_DURATION);
+  if(G.Coop.active&&G.Coop.isHost)G.Coop.broadcast(['wx','rain',RAIN_DURATION]);
+  nextRainAt=time+RAIN_COOLDOWN;
+  return true;
+ }
  const DEF={id:ID,dex:DEX,name:'Swampertita',form:'Mega Swampert'};
  const count=n=>Number.isFinite(+n)?Math.max(0,Math.min(GOAL,Math.floor(+n))):0;
  const has=s=>!!(s&&s.megaStones&&Number.isSafeInteger(+s.megaStones[ID])&&+s.megaStones[ID]>0);
@@ -38,5 +55,5 @@ G.Mega=(()=>{
   pl.mega=on?ID:null;
   pl.mon=on?{...G.DEX_BY[DEX],name:DEF.form,megaStone:ID}:G.DEX_BY[DEX];
  }
- return {DEF,NEED_BOSSES:GOAL,sanitize,has,equipped,equip,form,finishRun,applyRemote};
+ return {DEF,NEED_BOSSES:GOAL,RAIN_DURATION,RAIN_COOLDOWN,sanitize,has,equipped,equip,form,finishRun,applyRemote,resetRain,tickRain};
 })();
