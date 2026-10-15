@@ -25,7 +25,7 @@ G.MegaArt = (() => {
       failed = true;
       console.info('[Mega Swampert] Falta Hoja 1; usando sprites animados de respaldo');
     };
-    atlas.src = PATH + '?v=hoja1-v1';
+    atlas.src = PATH + '?v=hoja1-v2';
   }
 
   class Animator {
