@@ -138,7 +138,8 @@ G.MegaArt = (() => {
       const n=count[a]||3;
       const frame=this.done&&this.hold?n-1:Math.min(n-1,Math.floor((Math.min(this.t/d,.999999))*n));
       const dir=Math.max(0,Math.min(7,this.dir|0));
-      const k=1.1*this.scale;
+      // 20 % más grande, conservando el anclaje de los pies.
+      const k=1.32*this.scale;
       const alpha=opts.alpha==null?1:opts.alpha;
       if(alpha<=0)return;
       ctx.save();
