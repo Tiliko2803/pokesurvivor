@@ -210,6 +210,17 @@ G.DB = (() => {
         r.coins = Math.max(r.coins || 0, awarded.coins || 0);
       }
     }
+    // El premio de tickets se marca una sola vez al fusionar dispositivos.
+    // No se vuelve a sumar el bono en las fusiones sucesivas.
+    if ((a.gifts || {}).tickets10x10 === '10X10' ||
+        (b.gifts || {}).tickets10x10 === '10X10') {
+      r.gifts.tickets10x10 = '10X10';
+      if ((newer.gifts || {}).tickets10x10 !== '10X10') {
+        const awarded = (a.gifts || {}).tickets10x10 === '10X10' ? a : b;
+        r.tickets = r.tickets || {};
+        r.tickets.t10 = Math.max(r.tickets.t10 || 0, (awarded.tickets || {}).t10 || 0);
+      }
+    }
     // Una importación autorizada no puede perder su sello en futuras fusiones.
     r.migrationImported = !!(a.migrationImported || b.migrationImported);
     // Misiones del mismo día/semana: el mayor progreso y lo ya recogido.
@@ -730,7 +741,7 @@ G.DB = (() => {
   }
 
   /**
-   * Códigos promocionales de cinco caracteres (MAO25 y 20KPS).
+   * Códigos promocionales de cinco caracteres (MAO25, 20KPS y 10X10).
    * Cada código es reutilizable entre jugadores, pero sólo una vez por cuenta.
    * La entrega en nube se confirma mediante una transacción de Firestore y sus
    * reglas deben autorizar únicamente el premio exacto.
@@ -739,7 +750,8 @@ G.DB = (() => {
     const code = G.GiftCodes.normalize(rawCode);
     const maomao = G.GiftCodes.isMaomao(code);
     const coins = G.GiftCodes.isCoins(code);
-    if (!maomao && !coins) throw new Error('Código de regalo inválido.');
+    const tickets = G.GiftCodes.isTickets(code);
+    if (!maomao && !coins && !tickets) throw new Error('Código de regalo inválido.');
     if (!save || guest || !key)
       throw new Error('Inicia sesión en tu cuenta para canjear regalos.');
     if (G.Game.state !== 'ui')
@@ -747,9 +759,12 @@ G.DB = (() => {
 
     const alreadyClaimed = s => maomao
       ? !!((s.owned || {})[G.GiftCodes.MAOMAO_DEX] || (s.gifts || {}).maomao)
-      : (s.gifts || {}).coins20k === G.GiftCodes.COINS_CODE;
+      : coins ? (s.gifts || {}).coins20k === G.GiftCodes.COINS_CODE
+      : (s.gifts || {}).tickets10x10 === G.GiftCodes.TICKETS_CODE;
     const result = (already, local) =>
-      ({ ok: true, already, local, reward: maomao ? 'maomao' : 'coins', amount: coins ? G.GiftCodes.COINS_AMOUNT : 0 });
+      ({ ok: true, already, local,
+         reward: maomao ? 'maomao' : coins ? 'coins' : 'tickets10',
+         amount: coins ? G.GiftCodes.COINS_AMOUNT : tickets ? G.GiftCodes.TICKETS_AMOUNT : 0 });
 
     if (alreadyClaimed(save)) return result(true, mode === 'local');
 
@@ -759,9 +774,13 @@ G.DB = (() => {
         s.owned = s.owned || {};
         s.owned[G.GiftCodes.MAOMAO_DEX] = { at: Date.now(), from: 'gift' };
         s.gifts.maomao = code;
-      } else {
+      } else if (coins) {
         s.coins = (s.coins || 0) + G.GiftCodes.COINS_AMOUNT;
         s.gifts.coins20k = code;
+      } else {
+        s.tickets = s.tickets || { t1: 0, t10: 0 };
+        s.tickets.t10 = (s.tickets.t10 || 0) + G.GiftCodes.TICKETS_AMOUNT;
+        s.gifts.tickets10x10 = code;
       }
       s.updated = Date.now();
       return s;
@@ -786,8 +805,8 @@ G.DB = (() => {
       const ref = docRef();
       const snap = await tx.get(ref);
       if (!snap.exists) throw new Error('Tu partida aún no está guardada en Firebase.');
-      // Cambiar sólo owned[10001]/gifts.maomao o coins/gifts.coins20k
-      // según el código. Firestore valida el valor exacto y las demás claves.
+      // Sólo se altera el premio del código canjeado y la marca correspondiente.
+      // Firestore valida el valor exacto y que ningún otro campo cambie.
       const remote = plain(snap.data().save);
       if (alreadyClaimed(remote)) {
         redeemed = remote; already = true;
