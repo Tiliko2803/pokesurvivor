@@ -54,6 +54,7 @@ G.Mega=(()=>{
   if(!pl||pl.dex!==DEX||!!pl.mega===!!on)return;
   pl.mega=on?ID:null;
   pl.mon=on?{...G.DEX_BY[DEX],name:DEF.form,megaStone:ID}:G.DEX_BY[DEX];
+  pl.anim=on?new G.MegaArt.Animator(DEX,1,pl.shiny):new G.Sprites.Animator(DEX,1,pl.shiny);
  }
  return {DEF,NEED_BOSSES:GOAL,RAIN_DURATION,RAIN_COOLDOWN,sanitize,has,equipped,equip,form,finishRun,applyRemote,resetRain,tickRain};
 })();

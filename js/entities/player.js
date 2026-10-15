@@ -13,10 +13,10 @@ G.Player = class Player {
     this.mega = mon.megaStone || null;
     this.dex = mon.dex;
     this.shiny = shiny && G.Sprites.hasShiny(mon.dex);
-    this.anim = new G.Sprites.Animator(mon.dex, 1, this.shiny);
+    this.anim = this.mega === 'swampertite' ? new G.MegaArt.Animator(mon.dex, 1, this.shiny) : new G.Sprites.Animator(mon.dex, 1, this.shiny);
     this.x = 0; this.y = 0;
     this.r = G.Sprites.bodyRadius(mon.dex);
-    this.bodyH = G.Sprites.bodyHeight(mon.dex);
+    this.bodyH = this.mega ? Math.max(100, G.Sprites.bodyHeight(mon.dex)) : G.Sprites.bodyHeight(mon.dex);
 
     this.atkMul = perks.atkMul || 1;
     this.spdMul = perks.spdMul || 1;
@@ -449,22 +449,6 @@ G.Player = class Player {
       ctx.restore();
     }
     G.Sprites.drawShadow(ctx, this.dex, this.x, this.y);
-    // Aura provisional hasta integrar hojas animadas de Mega Swampert.
-    if(this.mega&&!this.dead){
-      ctx.save();ctx.strokeStyle='#63dfff';ctx.lineWidth=3;
-      ctx.globalAlpha=.7+.12*Math.sin(performance.now()/220);
-      ctx.beginPath();ctx.ellipse(this.x,this.y,this.r*1.85,this.r*.75,0,0,6.2832);ctx.stroke();
-      ctx.restore();
-    }
-    // Poder de altar: aro de su color latiendo bajo los pies.
-    if (this.power && !this.dead) {
-      ctx.save();
-      ctx.globalAlpha = 0.35 + Math.sin(performance.now() / 120) * 0.15;
-      ctx.strokeStyle = this.power.def.color; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.ellipse(this.x, this.y, this.r * 2.1, this.r * 0.85, 0, 0, 6.2832); ctx.stroke();
-      ctx.restore();
-    }
-
     const alpha = this.invuln > 0 && !this.dead ? (Math.floor(this.invuln * 18) % 2 ? 0.45 : 1) : 1;
     this.anim.draw(ctx, this.x, this.y, { flash: this.flash > 0, softFlash: true, alpha, color: '#ffcb3d' });
 

@@ -65,7 +65,7 @@ G.MenuUI = (() => {
     const shiny = !!s.partnerShiny && G.DB.ownsShiny(mon.dex);
     G.UI.chrome(true);
     G.UI.show('scr-menu');
-    G.UI.sprite($('menu-partner'), mon.dex, { lively: true, scale: 4, hero: true, shiny });
+    G.UI.sprite($('menu-partner'), mon.dex, { lively: true, scale: 4, hero: true, shiny, mega: G.Mega.equipped(s,mon.dex) });
     $('menu-partner').style.setProperty('--stage-c', shiny ? '#9ae6ff' : G.U.TYPE_COLOR[mon.types[0]]);
     $('menu-partner').classList.toggle('shiny', shiny);
     $('menu-partner-name').innerHTML = (G.Mega.equipped(s,mon.dex)?'Mega ':'')+mon.name+(shiny?' '+G.Icons.html('shiny',24):'');
@@ -92,7 +92,7 @@ G.MenuUI = (() => {
       const unlocked=G.Mega.has(s),active=G.Mega.equipped(s,260);
       const best=Math.min(3,(s.megaProgress||{}).swampertBosses||0);
       megaBox.innerHTML='<div class="mega-title">💎 Swampertita</div>'+
-        (unlocked?'<div class="mega-help">Piedra permanente. Sprite Mega pendiente; aura temporal.</div>':
+        (unlocked?'<div class="mega-help">Piedra permanente · sprites Mega auténticos (frente y espalda).</div>':
         '<div class="mega-help">Misión: vence 3 jefes en una partida en solitario con Swampert. Mejor: '+best+'/3</div>')+
         '<button class="btn small '+(active?'gold':'')+'" type="button" '+(!unlocked?'disabled':'')+'>'+
         (!unlocked?'🔒 Por desbloquear':active?'Mega equipada · Quitar':'Equipar Swampertita')+'</button>';
