@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-14', title: ['Regalo de 20,000 Pokémonedas', '20,000 Pokécoins gift'], new: [
+    ['Nuevo código 20KPS: regala 20,000 Pokémonedas por cuenta. Es reutilizable entre jugadores, pero cada cuenta lo canjea una sola vez y puede seguir canjeando MAO25.',
+     'New 20KPS code: grants 20,000 Pokécoins per account. Multiple players can use it, but each account can claim it once and can still redeem MAO25.']
+  ] },
   { d: '2026-10-14', title: ['Botones móviles a tu gusto', 'Customize mobile controls'], new: [
     ['En Ajustes > Controles > Colocar puedes arrastrar la barra de ataques con su objeto y el botón de pausa; también puedes elegir un joystick fijo o flotante y moverlo.',
      'In Settings > Controls > Place, drag your attack bar with the item and pause button; choose a fixed or floating joystick and position it.'],
