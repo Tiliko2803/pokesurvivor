@@ -19,13 +19,22 @@ G.GiftsUI = (() => {
       busy = true; $('gift-redeem').disabled = true; status.textContent = 'Verificando el regalo…';
       try {
         const result = await G.DB.redeemGift(code);
-        if (result.already) {
+        if (result.reward === 'coins') {
+          if (result.already) {
+            status.textContent = 'Ya canjeaste este regalo de 20,000 Pokémonedas en tu cuenta.';
+          } else {
+            status.textContent = '¡20,000 Pokémonedas añadidas a tu cuenta!';
+            G.Audio.sfx('shinyGet');
+            G.UI.toast('¡Recibiste 20,000 Pokémonedas!', 4500);
+          }
+        } else if (result.already) {
           status.textContent = '¡Ya tienes a Mao Mao en tu colección!';
         } else {
           status.textContent = '¡Mao Mao se ha unido a tu colección! Puedes elegirla como compañera en Pokémon.';
           G.Audio.sfx('shinyGet');
           G.UI.toast('¡Recibiste a Mao Mao ★5!', 4500);
         }
+        G.UI.refreshCoins();
         $('gift-code').value = '';
         showReward();
       } catch (err) {
@@ -34,7 +43,7 @@ G.GiftsUI = (() => {
           : 'No se pudo canjear: ' + (err && err.message || 'Error desconocido');
       } finally {
         busy = false;
-        $('gift-redeem').disabled = !!(G.DB.save && G.DB.save.owned[G.GiftCodes.MAOMAO_DEX]);
+        $('gift-redeem').disabled = false;
       }
     };
   }
@@ -42,9 +51,10 @@ G.GiftsUI = (() => {
   function showReward() {
     const owned = !!(G.DB.save && G.DB.save.owned[G.GiftCodes.MAOMAO_DEX]);
     $('gift-owned').classList.toggle('hidden', !owned);
-    $('gift-redeem').textContent = owned ? 'Ya conseguido' : 'Canjear regalo';
-    $('gift-redeem').disabled = owned;
-    $('gift-code').disabled = owned;
+    // El usuario puede seguir canjeando otros códigos aunque ya tenga a Mao Mao.
+    $('gift-redeem').textContent = 'Canjear regalo';
+    $('gift-redeem').disabled = false;
+    $('gift-code').disabled = false;
     if (owned) {
       $('gift-stage').classList.remove('hidden');
       G.UI.sprite($('gift-stage'), G.GiftCodes.MAOMAO_DEX, { lively: true, scale: 3, hero: true });
