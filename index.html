@@ -11,7 +11,7 @@
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0a1430">
 <meta name="color-scheme" content="dark">
-<meta name="ps-version" content="gh07controls">
+<meta name="ps-version" content="gh08coins">
 <!-- Compartir en redes (WhatsApp, Discord, Twitter/X...) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PokéSurvivor">
@@ -162,6 +162,22 @@
   </div>
 </section>
 
+<!-- ====== Código de regalo ====== -->
+<section id="scr-gifts" class="scr dim hidden">
+  <div class="box settings" id="gift-panel">
+    <div class="row between"><h2>Código de regalo</h2><button class="btn small ghost" id="gift-close" type="button">Cerrar</button></div>
+    <p class="sub">Canjea Pokémon o Pokémonedas. Un código sirve para varias cuentas, pero cada cuenta sólo recibe cada premio una vez.</p>
+    <div class="center"><canvas id="gift-stage" class="stage hidden" width="200" height="155"></canvas></div>
+    <p id="gift-owned" class="gold center hidden">★ Mao Mao · Veneno / Planta · ¡Conseguida!</p>
+    <form id="gift-form" autocomplete="off">
+      <label for="gift-code">Código de 5 caracteres</label>
+      <input id="gift-code" class="field" type="text" maxlength="5" minlength="5" placeholder="ABCDE" autocapitalize="characters" spellcheck="false" inputmode="text" autocomplete="off" aria-label="Código de regalo" style="text-align:center;text-transform:uppercase;letter-spacing:0.25em" required>
+      <p class="note" id="gift-status" aria-live="polite"></p>
+      <button class="btn gold" id="gift-redeem" type="submit" style="width:100%">Canjear regalo</button>
+    </form>
+  </div>
+</section>
+
 <!-- ====== Menú principal ====== -->
 <section id="scr-menu" class="scr hidden">
   <div class="menu-left">
@@ -184,6 +200,7 @@
         <button class="menu-item" data-go="dex">Pokémon<small id="menu-dex-count">Tu colección</small></button>
         <button class="menu-item" data-go="upgrades">Mejoras<small>Haz más fuerte cada run</small></button>
         <button class="menu-item" data-go="gacha">Gacha<small>9 regiones · Pokémon y shinies</small></button>
+        <button class="menu-item" data-go="gifts">Código de regalo<small>Canjea un regalo especial de 5 caracteres</small></button>
         <button class="menu-item" data-go="goals">Misiones<small id="menu-goals-sub">Misiones, logros y perfil</small></button>
         <button class="menu-item" data-go="friends">Amigos<small id="menu-friends-sub">Juega en grupo, hasta 4</small></button>
         <button class="menu-item" data-go="rank">Ranking<small>Quién aguanta más</small></button>
@@ -586,11 +603,11 @@
 <script defer src="js/data/sprites-meta.js"></script>
 <script defer src="js/data/maomao-preview.js"></script>
 <script defer src="js/data/maomao-animation.js"></script>
-<script defer src="js/data/gift-codes.js"></script>
+<script defer src="js/data/gift-codes.js?v=coins-20261014"></script>
 <!-- núcleo -->
 <script defer src="js/core/firebase-config.js"></script>
 <script defer src="js/systems/challenges.js"></script>
-<script defer src="js/core/db.js"></script>
+<script defer src="js/core/db.js?v=coins-20261014"></script>
 <script defer src="js/core/audio.js"></script>
 <script defer src="js/core/input.js"></script>
 <script defer src="js/core/touch.js?v=controls-20261014"></script>
@@ -606,7 +623,7 @@
 <script defer src="js/data/missions.js"></script>
 <script defer src="js/data/achievements.js"></script>
 <script defer src="js/data/funding.js"></script>
-<script defer src="js/data/changelog.js"></script>
+<script defer src="js/data/changelog.js?v=coins-20261014"></script>
 <!-- mundo -->
 <script defer src="js/world/tiles.js"></script>
 <script defer src="js/world/world.js"></script>
@@ -643,7 +660,7 @@
 <script defer src="js/ui/login.js"></script>
 <script defer src="js/ui/test.js"></script>
 <script defer src="js/ui/menu.js"></script>
-<script defer src="js/ui/gifts-ui.js"></script>
+<script defer src="js/ui/gifts-ui.js?v=coins-20261014"></script>
 <script defer src="js/ui/slots.js"></script>
 <script defer src="js/ui/gacha-ui.js"></script>
 <script defer src="js/ui/run-ui.js"></script>
