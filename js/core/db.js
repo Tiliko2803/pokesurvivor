@@ -200,13 +200,13 @@ G.DB = (() => {
         (b.gifts || {}).maomao === 'MAO25') r.gifts.maomao = 'MAO25';
     // Marcar siempre el bono de monedas una sola vez, incluso si el otro
     // dispositivo tenía una partida anterior aún sin sincronizar.
-    if ((a.gifts || {}).coins20k === G.GiftCodes.COINS_CODE ||
-        (b.gifts || {}).coins20k === G.GiftCodes.COINS_CODE) {
-      r.gifts.coins20k = G.GiftCodes.COINS_CODE;
+    if ((a.gifts || {}).coins20k === '20KPS' ||
+        (b.gifts || {}).coins20k === '20KPS') {
+      r.gifts.coins20k = '20KPS';
       // La copia sin el bono no debe tapar las monedas concedidas, pero
       // tampoco se vuelve a sumar 20.000 durante una fusión.
-      if ((newer.gifts || {}).coins20k !== G.GiftCodes.COINS_CODE) {
-        const awarded = (a.gifts || {}).coins20k === G.GiftCodes.COINS_CODE ? a : b;
+      if ((newer.gifts || {}).coins20k !== '20KPS') {
+        const awarded = (a.gifts || {}).coins20k === '20KPS' ? a : b;
         r.coins = Math.max(r.coins || 0, awarded.coins || 0);
       }
     }
