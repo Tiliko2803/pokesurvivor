@@ -138,3 +138,110 @@ test('La pantalla sigue disponible después de conseguir a Mao Mao',()=>{
  assert.match(ui,/gift-redeem'\)\.disabled = false/);
  assert.match(ui,/G\.UI\.refreshCoins\(\)/);
 });
+
+test('10X10 entrega exactamente diez tickets x10 en modo local una sola vez', async()=>{
+ const f=fixture('local');
+ assert.equal(f.G.GiftCodes.isTickets(f.G.GiftCodes.normalize('10x10')),true);
+ assert.equal(f.G.GiftCodes.TICKETS_AMOUNT,10);
+ const first=await f.G.DB.redeemGift('10x10');
+ assert.equal(first.reward,'tickets10');
+ assert.equal(first.amount,10);
+ assert.equal(first.already,false);
+ assert.equal(f.saved.tickets.t10,10);
+ assert.equal(f.saved.tickets.t1,0);
+ assert.equal(f.saved.gifts.tickets10x10,'10X10');
+ assert.ok(f.cache.has('ps.save.user1'));
+ const second=await f.G.DB.redeemGift('10X10');
+ assert.equal(second.already,true);
+ assert.equal(f.saved.tickets.t10,10);
+});
+
+test('10X10 en Firebase sólo cambia tickets.t10 y la marca de canje',async()=>{
+ const f=fixture();
+ const before=JSON.parse(JSON.stringify(f.doc.save));
+ const r=await f.G.DB.redeemGift('10X10');
+ assert.equal(r.reward,'tickets10');
+ assert.equal(r.amount,10);
+ assert.equal(f.doc.save.tickets.t10,10);
+ assert.equal(f.doc.save.tickets.t1,before.tickets.t1);
+ assert.equal(f.doc.save.coins,before.coins);
+ assert.equal(f.doc.save.partner,before.partner);
+ assert.equal(f.doc.save.gifts.tickets10x10,'10X10');
+ assert.equal(f.writes,1);
+ assert.equal((await f.G.DB.redeemGift('10X10')).already,true);
+ assert.equal(f.writes,1);
+ assert.equal(f.doc.save.tickets.t10,10);
+});
+
+test('MAO25, 20KPS y 10X10 pueden canjearse en la misma cuenta',async()=>{
+ const f=fixture();
+ await f.G.DB.redeemGift('10X10');
+ await f.G.DB.redeemGift('MAO25');
+ await f.G.DB.redeemGift('20KPS');
+ assert.equal(f.writes,3);
+ assert.equal(f.doc.save.gifts.tickets10x10,'10X10');
+ assert.equal(f.doc.save.gifts.maomao,'MAO25');
+ assert.equal(f.doc.save.gifts.coins20k,'20KPS');
+ assert.equal(f.doc.save.tickets.t10,10);
+ assert.equal(f.doc.save.coins,20500);
+ assert.ok(f.doc.save.owned[10001]);
+});
+
+test('10X10 puede usarlo cada jugador una sola vez',async()=>{
+ const a=fixture(),b=fixture();
+ await a.G.DB.redeemGift('10X10');await b.G.DB.redeemGift('10X10');
+ assert.equal(a.writes,1);assert.equal(b.writes,1);
+ assert.equal(a.doc.save.tickets.t10,10);
+ assert.equal(b.doc.save.tickets.t10,10);
+});
+
+test('Si Firestore rechaza el ticket, ni los tickets ni los sellos locales cambian',async()=>{
+ const f=fixture('cloud',true);
+ await assert.rejects(f.G.DB.redeemGift('10X10'),/permission-denied/);
+ assert.equal(f.writes,0);
+ assert.equal(f.saved.tickets.t10,0);
+ assert.equal(f.saved.gifts.tickets10x10,undefined);
+});
+
+test('La fusión de guardados protege el bono de tickets sin multiplicarlo',async()=>{
+ const f=fixture('local');
+ await f.G.DB.redeemGift('10X10');
+ const awarded=JSON.parse(JSON.stringify(f.saved));
+ const newer={...awarded,updated:awarded.updated+1000,tickets:{t1:0,t10:4},gifts:{}};
+ const m=f.G.DB.merge(newer,awarded);
+ assert.equal(m.gifts.tickets10x10,'10X10');
+ assert.equal(m.tickets.t10,10);
+ const twice=f.G.DB.merge(m,awarded);
+ assert.equal(twice.tickets.t10,10);
+ assert.equal(twice.gifts.tickets10x10,'10X10');
+});
+
+test('Código 10X10 inválido en partida, no escribe en la nube',async()=>{
+ const f=fixture();
+ f.G.Game.state='playing';
+ await assert.rejects(f.G.DB.redeemGift('10X10'),/Sal de la partida/);
+ await assert.rejects(f.G.DB.redeemGift('T10XX'),/inválido/);
+ assert.equal(f.writes,0);
+});
+
+test('Las reglas sólo permiten diez tickets exactos con sello inmutable',()=>{
+ assert.match(rules,/function authorizedTicketsGift\(\)/);
+ assert.match(rules,/authorizedGift\(\) \|\| authorizedCoinsGift\(\) \|\| authorizedTicketsGift\(\)/);
+ assert.match(rules,/old\.get\('gifts', \{\}\)\.get\('tickets10x10', null\) == null/);
+ assert.match(rules,/next\.get\('gifts', \{\}\)\.get\('tickets10x10', ''\) == '10X10'/);
+ assert.match(rules,/next\.get\('tickets', \{\}\)\.get\('t10', 0\) == old\.get\('tickets', \{\}\)\.get\('t10', 0\) \+ 10/);
+ assert.match(rules,/next\.diff\(old\)\.affectedKeys\(\)\.hasOnly\(\['tickets', 'gifts', 'updated'\]\)/);
+ assert.match(rules,/next\.get\('tickets', \{\}\)\.diff\(old\.get\('tickets', \{\}\)\)\.affectedKeys\(\)\.hasOnly\(\['t10'\]\)/);
+ assert.match(rules,/!\('tickets10x10' in request\.resource\.data\.save\.get\('gifts', \{\}\)\)/);
+ assert.match(rules,/next\.get\('gifts', \{\}\)\.get\('tickets10x10', null\) == old\.get\('gifts', \{\}\)\.get\('tickets10x10', null\)/);
+});
+
+test('La pantalla anuncia diez tickets x10 sin bloquear los otros códigos',()=>{
+ const ui=read('js/ui/gifts-ui.js');
+ assert.match(ui,/result\.reward === 'tickets10'/);
+ assert.match(ui,/Recibiste 10 Tickets/);
+ assert.match(ui,/G\.UI\.refreshCoins\(\)/);
+ const html=read('index.html');
+ assert.match(html,/id="gift-form"/);
+ assert.match(html,/data-go="gifts"/);
+});
