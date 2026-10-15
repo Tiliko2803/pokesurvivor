@@ -65,10 +65,10 @@ G.MenuUI = (() => {
     const shiny = !!s.partnerShiny && G.DB.ownsShiny(mon.dex);
     G.UI.chrome(true);
     G.UI.show('scr-menu');
-    G.UI.sprite($('menu-partner'), mon.dex, { lively: true, scale: 4, hero: true, shiny });
+    G.UI.sprite($('menu-partner'), mon.dex, { lively: true, scale: 4, hero: true, shiny, mega: G.Mega.equipped(s,mon.dex) });
     $('menu-partner').style.setProperty('--stage-c', shiny ? '#9ae6ff' : G.U.TYPE_COLOR[mon.types[0]]);
     $('menu-partner').classList.toggle('shiny', shiny);
-    $('menu-partner-name').innerHTML = mon.name + (shiny ? ' ' + G.Icons.html('shiny', 24) : '');
+    $('menu-partner-name').innerHTML = (G.Mega.equipped(s,mon.dex)?'Mega ':'')+mon.name+(shiny?' '+G.Icons.html('shiny',24):'');
     $('menu-partner-info').innerHTML = G.UI.typeChips(mon.types) + ' ' + G.UI.stars(mon.rarity);
     // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
     const seg = $('menu-shiny');
@@ -86,6 +86,21 @@ G.MenuUI = (() => {
     });
 
     const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
+    const megaBox=$('menu-mega');
+    megaBox.classList.toggle('hidden',mon.dex!==260);
+    if(mon.dex===260){
+      const unlocked=G.Mega.has(s),active=G.Mega.equipped(s,260);
+      const best=Math.min(3,(s.megaProgress||{}).swampertBosses||0);
+      megaBox.innerHTML='<div class="mega-title">'+G.Icons.html('mega',22)+' Swampertita</div>'+
+        (unlocked?'<div class="mega-help">Piedra permanente · Mega Swampert comienza con Terratemblor Nv. 2.</div>':
+        '<div class="mega-help">Misión: vence 3 jefes en una partida en solitario con Swampert. Mejor: '+best+'/3</div>')+
+        '<button class="btn small '+(active?'gold':'')+'" type="button" '+(!unlocked?'disabled':'')+'>'+
+        (!unlocked?'🔒 Por desbloquear':active?'Mega equipada · Quitar':'Equipar Swampertita')+'</button>';
+      megaBox.querySelector('button').onclick=()=>{
+        if(!G.Mega.equip(s,260,!active))return;
+        G.DB.commit();G.Audio.sfx('confirm');open();
+      };
+    }
     const shinies = Object.keys(s.shiny || {}).length;
     $('menu-dex-count').textContent = `${owned} / ${G.DEX.length}` + (shinies ? ` · ${shinies} shiny` : '');
 

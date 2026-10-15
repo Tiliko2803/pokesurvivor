@@ -927,3 +927,6 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
  #scr-menu .menu-left .logo .t1{font-size:27px}
  #scr-menu .mega-menu{max-width:260px}
 }
+
+/* Un mismo símbolo de Megapiedra para las megas, sin iconos externos. */
+.mega-gem-icon{display:inline-block;vertical-align:-4px;max-width:none;image-rendering:auto}

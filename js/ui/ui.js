@@ -201,7 +201,7 @@ G.UI = (() => {
    */
   function sprite(cv, dex, opts = {}) {
     for (const s of live) if (s.cv === cv) live.delete(s);
-    const a = new G.Sprites.Animator(dex, 1, !!opts.shiny);
+    const a = opts.mega && dex === 260 ? new G.MegaArt.Animator(dex,1,!!opts.shiny) : new G.Sprites.Animator(dex, 1, !!opts.shiny);
     a.dir = opts.dir || 0;
     a.loop(opts.anim || 'Idle');
     const s = { cv, ctx: cv.getContext('2d'), a, dex, opts, t: Math.random() * 3, spinT: 0, sparkT: 0 };
@@ -236,7 +236,7 @@ G.UI = (() => {
       const ay = m ? m.ay : 24;
       let k = s.opts.scale || 2;
       if (s.opts.hero) k = Math.max(1, Math.min(k, Math.floor(cv.height * 0.8 / ay)));
-      s.a.scale = k / G.Sprites.PX;
+      s.a.scale = s.opts.mega ? Math.min(1.25, cv.height / 150) : k / G.Sprites.PX;
       // Si no cabe de pie, se centra el cuerpo en el recuadro.
       const big = ay * k > cv.height * 0.8;
       const fx = cv.width / 2, fy = big ? cv.height / 2 + ay * k * 0.45 : cv.height * 0.88;

@@ -248,6 +248,12 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 8px 0 4px;
 .partner-card { text-align: center; margin-top: 10px; }
 .partner-card .nm { font-size: 24px; font-weight: 700; text-shadow: 3px 3px 0 var(--shadow); }
 .partner-card .lv { color: var(--muted); font-size: 14px; text-shadow: 2px 2px 0 var(--shadow); }
+.mega-menu{margin:8px auto 0;padding:6px 10px;max-width:295px;background:rgba(24,58,85,.7);border:1px solid rgba(94,215,255,.45);border-radius:9px;font-size:12px;text-align:center}
+.mega-menu.hidden{display:none}.mega-title{color:#a9ebff;font-weight:800;font-size:14px}
+.mega-help{color:#bed5e4;margin:3px 0 6px;line-height:1.25}
+.mega-menu button{max-width:100%;font-size:12px;padding:5px 10px}
+.mega-gem-icon{display:inline-block;vertical-align:-4px;max-width:none;image-rendering:auto}
+
 .menu-right {
   width: min(380px, 100%); display: flex; flex-direction: column;
   /* Arriba deja sitio a la barra superior; si no cabe todo, se desplaza
@@ -896,4 +902,29 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
   #scr-gifts .sub { margin: 5px 0; }
   #scr-gifts #gift-form { display: grid; gap: 6px; }
   #scr-gifts #gift-status { margin: 2px 0; }
+}
+
+/* Panel de megapiedras accesible en móvil horizontal, sin tapar los botones. */
+.mega-menu{width:min(94%,320px);margin:6px auto 0;box-sizing:border-box}
+.mega-menu button{display:block;width:100%;max-width:100%;white-space:normal;line-height:1.18;min-height:34px;box-sizing:border-box}
+@media (max-height: 740px) and (min-width: 761px) {
+ #scr-menu .menu-left{height:100dvh;min-height:0;box-sizing:border-box;
+   overflow-y:auto;overflow-x:hidden;justify-content:flex-start;
+   padding:65px 10px 12px;overscroll-behavior:contain}
+ #scr-menu .menu-left .logo .t1{font-size:clamp(25px,3.7vw,43px)}
+ #scr-menu .menu-left .logo .t2{font-size:clamp(9px,1.2vw,13px)}
+ #scr-menu .partner-card{margin-top:3px;width:100%}
+ #menu-partner{height:clamp(95px,23dvh,155px);width:auto;max-width:100%}
+ #scr-menu .partner-card .nm{font-size:clamp(17px,2.2vw,22px)}
+ #scr-menu .partner-card .lv{font-size:12px}
+ #scr-menu .mega-menu{padding:5px 9px;max-width:270px;margin-top:4px}
+ #scr-menu .mega-help{font-size:11px;line-height:1.13;margin:3px 0 5px}
+ #scr-menu .mega-title{font-size:13px}
+ #scr-menu .mega-menu button{font-size:12px;padding:6px 8px}
+}
+@media (max-height: 460px) and (orientation: landscape) {
+ #scr-menu .menu-left{padding-top:57px}
+ #menu-partner{height:clamp(88px,21dvh,120px)}
+ #scr-menu .menu-left .logo .t1{font-size:27px}
+ #scr-menu .mega-menu{max-width:260px}
 }

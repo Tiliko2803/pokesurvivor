@@ -304,6 +304,7 @@ G.Icons = (() => {
   }
 
   function url(name) {
+    if (name === 'mega') return 'assets/ui/mega-stone.svg';
     let u = urls.get(name);
     if (!u) {
       // Los de interfaz, directamente de su dibujo; los emblemas (tipos, movimientos), del canvas.
@@ -371,6 +372,7 @@ G.Icons = (() => {
 
   /** <img> pixelado para el DOM. */
   function html(name, size = 20, cls = '') {
+    if (name === 'mega') return `<img class="mega-gem-icon ${cls}" src="${url(name)}" width="${size}" height="${size}" alt="" draggable="false">`;
     const cv = canvas(name), w = snap(name, size), h = w * cv.height / cv.width;
     return `<img class="pix ${cls}" src="${url(name)}" width="${w}" height="${h}" alt="" draggable="false">`;
   }

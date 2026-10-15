@@ -114,7 +114,7 @@ G.Game = (() => {
     G.Challenges.begin(challengeId);
     holdBy = []; awayBy = null;
     const save = G.DB.save;
-    const mon = previewId ? G.MaomaoPreview.mon : G.DEX_BY[save.partner];
+    const mon = previewId ? G.MaomaoPreview.mon : G.Mega.form(G.DEX_BY[save.partner],save);
     const perks = G.Upgrades.perks(previewId ? {} : G.DB.upgradesOf(mon.dex));
 
     G.UI.hideAll();
@@ -129,6 +129,7 @@ G.Game = (() => {
     G.Judgment.reset();
     G.Events.reset();
     G.Weather.reset();
+    G.Mega.resetRain();
     G.Path.clear();
     G.Hazards.clear();
     G.World.reset(coop ? coop.seed : Math.floor(Math.random() * 1e6));
@@ -144,7 +145,14 @@ G.Game = (() => {
     // Atajos: movimientos con hueco fijo (save.pbind[dex] = [id del 1, id del 2, ...]),
     // antes de aprender nada: addMove ya los coloca.
     (save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
-    pl.addMove(G.startMoveOf(mon.dex));
+    // Solo Mega Swampert: reemplaza Pistola Agua por Terratemblor Nv. 2.
+    // Swampert normal y los demás compañeros conservan su movimiento inicial.
+    const megaStart = mon.dex === 260 && mon.megaStone === 'swampertite';
+    pl.addMove(megaStart ? 'bulldoze' : G.startMoveOf(mon.dex));
+    if (megaStart) {
+      const first = pl.moves.find(m => m.id === 'bulldoze');
+      if (first) G.Moves.levelUp(first); // Nv. 2: +30% radio (80 → 104).
+    }
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
     // Mejora "Repertorio": un segundo movimiento de ataque al azar.
@@ -332,6 +340,7 @@ G.Game = (() => {
     const judge = G.Judgment.summary();
     if (judge) G.Progress.event('judgeEnd', judge);
     G.Judgment.reset();
+    const megaUnlocked=G.Mega.finishRun(save,pl,{coop,challenge:!!challenge,clean:clean()});
     G.Progress.event('runEnd', { time: challenge ? challenge.time : time, challenge: !!challenge, level: pl.level, coins: pl.coins, types: pl.mon.types, group: coop });
     G.Progress.checkAch();
     // A la nube: un récord, enseguida; si no, al acabar la partida (como mucho cada 20 min).
@@ -347,7 +356,7 @@ G.Game = (() => {
 
     G.RunUI.showOver({
       dead, time: challenge ? challenge.time : time, challenge, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins, record, t1: pl.t1, t10: pl.t10, judge,
-      moves: pl.moves, caught,
+      moves: pl.moves, caught, megaUnlocked,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
                  (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '')
     }, () => { pl = null; G.Flow.afterRun(); });
@@ -672,6 +681,7 @@ G.Game = (() => {
     G.Judgment.update(dt, pl, time);
     G.Events.update(dt, all, time);
     G.Weather.update(dt, time, pl);
+    G.Mega.tickRain(time, all);
     G.FX.update(dt);
 
     G.Audio.music(G.Judgment.active ? G.Judgment.music : G.Rift.inArena ? 'rift' : G.EnemyMgr.bossAlive() ? 'boss' : G.BIOME_MUSIC[biome % G.BIOME_MUSIC.length]);

@@ -10,17 +10,18 @@ G.Player = class Player {
    */
   constructor(mon, perks = {}, shiny = false) {
     this.mon = mon;
+    this.mega = mon.megaStone || null;
     this.dex = mon.dex;
     this.shiny = shiny && G.Sprites.hasShiny(mon.dex);
-    this.anim = new G.Sprites.Animator(mon.dex, 1, this.shiny);
+    this.anim = this.mega === 'swampertite' ? new G.MegaArt.Animator(mon.dex, 1, this.shiny) : new G.Sprites.Animator(mon.dex, 1, this.shiny);
     this.x = 0; this.y = 0;
     this.r = G.Sprites.bodyRadius(mon.dex);
-    this.bodyH = G.Sprites.bodyHeight(mon.dex);
+    this.bodyH = this.mega ? Math.max(100, G.Sprites.bodyHeight(mon.dex)) : G.Sprites.bodyHeight(mon.dex);
 
     this.atkMul = perks.atkMul || 1;
     this.spdMul = perks.spdMul || 1;
     this.cdMul = perks.cdMul || 1;
-    this.dmgReduce = perks.dmgReduce || 0;
+    this.dmgReduce = (perks.dmgReduce || 0) + (this.mega ? 0.08 : 0);
     this.regenFlat = perks.regen || 0;
     this.magnet = 78 * (perks.magnetMul || 1);
     this.xpMul = perks.xpMul || 1;
@@ -91,7 +92,8 @@ G.Player = class Player {
     const s = this.baseSpd * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? 0.5 : 1);
     const w = G.Weather.speedFor(this.mon.types);
     const slow = this.inLiquid ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
-    return s * slow * w;
+    const swift = this.mega === 'swampertite' && G.Weather.current && G.Weather.current.kind === 'rain' ? 1.3 : 1;
+    return s * slow * w * swift;
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.buffs.def.n * this.buffs.def.amount); }
   get regen() { return this.regenFlat + this.buffs.regen.n * this.buffs.regen.amount; }

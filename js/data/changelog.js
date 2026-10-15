@@ -6,6 +6,15 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-15', title: ['Megaevolución: Mega Swampert', 'Mega Evolution: Mega Swampert'], new: [
+    ['Swampert puede conseguir la Swampertita al vencer tres jefes en una misma partida en solitario. La piedra es permanente y se equipa o quita desde el menú.',
+     'Swampert can earn Swampertite by defeating three bosses in a single solo run. The stone is permanent and can be equipped or removed from the menu.'],
+    ['Mega Swampert llega con sprites en ocho direcciones y una Megapiedra visual común que también se utilizará para futuras megas.',
+     'Mega Swampert arrives with eight-direction sprites and a shared Mega Stone icon for future Mega Evolutions.']
+  ], chg: [
+    ['Mega Swampert empieza cada partida con Terratemblor Nv. 2, convoca 30 segundos de lluvia con 120 segundos de recarga y conserva la forma mega durante toda la partida.',
+     'Mega Swampert starts each run with level 2 Bulldoze, summons 30 seconds of rain with a 120-second cooldown, and stays Mega-Evolved for the whole run.']
+  ] },
   { d: '2026-10-14', title: ['Regalo de 10 Tickets ×10', 'Gift of ten x10 tickets'], new: [
     ['Nuevo código 10X10: consigue 10 Tickets x10, equivalentes a 100 tiradas de gacha. Cada cuenta puede usarlo una sola vez sin perder los demás códigos.',
      'New 10X10 gift code: claim ten x10 tickets, worth 100 gacha pulls. Each account can redeem it once independently of other gift codes.']
