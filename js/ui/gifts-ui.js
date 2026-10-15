@@ -19,7 +19,15 @@ G.GiftsUI = (() => {
       busy = true; $('gift-redeem').disabled = true; status.textContent = 'Verificando el regalo…';
       try {
         const result = await G.DB.redeemGift(code);
-        if (result.reward === 'coins') {
+        if (result.reward === 'tickets10') {
+          if (result.already) {
+            status.textContent = 'Ya canjeaste estos 10 Tickets ×10 en tu cuenta.';
+          } else {
+            status.textContent = '¡Recibiste 10 Tickets ×10! Son 100 tiradas en total.';
+            G.Audio.sfx('shinyGet');
+            G.UI.toast('¡Recibiste 10 Tickets ×10!', 4500);
+          }
+        } else if (result.reward === 'coins') {
           if (result.already) {
             status.textContent = 'Ya canjeaste este regalo de 20,000 Pokémonedas en tu cuenta.';
           } else {
