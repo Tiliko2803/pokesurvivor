@@ -5,7 +5,7 @@
  */
 G.MegaArt = (() => {
   const previous = G.MegaArt;
-  const PATH = 'dev/assets/pokemon/260/mega/hoja1-atlas.webp';
+  const PATH = 'dev/assets/pokemon/260/mega/mega_swampert_hoja1_atlas.webp';
   const W = 120, H = 120, ROWS = 8, BAND = ROWS * H;
   const names = ['Idle','Walk','Attack','Shoot','Charge','Hurt','Faint'];
   const count = {Idle:3,Walk:4,Attack:3,Shoot:3,Charge:3,Hurt:2,Faint:3};
