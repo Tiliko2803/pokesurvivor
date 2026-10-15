@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-14', title: ['Regalo de 10 Tickets ×10', 'Gift of ten x10 tickets'], new: [
+    ['Nuevo código 10X10: consigue 10 Tickets x10, equivalentes a 100 tiradas de gacha. Cada cuenta puede usarlo una sola vez sin perder los demás códigos.',
+     'New 10X10 gift code: claim ten x10 tickets, worth 100 gacha pulls. Each account can redeem it once independently of other gift codes.']
+  ] },
   { d: '2026-10-14', title: ['Regalo de 20,000 Pokémonedas', '20,000 Pokécoins gift'], new: [
     ['Nuevo código 20KPS: regala 20,000 Pokémonedas por cuenta. Es reutilizable entre jugadores, pero cada cuenta lo canjea una sola vez y puede seguir canjeando MAO25.',
      'New 20KPS code: grants 20,000 Pokécoins per account. Multiple players can use it, but each account can claim it once and can still redeem MAO25.']
