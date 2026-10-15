@@ -1,20 +1,28 @@
-# Mega Swampert — sprites y atribución
+# Mega Swampert — sprites animados y procedencia
 
-Estos sprites reales de la forma Mega Swampert (ID de forma **10064**) proceden de
-[PokeAPI/sprites](https://github.com/PokeAPI/sprites):
+La versión de prueba utiliza **sprites de Mega Swampert animados**, y no
+imágenes estáticas ni recolores de Swampert normal.
 
-- `sprites/pokemon/10064.png` (frente)
-- `sprites/pokemon/back/10064.png` (espalda)
-- `sprites/pokemon/shiny/10064.png` (frente shiny)
-- `sprites/pokemon/back/shiny/10064.png` (espalda shiny)
+Fuente: [PokeAPI/sprites](https://github.com/PokeAPI/sprites);
+archivos originarios de las animaciones de Pokémon Showdown,
+específicamente la forma Mega Swampert (número interno 10064):
 
-Los Pokémon son propiedad de sus titulares. Integración exclusivamente en
-este fangame no comercial, con atribución de procedencia.
+- `sprites/pokemon/other/showdown/10064.gif` — frontal, 79 cuadros.
+- `sprites/pokemon/other/showdown/back/10064.gif` — trasera, 79 cuadros.
+- `sprites/pokemon/other/showdown/shiny/10064.gif` — frontal shiny, 79 cuadros.
+- `sprites/pokemon/other/showdown/back/shiny/10064.gif` — trasera shiny, 79 cuadros.
 
-**Límite visual:** no hay hoja completa para Mega Swampert en la ruta
-`SpriteCollab/sprite/0260/0001/`. No se suplanta con la variante normal
-`0260/0002`. Las 7 animaciones del juego utilizan esos sprites reales
-delantero/trasero, con interpolación programática. Las direcciones laterales
-y diagonales se aproximan por espejo, no son 8 perspectivas dibujadas.
+El programa descomprime los GIF localmente a 79 cuadros de Canvas
+por vista, después los reproduce durante las partidas. Las animaciones
+de caminar, atacar, proyectar, cargar, recibir daño y caer añaden
+desplazamientos a los cuadros reales, para distinguir las acciones.
 
-La forma Swampert normal conserva sus sprites PMD sin cambios.
+**Límite artístico:** SpriteCollab no tiene un spritesheet PMD
+específico para la Mega en `sprite/0260/0001/`. Las vistas laterales
+y diagonales se aproximan a partir de vistas frontal y trasera,
+por lo tanto todavía no existen ocho direcciones distintas dibujadas.
+
+Los personajes Pokémon y sus imágenes pertenecen a sus titulares.
+Uso como fan game no comercial con indicación de procedencia.
+
+Los sprites normales de Swampert y el juego principal permanecen intactos.
