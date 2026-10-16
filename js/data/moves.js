@@ -483,11 +483,12 @@
   /*
    * Un movimiento al NIVEL MÁXIMO evoluciona si en esa run has cogido alguna
    * vez la mejora de su condición (`needs`, un id de LevelUp.STATS). Sale una
-   * carta dorada. Los potenciadores (buff) no evolucionan.
+   * carta dorada. Sólo evolucionan los movimientos registrados en EVO.
    */
   const NEED_NAME = { hp: 'Vigor', atk: 'Potencia', spd: 'Carrera', cd: 'Reflejos', def: 'Coraza',
                       rgn: 'Síntesis', mag: 'Imán', xp: 'Aprendizaje' };
   const EVO = {
+    'swords-dance': ['Danza de Mil Espadas', 'atk'],
     'tackle': ['Derribo', 'hp'],             'quick-attack': ['Velocidad Extrema', 'spd'],
     'body-slam': ['Gigaimpacto', 'atk'],     'hyper-voice': ['Alboroto', 'cd'],
     'ember': ['Llamarada', 'atk'],           'flamethrower': ['Sofoco', 'cd'],
@@ -519,6 +520,13 @@
     'aerial-ace': ['Acróbata', 'spd'],       'flame-wheel': ['Envite Ígneo', 'spd'],
     'bubble-beam': ['Acua Cola', 'atk'],     'hex': ['Poltergeist', 'mag']
   };
+  // Evolución propia de Danza Espada; no habilita los demás potenciadores.
+  const EVO_BY_ID = {
+    'swords-dance': {
+      t: '8 acumulaciones de +30% de ataque (máximo +240%) durante 12 s',
+      m: { stacks: 1, amount: 0.30 / (0.13 * 1.40 * 1.40), dur: 12 / (7 * 1.50) }
+    }
+  };
   // Lo que gana al evolucionar, según cómo funcione.
   const EVO_MODS = {
     projectile: { t: '×1,8 daño, +2 proyectiles, +2 perforación y más grandes', m: { dmg: 1.8, count: 2, pierce: 2, size: 1.3, spread: 1.1 } },
@@ -540,17 +548,19 @@
   /** ¿Puede evolucionar ya? → { name, needs, needName, text, ready } o null */
   function evoInfo(m, statsTaken) {
     const e = EVO[m.id];
-    if (!e || m.evolved || m.lvl < m.def.maxLvl || !EVO_MODS[m.kind]) return null;
+    const mods = EVO_BY_ID[m.id] || EVO_MODS[m.kind];
+    if (!e || m.evolved || m.lvl < m.def.maxLvl || !mods) return null;
     const [name, needs] = e;
-    return { name, needs, needName: NEED_NAME[needs], text: EVO_MODS[m.kind].t,
+    return { name, needs, needName: NEED_NAME[needs], text: mods.t,
              ready: !!(statsTaken && statsTaken[needs]) };
   }
 
   /** Evoluciona una instancia (cambia nombre y potencia; sigue siendo del mismo tipo). */
   function evolve(m) {
     const e = EVO[m.id];
-    if (!e || m.evolved) return false;
-    applyMods(m, EVO_MODS[m.kind].m);
+    const mods = EVO_BY_ID[m.id] || EVO_MODS[m.kind];
+    if (!e || m.evolved || !mods) return false;
+    applyMods(m, mods.m);
     m.baseName = m.name;
     m.name = e[0];
     m.evolved = true;

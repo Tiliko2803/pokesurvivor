@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-16', title: ['Danza de Mil Espadas', 'Thousand Swords Dance'], new: [
+    ['Danza Espada Nv. 5 evoluciona con una mejora de Potencia: 8 acumulaciones de +30% de ataque, hasta +240%, durante 12 segundos desde el último uso. Al completar las cargas, ocho espadas doradas giran a tu alrededor.',
+     'Level 5 Swords Dance evolves after taking a Might upgrade: 8 stacks of +30% attack, up to +240%, lasting 12 seconds from the last cast. At full stacks, eight golden swords circle around you.']
+  ] },
   { d: '2026-10-16', title: ['Repertorio a tu gusto', 'Choose your Repertoire'], chg: [
     ['Repertorio ahora tiene un botón Elegir ataque en Mejoras: selecciona el ataque extra de cada Pokémon, respeta Veto y conserva la opción Aleatorio.',
      'Repertoire now has a Choose attack button in Upgrades: pick each Pokémon’s extra starting attack, respect banned moves, or keep Random.']

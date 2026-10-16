@@ -33,6 +33,8 @@ G.I18n.add({
   'Rayo Metálico': 'Steel Beam', 'Mordisco': 'Bite', 'Pulso Umbrío': 'Dark Pulse', 'Triturar': 'Crunch', 'Alarido': 'Snarl',
   'Placaje': 'Tackle', 'Ataque Rápido': 'Quick Attack', 'Golpe Cuerpo': 'Body Slam', 'Vozarrón': 'Hyper Voice', 'Derribo': 'Take Down',
   'Velocidad Extrema': 'Extreme Speed', 'Gigaimpacto': 'Giga Impact', 'Alboroto': 'Uproar', 'Danza Espada': 'Swords Dance',
+  'Danza de Mil Espadas': 'Thousand Swords Dance',
+  '8 acumulaciones de +30% de ataque (máximo +240%) durante 12 s': '8 stacks of +30% attack (up to +240%) lasting 12 s',
   'Agilidad': 'Agility', 'Fortaleza': 'Harden', 'Surf': 'Surf',
 
   // descripciones de los movimientos

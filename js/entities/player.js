@@ -308,12 +308,14 @@ G.Player = class Player {
     this.power = { def, t: dur, dur };
   }
 
-  addBuff(stat, amount, dur, maxStacks) {
+  addBuff(stat, amount, dur, maxStacks, move = null) {
     const b = this.buffs[stat];
     if (!b) return;
     b.amount = amount;
     b.n = Math.min(maxStacks, b.n + 1);
     b.t = dur;
+    b.maxStacks = maxStacks;
+    b.milEspadas = !!(move && move.id === 'swords-dance' && move.evolved);
   }
 
   // ---------------- ciclo ----------------
@@ -472,10 +474,31 @@ G.Player = class Player {
       ctx.strokeStyle = COL[k];
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.ellipse(this.x, this.y, this.r * 1.8 + i * 5, (this.r * 1.8 + i * 5) * 0.42, 0, 0, 6.2832 * (b.n / 5));
+      ctx.ellipse(this.x, this.y, this.r * 1.8 + i * 5, (this.r * 1.8 + i * 5) * 0.42, 0, 0, 6.2832 * Math.min(1, b.n / (b.maxStacks || 5)));
       ctx.stroke();
       ctx.restore();
       i++;
+    }
+
+    // Ocho espadas doradas al alcanzar la carga máxima: sólo visual, sin proyectiles.
+    const blades = this.buffs.atk;
+    if (blades.milEspadas && blades.n > 0 && blades.n === blades.maxStacks) {
+      const turn = performance.now() / 1400;
+      for (let j = 0; j < 8; j++) {
+        const a = turn + j * Math.PI / 4;
+        ctx.save();
+        ctx.translate(this.x + Math.cos(a) * (this.r * 2 + 8),
+                      this.y - this.bodyH * 0.35 + Math.sin(a) * (this.r + 6));
+        ctx.rotate(a + Math.PI / 2);
+        ctx.fillStyle = '#fff1a8';
+        ctx.strokeStyle = '#c48b22'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(3, -5);
+        ctx.lineTo(2, 2); ctx.lineTo(-2, 2); ctx.lineTo(-3, -5); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffd23f';
+        ctx.fillRect(-5, 2, 10, 2); ctx.fillRect(-1, 4, 2, 5);
+        ctx.restore();
+      }
     }
 
     // Cooperativo: anillo de "reviviendo" y nombre encima.
