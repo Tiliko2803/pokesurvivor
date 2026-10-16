@@ -90,3 +90,17 @@ test('Ni siquiera sus=true autoriza inyectar un premio sin el código',async()=>
  await assertFails(put('titular',sneaky,true));
  await assertSucceeds(put('titular',gift(old),true));
 });
+
+test('500KP entrega exactamente 500K sin marcar la cuenta y rechaza duplicados o extras',async()=>{
+ await env.clearFirestore();
+ const old=await seed('bonus');
+ const prize={...old,updated:Date.now(),coins:old.coins+500000,gifts:{coins500k:'500KP'}};
+ await assertFails(put('bonus',{...prize,coins:prize.coins+1}));
+ await assertFails(put('bonus',{...prize,gifts:{coins500k:'FAKE1'}}));
+ await assertSucceeds(put('bonus',prize));
+ const data=(await getDoc(savePath('bonus'))).data();
+ assert.equal(data.save.coins,500500);assert.notEqual(data.sus,true);
+ await assertFails(put('bonus',{...prize,updated:Date.now(),coins:prize.coins+500000}));
+ await assertFails(put('bonus',{...prize,updated:Date.now(),gifts:{}},true));
+ await assertFails(put('bonus-new',prize,true));
+});

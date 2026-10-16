@@ -220,6 +220,16 @@ G.DB = (() => {
         r.coins = Math.max(r.coins || 0, awarded.coins || 0);
       }
     }
+    if ((a.gifts || {}).coins500k === '500KP' ||
+        (b.gifts || {}).coins500k === '500KP') {
+      r.gifts.coins500k = '500KP';
+      // La copia sin el bono no debe tapar las monedas concedidas, pero
+      // tampoco se vuelve a sumar 500.000 durante una fusión.
+      if ((newer.gifts || {}).coins500k !== '500KP') {
+        const awarded = (a.gifts || {}).coins500k === '500KP' ? a : b;
+        r.coins = Math.max(r.coins || 0, awarded.coins || 0);
+      }
+    }
     // El premio de tickets se marca una sola vez al fusionar dispositivos.
     // No se vuelve a sumar el bono en las fusiones sucesivas.
     if ((a.gifts || {}).tickets10x10 === '10X10' ||
@@ -751,7 +761,7 @@ G.DB = (() => {
   }
 
   /**
-   * Códigos promocionales de cinco caracteres (MAO25, 20KPS y 10X10).
+   * Códigos promocionales de cinco caracteres (MAO25, 20KPS, 500KP y 10X10).
    * Cada código es reutilizable entre jugadores, pero sólo una vez por cuenta.
    * La entrega en nube se confirma mediante una transacción de Firestore y sus
    * reglas deben autorizar únicamente el premio exacto.
@@ -759,7 +769,10 @@ G.DB = (() => {
   async function redeemGift(rawCode) {
     const code = G.GiftCodes.normalize(rawCode);
     const maomao = G.GiftCodes.isMaomao(code);
-    const coins = G.GiftCodes.isCoins(code);
+    const bonusCoins = G.GiftCodes.isBonusCoins(code);
+    const coins = G.GiftCodes.isCoins(code) || bonusCoins;
+    const coinsKey = bonusCoins ? 'coins500k' : 'coins20k';
+    const coinsAmount = bonusCoins ? G.GiftCodes.BONUS_COINS_AMOUNT : G.GiftCodes.COINS_AMOUNT;
     const tickets = G.GiftCodes.isTickets(code);
     if (!maomao && !coins && !tickets) throw new Error('Código de regalo inválido.');
     if (!save || guest || !key)
@@ -769,12 +782,12 @@ G.DB = (() => {
 
     const alreadyClaimed = s => maomao
       ? !!((s.owned || {})[G.GiftCodes.MAOMAO_DEX] || (s.gifts || {}).maomao)
-      : coins ? (s.gifts || {}).coins20k === G.GiftCodes.COINS_CODE
+      : coins ? (s.gifts || {})[coinsKey] === code
       : (s.gifts || {}).tickets10x10 === G.GiftCodes.TICKETS_CODE;
     const result = (already, local) =>
       ({ ok: true, already, local,
          reward: maomao ? 'maomao' : coins ? 'coins' : 'tickets10',
-         amount: coins ? G.GiftCodes.COINS_AMOUNT : tickets ? G.GiftCodes.TICKETS_AMOUNT : 0 });
+         amount: coins ? coinsAmount : tickets ? G.GiftCodes.TICKETS_AMOUNT : 0 });
 
     if (alreadyClaimed(save)) return result(true, mode === 'local');
 
@@ -785,8 +798,8 @@ G.DB = (() => {
         s.owned[G.GiftCodes.MAOMAO_DEX] = { at: Date.now(), from: 'gift' };
         s.gifts.maomao = code;
       } else if (coins) {
-        s.coins = (s.coins || 0) + G.GiftCodes.COINS_AMOUNT;
-        s.gifts.coins20k = code;
+        s.coins = (s.coins || 0) + coinsAmount;
+        s.gifts[coinsKey] = code;
       } else {
         s.tickets = s.tickets || { t1: 0, t10: 0 };
         s.tickets.t10 = (s.tickets.t10 || 0) + G.GiftCodes.TICKETS_AMOUNT;

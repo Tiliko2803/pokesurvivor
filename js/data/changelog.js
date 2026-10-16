@@ -6,6 +6,9 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-15', title: ['Regalo de 500,000 Pokémonedas', '500,000 Pokécoins gift'], new: [
+    ['Código 500KP: 500,000 Pokémonedas una vez por cuenta.', 'Code 500KP: 500,000 Pokécoins once per account.']
+  ] },
   { d: '2026-10-15', title: ['Megaevolución: Mega Swampert', 'Mega Evolution: Mega Swampert'], new: [
     ['Swampert puede conseguir la Swampertita al vencer tres jefes en una misma partida en solitario. La piedra es permanente y se equipa o quita desde el menú.',
      'Swampert can earn Swampertite by defeating three bosses in a single solo run. The stone is permanent and can be equipped or removed from the menu.'],
