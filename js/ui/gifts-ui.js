@@ -28,12 +28,13 @@ G.GiftsUI = (() => {
             G.UI.toast('¡Recibiste 10 Tickets ×10!', 4500);
           }
         } else if (result.reward === 'coins') {
+          const amount = result.amount.toLocaleString('en-US');
           if (result.already) {
-            status.textContent = 'Ya canjeaste este regalo de 20,000 Pokémonedas en tu cuenta.';
+            status.textContent = `Ya canjeaste este regalo de ${amount} Pokémonedas en tu cuenta.`;
           } else {
-            status.textContent = '¡20,000 Pokémonedas añadidas a tu cuenta!';
+            status.textContent = `¡${amount} Pokémonedas añadidas a tu cuenta!`;
             G.Audio.sfx('shinyGet');
-            G.UI.toast('¡Recibiste 20,000 Pokémonedas!', 4500);
+            G.UI.toast(`¡Recibiste ${amount} Pokémonedas!`, 4500);
           }
         } else if (result.already) {
           status.textContent = '¡Ya tienes a Mao Mao en tu colección!';

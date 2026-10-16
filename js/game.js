@@ -145,7 +145,14 @@ G.Game = (() => {
     // Atajos: movimientos con hueco fijo (save.pbind[dex] = [id del 1, id del 2, ...]),
     // antes de aprender nada: addMove ya los coloca.
     (save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
-    pl.addMove(G.startMoveOf(mon.dex));
+    // Solo Mega Swampert: reemplaza Pistola Agua por Terratemblor Nv. 2.
+    // Swampert normal y los demás compañeros conservan su movimiento inicial.
+    const megaStart = mon.dex === 260 && mon.megaStone === 'swampertite';
+    pl.addMove(megaStart ? 'bulldoze' : G.startMoveOf(mon.dex));
+    if (megaStart) {
+      const first = pl.moves.find(m => m.id === 'bulldoze');
+      if (first) G.Moves.levelUp(first); // Nv. 2: +30% radio (80 → 104).
+    }
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
     // Mejora "Repertorio": un segundo movimiento de ataque al azar.

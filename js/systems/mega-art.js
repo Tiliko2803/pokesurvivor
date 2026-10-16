@@ -3,7 +3,7 @@
  */
 G.MegaArt=(()=>{
  const DIR='assets/pokemon/260/mega/';
- const ROOT=location.pathname.includes('/dev/')?'dev/'+DIR:DIR;
+ const ROOT='dev/'+DIR; // Atlas y GIF de respaldo compartidos por versión principal y /dev/.
  const DUR={Idle:.95,Walk:.45,Attack:.34,Shoot:.5,Charge:.78,Hurt:.34,Faint:.8};
  const images={};
 

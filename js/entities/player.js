@@ -92,7 +92,7 @@ G.Player = class Player {
     const s = this.baseSpd * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? 0.5 : 1);
     const w = G.Weather.speedFor(this.mon.types);
     const slow = this.inLiquid ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
-    const swift=this.mega==='swampertite'&&G.Weather.current&&G.Weather.current.kind==='rain'?1.3:1;
+    const swift = this.mega === 'swampertite' && G.Weather.current && G.Weather.current.kind === 'rain' ? 1.3 : 1;
     return s * slow * w * swift;
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.buffs.def.n * this.buffs.def.amount); }
@@ -449,6 +449,15 @@ G.Player = class Player {
       ctx.restore();
     }
     G.Sprites.drawShadow(ctx, this.dex, this.x, this.y);
+    // Poder de altar: aro de su color latiendo bajo los pies.
+    if (this.power && !this.dead) {
+      ctx.save();
+      ctx.globalAlpha = 0.35 + Math.sin(performance.now() / 120) * 0.15;
+      ctx.strokeStyle = this.power.def.color; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.ellipse(this.x, this.y, this.r * 2.1, this.r * 0.85, 0, 0, 6.2832); ctx.stroke();
+      ctx.restore();
+    }
+
     const alpha = this.invuln > 0 && !this.dead ? (Math.floor(this.invuln * 18) % 2 ? 0.45 : 1) : 1;
     this.anim.draw(ctx, this.x, this.y, { flash: this.flash > 0, softFlash: true, alpha, color: '#ffcb3d' });
 

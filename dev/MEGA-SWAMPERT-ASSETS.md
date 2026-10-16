@@ -26,3 +26,18 @@ Los personajes Pokémon y sus imágenes pertenecen a sus titulares.
 Uso como fan game no comercial con indicación de procedencia.
 
 Los sprites normales de Swampert y el juego principal permanecen intactos.
+
+## Hoja 1 aprobada — integración /dev/
+
+El usuario aprobó el atlas propio con las siete animaciones Idle, Walk, Attack,
+Shoot, Charge, Hurt y Faint, ocho direcciones por animación. Se acepta el
+pequeño defecto visual de Attack C9. El nuevo reproductor está en
+`dev/js/systems/mega-sheet.js` y espera `dev/assets/pokemon/260/mega/hoja1-atlas.webp`.
+
+Dimensiones requeridas: 480 × 6720 píxeles, bandas verticales en el orden
+Idle/Walk/Attack/Shoot/Charge/Hurt/Faint, cada banda de 960 píxeles,
+filas Down, DownRight, Right, UpRight, Up, UpLeft, Left, DownLeft;
+celdas de 120 × 120 y cuadros 3/4/3/3/3/2/3 respectivamente.
+
+**El atlas binario tiene que cargarse por separado:** si falta, el juego de
+prueba mantiene los GIF de respaldo. El juego público no usa este reproductor.

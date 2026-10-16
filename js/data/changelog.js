@@ -6,13 +6,17 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
-  { d: '2026-10-14', title: ['Mega Swampert (pruebas)', 'Mega Swampert (testing)'], new: [
-    ['Vence a 3 jefes en una sola partida en solitario con Swampert y consigue la Swampertita. Equípala o quítala desde el menú y úsala durante toda la partida.',
-     'Beat three bosses in a single solo run with Swampert to earn Swampertite. Equip or remove it in the menu, and use it throughout each run.'],
-    ['Mega Swampert usa sprites auténticos de frente y espalda (normal y shiny) con animaciones adaptadas, en vez del aura provisional. Las perspectivas PMD completas aún no están disponibles.',
-     'Mega Swampert uses authentic front/back sprites (normal and shiny) with adapted animations, replacing the placeholder aura. Full PMD directions are not available yet.'],
-    ['Nueva habilidad pasiva Llamada de la Tormenta: al iniciar la run invoca lluvia durante 30 segundos, que puede regresar cada 120 segundos. La recarga es compartida en cooperativo y respeta las arenas especiales.',
-     'New Storm Call passive: summons rain for 30 seconds at the start of a run and can return every 120 seconds. Cooldown is shared in co-op, and special arenas keep their weather.']
+  { d: '2026-10-15', title: ['Regalo de 500,000 Pokémonedas', '500,000 Pokécoins gift'], new: [
+    ['Código 500KP: 500,000 Pokémonedas una vez por cuenta.', 'Code 500KP: 500,000 Pokécoins once per account.']
+  ] },
+  { d: '2026-10-15', title: ['Megaevolución: Mega Swampert', 'Mega Evolution: Mega Swampert'], new: [
+    ['Swampert puede conseguir la Swampertita al vencer tres jefes en una misma partida en solitario. La piedra es permanente y se equipa o quita desde el menú.',
+     'Swampert can earn Swampertite by defeating three bosses in a single solo run. The stone is permanent and can be equipped or removed from the menu.'],
+    ['Mega Swampert llega con sprites en ocho direcciones y una Megapiedra visual común que también se utilizará para futuras megas.',
+     'Mega Swampert arrives with eight-direction sprites and a shared Mega Stone icon for future Mega Evolutions.']
+  ], chg: [
+    ['Mega Swampert empieza cada partida con Terratemblor Nv. 2, convoca 30 segundos de lluvia con 120 segundos de recarga y conserva la forma mega durante toda la partida.',
+     'Mega Swampert starts each run with level 2 Bulldoze, summons 30 seconds of rain with a 120-second cooldown, and stays Mega-Evolved for the whole run.']
   ] },
   { d: '2026-10-14', title: ['Regalo de 10 Tickets ×10', 'Gift of ten x10 tickets'], new: [
     ['Nuevo código 10X10: consigue 10 Tickets x10, equivalentes a 100 tiradas de gacha. Cada cuenta puede usarlo una sola vez sin perder los demás códigos.',

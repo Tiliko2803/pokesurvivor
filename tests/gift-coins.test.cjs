@@ -29,7 +29,7 @@ function fixture(mode='cloud',fail=false) {
      if(candidate){writes++;Object.assign(doc,JSON.parse(JSON.stringify(candidate)))}
    }
  };
- const G={DEX_BY:{1:{name:'Bulbasaur'},10001:{name:'Maomao'}},
+ const G={Mega:{sanitize(){}},DEX_BY:{1:{name:'Bulbasaur'},10001:{name:'Maomao'}},
   Challenges:{mergeProgress(a,b){return {...a,...b}}},
   Game:{state:'ui'},Upgrades:{BY:{}},UI:{refreshCoins(){}}};
  const firebase={firestore:{FieldValue:{serverTimestamp:()=> 'SERVER_TS'}}};
@@ -244,4 +244,28 @@ test('La pantalla anuncia diez tickets x10 sin bloquear los otros códigos',()=>
  const html=read('index.html');
  assert.match(html,/id="gift-form"/);
  assert.match(html,/data-go="gifts"/);
+});
+
+for (const mode of ['local','cloud']) test(`500KP: premio exacto y único en ${mode}`,async()=>{
+ const f=fixture(mode);
+ const r=await f.G.DB.redeemGift(' 500kp ');
+ assert.equal(r.amount,500000);assert.equal(r.reward,'coins');
+ assert.equal((mode==='local'?f.saved:f.doc.save).coins,500500);
+ assert.equal((mode==='local'?f.saved:f.doc.save).gifts.coins500k,'500KP');
+ assert.equal((await f.G.DB.redeemGift('500KP')).already,true);
+ await f.G.DB.redeemGift('20KPS');
+ assert.equal((mode==='local'?f.saved:f.doc.save).coins,520500);
+});
+test('500KP rechazado por Firebase no añade monedas ni sello',async()=>{
+ const f=fixture('cloud',true);
+ await assert.rejects(f.G.DB.redeemGift('500KP'),/permission-denied/);
+ assert.equal(f.saved.coins,500);assert.equal(f.saved.gifts.coins500k,undefined);
+});
+test('500KP sobrevive a fusión sin duplicar monedas',async()=>{
+ const f=fixture('local');await f.G.DB.redeemGift('500KP');
+ const awarded=JSON.parse(JSON.stringify(f.saved));
+ const stale={...awarded,updated:awarded.updated+1000,coins:900,gifts:{}};
+ const merged=f.G.DB.merge(stale,awarded);
+ assert.equal(merged.coins,500500);assert.equal(merged.gifts.coins500k,'500KP');
+ assert.equal(f.G.DB.merge(merged,awarded).coins,500500);
 });
