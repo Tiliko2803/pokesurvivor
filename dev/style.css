@@ -930,3 +930,7 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
 
 /* Un mismo símbolo de Megapiedra para las megas, sin iconos externos. */
 .mega-gem-icon{display:inline-block;vertical-align:-4px;max-width:none;image-rendering:auto}
+
+/* Repertorio: objetivos cómodos al tocar desde el teléfono. */
+.repertoire-picker .chip, [data-repertoire] { min-height: 44px; }
+.repertoire-picker .chip { white-space: normal; text-align: left; }

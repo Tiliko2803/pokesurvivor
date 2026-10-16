@@ -19,6 +19,8 @@
     save.megaEquipped = { 260: 'swampertite' };
     save.megaProgress = { swampertBosses: 3 };
     save.partnerShiny = false;
+    // Repertorio desbloqueado en la sesión temporal para probar el selector.
+    save.pupg[260] = { moves: 1 };
     return true;
   };
   // La versión de prueba no debe recargarse por los cambios en producción.

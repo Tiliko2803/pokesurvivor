@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-16', title: ['Repertorio a tu gusto (pruebas)', 'Choose your Repertoire (testing)'], chg: [
+    ['Repertorio ahora tiene un botón Elegir ataque en Mejoras: selecciona el ataque extra de cada Pokémon, respeta Veto y conserva la opción Aleatorio.',
+     'Repertoire now has a Choose attack button in Upgrades: pick each Pokémon’s extra starting attack, respect banned moves, or keep Random.']
+  ] },
   { d: '2026-10-14', title: ['Mega Swampert (pruebas)', 'Mega Swampert (testing)'], new: [
     ['Vence a 3 jefes en una sola partida en solitario con Swampert y consigue la Swampertita. Equípala o quítala desde el menú y úsala durante toda la partida.',
      'Beat three bosses in a single solo run with Swampert to earn Swampertite. Equip or remove it in the menu, and use it throughout each run.'],

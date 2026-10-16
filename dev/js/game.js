@@ -148,7 +148,7 @@ G.Game = (() => {
     (!previewId && save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
     // Las megas de prueba empiezan con su ataque propio a nivel 2.
     const megaStart = mon.dex === 260 && mon.megaStone === 'swampertite';
-    const initialMove=blazikenPreview?'karate-chop':megaStart?'bulldoze':G.startMoveOf(mon.dex);
+    const initialMove=blazikenPreview?'karate-chop':G.Repertoire.initialMove(mon);
     pl.addMove(initialMove);
     if (megaStart || blazikenPreview) {
       const first = pl.moves.find(m => m.id === initialMove);
@@ -158,10 +158,12 @@ G.Game = (() => {
     if(blazikenPreview){pl.addMove('ember');pl.setActive(0);}
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
-    // Mejora "Repertorio": un segundo movimiento de ataque al azar.
+    // Repertorio: usa la elección guardada; sin una válida, mantiene el azar.
     if (perks.startMoves >= 2) {
-      const pool = G.Moves.poolFor(mon).filter(id => !pl.hasMove(id) && !pl.banned.has(id) && G.Moves.BY_ID[id].kind !== 'buff');
-      if (pool.length) pl.addMove(G.U.pick(pool));
+      const known = pl.moves.map(m => m.id);
+      const pool = G.Repertoire.pool(mon, save, known);
+      const chosen = G.Repertoire.selected(mon, save, known);
+      if (pool.length) pl.addMove(chosen || G.U.pick(pool));
       pl.setActive(0);
     }
 
