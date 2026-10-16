@@ -20,6 +20,7 @@ service cloud.firestore {
     function admin() { return signedIn() && me() in ['rshaa5gKD3fXw6lE4PPXITbowaG2']; }
 
     // ---------- partida guardada ----------
+    // MODO PRIVADO: antitrampas desactivado; restaurar desde historial Git para reactivarlo.
     // La partida la escribe el navegador, así que se puede editar. El servidor
     // NUNCA rechaza un guardado (nadie pierde nada por un falso positivo): si
     // trae más de lo que se puede ganar jugando ese rato, sólo se acepta con
@@ -41,9 +42,9 @@ service cloud.firestore {
         && !('coins20k' in request.resource.data.save.get('gifts', {}))
         && !('coins500k' in request.resource.data.save.get('gifts', {}))
         && !('tickets10x10' in request.resource.data.save.get('gifts', {}))
-        && (marked() || (saneSave(request.resource.data.save) && freshSave(request.resource.data.save)));
+        ;
       allow update: if signedIn() && me() == uid && validSaveDoc()
-        && (resource.data.get('sus', false) == false || marked())
+        
         // Preservar la marca de importación única (seguridad V0.3).
         && (resource.data.save.get('migrationImported', false) == false
             || request.resource.data.save.get('migrationImported', false) == true)
@@ -51,10 +52,7 @@ service cloud.firestore {
               == resource.data.save.get('migrationImported', false)
             || authorizedMigration(uid))
         // Los regalos sólo pueden añadirse mediante transacciones exactas.
-        && (authorizedGift() || authorizedCoinsGift() || authorizedTicketsGift() || authorizedBonusCoinsGift() || (giftUnchanged() && (authorizedMigration(uid) || marked()
-              || (saneSave(request.resource.data.save)
-              && possibleSave(resource.data.save, request.resource.data.save,
-                              (request.time - resource.data.updatedAt).seconds())))));
+        ;
       // El admin sólo puede poner o quitar la marca.
       allow update: if admin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sus'])
@@ -332,13 +330,13 @@ service cloud.firestore {
     //   - la cuenta no puede estar marcada (saves/{uid}.sus)
     function validEntry(board, id) {
       let d = request.resource.data;
-      let run = get(/databases/$(database)/documents/runs/$(me())).data;
+      // Modo privado: sin comprobación de tiempo de partida.
       return d.keys().hasOnly(['t', 'uids', 'names', 'dex', 'shiny', 'lv', 'kills', 'at'])
-        && d.t is int && d.t > 0 && d.t <= 3600
-        && d.t <= (request.time - run.startedAt).seconds() + 30
-        && d.lv is int && d.lv >= 1 && d.lv <= 10 + d.t / 4
-        && d.kills is int && d.kills >= 0 && d.kills <= 100 + d.t * 12
-        && get(/databases/$(database)/documents/saves/$(me())).data.get('sus', false) == false
+        && d.t is int && d.t > 0
+        
+        && d.lv is int && d.lv >= 1
+        && d.kills is int && d.kills >= 0
+        
         && d.uids is list && me() in d.uids
         && d.names is list && d.names.size() == d.uids.size()
         && d.dex is list && d.dex.size() == d.uids.size()
