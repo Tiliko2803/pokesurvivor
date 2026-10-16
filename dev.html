@@ -5,11 +5,7 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>PokéSurvivor Tiliko — Mao Mao con Google (V0.4)</title>
-<style>
-  /* Entorno de pruebas en nube: no usar invitado/cuentas locales para evitar errores. */
-  #scr-login .tab[data-tab="register"], #scr-login #btn-guest { display: none !important; }
-</style>
+<title>PokéSurvivor Tiliko — Mao Mao y regalos</title>
 <meta name="description" content="Sobrevive a hordas de Pokémon con tu compañero en este fan game gratis para navegador y móvil: 966 Pokémon, shinies, legendarios y cooperativo con amigos. Sin descargas ni anuncios.">
 <!-- seo:begin -->
 <link rel="canonical" href="https://pokesurvivor.com/">
@@ -97,8 +93,7 @@
       <div class="t1">PokéSurvivor</div>
       <div class="t2">Mundo Misterioso</div>
     </div>
-    <p class="login-tag"><strong>Mao Mao V0.4 — PRUEBA CON GOOGLE / FIREBASE TILIKO</strong></p>
-    <p class="note center">Entra con tu cuenta de Google de Tiliko. Esta página usa tu partida real de Tiliko, no la del PokéSurvivor original. El canje MAO25 necesita las reglas nuevas de Firestore antes de funcionar.</p>
+    <p class="login-tag">Sobrevive a las hordas con tu compañero Pokémon · gratis, en PC y móvil</p>
     <div class="tabs">
       <div class="tab on" data-tab="login">Entrar</div>
       <div class="tab" data-tab="register">Crear cuenta</div>
@@ -531,6 +526,8 @@
           <button id="pull-10" class="btn gold grow" data-sfx="none">Tirar ×10 · <span id="cost-10"></span></button>
           <button id="pull-10b" class="btn gold grow" data-sfx="none">Tirar ×10 · <span id="cost-10b"></span></button>
         </div>
+        <button id="pull-elite" class="btn gold" style="width:100%;margin-top:10px" data-sfx="none">Élite ×5 · <span id="cost-elite"></span></button>
+        <p class="note">5 Pokémon de Raro para arriba · Legendaria: 4.5% por Pokémon</p>
         <p class="note tickets-line" id="gacha-tickets"></p>
         <p class="note" id="gacha-pity"></p>
       </div>

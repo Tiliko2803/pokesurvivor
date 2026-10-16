@@ -284,6 +284,13 @@ G.I18n.add({
   '{x} es ahora tu compañero': '{x} is now your partner', '{x} shiny es ahora tu compañero': 'Shiny {x} is now your partner',
   '· {x} shiny': '· {x} shiny', '{x} · {x}: nivel {x}': '{x} · {x}: level {x}',
   // gacha
+  'Probabilidades por Pokémon': 'Odds per Pokémon', 'Rareza': 'Rarity', 'Normal / Élite': 'Normal / Elite',
+  'Élite ×5 ·': 'Elite ×5 ·',
+  '5 Pokémon de Raro para arriba · Legendaria: 4.5% por Pokémon': '5 Rare-or-better Pokémon · Legendary: 4.5% per Pokémon',
+  '· Élite: 1 ticket ×10 por 5 Pokémon de rareza Rara o superior; Legendaria al 4.5% (triple).': '· Elite: 1 ×10 ticket for 5 Rare-or-better Pokémon; Legendary odds 4.5% (triple).',
+  '· La tirada número {x} sin Legendaria está garantizada; normal y Élite comparten contador.': '· Pull number {x} without a Legendary is guaranteed; normal and Elite share pity.',
+  '· En normales, los Pokémon que te faltan tienen triple de peso dentro de su rareza.': '· Normal pulls give unowned Pokémon triple weight within their rarity.',
+  '· La normal ×10 evita repetir especies en la tanda mientras haya alternativas de la misma rareza.': '· Normal ×10 avoids repeating species within the batch while same-rarity alternatives remain.',
   'Gacha': 'Gacha', 'Misterioso': 'Mystery', 'Los {x} Pokémon de la generación {x}. ¡Los legendarios esperan!': 'The {x} Pokémon of generation {x}. The legendaries await!',
   'Tienes {x} de {x}': 'You have {x} of {x}', 'Tienes {x}': 'You have {x}', 'Gen {x}': 'Gen {x}', 'Probabilidades': 'Odds',
   'Tiradas sin legendaria en {x}: {x} / {x}': 'Pulls without a legendary in {x}: {x} / {x}',

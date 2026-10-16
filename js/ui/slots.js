@@ -40,23 +40,23 @@ G.Slots = (() => {
     cv.onclick = () => { fast = true; };
     st = {
       t: 0, lever: 0, reels: REEL_X.map(() => ({ off: Math.random() * 400, spin: false, sym: 'ball', bounce: 0, speed: 0 })),
-      ten: results.length === 10, tray: [], led: results.length === 10 ? 'TIRADA ×10' : '¡SUERTE!', ledCol: C.bulbOn, win: null, frenzy: 0, sparks: []
+      count: results.length, tray: [], led: results.length > 1 ? 'TIRADA ×' + results.length : '¡SUERTE!', ledCol: C.bulbOn, win: null, frenzy: 0, sparks: []
     };
     last = performance.now();
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(frame);
 
-    const ten = results.length === 10;
+    const multi = results.length > 1;
     for (let i = 0; i < results.length; i++) {
       const r = results[i];
-      if (ten) st.led = 'TIRADA ' + (i + 1) + '/10';
+      if (multi) st.led = 'TIRADA ' + (i + 1) + '/' + results.length;
       // Palanca.
       G.Audio.sfx('ball');
-      await tween(v => { st.lever = v; }, 0, 1, ten ? 0.12 : 0.22);
+      await tween(v => { st.lever = v; }, 0, 1, multi ? 0.12 : 0.22);
       for (const rl of st.reels) { rl.spin = true; rl.speed = 520; }
-      await tween(v => { st.lever = v; }, 1, 0, ten ? 0.1 : 0.2);
+      await tween(v => { st.lever = v; }, 1, 0, multi ? 0.1 : 0.2);
       st.win = null;
-      await wait(ten ? 0.18 : 0.6);
+      await wait(multi ? 0.18 : 0.6);
       const big = r.rarity >= 4 || r.shiny;
       for (let k = 0; k < 3; k++) {
         if (k === 2 && big) {
@@ -64,11 +64,11 @@ G.Slots = (() => {
           st.frenzy = 1;
           st.led = r.shiny ? '¡¿SHINY?!' : r.rarity === 5 ? '¡¿LEGENDARIO?!' : '¡¿ÉPICO?!';
           st.ledCol = colOf(r);
-          await tween(v => { st.reels[2].speed = v; }, 520, 120, ten ? 0.5 : 1.1);
+          await tween(v => { st.reels[2].speed = v; }, 520, 120, multi ? 0.5 : 1.1);
         }
         stopReel(st.reels[k], symOf(r));
         G.Audio.sfx('shake');
-        await wait(ten ? 0.08 : 0.32);
+        await wait(multi ? 0.08 : 0.32);
       }
       st.frenzy = 0;
       // Premio.
@@ -80,7 +80,7 @@ G.Slots = (() => {
       if (r.shiny) G.Audio.sfx('shiny');
       if (big) burst(colOf(r), r.rarity === 5 || r.shiny ? 60 : 30);
       st.tray.push({ sym: symOf(r), y: 104, vy: 0, done: false });
-      await wait(ten ? (big ? 0.7 : 0.28) : 1.0);
+      await wait(multi ? (big ? 0.7 : 0.28) : 1.0);
     }
     await wait(0.4);
     stopAll();
@@ -188,8 +188,8 @@ G.Slots = (() => {
     R(28, 124, 106, 22, '#0a0712');
     R(28, 144, 106, 2, C.chromeD);
     st.tray.forEach((b, j) => {
-      const n = st.ten ? 10 : 1;
-      const x = n === 1 ? 81 - 12 : 30 + j * 10;
+      const n = st.count;
+      const x = n === 1 ? 81 - 12 : 81 - (n - 1) * 5 - 6 + j * 10;
       const size = n === 1 ? 24 : 12;
       G.Icons.draw(ctx, b.sym, x, Math.round(b.y - (n === 1 ? 10 : 0)), size);
     });

@@ -1,5 +1,6 @@
 /* Empaqueta el juego para publicarlo: un solo JS minificado en vez de ~60.
  *   node tools/build.js
+ *   node tools/build.js --github-pages  (fork de Tiliko: módulos y URL de Pages)
  *
  * - dev.html es la página "fuente": carga cada script por separado (para
  *   programar y depurar cómodamente). SE EDITA dev.html, no index.html.
@@ -15,6 +16,26 @@ const DEV = path.join(ROOT, 'dev.html'), OUT = path.join(ROOT, 'index.html');
 const BEGIN = '<!-- scripts:begin -->', END = '<!-- scripts:end -->';
 
 const dev = fs.readFileSync(DEV, 'utf8');
+// El fork en GitHub Pages publica módulos para conservar sus cambios locales.
+// Usa la misma página fuente y el actualizador, sin el bundle antiguo.
+if (process.argv.includes('--github-pages')) {
+  const scripts = [...dev.matchAll(/<script[^>]*src="(js\/[^"?]+\.js)(?:\?[^"]*)?"/g)].map(m => m[1]);
+  const hash = crypto.createHash('sha1').update(dev + scripts.map(f =>
+    fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n') +
+    fs.readFileSync(path.join(ROOT, 'css/style.css'), 'utf8')).digest('hex').slice(0, 10);
+  let html = dev.replace(/<meta name="robots" content="noindex">\s*/, '')
+    .replace(/<meta name="ps-version"[^>]*>\s*/g, '')
+    .replace('<meta charset="utf-8">', `<meta charset="utf-8">\n<meta name="ps-version" content="${hash}">`)
+    .replace(/(src="js\/[^"?]+\.js)(?:\?[^"]*)?"/g, `$1?v=${hash}"`)
+    .replace(/(href="css\/style\.css)(?:\?[^"]*)?"/g, `$1?v=${hash}"`)
+    .replaceAll('https://pokesurvivor.com/', 'https://tiliko2803.github.io/pokesurvivor/')
+    .replace(/<!-- dev.html: página fuente[^>]*-->/,
+      '<!-- GENERADO desde dev.html por tools/build.js --github-pages: no editar a mano. -->');
+  fs.writeFileSync(OUT, html);
+  fs.writeFileSync(path.join(ROOT, 'version.json'), JSON.stringify({ v: hash, at: new Date().toISOString() }) + '\n');
+  console.log(`ok: GitHub Pages · ${scripts.length} scripts · versión ${hash}`);
+  process.exit(0);
+}
 const i = dev.indexOf(BEGIN), j = dev.indexOf(END);
 if (i < 0 || j < 0) throw new Error('dev.html no tiene las marcas ' + BEGIN + ' / ' + END);
 const block = dev.slice(i, j + END.length);

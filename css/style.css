@@ -308,6 +308,10 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 8px 0 4px;
 .pips i.on { background: var(--gold); }
 
 /* ---------- gacha ---------- */
+#scr-gacha .split > div { min-width: 0; }
+#scr-gacha .rates div { gap: 8px; }
+#scr-gacha .rates div > span:last-child { flex-shrink: 0; }
+
 .banner {
   position: relative; border-radius: 12px; overflow: hidden;
   background:

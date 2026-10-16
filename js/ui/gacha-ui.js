@@ -10,6 +10,7 @@ G.GachaUI = (() => {
     $('pull-1').onclick = () => pull(1);
     $('pull-10').onclick = () => pull(10, 't1');
     $('pull-10b').onclick = () => pull(10, 't10');
+    $('pull-elite').onclick = () => pull(5, 'elite');
     $('pull-close').onclick = close;
 
     const tabs = $('gacha-gens');
@@ -55,12 +56,15 @@ G.GachaUI = (() => {
     const pity = (s.pity && s.pity[gen]) || 0;
     $('gacha-pity').textContent = `Tiradas sin legendaria en ${banner.name}: ${pity} / ${G.Gacha.PITY_5}`;
 
-    $('gacha-rates').innerHTML = '<h3>Probabilidades</h3>' + G.Gacha.RATES.slice().reverse().map(([r, w]) => `
+    $('gacha-rates').innerHTML = '<h3>Probabilidades por Pokémon</h3><div><b>Rareza</b><b>Normal / Élite</b></div>' + G.Gacha.RATES.slice().reverse().map(([r, w]) => `
       <div><span style="color:${G.Gacha.RARITY_COLOR[r]}">${G.UI.stars(r, 10)} ${G.Gacha.RARITY_NAME[r]}</span>
-      <span>${w}% · ${G.Gacha.pool(r, gen).length}</span></div>`).join('') +
+      <span>${w}% / ${G.Gacha.ELITE_RATES.find(([rank]) => rank === r)?.[1] ?? '—'}${r >= 3 ? '%' : ''}</span></div>`).join('') +
       `<div><span>${G.Icons.html('shiny', 12)} Shiny</span><span>1%</span></div>
        <p class="note">· La tirada ×10 garantiza al menos una Épica.<br>
-       · A las ${G.Gacha.PITY_5} tiradas sin Legendaria en un banner, la siguiente lo es.<br>
+       · Élite: 1 ticket ×10 por 5 Pokémon de rareza Rara o superior; Legendaria al 4.5% (triple).<br>
+       · La tirada número ${G.Gacha.PITY_5} sin Legendaria está garantizada; normal y Élite comparten contador.<br>
+       · En normales, los Pokémon que te faltan tienen triple de peso dentro de su rareza.<br>
+       · La normal ×10 evita repetir especies en la tanda mientras haya alternativas de la misma rareza.<br>
        · Los repetidos dan Pokémonedas. Los shiny no se repiten.<br>
        · Los tickets se consiguen jugando: algunos Pokémon los sueltan al caer, y
          los jefes y los legendarios de las grietas, a veces, tickets ×10.</p>`;
@@ -69,10 +73,12 @@ G.GachaUI = (() => {
     $('cost-1').innerHTML = `${G.Icons.html('ticket', 18)} 1`;
     $('cost-10').innerHTML = `${G.Icons.html('ticket', 18)} 10`;
     $('cost-10b').innerHTML = `${G.Icons.html('ticket10', 18)} 1`;
+    $('cost-elite').innerHTML = `${G.Icons.html('ticket10', 18)} 1`;
     $('gacha-tickets').innerHTML = `Tienes ${G.Icons.html('ticket', 18)} <b>${t.t1}</b> tickets y ${G.Icons.html('ticket10', 18)} <b>${t.t10}</b> tickets ×10`;
     $('pull-1').disabled = !G.Gacha.costOf(s, 1);
     $('pull-10').disabled = !G.Gacha.costOf(s, 10, 't1');
     $('pull-10b').disabled = !G.Gacha.costOf(s, 10, 't10');
+    $('pull-elite').disabled = !G.Gacha.costOf(s, 5, 'elite');
     G.UI.refreshCoins();
   }
 
@@ -111,7 +117,7 @@ G.GachaUI = (() => {
       c.insertAdjacentHTML('beforeend', `<b>${r.shiny ? G.Icons.html('shiny', 12) + ' ' : ''}${mon.name}</b><div class="tag">${tag}</div>`);
       out.appendChild(c);
       G.Audio.sfx('reveal', { rarity: r.rarity });
-      await wait(n === 10 ? 150 : 0);
+      await wait(n > 1 ? 150 : 0);
     }
     $('pull-close').classList.remove('hidden');
     busy = false;

@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-16', title: ['Tirada Élite y mejores colecciones', 'Elite pulls and better collections'], new: [
+    ['Tirada Élite: canjea un ticket ×10 por cinco Pokémon de rareza Rara o superior. Cada uno tiene un 4.5% de probabilidad de ser Legendario, el triple que en las normales. Comparte la garantía del banner.',
+     'Elite pull: exchange one ×10 ticket for five Rare-or-better Pokémon. Each has a 4.5% Legendary chance, triple the normal odds. Banner pity is shared.']
+  ], chg: [
+    ['Las tiradas normales dan triple de peso a los Pokémon que te faltan dentro de su rareza. Las tandas normales ×10 evitan repetir especies mientras haya alternativas de esa rareza. Las tasas de rareza no cambian.',
+     'Normal pulls give unowned Pokémon triple weight within their rarity. Normal ×10 batches avoid repeating species while alternatives of that rarity remain. Rarity rates are unchanged.']
+  ] },
   { d: '2026-10-16', title: ['Danza del Dragón Celestial', 'Celestial Dragon Dance'], new: [
     ['Danza Dragón Nv. 5 evoluciona con Reflejos: 8 cargas de +25% de ataque y +5% de velocidad de ataque, hasta +200% y +40%, durante 12 segundos. Un dragón azul aparece al completar las cargas.',
      'Level 5 Dragon Dance evolves with Reflexes: 8 stacks of +25% attack and +5% attack speed, up to +200% and +40%, lasting 12 seconds. A blue dragon appears at full stacks.']

@@ -6,6 +6,8 @@
  * Garantías:
  *   - la tirada ×10 trae al menos un 4★ o superior
  *   - a las 70 tiradas sin 5★ en ese banner, el siguiente es 5★ seguro
+ * Élite: 1 ticket ×10 por 5 Pokémon, todos 3★ o más; 5★ al 4.5%.
+ * Normales: peso triple a especies sin conseguir y sin repetir en la tanda si hay alternativas.
  * Shiny: 1 de cada 100 tiradas sale en su versión shiny.
  * Repetidos: se convierten en Pokémonedas (los shiny repetidos, el triple).
  *
@@ -14,14 +16,18 @@
  *   ×10  10 tickets normales, o 1 ticket ×10 (eliges con qué)
  */
 G.Gacha = (() => {
-  /** ¿Qué gasta una tirada de n? → { t1, t10 } o null si no te llega. */
-  /** @param use  't1' (tickets normales) o 't10' (un ticket ×10, sólo para la ×10) */
+  /** `elite` sólo admite 5 resultados y cuesta un ticket ×10. */
   function costOf(save, n, use = 't1') {
     const t = save.tickets || { t1: 0, t10: 0 };
-    if (n === 10 && use === 't10') return t.t10 >= 1 ? { t1: 0, t10: 1 } : null;
+    if (use === 'elite') return n === 5 && t.t10 >= 1 ? { t1: 0, t10: 1 } : null;
+    if (n !== 1 && n !== 10) return null;
+    if (use === 't10') return n === 10 && t.t10 >= 1 ? { t1: 0, t10: 1 } : null;
+    if (use !== 't1') return null;
     return t.t1 >= n ? { t1: n, t10: 0 } : null;
   }
   const RATES = [[1, 45], [2, 30], [3, 17], [4, 6.5], [5, 1.5]];
+  const ELITE_RATES = [[3, 69], [4, 26.5], [5, 4.5]];
+  const NEW_WEIGHT = 3;
   const PITY_5 = 70;
   const SHINY_RATE = 1 / 100;
   const REFUND = { 1: 15, 2: 30, 3: 60, 4: 120, 5: 300 };
@@ -48,18 +54,18 @@ G.Gacha = (() => {
   function pool(rarity, gen) { return G.DEX.filter(p => inBanner(p, gen) && p.rarity === rarity); }
 
   /** Pool no vacío más cercano (algunas generaciones tienen rarezas casi vacías). */
-  function poolNear(rarity, gen) {
+  function poolNear(rarity, gen, min = 1) {
     for (const d of [0, -1, 1, -2, 2, -3, 3, -4, 4]) {
       const r = rarity + d;
-      if (r < 1 || r > 5) continue;
+      if (r < min || r > 5) continue;
       const p = pool(r, gen);
       if (p.length) return { rarity: r, list: p };
     }
-    return { rarity, list: G.DEX.filter(p => inBanner(p, gen)) };
+    return { rarity, list: G.DEX.filter(p => inBanner(p, gen) && p.rarity >= min) };
   }
 
-  function rollRarity(min = 1) {
-    const rates = RATES.filter(([r]) => r >= min);
+  function rollRarity(min = 1, source = RATES) {
+    const rates = source.filter(([r]) => r >= min);
     const total = rates.reduce((a, [, w]) => a + w, 0);
     let x = Math.random() * total;
     for (const [r, w] of rates) { x -= w; if (x <= 0) return r; }
@@ -74,34 +80,41 @@ G.Gacha = (() => {
 
   /**
    * Hace `n` tiradas en el banner `gen` sobre el guardado `save` (lo modifica).
-   * Devuelve null si no hay monedas, o la lista de resultados:
+   * Devuelve null si no hay tickets o el banner no tiene candidatos, o la lista de resultados:
    *   { dex, rarity, shiny, isNew, refund }
    */
   function pull(save, n, gen = 1, use = 't1') {
     const cost = costOf(save, n, use);
-    if (!cost) return null;
+    const elite = use === 'elite';
+    if (!cost || !BANNERS.some(b => b.gen === gen) ||
+        !G.DEX.some(p => inBanner(p, gen) && p.rarity >= (elite ? 3 : 1))) return null;
     save.tickets.t1 -= cost.t1;
     save.tickets.t10 -= cost.t10;
     save.pity = save.pity || {};
     save.shiny = save.shiny || {};
     save.pity[gen] = save.pity[gen] || 0;
 
-    const out = [];
+    const out = [], seen = new Set();
     for (let i = 0; i < n; i++) {
       save.pity[gen]++;
       let want;
       if (save.pity[gen] >= PITY_5) want = 5;
       else if (n === 10 && i === n - 1 && !out.some(r => r.rarity >= 4)) want = rollRarity(4);
-      else want = rollRarity();
+      else want = rollRarity(elite ? 3 : 1, elite ? ELITE_RATES : RATES);
 
-      const { rarity, list } = poolNear(want, gen);
+      const { rarity, list } = poolNear(want, gen, elite ? 3 : 1);
+      // Primero rareza; después especie: la colección nunca cambia las tasas.
+      const unseen = !elite && n === 10 ? list.filter(p => !seen.has(p.dex)) : [];
+      const candidates = unseen.length ? unseen : list;
       if (rarity === 5) save.pity[gen] = 0;
-      let mon = G.U.pick(list);
+      const weighted = elite ? candidates : candidates.flatMap(p =>
+        Array(save.owned[p.dex] ? 1 : NEW_WEIGHT).fill(p));
+      let mon = G.U.pick(weighted);
       let shiny = G.Sprites.hasShiny(mon.dex) && (forceShiny > 0 ? (forceShiny--, true) : Math.random() < SHINY_RATE);
       // Los shiny no se repiten: si ya tienes ese, sale otro de la misma rareza
       // cuyo shiny te falte; si los tienes todos, sale normal.
       if (shiny && save.shiny[mon.dex]) {
-        const missing = list.filter(p => G.Sprites.hasShiny(p.dex) && !save.shiny[p.dex]);
+        const missing = candidates.filter(p => G.Sprites.hasShiny(p.dex) && !save.shiny[p.dex]);
         if (missing.length) mon = G.U.pick(missing);
         else shiny = false;
       }
@@ -117,6 +130,7 @@ G.Gacha = (() => {
         if (isNew) save.owned[mon.dex] = { at: Date.now(), from: 'gacha' };
         else refund = REFUND[rarity];
       }
+      seen.add(mon.dex);
       save.coins += refund;
       out.push({ dex: mon.dex, rarity, shiny, isNew, refund });
     }
@@ -125,6 +139,6 @@ G.Gacha = (() => {
   }
 
   return { debugForceShiny(n = 1) { forceShiny = n; },
-           costOf, RATES, PITY_5, SHINY_RATE, REFUND, RARITY_NAME, RARITY_COLOR, BANNERS,
+           costOf, RATES, ELITE_RATES, NEW_WEIGHT, PITY_5, SHINY_RATE, REFUND, RARITY_NAME, RARITY_COLOR, BANNERS,
            pool, featured, pull };
 })();
