@@ -100,5 +100,6 @@ G.Blaziken = (() => {
   G.MegaArt={...previous,Animator:MegaAnimator};
   return {mon,Animator,duration,allowed,active,preload,ready:()=>ready,failed:()=>failed,
     extraReady:()=>extraReady,extraFailed:()=>extraFailed,
-    impulse:elapsed=>1+Math.min(.25,Math.floor(Math.max(0,elapsed)/30)*.05)};
+    impulse:elapsed=>1+Math.min(.25,Math.floor(Math.max(0,elapsed)/30)*.05),
+    attackImpulse:elapsed=>1+Math.min(.30,Math.floor(Math.max(0,elapsed)/30)*.06)};
 })();

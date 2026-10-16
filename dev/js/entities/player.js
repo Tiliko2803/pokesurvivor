@@ -99,6 +99,12 @@ G.Player = class Player {
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.buffs.def.n * this.buffs.def.amount); }
   get regen() { return this.regenFlat + this.buffs.regen.n * this.buffs.regen.amount; }
+  get attackSpeed() { return this.mega==='blazikenite'?G.Blaziken.attackImpulse(this.megaElapsed):1; }
+  // Impulso multiplies the final attack rate: +30% rate is cooldown / 1.30.
+  // Keep permanent upgrades and the ten run cards in cdMul, independently.
+  cooldownFor(move, minimum=0.05) {
+    return Math.max(minimum,move.cd*this.cdMul)/this.attackSpeed;
+  }
 
   // ---------------- movimientos ----------------
   addMove(id) {
@@ -219,7 +225,7 @@ G.Player = class Player {
     if (this.anim.busy() && this.anim.progress() < 0.65) return;
     const meta = G.Sprites.animMeta(this.dex, anim);
     const len = this.mega==='blazikenite' ? G.Blaziken.duration[anim] : meta ? meta.d.reduce((a, b) => a + b, 0) / 60 : 0.4;
-    const cd = Math.max(0.12, m.cd * this.cdMul);
+    const cd = this.cooldownFor(m,0.12);
     this.anim.play(anim, { speed: Math.max(1, len / (cd * 0.9)) });
     this.attackFace = 0.35;
   }

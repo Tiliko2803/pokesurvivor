@@ -86,6 +86,51 @@ const port=8873;
       assert.ok(Math.abs(impulses[2]/impulses[0]-1.05)<1e-8);
       assert.ok(Math.abs(impulses[4]/impulses[0]-1.25)<1e-8);
       assert.equal(impulses[4],impulses[5]);
+      const attackImpulse=await page.evaluate(()=>{
+        const levels=G.Upgrades.perks({cd:8});
+        const card=G.LevelUp.STATS.find(s=>s.id==='cd');
+        const first=new G.Player(G.Blaziken.mon,levels);
+        const second=new G.Player(G.Blaziken.mon,levels);
+        const normal=new G.Player(G.DEX_BY[257],levels);
+        const swampert=new G.Player({...G.DEX_BY[260],megaStone:'swampertite'},levels);
+        const move=G.Moves.instance('karate-chop',1);
+        for(let i=0;i<10;i++)card.apply(first);
+        const before=first.cooldownFor(move),cardsMultiplier=first.cdMul;
+        const steps=[0,29.99,30,60,90,120,150,600].map(t=>{first.megaElapsed=t;return first.attackSpeed;});
+        first.megaElapsed=150;
+        second.megaElapsed=150;
+        for(let i=0;i<10;i++){card.apply(second);card.apply(normal);card.apply(swampert);}
+        const after=first.cooldownFor(move);
+        if(Math.abs(second.cooldownFor(move)-after)>1e-12)throw Error('Card/Impulso order changes final rate');
+        if(Math.abs(normal.cooldownFor(move)-before)>1e-12||Math.abs(swampert.cooldownFor(move)-before)>1e-12)throw Error('Other Pokémon gained Blaziken attack speed');
+        // Exercise the actual combat scheduler, not only the stat getter.
+        first.addMove('karate-chop');const active=first.activeMove();active.t=0;
+        first.target={x:first.x+10,y:first.y};
+        G.Combat.tick(0,first,0);
+        if(Math.abs(active.t-after)>1e-12)throw Error('Combat does not use final Impulso cooldown');
+        if(first.cdMul!==cardsMultiplier)throw Error('Impulso consumed or rewrote card modifiers');
+        first.cdMul=.00001;
+        const atFloor=first.cooldownFor(move);
+        // A fresh run/player starts at zero stacks, and later modifiers stay inside the final factor.
+        const fresh=new G.Player(G.Blaziken.mon,levels);
+        second.cdMul*=.8;
+        const extraModifier=second.cooldownFor(move);
+        const extraExpected=Math.max(.05,move.cd*cardsMultiplier*.8)/1.3;
+        if(Math.abs(extraModifier-extraExpected)>1e-12)throw Error('Later modifier bypasses final factor');
+        const orbit=G.Moves.ALL.find(m=>m.kind==='orbit');
+        first.addMove(orbit.id);first.setActive(1);first.megaElapsed=0;
+        G.Combat.tick(0,first,0);
+        const orb=G.Projectiles.all().find(p=>p.owner===first&&p.orb);
+        const orbitBefore=orb.rehit;first.megaElapsed=150;
+        G.Combat.tick(0,first,0);
+        if(Math.abs(orbitBefore/orb.rehit-1.3)>1e-12)throw Error('Existing orbit does not gain final attack factor');
+        G.Projectiles.clearOrbs(first);
+        return {steps,before,after,ratio:before/after,atFloor,fresh:fresh.attackSpeed,orbit:true};
+      });
+      assert.deepEqual(attackImpulse.steps,[1,1,1.06,1.12,1.18,1.24,1.3,1.3]);
+      assert.ok(Math.abs(attackImpulse.ratio-1.3)<1e-12);
+      assert.ok(Math.abs(attackImpulse.atFloor-.05/1.3)<1e-12);
+      assert.equal(attackImpulse.fresh,1);
       // Stay on ordinary ground and move via the real input path.
       await page.evaluate(()=>{G.EnemyMgr.clear();});
       const x=await page.evaluate(()=>G.Game.player.x);
@@ -143,7 +188,7 @@ const port=8873;
       assert.equal(await page.evaluate(()=>G.Game.player.activeMove().lvl),2);
       assert.equal(await page.evaluate(()=>G.Game.player.anim instanceof G.Blaziken.Animator),false);
       assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);
-      console.log(JSON.stringify({viewport,info,frames,automaticMelee:true,automaticRanged:true,rearWalk:true,input:true,saveIsolation:true,swampertRegression:true,errors}));
+      console.log(JSON.stringify({viewport,info,frames,attackImpulse,automaticMelee:true,automaticRanged:true,rearWalk:true,input:true,saveIsolation:true,swampertRegression:true,errors}));
       await context.close();
     }
   }finally{

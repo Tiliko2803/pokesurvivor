@@ -79,3 +79,30 @@ El test de navegador comprueba daño automático de ambos ataques, que Shoot
 usa el atlas adicional y que caminar hacia arriba usa la fila de espalda.
 Estos cambios se publican en `/dev/`; Mega Blaziken sigue pendiente de pasar
 a la versión oficial.
+
+## Impulso V3 — velocidad de ataque al final
+
+Además del movimiento (+5% por escalón, hasta +25%), Impulso concede +6% de
+velocidad de ataque cada 30 segundos activos, hasta +30% a los 150 segundos.
+
+`Player.cooldownFor()` calcula primero la recarga normal con todas las mejoras
+en `cdMul` y su mínimo habitual; después divide el intervalo por el factor de
+Impulso, de 1 a 1.30. Por tanto, 2000 ataques/unidad de tiempo pasan a 2600:
+no se suma 30% a las cartas ni se resta 30% a la recarga. Las diez cartas y las
+compras permanentes conservan sus modificadores y sus límites independientes.
+Al aplicarse al final también del mínimo normal de 0.05 s, ese intervalo puede
+quedar en 0.05/1.30 s para Mega Blaziken. La ejecución sigue ligada a los frames.
+
+El combate, la animación y la barra de recarga usan el mismo cálculo. Los
+orbes mantienen su movimiento y reciben el factor final en el intervalo entre
+impactos repetidos. El resto de Pokémon, incluido Mega Swampert, conserva
+factor 1 y sus intervalos anteriores. Las acumulaciones empiezan de cero en
+cada partida; el reloj sólo avanza mientras el jugador se actualiza en juego.
+
+Se usa una copia de HUD bajo `/dev/` para mostrar la recarga real; los archivos
+de la versión oficial no cambian. Se conservan el proyectil centrado y las
+modificaciones recientes de Repertorio de `main`.
+
+El test de navegador aplica las diez cartas reales con Reflejos permanente
+al máximo, comprueba ambos órdenes de aplicación, modificadores posteriores,
+el programador real de ataques, el mínimo de recarga y Pokémon sin Impulso.
