@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-16', title: ['Proyectiles centrados (pruebas)', 'Centered projectiles (testing)'], fix: [
+    ['Ascuas y los demás ataques de proyectiles mantienen un disparo centrado en el objetivo al ganar proyectiles adicionales. Los extras se abren hacia los lados.',
+     'Ember and other projectile attacks keep one shot centered on the target when gaining extra projectiles. Additional shots spread to the sides.']
+  ] },
   { d: '2026-10-16', title: ['Repertorio a tu gusto (pruebas)', 'Choose your Repertoire (testing)'], chg: [
     ['Repertorio ahora tiene un botón Elegir ataque en Mejoras: selecciona el ataque extra de cada Pokémon, respeta Veto y conserva la opción Aleatorio.',
      'Repertoire now has a Choose attack button in Upgrades: pick each Pokémon’s extra starting attack, respect banned moves, or keep Random.']
