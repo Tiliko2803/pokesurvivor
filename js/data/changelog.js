@@ -10,6 +10,15 @@ G.CHANGELOG = [
     ['Danza Espada Nv. 5 evoluciona con una mejora de Potencia: 8 acumulaciones de +30% de ataque, hasta +240%, durante 12 segundos desde el último uso. Al completar las cargas, ocho espadas doradas giran a tu alrededor.',
      'Level 5 Swords Dance evolves after taking a Might upgrade: 8 stacks of +30% attack, up to +240%, lasting 12 seconds from the last cast. At full stacks, eight golden swords circle around you.']
   ] },
+  { d: '2026-10-16', title: ['Megaevolución: Mega Blaziken', 'Mega Evolution: Mega Blaziken'], new: [
+    ['Consigue la Blazikenita venciendo a tres jefes en una misma partida en solitario con Blaziken normal. Equípala desde el menú para usar Mega Blaziken.',
+     'Earn Blazikenite by defeating three bosses in one solo run with regular Blaziken. Equip it in the menu to use Mega Blaziken.'],
+    ['Mega Blaziken comienza con Golpe Kárate Nv. 2 y tiene animaciones de combate cuerpo a cuerpo y a distancia.',
+     'Mega Blaziken starts with level 2 Karate Chop and has melee and ranged attack animations.']
+  ], chg: [
+    ['Impulso aumenta cada 30 segundos: +5% de movimiento y +6% de velocidad de ataque, hasta +25% y +30%. La velocidad de ataque multiplica el resultado final de tus mejoras.',
+     'Speed Boost adds 5% movement and 6% attack speed every 30 seconds, up to 25% and 30%. Attack speed multiplies the final result of your upgrades.']
+  ] },
   { d: '2026-10-16', title: ['Repertorio a tu gusto', 'Choose your Repertoire'], chg: [
     ['Repertorio ahora tiene un botón Elegir ataque en Mejoras: selecciona el ataque extra de cada Pokémon, respeta Veto y conserva la opción Aleatorio.',
      'Repertoire now has a Choose attack button in Upgrades: pick each Pokémon’s extra starting attack, respect banned moves, or keep Random.']

@@ -145,13 +145,12 @@ G.Game = (() => {
     // Atajos: movimientos con hueco fijo (save.pbind[dex] = [id del 1, id del 2, ...]),
     // antes de aprender nada: addMove ya los coloca.
     (save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
-    // Solo Mega Swampert: reemplaza Pistola Agua por Terratemblor Nv. 2.
-    // Swampert normal y los demás compañeros conservan su movimiento inicial.
-    const megaStart = mon.dex === 260 && mon.megaStone === 'swampertite';
+    // Cada mega conserva su ataque inicial Nv. 2; Repertorio elige el segundo.
+    const megaStart = (mon.dex===260&&mon.megaStone==='swampertite')||(mon.dex===257&&mon.megaStone==='blazikenite');
     pl.addMove(G.Repertoire.initialMove(mon));
     if (megaStart) {
-      const first = pl.moves.find(m => m.id === 'bulldoze');
-      if (first) G.Moves.levelUp(first); // Nv. 2: +30% radio (80 → 104).
+      const first = pl.moves.find(m => m.id === G.Repertoire.initialMove(mon));
+      if (first) G.Moves.levelUp(first);
     }
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
@@ -358,7 +357,7 @@ G.Game = (() => {
 
     G.RunUI.showOver({
       dead, time: challenge ? challenge.time : time, challenge, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins, record, t1: pl.t1, t10: pl.t10, judge,
-      moves: pl.moves, caught, megaUnlocked,
+      moves: pl.moves, caught, megaUnlocked,megaReward:megaUnlocked?G.Mega.definition(pl.dex):null,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
                  (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '')
     }, () => { pl = null; G.Flow.afterRun(); });

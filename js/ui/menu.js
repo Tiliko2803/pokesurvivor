@@ -62,7 +62,8 @@ G.MenuUI = (() => {
   function open() {
     const s = G.DB.save;
     const mon = G.DEX_BY[s.partner];
-    const shiny = !!s.partnerShiny && G.DB.ownsShiny(mon.dex);
+    const megaDef=G.Mega.definition(mon.dex),megaOn=G.Mega.equipped(s,mon.dex);
+    const shiny = !!s.partnerShiny && G.DB.ownsShiny(mon.dex)&&!(megaOn&&megaDef.shiny===false);
     G.UI.chrome(true);
     G.UI.show('scr-menu');
     G.UI.sprite($('menu-partner'), mon.dex, { lively: true, scale: 4, hero: true, shiny, mega: G.Mega.equipped(s,mon.dex) });
@@ -72,7 +73,7 @@ G.MenuUI = (() => {
     $('menu-partner-info').innerHTML = G.UI.typeChips(mon.types) + ' ' + G.UI.stars(mon.rarity);
     // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
     const seg = $('menu-shiny');
-    seg.classList.toggle('hidden', !G.DB.ownsShiny(mon.dex));
+    seg.classList.toggle('hidden', !G.DB.ownsShiny(mon.dex)||(megaOn&&megaDef.shiny===false));
     seg.lastChild.innerHTML = G.Icons.html('shiny', 12) + ' Shiny';
     seg.querySelectorAll('button').forEach(b => {
       b.classList.toggle('on', (b.dataset.v === '1') === shiny);
@@ -87,17 +88,17 @@ G.MenuUI = (() => {
 
     const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
     const megaBox=$('menu-mega');
-    megaBox.classList.toggle('hidden',mon.dex!==260);
-    if(mon.dex===260){
-      const unlocked=G.Mega.has(s),active=G.Mega.equipped(s,260);
-      const best=Math.min(3,(s.megaProgress||{}).swampertBosses||0);
-      megaBox.innerHTML='<div class="mega-title">'+G.Icons.html('mega',22)+' Swampertita</div>'+
-        (unlocked?'<div class="mega-help">Piedra permanente · Mega Swampert comienza con Terratemblor Nv. 2.</div>':
-        '<div class="mega-help">Misión: vence 3 jefes en una partida en solitario con Swampert. Mejor: '+best+'/3</div>')+
+    megaBox.classList.toggle('hidden',!megaDef);
+    if(megaDef){
+      const unlocked=G.Mega.has(s,mon.dex),active=megaOn;
+      const best=Math.min(3,(s.megaProgress||{})[megaDef.progress]||0);
+      megaBox.innerHTML='<div class="mega-title">'+G.Icons.html('mega',22)+' '+megaDef.name+'</div>'+
+        (unlocked?'<div class="mega-help">Piedra permanente · '+megaDef.help+'</div>':
+        '<div class="mega-help">Misión: vence 3 jefes en una partida en solitario con '+mon.name+' normal. Mejor: '+best+'/3</div>')+
         '<button class="btn small '+(active?'gold':'')+'" type="button" '+(!unlocked?'disabled':'')+'>'+
-        (!unlocked?'🔒 Por desbloquear':active?'Mega equipada · Quitar':'Equipar Swampertita')+'</button>';
+        (!unlocked?'🔒 Por desbloquear':active?'Mega equipada · Quitar':'Equipar '+megaDef.name)+'</button>';
       megaBox.querySelector('button').onclick=()=>{
-        if(!G.Mega.equip(s,260,!active))return;
+        if(!G.Mega.equip(s,mon.dex,!active))return;
         G.DB.commit();G.Audio.sfx('confirm');open();
       };
     }

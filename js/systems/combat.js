@@ -34,7 +34,7 @@ G.Combat = (() => {
       m.t = 0.05;
       return;
     }
-    m.t = Math.max(0.05, m.cd * pl.cdMul);
+    m.t = typeof pl.cooldownFor==='function'?pl.cooldownFor(m):Math.max(0.05,m.cd*pl.cdMul)/(pl.attackSpeed||1);
     pl.cast(m);
     if (G.Coop.active) G.Coop.cast(pl, m);
     // Vínculo: su icono destella en el HUD al lanzarse (uno que explota pegado al
@@ -89,7 +89,8 @@ G.Combat = (() => {
     const n = Math.max(1, m.count | 0);
     const spread = m.spread || 0;
     for (let i = 0; i < n; i++) {
-      // Un disparo centrado; los extras se abren alternando los lados.
+      // El primero siempre va al objetivo, incluso con un número par.
+      // Los extras abren el abanico: centro, izquierda, derecha, izquierda…
       const off = Math.ceil(i / 2) * spread * (i % 2 ? -1 : 1);
       const a = pl.aim + off + (i === 0 ? 0 : G.U.rand(-0.03, 0.03));
       G.Projectiles.spawn(Object.assign({
@@ -484,7 +485,7 @@ G.Combat = (() => {
         x: pl.x, y: pl.y, r: m.size, color: col, vis: G.VFX.forMove(m),
         dmg: m.dmg * pl.atk,
         oa: (i / want) * 6.2832, orad: m.radius, ospeed: m.speed,
-        rehit: Math.max(0.12, m.cd),
+        rehit: Math.max(0.12, m.cd)/(pl.attackSpeed||1),
         knock: m.knock || 0, burn: m.burn || 0, poison: m.poison || 0, slow: m.slow || 0, mtype: m.type
       });
     }
@@ -493,6 +494,7 @@ G.Combat = (() => {
       p.dmg = m.dmg * pl.atk;
       p.orad = m.radius;
       p.ospeed = m.speed;
+      if(pl.mega==='blazikenite')p.rehit=Math.max(0.12,m.cd)/(pl.attackSpeed||1);
       p.r = m.size;
       if (relayout) p.oa = base + (i / live.length) * 6.2832;
     });

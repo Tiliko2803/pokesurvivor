@@ -12,8 +12,8 @@ G.Player = class Player {
     this.mon = mon;
     this.mega = mon.megaStone || null;
     this.dex = mon.dex;
-    this.shiny = shiny && G.Sprites.hasShiny(mon.dex);
-    this.anim = this.mega === 'swampertite' ? new G.MegaArt.Animator(mon.dex, 1, this.shiny) : new G.Sprites.Animator(mon.dex, 1, this.shiny);
+    this.shiny = shiny && !mon.megaNoShiny && G.Sprites.hasShiny(mon.dex);
+    this.anim = this.mega ? new G.MegaArt.Animator(mon.dex, 1, this.shiny) : new G.Sprites.Animator(mon.dex, 1, this.shiny);
     this.x = 0; this.y = 0;
     this.r = G.Sprites.bodyRadius(mon.dex);
     this.bodyH = this.mega ? Math.max(100, G.Sprites.bodyHeight(mon.dex)) : G.Sprites.bodyHeight(mon.dex);
@@ -31,6 +31,7 @@ G.Player = class Player {
     this.hp = this.maxHp;
     this.baseSpd = mon.spd;
     this.baseAtk = mon.atk;
+    this.megaElapsed = 0;
 
     this.moves = [];           // todos los movimientos aprendidos
     this.slots = [];           // huecos: cada uno, una lista de movimientos que se lanzan a la vez
@@ -92,11 +93,18 @@ G.Player = class Player {
     const s = this.baseSpd * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? 0.5 : 1);
     const w = G.Weather.speedFor(this.mon.types);
     const slow = this.inLiquid ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
-    const swift = this.mega === 'swampertite' && G.Weather.current && G.Weather.current.kind === 'rain' ? 1.3 : 1;
-    return s * slow * w * swift;
+    const swift=this.mega==='swampertite'&&G.Weather.current&&G.Weather.current.kind==='rain'?1.3:1;
+    const impulse=this.mega==='blazikenite'?G.Blaziken.impulse(this.megaElapsed):1;
+    return s * slow * w * swift * impulse;
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.buffs.def.n * this.buffs.def.amount); }
   get regen() { return this.regenFlat + this.buffs.regen.n * this.buffs.regen.amount; }
+  get attackSpeed() { return this.mega==='blazikenite'?G.Blaziken.attackImpulse(this.megaElapsed):1; }
+  // Impulso multiplies the final attack rate: +30% rate is cooldown / 1.30.
+  // Keep permanent upgrades and the ten run cards in cdMul, independently.
+  cooldownFor(move, minimum=0.05) {
+    return Math.max(minimum,move.cd*this.cdMul)/this.attackSpeed;
+  }
 
   // ---------------- movimientos ----------------
   addMove(id) {
@@ -216,8 +224,8 @@ G.Player = class Player {
     // No reinicies una animación que va por la mitad: se vería a tirones.
     if (this.anim.busy() && this.anim.progress() < 0.65) return;
     const meta = G.Sprites.animMeta(this.dex, anim);
-    const len = meta ? meta.d.reduce((a, b) => a + b, 0) / 60 : 0.4;
-    const cd = Math.max(0.12, m.cd * this.cdMul);
+    const len = this.mega==='blazikenite' ? G.Blaziken.duration[anim] : meta ? meta.d.reduce((a, b) => a + b, 0) / 60 : 0.4;
+    const cd = this.cooldownFor(m,0.12);
     this.anim.play(anim, { speed: Math.max(1, len / (cd * 0.9)) });
     this.attackFace = 0.35;
   }
@@ -246,6 +254,7 @@ G.Player = class Player {
     this.invuln = 0.45;
     this.flash = 0.14;
     G.Audio.sfx('hurt');
+    if(this.mega==='blazikenite'&&this.hp>0)this.anim.play('Hurt');
     G.Camera.kick(0.28);
     G.FX.dmgText(this.x, this.y - this.bodyH - 4, '-' + Math.round(d), eff === 'super' ? '#ff3048' : eff === 'weak' ? '#c9a0a8' : '#ff6b7a', eff === 'super');
     G.FX.burst(this.x, this.y - this.bodyH * 0.5, '#ff5f6d', 6, 90);
@@ -320,6 +329,7 @@ G.Player = class Player {
 
   // ---------------- ciclo ----------------
   update(dt) {
+    if(this.mega==='blazikenite'&&!this.dead&&Number.isFinite(dt)&&dt>0)this.megaElapsed+=dt;
     this.anim.update(dt);
     if (this.dead) return;
     if (this.invuln > 0) this.invuln -= dt;

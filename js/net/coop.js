@@ -126,12 +126,12 @@ G.Coop = (() => {
     const m = g.find(x => x.kind === 'orbit') || g[0];
     return [r1(local.x), r1(local.y), r2(local.moveAngle), local.walking ? 1 : 0, r1(local.hp), r1(local.maxHp),
             local.dead ? 1 : 0, m ? m.id : '', m ? m.lvl : 1, r1(local.magnet), r2(local.aim), r2(local.xpMul),
-            r2(local.reviveT || 0),local.mega==='swampertite'?1:0];
+            r2(local.reviveT || 0),local.mega==='swampertite'?1:local.mega==='blazikenite'?2:0,r2(Math.min(150,local.megaElapsed||0))];
   }
 
   function readState(a) {
     return { x: a[0], y: a[1], ang: a[2], walk: a[3], hp: a[4], maxHp: a[5], dead: a[6], mv: a[7], ml: a[8],
-             mag: a[9], aim: a[10], xpMul: a[11], rev: a[12], mega:a[13]===1 };
+             mag: a[9], aim: a[10], xpMul: a[11], rev: a[12], mega:a[13]===1||a[13]===2, megaElapsed:Math.max(0,Math.min(150,+a[14]||0)) };
   }
 
   // ---------------- envío ----------------
@@ -239,7 +239,7 @@ G.Coop = (() => {
   function onClientFrame(from, msg) {
     const m = mates.get(from);
     if (!m || !m.connected) return;
-    if (msg.p) { m.state = msg.p; m.pl.net = readState(msg.p); G.Mega.applyRemote(m.pl,m.pl.net.mega); m.xpMul = m.pl.net.xpMul || 1; }
+    if (msg.p) { m.state = msg.p; m.pl.net = readState(msg.p); G.Mega.applyRemote(m.pl,m.pl.net.mega); m.pl.megaElapsed=m.pl.net.megaElapsed; m.xpMul = m.pl.net.xpMul || 1; }
     for (const ev of msg.ev || []) {
       switch (ev[0]) {
         case 'h': {
@@ -297,7 +297,7 @@ G.Coop = (() => {
                    t1: (msg.tk || [])[0], t10: (msg.tk || [])[1] });
     for (const u in msg.p || {}) {
       const m = mates.get(u);
-      if (m) { m.pl.net = readState(msg.p[u]); G.Mega.applyRemote(m.pl,m.pl.net.mega); }
+      if (m) { m.pl.net = readState(msg.p[u]); G.Mega.applyRemote(m.pl,m.pl.net.mega); m.pl.megaElapsed=m.pl.net.megaElapsed; }
     }
     const now = performance.now();
     for (const a of msg.e || []) {
