@@ -317,8 +317,9 @@
       cd: 1.0, dmg: 24, radius: 230, width: 34 },
 
     { id: 'dragon-dance', name: 'Danza Dragón', type: 'dragon', kind: 'buff',
-      desc: 'No hace daño: acumula ATAQUE más rápido que Danza Espada.',
-      cd: 0.7, stat: 'atk', amount: 0.11, dur: 7, stacks: 5 },
+      desc: 'No hace daño: acumula ATAQUE y VELOCIDAD DE ATAQUE.',
+      // Nv.5: 7 cargas = +175% ataque y +25% cadencia, sobre las mejoras finales.
+      cd: 0.7, stat: 'atk', amount: 0.25 / (1.40 * 1.40), attackSpeedRatio: 0.25 / 1.75, dur: 7, stacks: 5 },
 
     // ---------------- HADA ----------------
     { id: 'fairy-wind', name: 'Viento Feérico', type: 'fairy', kind: 'nova',
@@ -489,6 +490,7 @@
                       rgn: 'Síntesis', mag: 'Imán', xp: 'Aprendizaje' };
   const EVO = {
     'swords-dance': ['Danza de Mil Espadas', 'atk'],
+    'dragon-dance': ['Danza del Dragón Celestial', 'cd'],
     'tackle': ['Derribo', 'hp'],             'quick-attack': ['Velocidad Extrema', 'spd'],
     'body-slam': ['Gigaimpacto', 'atk'],     'hyper-voice': ['Alboroto', 'cd'],
     'ember': ['Llamarada', 'atk'],           'flamethrower': ['Sofoco', 'cd'],
@@ -520,11 +522,15 @@
     'aerial-ace': ['Acróbata', 'spd'],       'flame-wheel': ['Envite Ígneo', 'spd'],
     'bubble-beam': ['Acua Cola', 'atk'],     'hex': ['Poltergeist', 'mag']
   };
-  // Evolución propia de Danza Espada; no habilita los demás potenciadores.
+  // Evoluciones propias de las danzas; no habilitan los demás potenciadores.
   const EVO_BY_ID = {
     'swords-dance': {
       t: '8 acumulaciones de +30% de ataque (máximo +240%) durante 12 s',
       m: { stacks: 1, amount: 0.30 / (0.13 * 1.40 * 1.40), dur: 12 / (7 * 1.50) }
+    },
+    'dragon-dance': {
+      t: '8 cargas: +200% de ataque y +40% de velocidad de ataque durante 12 s',
+      m: { stacks: 1, dur: 12 / (7 * 1.50), attackSpeedRatio: 0.40 / 2 }
     }
   };
   // Lo que gana al evolucionar, según cómo funcione.

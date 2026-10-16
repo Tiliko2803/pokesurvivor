@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-16', title: ['Danza del Dragón Celestial', 'Celestial Dragon Dance'], new: [
+    ['Danza Dragón Nv. 5 evoluciona con Reflejos: 8 cargas de +25% de ataque y +5% de velocidad de ataque, hasta +200% y +40%, durante 12 segundos. Un dragón azul aparece al completar las cargas.',
+     'Level 5 Dragon Dance evolves with Reflexes: 8 stacks of +25% attack and +5% attack speed, up to +200% and +40%, lasting 12 seconds. A blue dragon appears at full stacks.']
+  ], chg: [
+    ['Danza Dragón sin evolucionar alcanza +175% de ataque y +25% de velocidad de ataque en Nv. 5 con siete cargas. La cadencia multiplica tus mejoras finales y se combina con Impulso.',
+     'Unevolved Dragon Dance reaches +175% attack and +25% attack speed at level 5 with seven stacks. Attack speed multiplies your final upgrades and combines with Speed Boost.']
+  ] },
   { d: '2026-10-16', title: ['Danza de Mil Espadas', 'Thousand Swords Dance'], new: [
     ['Danza Espada Nv. 5 evoluciona con una mejora de Potencia: 8 acumulaciones de +30% de ataque, hasta +240%, durante 12 segundos desde el último uso. Al completar las cargas, ocho espadas doradas giran a tu alrededor.',
      'Level 5 Swords Dance evolves after taking a Might upgrade: 8 stacks of +30% attack, up to +240%, lasting 12 seconds from the last cast. At full stacks, eight golden swords circle around you.']

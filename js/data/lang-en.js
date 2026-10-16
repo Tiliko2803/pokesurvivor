@@ -34,6 +34,9 @@ G.I18n.add({
   'Placaje': 'Tackle', 'Ataque Rápido': 'Quick Attack', 'Golpe Cuerpo': 'Body Slam', 'Vozarrón': 'Hyper Voice', 'Derribo': 'Take Down',
   'Velocidad Extrema': 'Extreme Speed', 'Gigaimpacto': 'Giga Impact', 'Alboroto': 'Uproar', 'Danza Espada': 'Swords Dance',
   'Danza de Mil Espadas': 'Thousand Swords Dance',
+  'Danza del Dragón Celestial': 'Celestial Dragon Dance',
+  'No hace daño: acumula ATAQUE y VELOCIDAD DE ATAQUE.': 'Deals no damage: builds ATTACK and ATTACK SPEED.',
+  '8 cargas: +200% de ataque y +40% de velocidad de ataque durante 12 s': '8 stacks: +200% attack and +40% attack speed lasting 12 s',
   '8 acumulaciones de +30% de ataque (máximo +240%) durante 12 s': '8 stacks of +30% attack (up to +240%) lasting 12 s',
   'Agilidad': 'Agility', 'Fortaleza': 'Harden', 'Surf': 'Surf',
 

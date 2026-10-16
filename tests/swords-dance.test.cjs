@@ -54,7 +54,7 @@ test('Danza Espada conserva su progresión y los demás buffs no obtienen evoluc
   const { G, p, m } = fixture();
   assert.equal(m.stacks, 7); assert.ok(Math.abs(m.amount - 0.2548) < 1e-12); assert.equal(m.dur, 10.5);
   G.Combat.tick(0, p, 0); assert.equal(p.buffs.atk.milEspadas, false);
-  for (const d of G.Moves.ALL.filter(d => d.kind === 'buff' && d.id !== 'swords-dance')) {
+  for (const d of G.Moves.ALL.filter(d => d.kind === 'buff' && !['swords-dance', 'dragon-dance'].includes(d.id))) {
     const other = G.Moves.instance(d.id, d.maxLvl);
     assert.equal(G.Moves.evoInfo(other, { atk: 1, hp: 1, spd: 1, rgn: 1 }), null);
     assert.equal(G.Moves.evolve(other), false);

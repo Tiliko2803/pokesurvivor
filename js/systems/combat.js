@@ -494,7 +494,7 @@ G.Combat = (() => {
       p.dmg = m.dmg * pl.atk;
       p.orad = m.radius;
       p.ospeed = m.speed;
-      if(pl.mega==='blazikenite')p.rehit=Math.max(0.12,m.cd)/(pl.attackSpeed||1);
+      p.rehit=Math.max(0.12,m.cd)/(pl.attackSpeed||1);
       p.r = m.size;
       if (relayout) p.oa = base + (i / live.length) * 6.2832;
     });

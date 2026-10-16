@@ -99,7 +99,12 @@ G.Player = class Player {
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.buffs.def.n * this.buffs.def.amount); }
   get regen() { return this.regenFlat + this.buffs.regen.n * this.buffs.regen.amount; }
-  get attackSpeed() { return this.mega==='blazikenite'?G.Blaziken.attackImpulse(this.megaElapsed):1; }
+  get attackSpeed() {
+    const b = this.buffs.atk;
+    const dance = 1 + b.n * (b.attackSpeedAmount || 0);
+    const impulse = this.mega === 'blazikenite' ? G.Blaziken.attackImpulse(this.megaElapsed) : 1;
+    return dance * impulse;
+  }
   // Impulso multiplies the final attack rate: +30% rate is cooldown / 1.30.
   // Keep permanent upgrades and the ten run cards in cdMul, independently.
   cooldownFor(move, minimum=0.05) {
@@ -325,6 +330,9 @@ G.Player = class Player {
     b.t = dur;
     b.maxStacks = maxStacks;
     b.milEspadas = !!(move && move.id === 'swords-dance' && move.evolved);
+    b.dragonCelestial = !!(move && move.id === 'dragon-dance' && move.evolved);
+    // Las dos danzas comparten las cargas ATK; el último uso fija ambos bonos.
+    b.attackSpeedAmount = move ? amount * (move.attackSpeedRatio || 0) : 0;
   }
 
   // ---------------- ciclo ----------------
@@ -509,6 +517,44 @@ G.Player = class Player {
         ctx.fillRect(-5, 2, 10, 2); ctx.fillRect(-1, 4, 2, 5);
         ctx.restore();
       }
+    }
+
+    // Dragón celestial azul al completar las ocho cargas. Sólo es un efecto visual.
+    if (!this.dead && blades.dragonCelestial && blades.n > 0 && blades.n === blades.maxStacks) {
+      const a = performance.now() / 1200, rx = this.r * 2 + 14, ry = this.r + 9;
+      const cy = this.y - this.bodyH * 0.35;
+      ctx.save();
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.beginPath();
+      for (let j = 0; j <= 28; j++) {
+        const t = a - j / 28 * Math.PI * 1.55;
+        const wave = Math.sin(j * 0.8 + a * 3) * 2;
+        const x = this.x + Math.cos(t) * (rx + wave), y = cy + Math.sin(t) * (ry + wave);
+        if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#2461b0'; ctx.lineWidth = 6; ctx.stroke();
+      ctx.strokeStyle = '#8de5ff'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#b4edff';
+      for (let j = 5; j <= 20; j += 5) {
+        const t = a - j / 28 * Math.PI * 1.55;
+        ctx.beginPath();
+        ctx.moveTo(this.x + Math.cos(t - 0.08) * (rx + 2), cy + Math.sin(t - 0.08) * (ry + 2));
+        ctx.lineTo(this.x + Math.cos(t) * (rx + 9), cy + Math.sin(t) * (ry + 9));
+        ctx.lineTo(this.x + Math.cos(t + 0.08) * (rx + 2), cy + Math.sin(t + 0.08) * (ry + 2));
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.translate(this.x + Math.cos(a) * rx, cy + Math.sin(a) * ry);
+      ctx.rotate(Math.atan2(Math.cos(a) * ry, -Math.sin(a) * rx));
+      ctx.fillStyle = '#70ccff'; ctx.strokeStyle = '#2461b0'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(11, -3); ctx.lineTo(11, 3); ctx.lineTo(3, 6);
+      ctx.lineTo(-6, 4); ctx.lineTo(-9, 9); ctx.lineTo(-8, 1);
+      ctx.lineTo(-8, -1); ctx.lineTo(-9, -9); ctx.lineTo(-6, -4); ctx.lineTo(3, -6);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fff5b5'; ctx.fillRect(3, -4, 3, 2); ctx.fillRect(3, 2, 3, 2);
+      ctx.strokeStyle = '#b4edff';
+      ctx.beginPath(); ctx.moveTo(8, -3); ctx.lineTo(16, -8);
+      ctx.moveTo(8, 3); ctx.lineTo(16, 8); ctx.stroke();
+      ctx.restore();
     }
 
     // Cooperativo: anillo de "reviviendo" y nombre encima.
