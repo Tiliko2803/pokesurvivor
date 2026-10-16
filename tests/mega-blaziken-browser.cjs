@@ -31,7 +31,7 @@ const port=8873;
       await page.goto(`http://127.0.0.1:${port}/dev/`);
       await page.waitForFunction(()=>window.G?.Game&&document.getElementById('boot').classList.contains('hidden'));
       await page.locator('#tap-start').click();
-      await page.waitForFunction(()=>G.UI.isOpen('scr-menu')&&G.Blaziken.ready());
+      await page.waitForFunction(()=>G.UI.isOpen('scr-menu')&&G.Blaziken.ready()&&G.Blaziken.extraReady());
       assert.equal(await page.evaluate(()=>G.DB.guest),true);
       assert.equal(await page.evaluate(()=>G.DB.save.partner),260);
       const initial=await page.evaluate(()=>{
@@ -55,7 +55,7 @@ const port=8873;
       const frames=await page.evaluate(()=>{
         const a=new G.Blaziken.Animator(),cv=document.createElement('canvas');cv.width=192;cv.height=160;
         const ctx=cv.getContext('2d'),result={};
-        for(const action of ['Idle','Walk','Attack','Hurt','Faint']){
+        for(const action of ['Idle','Walk','Attack','Shoot','Charge','Hurt','Faint']){
           result[action]=[];
           for(let dir=0;dir<8;dir++){
             const seen=new Set();
@@ -75,6 +75,7 @@ const port=8873;
         return result;
       });
       assert.ok(frames.Walk.every(n=>n>=4));assert.ok(frames.Attack.every(n=>n>=3));
+      assert.ok(frames.Shoot.every(n=>n>=3),'ranged casting lacks separate poses');
       const impulses=await page.evaluate(()=>{
         const p=G.Game.player;G.EnemyMgr.clear();p.invuln=99;
         const values=[];
@@ -104,6 +105,23 @@ const port=8873;
       });
       await page.waitForTimeout(1200);
       assert.ok(await page.evaluate(()=>blazikenTarget.hp)<hp,'automatic Fighting melee does no damage');
+      const ranged=await page.evaluate(()=>{
+        G.EnemyMgr.clear();const p=G.Game.player;p.setActive(1);
+        if(p.activeMove().id!=='ember')throw Error('Slot 2 must contain Ascuas');
+        const e=new G.Enemy({dex:1,hp:5000,spd:0,dmg:0,xp:1,behavior:'chase'},p.x+120,p.y,{hp:1,spd:1,dmg:1});
+        G.EnemyMgr.add(e);window.blazikenRangedTarget=e;
+        const a=new G.Blaziken.Animator(),calls=[];
+        const cv=document.createElement('canvas'),ctx=cv.getContext('2d');
+        const draw=ctx.drawImage.bind(ctx);ctx.drawImage=(...args)=>{calls.push([args[0].src,args[1],args[2]]);return draw(...args);};
+        a.play('Shoot');a.update(.2);a.draw(ctx,100,140);
+        if(!calls[0][0].includes('mega-blaziken-extra'))throw Error('Ranged attack still uses melee atlas');
+        a.once=false;a.loop('Walk');a.dir=4;a.draw(ctx,100,140);
+        if(calls[1][2]!==1280)throw Error('Upward walk does not use rear-facing supplement');
+        return {hp:e.hp};
+      });
+      await page.waitForTimeout(1400);
+      assert.ok(await page.evaluate(()=>blazikenRangedTarget.hp)<ranged.hp,'automatic ranged attack does no damage');
+      await page.screenshot({path:`/tmp/blaziken-ranged-${viewport.width}.png`});
       await page.evaluate(()=>{
         const p=G.Game.player;p.invuln=0;p.hurt(1);
         if(p.anim.cur!=='Hurt')throw Error('damage does not trigger Hurt');
@@ -125,7 +143,7 @@ const port=8873;
       assert.equal(await page.evaluate(()=>G.Game.player.activeMove().lvl),2);
       assert.equal(await page.evaluate(()=>G.Game.player.anim instanceof G.Blaziken.Animator),false);
       assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);
-      console.log(JSON.stringify({viewport,info,frames,automaticMelee:true,input:true,saveIsolation:true,swampertRegression:true,errors}));
+      console.log(JSON.stringify({viewport,info,frames,automaticMelee:true,automaticRanged:true,rearWalk:true,input:true,saveIsolation:true,swampertRegression:true,errors}));
       await context.close();
     }
   }finally{

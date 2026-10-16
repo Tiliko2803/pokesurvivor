@@ -1,15 +1,23 @@
-/* Mega Blaziken — development playtest using the user's 167333.png poses.
- * Original directions are approximate; no invented rear view or shiny palette.
+/* Mega Blaziken — development playtest using 167333.png and 167351.png.
+ * The supplement adds palm casting and a genuine rear-facing walk.
  * Uses the existing Fighting melee move, with real damage/type interactions.
  */
 G.Blaziken = (() => {
   const W=192,H=160,AX=96,AY=142;
   const frames={Idle:[0,1],Walk:[2,3,4,5,6],Attack:[6,7,8,9],
     Shoot:[6,7,8,9],Charge:[0,1],Hurt:[10],Faint:[10]};
-  const duration={Idle:.9,Walk:.52,Attack:.36,Shoot:.4,Charge:.65,Hurt:.28,Faint:.65};
+  const duration={Idle:.9,Walk:.52,Attack:.36,Shoot:.48,Charge:.65,Hurt:.28,Faint:.65};
   const url='dev/assets/pokemon/257/mega/mega-blaziken.webp?v=blaziken-1';
+  const extraURL='dev/assets/pokemon/257/mega/mega-blaziken-extra.webp?v=blaziken-2';
   let atlas=null,ready=false,failed=false;
+  let extra=null,extraReady=false,extraFailed=false;
   function preload(){
+    if(!extra){
+      extra=new Image();
+      extra.onload=()=>{extraReady=extra.naturalWidth===224*4&&extra.naturalHeight===160*9;extraFailed=!extraReady;};
+      extra.onerror=()=>{extraFailed=true;console.error('[Mega Blaziken] Casting atlas failed to load');};
+      extra.src=extraURL;
+    }
     if(atlas)return;
     atlas=new Image();
     atlas.onload=()=>{
@@ -53,17 +61,20 @@ G.Blaziken = (() => {
     }
     draw(ctx,x,y,opts={}){
       if(!ready){this.fallback.draw(ctx,x,y,opts);return;}
-      const sequence=frames[this.cur];
       const phase=this.progress();
-      const col=sequence[Math.min(sequence.length-1,Math.floor(phase*sequence.length))];
       const row=Math.max(0,Math.min(7,this.dir|0));
+      const supplement=extraReady&&(this.cur==='Shoot'||this.cur==='Charge'||(this.cur==='Walk'&&row===4));
+      const sequence=supplement?(this.cur==='Charge'?[0,1]:[0,1,2,3]):frames[this.cur];
+      const col=sequence[Math.min(sequence.length-1,Math.floor(phase*sequence.length))];
+      const w=supplement?224:W,ax=supplement?112:AX;
+      const sourceRow=supplement&&this.cur==='Walk'?8:row;
       const k=.78*this.scale;
       let alpha=opts.alpha==null?1:opts.alpha;
       if(this.cur==='Faint')alpha*=1-phase*.65;
       if(alpha<=0)return;
       ctx.save();ctx.globalAlpha*=alpha;ctx.imageSmoothingEnabled=false;
       if(opts.flash)ctx.filter='brightness(1.7)';
-      ctx.drawImage(atlas,col*W,row*H,W,H,Math.round(x-AX*k),Math.round(y-AY*k),W*k,H*k);
+      ctx.drawImage(supplement?extra:atlas,col*w,sourceRow*H,w,H,Math.round(x-ax*k),Math.round(y-AY*k),w*k,H*k);
       ctx.restore();
     }
   }
@@ -88,5 +99,6 @@ G.Blaziken = (() => {
   }
   G.MegaArt={...previous,Animator:MegaAnimator};
   return {mon,Animator,duration,allowed,active,preload,ready:()=>ready,failed:()=>failed,
+    extraReady:()=>extraReady,extraFailed:()=>extraFailed,
     impulse:elapsed=>1+Math.min(.25,Math.floor(Math.max(0,elapsed)/30)*.05)};
 })();

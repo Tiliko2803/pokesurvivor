@@ -51,3 +51,31 @@ Mega Swampert. Todos los scripts de `/dev/` pasan `node --check`.
 La suite histórica completa tiene pruebas con mocks anteriores a `G.Mega`,
 que fallan por `G.Mega.sanitize` ausente; se reprodujo ese fallo también sobre
 el `main` anterior a este cambio. No se modifican esos sistemas de producción.
+
+## Suplemento V2 — brazos y espalda
+
+La hoja `167351.png` aportada por el usuario añade lanzamiento con brazos y
+caminado de espalda. El original RGB tenía el cuadriculado dibujado; se usó
+la herramienta integrada de imágenes para extraer el fondo, y se empaquetó
+el resultado con `tools/prepare_blaziken_extra.py` (Pillow, NumPy, SciPy).
+El prompt de extracción solicitó conservar diseños/poses/disposición y
+convertir únicamente el fondo gris en alfa transparente. El resultado de
+la herramienta es una imagen derivada, no una copia píxel por píxel del RGB.
+
+El atlas adicional `mega-blaziken-extra.webp` contiene ocho filas de lanzamiento
+y una fila de cuatro poses de caminar de espalda. Mantiene el mismo punto de
+apoyo y escala que el atlas anterior. Los lanzamientos izquierdos se reflejan
+para que las manos apunten hacia la izquierda. Las vistas diagonales y los
+lanzamientos verticales todavía son aproximados.
+
+Shoot usa guardia/preparación/extensión de brazos/recuperación; Charge usa
+guardia/preparación. Se excluye la bola de fuego viajera que venía dibujada en
+el fotograma: los proyectiles y su tipo los sigue dibujando el combate del juego.
+Caminar hacia arriba usa la nueva fila de espalda; reposo y patadas conservan
+el atlas previo. Si el suplemento no carga, se conserva la animación anterior.
+
+La prueba empieza con Golpe Kárate Nv. 2 seleccionado y Ascuas en el hueco 2.
+El test de navegador comprueba daño automático de ambos ataques, que Shoot
+usa el atlas adicional y que caminar hacia arriba usa la fila de espalda.
+Estos cambios se publican en `/dev/`; Mega Blaziken sigue pendiente de pasar
+a la versión oficial.

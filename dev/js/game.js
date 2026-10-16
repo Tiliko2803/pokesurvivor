@@ -154,6 +154,8 @@ G.Game = (() => {
       const first = pl.moves.find(m => m.id === initialMove);
       if (first) G.Moves.levelUp(first);
     }
+    // Second slot makes the new ranged animation immediately reviewable.
+    if(blazikenPreview){pl.addMove('ember');pl.setActive(0);}
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
     // Mejora "Repertorio": un segundo movimiento de ataque al azar.
