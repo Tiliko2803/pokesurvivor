@@ -5,10 +5,12 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
 const contexts = new WeakMap();
+const prefix=process.env.REPERTOIRE_VARIANT==='dev'?'dev/':'';
 function fixture(){
   const G={Challenges:{mergeProgress:(a,b)=>({...a,...b})}};
-  const ctx=vm.createContext({G,console});
-  for(const file of ['js/data/pokedex.js','js/data/moves.js','js/data/starters.js','js/data/upgrades.js','dev/js/systems/mega.js','dev/js/systems/repertoire.js','dev/js/core/db.js'])
+  const storage=new Map();
+  const ctx=vm.createContext({G,console,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}});
+  for(const file of ['js/data/pokedex.js','js/data/moves.js','js/data/starters.js','js/data/upgrades.js',prefix+'js/systems/mega.js',prefix+'js/systems/repertoire.js',prefix+'js/core/db.js'])
     vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),ctx);
   contexts.set(G,ctx);
   return G;
@@ -56,7 +58,7 @@ test('Mega Swampert excluye Terratemblor inicial y valida al cambiar de forma',(
 });
 test('La fusión de guardados conserva preferencias y respeta el retorno explícito a Aleatorio',()=>{
   const G=fixture();
-  const save=(updated,prepertoire)=>({updated,prepertoire,upgrades:{},stats:{},pity:{}});
+  const save=(updated,prepertoire)=>({updated,prepertoire,upgrades:{},stats:{},pity:{},coins:0,tickets:{t1:0,t10:0}});
   const old=save(1,{260:'tackle',1:'razor-leaf'}),newer=save(2,{260:null});
   const merged=G.DB.merge(old,newer);
   assert.equal(merged.prepertoire[260],null);
@@ -97,7 +99,7 @@ for(const mode of ['solo','coop','challenge','no-upgrade','veto','random']){
     save.prepertoire={260:id};
     if(mode==='veto')save.pban={260:[id]};
     if(mode==='random')save.prepertoire[260]=null;
-    for(const file of ['dev/js/entities/player.js','dev/js/game.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),ctx);
+    for(const file of [prefix+'js/entities/player.js',prefix+'js/game.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),ctx);
     G.Game.startRun(mode==='coop'?{seed:123,host:'x',members:[]}:null,mode==='challenge'?'test-challenge':null);
     const p=G.Game.player;
     assert.equal(G.Game.state,'playing');
@@ -108,3 +110,18 @@ for(const mode of ['solo','coop','challenge','no-upgrade','veto','random']){
     if(mode==='coop')assert.equal(coopPlayer,p);
   });
 }
+
+test('Fusionar la elección conserva el saldo de monedas y tickets de ambos dispositivos',()=>{
+  const G=fixture();
+  const a={updated:1,prepertoire:{260:'tackle'},coins:90,tickets:{t1:9,t10:0},
+    led:{base:{c:[100,0],t1:[10,0]},phone:{c:[0,10],t1:[0,1]}},upgrades:{},stats:{},pity:{}};
+  const b={updated:2,prepertoire:{260:null},coins:120,tickets:{t1:12,t10:0},
+    led:{base:{c:[100,0],t1:[10,0]},pc:{c:[20,0],t1:[2,0]}},upgrades:{},stats:{},pity:{}};
+  const plainA=JSON.parse(JSON.stringify(a)),plainB=JSON.parse(JSON.stringify(b));
+  delete plainA.prepertoire;delete plainB.prepertoire;
+  const baseline=G.DB.merge(plainA,plainB),merged=G.DB.merge(a,b);
+  assert.equal(merged.coins,baseline.coins);
+  assert.deepEqual(merged.tickets,baseline.tickets);
+  assert.equal(merged.prepertoire[260],null);
+  if(!prefix){assert.equal(merged.coins,110);assert.equal(merged.tickets.t1,11);}
+});

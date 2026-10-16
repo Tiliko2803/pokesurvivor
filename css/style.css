@@ -928,3 +928,8 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
  #scr-menu .menu-left .logo .t1{font-size:27px}
  #scr-menu .mega-menu{max-width:260px}
 }
+
+/* Repertorio: objetivos cómodos al tocar desde el teléfono. */
+.repertoire-picker .chip, [data-repertoire] { min-height: 44px; }
+.repertoire-picker .chip { white-space: normal; text-align: left; }
+.repertoire-upgrade { grid-column: 1 / -1; }

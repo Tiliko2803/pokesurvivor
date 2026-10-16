@@ -148,17 +148,19 @@ G.Game = (() => {
     // Solo Mega Swampert: reemplaza Pistola Agua por Terratemblor Nv. 2.
     // Swampert normal y los demás compañeros conservan su movimiento inicial.
     const megaStart = mon.dex === 260 && mon.megaStone === 'swampertite';
-    pl.addMove(megaStart ? 'bulldoze' : G.startMoveOf(mon.dex));
+    pl.addMove(G.Repertoire.initialMove(mon));
     if (megaStart) {
       const first = pl.moves.find(m => m.id === 'bulldoze');
       if (first) G.Moves.levelUp(first); // Nv. 2: +30% radio (80 → 104).
     }
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
-    // Mejora "Repertorio": un segundo movimiento de ataque al azar.
+    // Repertorio: usa la elección guardada; sin una válida, mantiene el azar.
     if (perks.startMoves >= 2) {
-      const pool = G.Moves.poolFor(mon).filter(id => !pl.hasMove(id) && !pl.banned.has(id) && G.Moves.BY_ID[id].kind !== 'buff');
-      if (pool.length) pl.addMove(G.U.pick(pool));
+      const known = pl.moves.map(m => m.id);
+      const pool = G.Repertoire.pool(mon, save, known);
+      const chosen = G.Repertoire.selected(mon, save, known);
+      if (pool.length) pl.addMove(chosen || G.U.pick(pool));
       pl.setActive(0);
     }
 

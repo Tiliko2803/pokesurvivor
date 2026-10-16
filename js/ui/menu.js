@@ -286,7 +286,7 @@ G.MenuUI = (() => {
 
   // ---------------- mejoras ----------------
 
-  let upgDex = null;
+  let upgDex = null, repertoireOpen = false;
 
   function openUpgrades() {
     G.UI.show('scr-upgrades', true);
@@ -317,17 +317,19 @@ G.MenuUI = (() => {
       const maxed = lvl >= u.max;
       const cost = maxed ? 0 : G.Upgrades.cost(u.id, lvl);
       const el = document.createElement('div');
-      el.className = 'panel upg-item';
+      el.className = 'panel upg-item' + (u.id === 'moves' ? ' repertoire-upgrade' : '');
       el.innerHTML = `
         <div class="ic">${G.Icons.html(u.icon, 32)}</div>
         <div>
-          <b>${u.name}</b> <span style="color:var(--muted);font-size:13px">${u.unit}</span>
+          <b>${u.name}</b> <span style="color:var(--muted);font-size:13px">${u.id === 'moves' ? 'Empiezas con 2 movimientos; eliges el extra' : u.unit}</span>
           <div class="pips">${Array.from({ length: u.max }, (_, i) => `<i class="${i < lvl ? 'on' : ''}"></i>`).join('')}</div>
         </div>
         <div class="upg-btns">
+          ${u.id === 'moves' && lvl > 0 ? '<button class="btn small" data-repertoire>Elegir ataque</button>' : ''}
           ${u.id === 'ban' && lvl > 0 ? `<button class="btn small" data-ban>Elegir (${banList().length}/${lvl})</button>` : ''}
           <button class="btn small ${maxed ? '' : 'gold'}" data-buy data-sfx="none" ${maxed || s.coins < cost ? 'disabled' : ''}>
           ${maxed ? 'Máx.' : `<span class="coin"></span> ${cost}`}</button></div>`;
+      if (u.id === 'moves' && lvl > 0) el.querySelector('[data-repertoire]').onclick = () => { repertoireOpen = !repertoireOpen; renderUpgrades(); };
       if (u.id === 'ban' && lvl > 0) el.querySelector('[data-ban]').onclick = () => { banOpen = !banOpen; renderUpgrades(); };
       el.querySelector('[data-buy]').onclick = () => {
         // Se vuelve a leer todo al pulsar (la partida puede haber cambiado desde que se dibujó).
@@ -344,9 +346,33 @@ G.MenuUI = (() => {
         renderUpgrades();
       };
       box.appendChild(el);
+      if (u.id === 'moves' && lvl > 0 && repertoireOpen) box.appendChild(repertoirePicker());
       if (u.id === 'ban' && lvl > 0 && banOpen) box.appendChild(banPicker(lvl));
     }
     box.appendChild(bindPanel());
+  }
+
+  function repertoirePicker() {
+    const s = G.DB.save, mon = G.Mega.form(G.DEX_BY[upgDex], s);
+    const chosen = G.Repertoire.selected(mon, s);
+    const ids = G.Repertoire.pool(mon, s).sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
+    const el = document.createElement('div');
+    el.className = 'panel ban-picker repertoire-picker';
+    el.innerHTML = `<b>Repertorio · Ataque extra</b>
+      <p class="sub" style="margin:4px 0 8px">Elige el segundo ataque con el que empieza ${mon.name}. Se conserva para tus siguientes partidas. Respeta Veto; el ataque principal se mantiene.</p>
+      <p class="sub">Elegido: <b>${chosen ? G.Moves.BY_ID[chosen].name : 'Aleatorio'}</b></p>
+      <div class="ban-moves"><button class="chip ${chosen ? '' : 'on'}" data-repertoire-id="" aria-pressed="${!chosen}">Aleatorio</button>
+      ${ids.map(id => { const d = G.Moves.BY_ID[id]; return `<button class="chip ${chosen === id ? 'on' : ''}" data-repertoire-id="${id}" aria-pressed="${chosen === id}" title="${d.name}">${G.Icons.html('move:' + id, 16)} ${d.name}</button>`; }).join('')}</div>
+      ${ids.length ? '' : '<p class="sub">No quedan ataques compatibles. Revisa los movimientos de Veto.</p>'}`;
+    el.querySelectorAll('[data-repertoire-id]').forEach(b => {
+      b.onclick = () => {
+        if (!G.Repertoire.choose(mon, s, b.dataset.repertoireId || null)) return;
+        G.DB.commit();
+        G.Audio.sfx('select');
+        renderUpgrades();
+      };
+    });
+    return el;
   }
 
   // ---------------- atajos: hueco fijo para cada movimiento ----------------
