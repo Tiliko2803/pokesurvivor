@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
 const root=path.join(__dirname,'..');
-function fixture({combat='dev/js/systems/combat.js',jitter=0}={}){
+function fixture({combat='js/systems/combat.js',jitter=0}={}){
   const G={},noop=()=>{},context=vm.createContext({G,window:{G},performance:{now:()=>0}});
   for(const file of ['js/core/util.js','js/data/moves.js','js/entities/projectile.js',combat])
     vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
@@ -73,7 +73,7 @@ function hitsAtDistance(combat){
   return hits;
 }
 test('Regresión real de Ascuas Nv.2: un blanco pequeño a distancia recibe el disparo central',()=>{
-  assert.equal(hitsAtDistance('js/systems/combat.js'),0,'el escenario debe reproducir el fallo original');
+  assert.equal(hitsAtDistance('js/systems/combat.js'),1);
   assert.equal(hitsAtDistance('dev/js/systems/combat.js'),1);
 });
 test('Cooperativo: el disparo local y el fantasma comparten el centro sin duplicar daño',()=>{

@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-16', title: ['Proyectiles centrados', 'Centered projectiles'], fix: [
+    ['Ascuas y los demás ataques de proyectiles mantienen un disparo centrado en el objetivo al ganar proyectiles adicionales. Los extras se abren hacia los lados.',
+     'Ember and other projectile attacks keep one shot centered on the target when gaining extra projectiles. Additional shots spread to the sides.']
+  ] },
   { d: '2026-10-15', title: ['Regalo de 500,000 Pokémonedas', '500,000 Pokécoins gift'], new: [
     ['Código 500KP: 500,000 Pokémonedas una vez por cuenta.', 'Code 500KP: 500,000 Pokécoins once per account.']
   ] },

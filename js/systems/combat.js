@@ -89,8 +89,9 @@ G.Combat = (() => {
     const n = Math.max(1, m.count | 0);
     const spread = m.spread || 0;
     for (let i = 0; i < n; i++) {
-      const off = n === 1 ? 0 : (i / (n - 1) - 0.5) * spread * n;
-      const a = pl.aim + off + G.U.rand(-0.03, 0.03);
+      // Un disparo centrado; los extras se abren alternando los lados.
+      const off = Math.ceil(i / 2) * spread * (i % 2 ? -1 : 1);
+      const a = pl.aim + off + (i === 0 ? 0 : G.U.rand(-0.03, 0.03));
       G.Projectiles.spawn(Object.assign({
         x: pl.x + Math.cos(a) * 3, y: pl.y + Math.sin(a) * 3,
         vx: Math.cos(a) * m.speed, vy: Math.sin(a) * m.speed,
