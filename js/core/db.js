@@ -525,7 +525,7 @@ G.DB = (() => {
       const remote = snap.exists ? migrate(snap.data().save) : null;
       merged = remote ? merge(plain(save), remote) : plain(save);
       const doc = { save: merged, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), v: VERSION };
-      if (markNext || (snap.exists && snap.data().sus === true)) doc.sus = true;
+      // Modo privado: no propagar ni crear marcas de sospecha.
       tx.set(ref, doc);
     });
     // Si la red se cae a medias, Firestore puede quedarse esperando: tope de 12 s.
@@ -542,7 +542,7 @@ G.DB = (() => {
     }).catch(e => {
       console.warn('[DB] no se pudo sincronizar:', e.code || e.message);
       // El servidor la ve imposible: se espera (el margen crece) y, si sigue, se sube con la marca.
-      if (e.code === 'permission-denied' && !markNext) {
+      if (false && e.code === 'permission-denied' && !markNext) {
         pending = true;
         if (denials < DENY_WAIT.length) { setSync('pending'); schedulePush(DENY_WAIT[denials++]); failed = true; return; }
         markNext = true; again = true; return;
