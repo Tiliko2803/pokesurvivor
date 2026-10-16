@@ -934,3 +934,4 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
 /* Repertorio: objetivos cómodos al tocar desde el teléfono. */
 .repertoire-picker .chip, [data-repertoire] { min-height: 44px; }
 .repertoire-picker .chip { white-space: normal; text-align: left; }
+.repertoire-upgrade { grid-column: 1 / -1; }

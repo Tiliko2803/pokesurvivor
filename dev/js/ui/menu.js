@@ -324,7 +324,7 @@ G.MenuUI = (() => {
       const maxed = lvl >= u.max;
       const cost = maxed ? 0 : G.Upgrades.cost(u.id, lvl);
       const el = document.createElement('div');
-      el.className = 'panel upg-item';
+      el.className = 'panel upg-item' + (u.id === 'moves' ? ' repertoire-upgrade' : '');
       el.innerHTML = `
         <div class="ic">${G.Icons.html(u.icon, 32)}</div>
         <div>
