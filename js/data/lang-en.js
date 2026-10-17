@@ -4,6 +4,23 @@
  * son los oficiales en inglés.
  */
 G.I18n.add({
+  '+3% de probabilidad de crítico': '+3% critical hit chance',
+  // Mejoras permanentes de octubre.
+  "Golpe Devastador": "Devastating Blow",
+  "Expansión": "Expansion",
+  "Persistencia": "Persistence",
+  "Drenaje": "Drain",
+  "Último Aliento": "Last Breath",
+  "Más Opciones": "More Choices",
+  "+0.1 al multiplicador crítico (máx. x2)": "+0.1 critical multiplier (max. x2)",
+  "+5% de tamaño de áreas y proyectiles (máx. +20%)": "+5% area and projectile size (max. +20%)",
+  "+5% de duración de buffs, minas, torretas y rastros (máx. +25%)": "+5% buff, mine, turret and trail duration (max. +25%)",
+  "+0.2 vida por enemigo derrotado por tu equipo (máx. 1; tope 2 vida/s)": "+0.2 HP per enemy defeated by your team (max. 1; cap 2 HP/s)",
+  "Sobrevives con 1 vida y 3 s de invulnerabilidad, una vez por run": "Survive with 1 HP and 3 s of invulnerability, once per run",
+  "+1 carta a elegir por nivel (4 / 5 / 6); recibes una": "+1 card choice per level (4 / 5 / 6); receive one",
+  "Elige una recompensa": "Choose one reward",
+  "¡Último Aliento!": "Last Breath!",
+
   // ---------------- tipos y regiones ----------------
   'Acero': 'Steel', 'Agua': 'Water', 'Bicho': 'Bug', 'Dragón': 'Dragon', 'Eléctrico': 'Electric', 'Fantasma': 'Ghost',
   'Fuego': 'Fire', 'Hada': 'Fairy', 'Hielo': 'Ice', 'Lucha': 'Fighting', 'Planta': 'Grass', 'Psíquico': 'Psychic',

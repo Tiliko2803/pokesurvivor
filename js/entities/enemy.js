@@ -907,6 +907,7 @@
         if (e.remote) continue;
         if (e.dead) {
           pl.kills++;
+          if (pl.onKill) pl.onKill();
           if (e.boss && !e.judge) pl.bosses++;
           G.Progress.kill(e);
           corpses.push(e);

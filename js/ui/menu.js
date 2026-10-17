@@ -322,7 +322,7 @@ G.MenuUI = (() => {
       el.innerHTML = `
         <div class="ic">${G.Icons.html(u.icon, 32)}</div>
         <div>
-          <b>${u.name}</b> <span style="color:var(--muted);font-size:13px">${u.id === 'moves' ? 'Empiezas con 2 movimientos; eliges el extra' : u.unit}</span>
+          <b>${u.name}</b> <span style="color:var(--muted);font-size:13px">${u.id === 'moves' ? 'Empiezas con 2 movimientos; eliges el extra' : u.id === 'options' ? `${u.unit} · ${3 + lvl} → ${3 + Math.min(lvl + 1, u.max)}` : u.unit}</span>
           <div class="pips">${Array.from({ length: u.max }, (_, i) => `<i class="${i < lvl ? 'on' : ''}"></i>`).join('')}</div>
         </div>
         <div class="upg-btns">

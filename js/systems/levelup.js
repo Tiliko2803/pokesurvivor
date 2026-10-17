@@ -1,4 +1,4 @@
-/* ============ levelup.js — las tres cartas de subida de nivel ============
+/* ============ levelup.js — cartas de subida de nivel ============
  * Tipos de carta:
  *   new   aprender un movimiento nuevo (sólo si quedan huecos de los 4; un vínculo libera huecos)
  *   up    mejorar un movimiento que ya tienes
@@ -104,8 +104,8 @@ G.LevelUp = (() => {
     return out;
   }
 
-  /** Devuelve 3 cartas distintas, elegidas por peso. */
-  function offer(pl, n = 3) {
+  /** Devuelve hasta 3–6 cartas distintas según Más Opciones, elegidas por peso. */
+  function offer(pl, n = pl.cardOptions || 3) {
     const pool = candidates(pl);
     const picked = [];
     const used = new Set();

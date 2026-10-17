@@ -26,6 +26,14 @@ G.Player = class Player {
     this.magnet = 78 * (perks.magnetMul || 1);
     this.xpMul = perks.xpMul || 1;
     this.coinMul = perks.coinMul || 1;
+    this.critMul = perks.critMul || 1.5;
+    this.areaMul = perks.areaMul || 1;
+    this.durationMul = perks.durationMul || 1;
+    this.cardOptions = perks.cardOptions || 3;
+    this.drainPerKill = perks.drainPerKill || 0;
+    this.drainHeal = 0;
+    this.lastBreath = !!perks.lastBreath;
+    this.lastBreathUsed = false;
 
     this.maxHp = mon.hp + (perks.hp || 0);
     this.hp = this.maxHp;
@@ -270,7 +278,15 @@ G.Player = class Player {
       G.FX.dmgText(this.x, this.y - this.bodyH - 16, '¡Banda Focus!', '#ff9a3d', true);
       G.FX.ring(this.x, this.y, 6, 70, '#ff9a3d', 0.5, 4);
     }
+    // La Banda Focus tiene prioridad; esta reserva no se repone al revivir.
+    if (this.hp <= 0 && this.lastBreath && !this.lastBreathUsed) {
+      this.lastBreathUsed = true;
+      this.hp = 1; this.invuln = 3;
+      G.FX.dmgText(this.x, this.y - this.bodyH - 16, '¡Último Aliento!', '#9ae6ff', true);
+      G.FX.ring(this.x, this.y, 6, 80, '#9ae6ff', 0.6, 4);
+    }
     if (this.hp <= 0) {
+      this.drainHeal = 0;
       this.hp = 0; this.dead = true;
       this.anim.play('Faint', { hold: true });
       G.Projectiles.clearOrbs(this);
@@ -315,6 +331,12 @@ G.Player = class Player {
     if (this.item === 'shellbell') this.bellHeal = Math.min(4, this.bellHeal + dmg * 0.04);
   }
 
+  /** Bajas del equipo: la cola corta limita la curación a 2 PV/s, sin reserva a vida llena. */
+  onKill() {
+    if (!this.dead && this.hp < this.maxHp && this.drainPerKill > 0)
+      this.drainHeal = Math.min(2, this.drainHeal + this.drainPerKill);
+  }
+
   /** Poder de un altar (ver systems/interact.js): se aplica y se quita solo. */
   addPower(def, dur) {
     if (this.power) this.power.def.off(this);
@@ -349,6 +371,11 @@ G.Player = class Player {
       if (b.n > 0) { b.t -= dt; if (b.t <= 0) b.n = 0; }
     }
     if (this.slowT > 0) this.slowT -= dt;
+    if (this.drainHeal > 0) {
+      const h = Math.min(this.drainHeal, 2 * dt);
+      this.hp = Math.min(this.maxHp, this.hp + h);
+      this.drainHeal = this.hp >= this.maxHp ? 0 : this.drainHeal - h;
+    }
     if (this.bellHeal > 0) { const h = Math.min(this.bellHeal, 4 * dt); this.hp = Math.min(this.maxHp, this.hp + h); this.bellHeal -= h; }
     if (this.power && (this.power.t -= dt) <= 0) { this.power.def.off(this); this.power = null; }
     if (this.regen > 0) this.hp = Math.min(this.maxHp, this.hp + this.regen * dt);
@@ -438,6 +465,8 @@ G.Player = class Player {
     if (n.hp < this.hp - 0.5 && !n.dead) this.flash = 0.14;
     this.hp = n.hp; this.maxHp = n.maxHp;
     this.magnet = n.mag || this.magnet;
+    this.areaMul = n.areaMul || 1;
+    this.durationMul = n.durationMul || 1;
     this.reviveT = n.rev || 0;
     if (n.dead && !this.dead) { this.dead = true; this.anim.play('Faint', { hold: true }); G.Projectiles.clearOrbs(this); }
     else if (!n.dead && this.dead) this.revive(n.hp / (n.maxHp || 1));

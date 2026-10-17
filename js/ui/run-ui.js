@@ -35,6 +35,9 @@ G.RunUI = (() => {
 
   function renderCards(list) {
     offers = list;
+    const hint = $('lvl-hint');
+    if (hint) hint.innerHTML = `${G.I18n.t('Elige una recompensa')} · ` + list.map((_, i) => `<kbd>${i + 1}</kbd>`).join(' ');
+    $('cards').classList.toggle('more-options', list.length > 3);
     const left = rerollsLeft();
     $('lvl-rr-n').textContent = left;
     $('lvl-reroll').classList.toggle('hidden', left <= 0);

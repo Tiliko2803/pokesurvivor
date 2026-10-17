@@ -937,3 +937,18 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
 .repertoire-picker .chip, [data-repertoire] { min-height: 44px; }
 .repertoire-picker .chip { white-space: normal; text-align: left; }
 .repertoire-upgrade { grid-column: 1 / -1; }
+
+/* Más Opciones: cuatro cartas legibles también en móvil horizontal. */
+#scr-levelup .box { max-height: calc(100dvh - 12px); overflow-y: auto; }
+#cards.more-options { width: min(900px, 100%); }
+@media (min-width: 640px) {
+  #cards.more-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #scr-levelup:has(.more-options) .box { width: min(960px, 100%); }
+}
+@media (max-height: 520px) {
+  #cards.more-options { gap: 6px; }
+  #cards.more-options .card { padding: 7px 9px; gap: 8px; }
+  #cards.more-options .ico { flex-basis: 30px; height: 30px; }
+  #cards.more-options .nm { font-size: 15px; }
+  #cards.more-options .ds { font-size: 12px; }
+}

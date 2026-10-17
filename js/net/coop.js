@@ -126,12 +126,12 @@ G.Coop = (() => {
     const m = g.find(x => x.kind === 'orbit') || g[0];
     return [r1(local.x), r1(local.y), r2(local.moveAngle), local.walking ? 1 : 0, r1(local.hp), r1(local.maxHp),
             local.dead ? 1 : 0, m ? m.id : '', m ? m.lvl : 1, r1(local.magnet), r2(local.aim), r2(local.xpMul),
-            r2(local.reviveT || 0),local.mega==='swampertite'?1:local.mega==='blazikenite'?2:0,r2(Math.min(150,local.megaElapsed||0))];
+            r2(local.reviveT || 0),local.mega==='swampertite'?1:local.mega==='blazikenite'?2:0,r2(Math.min(150,local.megaElapsed||0)), r2(local.areaMul || 1), r2(local.durationMul || 1)];
   }
 
   function readState(a) {
     return { x: a[0], y: a[1], ang: a[2], walk: a[3], hp: a[4], maxHp: a[5], dead: a[6], mv: a[7], ml: a[8],
-             mag: a[9], aim: a[10], xpMul: a[11], rev: a[12], mega:a[13]===1||a[13]===2, megaElapsed:Math.max(0,Math.min(150,+a[14]||0)) };
+             mag: a[9], aim: a[10], xpMul: a[11], rev: a[12], mega:a[13]===1||a[13]===2, megaElapsed:Math.max(0,Math.min(150,+a[14]||0)), areaMul: Math.max(1, Math.min(1.2, +a[15] || 1)), durationMul: Math.max(1, Math.min(1.25, +a[16] || 1)) };
   }
 
   // ---------------- envío ----------------
@@ -259,8 +259,8 @@ G.Coop = (() => {
           break;
         }
         case 'c':
-          G.Combat.ghostCast(m.pl, ev[1], ev[2], ev[3], ev[4]);
-          emit(['c', from, ev[1], ev[2], ev[3], ev[4]], from);
+          G.Combat.ghostCast(m.pl, ev[1], ev[2], ev[3], ev[4], ev[5], ev[6]);
+          emit(['c', from, ev[1], ev[2], ev[3], ev[4], ev[5], ev[6]], from);
           break;
         case 'pb':
           G.World.breakAt(ev[1], ev[2]);
@@ -320,14 +320,14 @@ G.Coop = (() => {
       case 'ne':
         G.EnemyMgr.addRemote({ id: ev[1], dex: ev[2], x: ev[3], y: ev[4], boss: !!ev[5], shiny: !!ev[6], hp: ev[7], dmg: ev[8], beh: ev[9] });
         break;
-      case 'ed': G.EnemyMgr.removeRemote(ev[1], true); break;
+      case 'ed': G.EnemyMgr.removeRemote(ev[1], true); if (local.onKill) local.onKill(); break;
       case 'eg': G.EnemyMgr.removeRemote(ev[1], false); break;
       case 'hn': { const e = G.EnemyMgr.get(ev[1]); if (e && !e.dead) e.showHurt(ev[2], ev[3]); break; }
       case 'es':
         G.Projectiles.spawn({ x: ev[1], y: ev[2], vx: ev[3], vy: ev[4], dmg: ev[5], r: ev[6], life: ev[7],
                               friendly: false, color: '#ff7a9e', vis: G.VFX.forType(ev[8]), mtype: ev[8] });
         break;
-      case 'c': { const m = mates.get(ev[1]); if (m) G.Combat.ghostCast(m.pl, ev[2], ev[3], ev[4], ev[5]); break; }
+      case 'c': { const m = mates.get(ev[1]); if (m) G.Combat.ghostCast(m.pl, ev[2], ev[3], ev[4], ev[5], ev[6], ev[7]); break; }
       case 'item': api.item(ev[1]); break;
       case 'pk': G.Pickups.addRemote(ev[1], ev[2], ev[3], ev[4], ev[5]); break;
       case 'pc': G.Pickups.removeId(ev[1]); break;
@@ -361,8 +361,8 @@ G.Coop = (() => {
   /** Tu ataque: los demás lo repiten como fantasma. */
   function cast(pl, m) {
     if (!active || pl !== local) return;
-    if (host) emit(['c', me, m.id, m.lvl, r2(pl.aim), m.evolved ? 1 : 0]);
-    else outEv.push(['c', m.id, m.lvl, r2(pl.aim), m.evolved ? 1 : 0]);
+    if (host) emit(['c', me, m.id, m.lvl, r2(pl.aim), m.evolved ? 1 : 0, r2(pl.areaMul || 1), r2(pl.durationMul || 1)]);
+    else outEv.push(['c', m.id, m.lvl, r2(pl.aim), m.evolved ? 1 : 0, r2(pl.areaMul || 1), r2(pl.durationMul || 1)]);
   }
 
   // invitado

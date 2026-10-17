@@ -24,13 +24,26 @@ G.Combat = (() => {
     for (const m of pl.activeGroup()) tickMove(dt, pl, m, now);
   }
 
+  function effectiveMove(pl, m) {
+    const area = pl.areaMul || 1, duration = pl.durationMul || 1;
+    if (area === 1 && duration === 1) return m;
+    const out = Object.assign({}, m);
+    for (const key of ['radius', 'width', 'size']) if (m[key] != null) out[key] = m[key] * area;
+    // No alarga recargas, demoras de meteoros ni viajes de proyectiles.
+    if (['buff', 'mine', 'turret', 'trail'].includes(m.kind)) {
+      const fallback = { mine: 7, turret: 6, trail: 3 };
+      out.dur = (m.dur || fallback[m.kind] || 0) * duration;
+    }
+    return out;
+  }
+
   function tickMove(dt, pl, m, now) {
-    if (m.kind === 'orbit') { orbit(pl, m, dt, now); return; }
+    if (m.kind === 'orbit') { orbit(pl, effectiveMove(pl, m), dt, now); return; }
 
     m.t -= dt;
     if (m.t > 0) return;
     // Los ataques que necesitan blanco esperan a tenerlo (no gastes animación al aire).
-    if (needsTarget(m) && !(pl.target && G.U.dist(pl.x, pl.y, pl.target.x, pl.target.y) <= reach(m))) {
+    if (needsTarget(m) && !(pl.target && G.U.dist(pl.x, pl.y, pl.target.x, pl.target.y) <= reach(effectiveMove(pl, m)))) {
       m.t = 0.05;
       return;
     }
@@ -41,7 +54,7 @@ G.Combat = (() => {
     // enemigo, como Ascuas tras Ataque Rápido, casi no se ve).
     m.castAt = performance.now();
 
-    run(pl, m);
+    run(pl, effectiveMove(pl, m));
   }
 
   function run(pl, m) {
@@ -505,7 +518,7 @@ G.Combat = (() => {
   }
 
   /** Repite el ataque de un compañero sólo para verlo (sin daño). */
-  function ghostCast(pl, id, lvl, aim, evolved) {
+  function ghostCast(pl, id, lvl, aim, evolved, area, duration) {
     const def = G.Moves.BY_ID[id];
     if (!def || def.kind === 'orbit') return;
     const m = G.Moves.instance(id, lvl);
@@ -514,25 +527,24 @@ G.Combat = (() => {
     ghost = true;
     try {
       pl.cast(m);
-      run(pl, m);
+      run(pl, effectiveMove({ areaMul: area || pl.areaMul, durationMul: duration || pl.durationMul }, m));
     } finally { ghost = false; }
   }
 
   /** Orbes de un compañero que tiene activo un movimiento de órbita (sólo visual). */
   function ghostOrbit(pl, dt, now) {
     const m = pl.activeMove();
-    if (m && m.kind === 'orbit' && !pl.dead) orbit(pl, m, dt, now, true);
+    if (m && m.kind === 'orbit' && !pl.dead) orbit(pl, effectiveMove(pl, m), dt, now, true);
     else if (G.Projectiles.all().some(p => p.orb && p.owner === pl)) G.Projectiles.clearOrbs(pl);
   }
 
-  // Golpe crítico (Mejoras → Golpe Crítico): x1,5 de daño, número naranja y grande.
-  const CRIT_MUL = 1.5;
+  // Golpe Devastador eleva el multiplicador crítico de x1,5 hasta x2.
   const isCrit = pl => !ghost && pl.critChance > 0 && Math.random() < pl.critChance;
 
   function hit(pl, e, dmg, col, dx, dy, knock, m) {
     const k = typeK(m.type, e);
     const crit = isCrit(pl);
-    dmg *= k * (crit ? CRIT_MUL : 1);
+    dmg *= k * (crit ? pl.critMul || 1.5 : 1);
     e.hurt(dmg, col, dx, dy, knock, crit ? 'crit' : G.Types.label(G.Types.mult(m.type, e.types)));
     if (!ghost) pl.onDealt(dmg);
     pl.dmgDealt += dmg;
@@ -639,7 +651,7 @@ G.Combat = (() => {
         }
 
         const crit = isCrit(pl);
-        const k = (p.mtype ? typeK(p.mtype, e) : 1) * (crit ? CRIT_MUL : 1);
+        const k = (p.mtype ? typeK(p.mtype, e) : 1) * (crit ? pl.critMul || 1.5 : 1);
         e.hurt(p.dmg * k, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), p.knock,
                crit ? 'crit' : p.mtype ? G.Types.label(G.Types.mult(p.mtype, e.types)) : null);
         if (Math.random() < 0.5) G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });

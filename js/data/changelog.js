@@ -6,6 +6,14 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Más mejoras para tu Pokémon', 'More upgrades for your Pokémon'], new: [
+    ['Seis nuevas mejoras permanentes por Pokémon: Golpe Devastador (críticos hasta x2), Expansión (hasta +20% de tamaño), Persistencia (hasta +25% de duración), Drenaje, Último Aliento y Más Opciones.',
+     'Six new permanent upgrades per Pokémon: Devastating Blow (up to x2 criticals), Expansion (up to +20% size), Persistence (up to +25% duration), Drain, Last Breath and More Choices.'],
+    ['Drenaje recupera hasta 1 PV por baja del equipo, con un tope de 2 PV/s. Último Aliento permite resistir un golpe mortal con 1 PV y 3 segundos de invulnerabilidad una vez por partida; la Banda Focus tiene prioridad.',
+     'Drain restores up to 1 HP per team kill, capped at 2 HP/s. Last Breath survives one lethal hit per run with 1 HP and 3 seconds of invulnerability; Focus Sash takes priority.'],
+    ['Más Opciones tiene tres niveles: hasta cuatro, cinco o seis cartas distintas por nivel y al cambiarlas; eliges una. Usa los números 1–6 o toca la carta. Persistencia alarga buffs, minas, torretas y rastros.',
+     'More Choices has three levels: up to four, five or six distinct cards on level-up and rerolls; choose one. Use keys 1–6 or tap a card. Persistence extends buffs, mines, turrets and trails.']
+  ] },
   { d: '2026-10-16', title: ['Tirada Élite y mejores colecciones', 'Elite pulls and better collections'], new: [
     ['Tirada Élite: canjea un ticket ×10 por cinco Pokémon de rareza Rara o superior. Cada uno tiene un 4.5% de probabilidad de ser Legendario, el triple que en las normales. Comparte la garantía del banner.',
      'Elite pull: exchange one ×10 ticket for five Rare-or-better Pokémon. Each has a 4.5% Legendary chance, triple the normal odds. Banner pity is shared.']
