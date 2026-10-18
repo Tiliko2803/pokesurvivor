@@ -18,12 +18,20 @@ test('Todos los mayores acordados, protagonistas DLC y personajes custom quedan 
   assert.equal(R.eligibleMinor({dex:25,leg:false},{25:{}}),false);
   assert.equal(R.eligibleMinor({dex:377,leg:true},{}),false);
 });
+test('Only seven Hoenn candidates with native sprites are eligible, including Jirachi and Deoxys',()=>{
+  const ids=G.DEX.filter(m=>R.eligibleMinor(m,G.SPRITE_META)).map(m=>m.dex).sort((a,b)=>a-b);
+  assert.deepEqual(Array.from(ids),[377,378,379,380,381,385,386]);
+  for(const dex of [144,145,146,243,244,245,480,481,482,488,638,639,640,641,642,645])
+    assert.equal(R.eligibleMinor(G.DEX_BY[dex],G.SPRITE_META),false,String(dex));
+  for(const dex of ids){assert.equal(G.DEX_BY[dex].gen,3);assert.ok(G.SPRITE_META[dex]);}
+  assert.throws(()=>R.selectMinors(G.DEX,G.SPRITE_META,8));
+});
 test('Sorteo sin repeticiones, sólo especies elegibles con sprites',()=>{
   for(let seed=0;seed<100;seed++){
     let n=seed+1;const random=()=>{n=(n*1664525+1013904223)>>>0;return n/4294967296;};
     const picks=R.selectMinors(G.DEX,G.SPRITE_META,6,random);
     assert.equal(new Set(picks).size,6);
-    for(const dex of picks)assert.ok(R.eligibleMinor(G.DEX_BY[dex],G.SPRITE_META));
+    for(const dex of picks){assert.ok(R.eligibleMinor(G.DEX_BY[dex],G.SPRITE_META));assert.equal(G.DEX_BY[dex].gen,3);}
   }
   assert.throws(()=>R.selectMinors([],{},2));
 });

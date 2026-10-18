@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Hoenn también en los menores', 'Hoenn minor legends too'], chg: [
+    ['El Boss Rush de Hoenn sortea seis menores distintos entre Regirock, Regice, Registeel, Latias, Latios, Jirachi y Deoxys. Los dos singulares se incluyen en este grupo de combate; queda uno fuera al azar en cada intento. Se conserva la dificultad por tramo de la prueba.',
+     'The Hoenn Boss Rush draws six distinct minors from Regirock, Regice, Registeel, Latias, Latios, Jirachi and Deoxys. The two Mythical Pokémon are included in this encounter group; one is randomly left out each attempt. Preview difficulty by route slot is preserved.']
+  ] },
   { d: '2026-10-18', title: ['Los menores abren el Boss Rush', 'Minor legends open Boss Rush'], chg: [
     ['La prueba de Hoenn empieza con dos legendarios menores antes de Groudon: nueve combates y seis menores distintos durante toda la ruta. Los dos iniciales dan un nivel base de experiencia cada uno; después se conservan las recompensas de tres niveles y los bonos nativos.',
      'The Hoenn preview starts with two minor legends before Groudon: nine encounters and six distinct minors throughout the route. Each opening minor grants one base level of XP; later fights retain three-level rewards and native bonuses.'],

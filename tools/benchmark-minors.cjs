@@ -1,10 +1,10 @@
 /* Native Boss Rush minor combat, legal Mega Blaziken cards and prior XP/Bonds.
- * Entei is a neutral Fighting matchup with real native boss movement and hitboxes.
+ * Jirachi is a neutral Fighting matchup with real native boss movement and hitboxes.
  * Incoming damage is ignored; 85% casting uptime approximates time spent dodging.
  * These are offensive references, not a promise for every species, build or player. */
 const {simulate:run}=require('./benchmark-kyogre.cjs');
 const STAGES=[0,1,3,4,6,7];
-const simulate=options=>run({minorDex:244,...options});
+const simulate=options=>run({minorDex:385,...options});
 module.exports={simulate,STAGES};
 if(require.main===module)(async()=>{
   for(const stage of STAGES)for(const build of ['power','rapid'])console.log(JSON.stringify(await simulate({stage,build})));

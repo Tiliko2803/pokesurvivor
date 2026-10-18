@@ -13,5 +13,5 @@ test('Kyogre withstands evolved Aura Sphere and Swords Dance, max gold and a nat
 test('Kyogre has fixed HP and rewards better attack uptime with an earlier victory',async()=>{
   const fast=await simulate({uptime:1}),dodge=await simulate({uptime:.75});
   assert.equal(fast.hp,dodge.hp);assert.ok(fast.defeated&&dodge.defeated);
-  assert.ok(dodge.seconds>fast.seconds+35);
+  assert.ok(dodge.seconds>fast.seconds*1.20);
 });

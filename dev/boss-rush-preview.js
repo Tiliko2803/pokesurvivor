@@ -215,7 +215,7 @@ G.BossRushPreview = (() => {
     const root = document.createElement('section'); root.id = 'scr-boss-rush'; root.className = 'scr dim hidden';
     root.innerHTML = `<div class="panel rush-setup"><span class="rush-kicker">BOSS RUSH · HOENN</span>
       <h1>El trío de Hoenn</h1><p>Tres legendarios mayores. Aprende sus señales, esquiva y contraataca.</p>
-      <div class="rush-route"><b>2 menores → Groudon → 2 menores → Kyogre → 2 menores → Rayquaza</b><span>Nueve combates. Los menores preparan tu build para cada legendario mayor.</span></div>
+      <div class="rush-route"><b>2 menores → Groudon → 2 menores → Kyogre → 2 menores → Rayquaza</b><span>Nueve combates. Seis menores distintos de Hoenn: Regis, Latias, Latios, Jirachi o Deoxys.</span></div>
       <div class="rush-fields"><label>Tu Pokémon<select id="rush-partner"></select></label>
       <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
       <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">

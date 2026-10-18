@@ -4,7 +4,7 @@ test('All six native minor encounters last 1–2 minutes against the legal max-g
   const levels=[8,9,14,18,26,30];
   for(const [i,stage]of STAGES.entries())for(const build of ['power','rapid'])for(const seed of [7,123,456]){
     const r=await simulate({stage,build,seed});
-    assert.equal(r.dex,244);assert.equal(r.levelAtStart,levels[i]);assert.equal(r.choices,r.levelAtStart-1);
+    assert.equal(r.dex,385);assert.equal(r.levelAtStart,levels[i]);assert.equal(r.choices,r.levelAtStart-1);
     assert.equal(r.mega,'blazikenite');assert.equal(r.maxGold,true);assert.equal(r.defeated,true);
     assert.equal(r.fused,stage>2);assert.equal(r.phase,null);
     assert.ok(r.seconds>=60&&r.seconds<=120,JSON.stringify({stage,...r}));

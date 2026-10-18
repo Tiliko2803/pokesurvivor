@@ -2,13 +2,14 @@
 G.BossRushRules = (() => {
   const MAJOR_STAGES = Object.freeze({ groudon: 2, kyogre: 5, rayquaza: 8 });
   const MINOR_STAGES = Object.freeze([0, 1, 3, 4, 6, 7]);
+  const HOENN_MINORS = Object.freeze([377, 378, 379, 380, 381, 385, 386]);
   // Fixed encounter budgets; never read the player's damage or build during a run.
   const MINOR_HP = Object.freeze([240000, 320000, 800000, 1200000, 2400000, 3600000]);
   // User-defined major group, including cover legends and expansion protagonists.
   const MAJORS = new Set([150,249,250,382,383,384,483,484,487,493,643,644,646,
     716,717,718,791,792,800,888,889,890,892,898,1007,1008,1017,1024]);
   const eligibleMinor = (mon, meta) => !!mon && !!mon.leg && Number.isInteger(mon.dex) &&
-    mon.dex > 0 && mon.dex <= 1025 && !MAJORS.has(mon.dex) && !!meta?.[mon.dex];
+    HOENN_MINORS.includes(mon.dex) && !MAJORS.has(mon.dex) && !!meta?.[mon.dex];
   function selectMinors(dex, meta, count = 2, random = Math.random) {
     const pool = [...new Map(dex.filter(p => eligibleMinor(p, meta)).map(p => [p.dex,p])).values()];
     if (!Number.isInteger(count) || count < 0 || pool.length < count) throw new Error('No hay suficientes legendarios menores disponibles.');
@@ -40,5 +41,5 @@ G.BossRushRules = (() => {
   }
   // The opening pair adds two base levels; later encounters retain their three-level reward.
   const rewardLevels = stage => stage < MAJOR_STAGES.groudon ? 1 : 3;
-  return { MAJOR_STAGES, MINOR_STAGES, eligibleMinor, selectMinors, minorStats, bossHp, extraCooldownDecay, rewardXp, rewardLevels };
+  return { MAJOR_STAGES, MINOR_STAGES, HOENN_MINORS, eligibleMinor, selectMinors, minorStats, bossHp, extraCooldownDecay, rewardXp, rewardLevels };
 })();
