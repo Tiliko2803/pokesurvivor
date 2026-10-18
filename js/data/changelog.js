@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Los mayores desincronizan sus ataques', 'Major bosses stagger their attacks'], chg: [
+    ['Groudon, Kyogre y Rayquaza tienen enfriamientos y desfases independientes por movimiento en la prueba del Boss Rush. Pueden preparar un ataque mientras otro sigue en curso, con hasta uno, dos o tres movimientos según la fase y separación entre avisos e impactos.',
+     'Groudon, Kyogre and Rayquaza have independent move cooldowns and offsets in the Boss Rush preview. They can prepare a move while another is still running, with up to one, two or three moves by phase and spacing between warnings and impacts.'],
+    ['Los avisos ya visibles conservan su duración y posición. Las combinaciones comprueban rutas alcanzables, incluso con ralentización; Terremoto, Pulso Primigenio y Cometa Draco conservan sus lanzamientos exclusivos y sus recuperaciones.',
+     'Visible warnings keep their duration and position. Combinations check reachable escape routes, including slowed players; Earthquake, Origin Pulse and Draco Meteor retain exclusive casts and recovery windows.']
+  ] },
   { d: '2026-10-18', title: ['El Dúo Eón llega al Boss Rush', 'The Eon Duo joins Boss Rush'], new: [
     ['Latios y Latias luchan juntos después de Groudon en la prueba de Hoenn Normal, con 190000 PV base por Pokémon. Comparten Cabezazo Zen, Pulso Dragón y Psíquico: Latios persigue de cerca y Latias mantiene distancia. Sus ataques tienen avisos fijos, relojes desfasados y efectos de píxeles propios.',
      'Latios and Latias fight together after Groudon in the Normal Hoenn preview, with 190,000 base HP each. They share Zen Headbutt, Dragon Pulse and Psychic: Latios pursues up close and Latias keeps her distance. Their attacks have fixed warnings, staggered clocks and dedicated pixel effects.'],

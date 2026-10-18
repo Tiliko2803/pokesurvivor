@@ -128,6 +128,7 @@ G.BossRushPreview = (() => {
         return Math.max(0, before - pl.hp);
       },signal};
     encounter = def.members?new (def.group==='eon'?G.Eon.Encounter:G.Regis.Encounter)({...options,bosses:bosses.map(b=>({dex:b.dex,name:b.name,source:b,get x(){return b.x-ox;},set x(v){b.x=ox+v;},get y(){return b.y-oy;},set y(v){b.y=oy+v;},r:b.r,get hp(){return b.hp;},get maxHp(){return b.maxHp;},get dead(){return b.dead;}}))}):def.major?new Encounter(options):null;
+    if(def.major)G.MajorCadence.attach(encounter);
     G.Sprites.preload([...bosses.map(b=>b.dex), p.dex], 8000);
     G.Spawner.say(def.members?def.title+' · ¡Vence a todos!':def.major ? boss.name+(def.dex===384?' · Señor de los cielos':def.dex===382?' · El océano despierta':' · El despertar') : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);
   }
