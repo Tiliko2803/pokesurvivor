@@ -1,15 +1,15 @@
 # Boss Rush de Hoenn · versión de pruebas
 
-La URL `/dev/` usa los módulos actuales del Live y un adaptador aislado. La cuenta real no se modifica. La ruta actual tiene siete encuentros y diez enemigos:
+La URL `/dev/` usa los módulos actuales del Live y un adaptador aislado. La cuenta real no se modifica. La ruta actual tiene seis encuentros y nueve enemigos:
 
 1. **Regirock + Regice + Registeel juntos**, Los Tres Guardianes.
 2. **Groudon**.
 3. **Latios + Latias juntos**, el Dúo Eón.
 4. **Kyogre**.
-5. **Jirachi y Deoxys**, uno por encuentro, en orden aleatorio.
+5. **Jirachi**, único combate entre Kyogre y Rayquaza.
 6. **Rayquaza**.
 
-El Dúo Eón ocupa un solo encuentro después de Groudon. Jirachi y Deoxys conservan sus dos encuentros individuales tras Kyogre, barajados sin repetir; los Regis y el Dúo Eón no reaparecen. Jirachi y Deoxys son singulares incluidos expresamente en el grupo de encuentros menores del juego. Los mayores y personajes custom no se sortean como menores.
+El Dúo Eón ocupa un solo encuentro después de Groudon. La ruta está fijada: Kyogre → Jirachi → Rayquaza. Deoxys queda reservado para después y no es elegible para encuentros de esta prueba; sigue disponible como especie del juego y referencia de jugador.
 
 ## Los Tres Guardianes
 
@@ -31,7 +31,7 @@ Usan el mismo coordinador de desincronización que los Regis: seis relojes indep
 
 Jirachi tiene un encuentro propio en el observatorio de los deseos: [JIRACHI.md](JIRACHI.md). Usa Deseo Oculto, Rapidez, Foco Resplandor y Psíquico, con fases al 70%/35%. En fase 2 combina hasta dos movimientos conservando 2.5 s para Deseo Oculto; en fase 3 acelera los avisos nuevos y conserva el límite de dos. Tras terminar Deseo Oculto y los movimientos pendientes deja un segundo adicional para contraatacar.
 
-Su vida es 600000 / 900000 PV según aparezca antes o después de Deoxys. La referencia ofensiva inicial dura 1:51 con Deoxys normal y 0:24 con Mega Blaziken; no se infla la vida para igualar builds y resistencias distintas. El anillo psíquico y las estrellas dañan con sus frentes y proyectiles visibles, no con toda el área anunciada. Sigue dando la recompensa de un menor y ningún Vínculo.
+Su vida es 600000 PV base. La referencia ofensiva inicial dura 1:51 con Deoxys normal y 0:24 con Mega Blaziken; no se infla la vida para igualar builds y resistencias distintas. El anillo psíquico y las estrellas dañan con sus frentes y proyectiles visibles, no con toda el área anunciada. Da seis niveles base de experiencia y ningún Vínculo, para conservar el poder de llegada a Rayquaza.
 
 ## Preparación y progresión
 
@@ -39,8 +39,8 @@ Su vida es 600000 / 900000 PV según aparezca antes o después de Deoxys. La ref
 - Cuatro Pokémon de prueba: Swampert, Blaziken, Sceptile y Tyranitar. Las tres piedras Mega están desbloqueadas y equipadas; se pueden quitar desde el menú. Mega Tyranitar: [MEGA-TYRANITAR.md](MEGA-TYRANITAR.md).
 - Dos ataques iniciales distintos, al menos uno de daño. El movimiento propio de cada Mega empieza en nivel 2 si se elige: Terratemblor, Golpe Kárate o Lanzarrocas.
 - Se conservan movimientos, cartas y estadísticas durante todos los encuentros. Sólo los mayores dan un Vínculo; se usa el sistema nativo de fusión, con intermedio pausado mientras se elige.
-- El trío inicial entrega una única recompensa de dos niveles base y 20% de vida al caer los tres. El Dúo Eón entrega seis niveles base en una única recompensa; las victorias individuales posteriores dan XP equivalente a los requisitos de tres niveles siguientes, 20% de curación y tres segundos de intermedio. Se conservan bonos de experiencia y reparto nativo de orbes.
-- Sin bonos se llega a Groudon a nivel 10, Kyogre a 19 y Rayquaza a 28, terminando en 31. Con Sabiduría de oro máxima y sin cartas de Aprendizaje, las referencias llegan en niveles 10/21/33; el bono se aplica a una recompensa conjunta del dúo en vez de dos victorias separadas.
+- El trío inicial entrega una única recompensa de dos niveles base y 20% de vida al caer los tres. El Dúo Eón entrega seis niveles base en una única recompensa; Jirachi entrega otros seis niveles base en una única victoria. Los mayores dan XP equivalente a los requisitos de tres niveles siguientes, 20% de curación y tres segundos de intermedio. Se conservan bonos de experiencia y reparto nativo de orbes.
+- Sin bonos se llega a Groudon a nivel 10, Kyogre a 19 y Rayquaza a 28, terminando en 31. Con Sabiduría de oro máxima y sin cartas de Aprendizaje, las referencias llegan en niveles 10/21/33; los bonos se aplican a las recompensas conjuntas del dúo y Jirachi.
 - La vida de cada enemigo se multiplica una sola vez por el número de jugadores inicial. Las bajas y salidas no reducen esa cifra. La entrada cooperativa y sincronización del modo siguen pendientes; el escalado se verifica con equipos simulados.
 
 ## Vida y dificultad
@@ -51,9 +51,7 @@ Su vida es 600000 / 900000 PV según aparezca antes o después de Deoxys. La ref
 | Groudon | 400000 | Patrones propios | Por fases |
 | Dúo Eón | 190000 cada uno | Movimientos 33–40 | Relojes por movimiento |
 | Kyogre | 2500000 | Patrones propios | Por fases |
-| Deoxys, primer tramo | 2400000 | 44 | ×1.30 |
-| Deoxys, segundo tramo | 3600000 | 48 | ×1.345 |
-| Jirachi, primer / segundo tramo | 600000 / 900000 | Movimientos 24–48; ×48/44 en el segundo | Relojes por movimiento |
+| Jirachi | 600000 | Movimientos 24–48 | Relojes por movimiento |
 | Rayquaza | 5000000 | Patrones propios | Por fases |
 
 No hay vida adaptativa al DPS, regeneración del jefe para alargar peleas ni invulnerabilidad por tiempo. Se conservan tipos, defensa, críticos y estados. En los menores que aún usan la IA nativa sólo se reduce la espera entre ataques; sus avisos, proyectiles y movimiento conservan las reglas normales. La cadencia total con furia no supera ×1.5.
@@ -84,6 +82,8 @@ Los efectos se dibujan en un lienzo de baja resolución ampliado sin suavizado. 
 
 ## Recursos y aislamiento
 
+**Probar solo a Jirachi** inicia directamente su combate en nivel 25, con 24 cartas de preparación y dos Vínculos disponibles para el sistema normal de combinación. Mega Blaziken empieza con Impulso acumulado de 150 s para aproximar su llegada por la ruta. El reloj queda congelado durante la preparación. Al vencer a Jirachi termina la prueba sin pasar a Rayquaza. La ruta completa conserva su inicio en nivel 8.
+
 Cada recarga crea una sesión invitada en memoria con 100000 Pokémonedas y los cuatro Pokémon de prueba. **Mejoras de oro** abre la tienda nativa; **Mejorar al máximo** completa todas las mejoras del Pokémon seleccionado gratis, fuera de combate, sin agregar cartas ni niveles. **Reponer dinero de prueba** restaura 100000 conservando las compras de la sesión. Recargar reinicia la prueba.
 
 Coberturas, Repertorio, Veto y Atajos usan los módulos del Live. Los selectores se reconstruyen al volver de la tienda y conservan ataques todavía válidos. Swampert puede elegir Rayo Hielo → Rayo Polar o Nieve Polvo → Ventisca por Coberturas; Puño Hielo no está implementado. La selección de Coberturas se copia al empezar cada intento.
@@ -94,7 +94,7 @@ No se carga configuración Firebase ni se registra service worker. Se conserva `
 
 Sólo para cambios de este prototipo se ejecuta `node tools/build-boss-rush-preview.cjs`; genera exclusivamente `dev/index.html`. Nunca se regenera el `index.html` oficial, bundle ni `version.json`. Se publica con los archivos concretos sobre el `main` más reciente para conservar trabajo concurrente.
 
-Pruebas relevantes: `tests/jirachi.test.cjs`, `tests/jirachi-integration.test.cjs`, `tests/jirachi-duration.test.cjs`, `tests/major-cadence.test.cjs`, `tests/major-cadence-integration.test.cjs`, `tests/eon.test.cjs`, `tests/eon-integration.test.cjs`, `tests/eon-duration.test.cjs`, `tests/regis.test.cjs`, `tests/regis-integration.test.cjs`, `tests/regis-duration.test.cjs`, `tests/boss-rush-rules.test.cjs` y las de integración, duración, geometría y efectos de los tres mayores. También se mantienen las regresiones de Coberturas, mejoras de oro y las Megas. Bancos nativos: `tools/benchmark-jirachi.cjs`, `tools/benchmark-eon.cjs`, `tools/benchmark-regis.cjs`, `tools/benchmark-minors.cjs`, `tools/benchmark-groudon.cjs`, `tools/benchmark-kyogre.cjs` y `tools/benchmark-rayquaza.cjs`.
+Pruebas relevantes: `tests/jirachi-direct.test.cjs`, `tests/jirachi.test.cjs`, `tests/jirachi-integration.test.cjs`, `tests/jirachi-duration.test.cjs`, `tests/major-cadence.test.cjs`, `tests/major-cadence-integration.test.cjs`, `tests/eon.test.cjs`, `tests/eon-integration.test.cjs`, `tests/eon-duration.test.cjs`, `tests/regis.test.cjs`, `tests/regis-integration.test.cjs`, `tests/regis-duration.test.cjs`, `tests/boss-rush-rules.test.cjs` y las de integración, duración, geometría y efectos de los tres mayores. También se mantienen las regresiones de Coberturas, mejoras de oro y las Megas. Bancos nativos: `tools/benchmark-jirachi.cjs`, `tools/benchmark-eon.cjs`, `tools/benchmark-regis.cjs`, `tools/benchmark-minors.cjs`, `tools/benchmark-groudon.cjs`, `tools/benchmark-kyogre.cjs` y `tools/benchmark-rayquaza.cjs`.
 
 Las pruebas de integración usan el Game, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con interfaz simulada. La revisión visual usa Canvas nativo y sprites reales; no sustituye probar en navegador o Android. Pendientes: cooperativo del modo y balance humano de la ruta nueva.
 

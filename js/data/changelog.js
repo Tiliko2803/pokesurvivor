@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Jirachi directo y ruta fija de Hoenn', 'Direct Jirachi test and fixed Hoenn route'], chg: [
+    ['Jirachi es el único encuentro entre Kyogre y Rayquaza. Deoxys queda reservado para después. Jirachi entrega seis niveles base de experiencia para conservar la progresión hacia el combate final.',
+     'Jirachi is the only encounter between Kyogre and Rayquaza. Deoxys is reserved for later. Jirachi grants six base levels of XP to preserve progression toward the final battle.']
+  ], new: [
+    ['El botón Probar solo a Jirachi permite entrar directamente en nivel 25, con 24 mejoras de preparación y dos Vínculos disponibles. Al vencerlo termina la prueba; puedes conservar tu selección de Pokémon, movimientos y mejoras de oro.',
+     'The Test Jirachi only button starts directly at level 25, with 24 preparation choices and two available Bonds. Defeating Jirachi ends the test; your selected Pokémon, moves and gold upgrades are used.']
+  ] },
   { d: '2026-10-18', title: ['Jirachi abre el observatorio de los deseos', 'Jirachi opens the wish observatory'], new: [
     ['Jirachi tiene un combate propio en la prueba de Hoenn con Deseo Oculto, Rapidez, Foco Resplandor y Psíquico. Sus fases cambian al 70% y 35%: primero ataques individuales, después hasta dos movimientos desfasados y finalmente avisos más rápidos.',
      'Jirachi has a dedicated Hoenn preview encounter with Doom Desire, Swift, Flash Cannon and Psychic. Phases change at 70% and 35%: single attacks first, then up to two staggered moves, followed by faster warnings.'],

@@ -1,9 +1,9 @@
 /* Boss Rush minor combat in the native engine, legal Mega Blaziken cards and prior XP/Bonds.
- * Jirachi now uses its scripted encounter; Deoxys retains its native patterns.
+ * Jirachi is the only active post-Kyogre encounter; Deoxys is reserved.
  * Incoming damage is ignored; 85% casting uptime approximates time spent dodging.
  * These are offensive references, not a promise for every species, build or player. */
 const {simulate:run}=require('./benchmark-kyogre.cjs');
-const STAGES=[4,5];
+const STAGES=[4];
 const simulate=options=>run({minorDex:385,...options});
 module.exports={simulate,STAGES};
 if(require.main===module)(async()=>{

@@ -1,10 +1,10 @@
 /* Boss Rush selection and progression; no changes to normal survival enemies. */
 G.BossRushRules = (() => {
-  const MAJOR_STAGES = Object.freeze({ groudon: 1, kyogre: 3, rayquaza: 6 });
-  const MINOR_STAGES = Object.freeze([0, 4, 5]);
-  const HOENN_MINORS = Object.freeze([377, 378, 379, 380, 381, 385, 386]);
+  const MAJOR_STAGES = Object.freeze({ groudon: 1, kyogre: 3, rayquaza: 5 });
+  const MINOR_STAGES = Object.freeze([0, 4]);
+  const HOENN_MINORS = Object.freeze([377, 378, 379, 380, 381, 385]);
   // Fixed encounter budgets; never read the player's damage or build during a run.
-  const MINOR_HP = Object.freeze([44000, 2400000, 3600000]);
+  const MINOR_HP = Object.freeze([44000, 600000]);
   // User-defined major group, including cover legends and expansion protagonists.
   const MAJORS = new Set([150,249,250,382,383,384,483,484,487,493,643,644,646,
     716,717,718,791,792,800,888,889,890,892,898,1007,1008,1017,1024]);
@@ -39,7 +39,7 @@ G.BossRushRules = (() => {
     for (let i = 0; i < levels; i++) total += xpFor(level + i);
     return total;
   }
-  // Group rewards are paid once: two base levels for the Regis, six for the Eon duo.
-  const rewardLevels = stage => stage === 0 ? 2 : stage === 2 ? 6 : 3;
+  // Group rewards are paid once: two base levels for the Regis, six for the Eon duo and Jirachi.
+  const rewardLevels = stage => stage === 0 ? 2 : stage === 2 || stage === 4 ? 6 : 3;
   return { MAJOR_STAGES, MINOR_STAGES, HOENN_MINORS, eligibleMinor, selectMinors, minorStats, bossHp, extraCooldownDecay, rewardXp, rewardLevels };
 })();

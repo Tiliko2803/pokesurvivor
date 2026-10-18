@@ -1,6 +1,6 @@
 # Jirachi · El observatorio de los deseos
 
-Encuentro propio para Jirachi (385) en la prueba de Hoenn Normal. Conserva su lugar de menor posterior a Kyogre: Jirachi y Deoxys siguen barajándose entre los encuentros 4 y 5 (índices desde cero). Deoxys conserva por ahora sus patrones nativos.
+Encuentro propio para Jirachi (385) en la prueba de Hoenn Normal. Es el único encuentro entre Kyogre y Rayquaza. Deoxys queda reservado y fuera de esta ruta.
 
 ## Fases y ataques
 
@@ -31,9 +31,9 @@ Jirachi se desplaza en curvas a distancia media entre lanzamientos, se detiene d
 
 ## Vida y progresión
 
-La vida inicial es **600000 PV** si aparece en el encuentro 4 y **900000 PV** en el 5. La segunda posición conserva el aumento de poder del jugador y eleva también el daño en proporción a 48/44. Cada cifra de vida se multiplica por el tamaño inicial del equipo; el cooperativo del modo todavía no tiene entrada ni sincronización y se comprueba con equipos simulados.
+La vida es **600000 PV base**. Se multiplica por el tamaño inicial del equipo; el cooperativo del modo todavía no tiene entrada ni sincronización y se comprueba con equipos simulados.
 
-La recompensa conserva la del menor: XP equivalente a tres niveles base, bonos nativos y una sola curación del 20%. **No concede Vínculo.** No cambia monedas, rankings, cuenta ni progreso persistente.
+La recompensa conserva la del menor: XP equivalente a seis niveles base, compensando la retirada de Deoxys antes de Rayquaza, bonos nativos y una sola curación del 20%. **No concede Vínculo.** No cambia monedas, rankings, cuenta ni progreso persistente.
 
 `tools/benchmark-jirachi.cjs` usa el motor y las cartas legales del juego, oro máximo, Vínculo, 85% de tiempo atacando y posición controlada. Ignora el daño recibido para medir duración ofensiva. En el primer tramo, semilla 123:
 
@@ -42,7 +42,13 @@ La recompensa conserva la del menor: XP equivalente a tres niveles base, bonos n
 | Deoxys normal, nivel 25 | Psicocarga + Danza de Mil Espadas | 111.05 s |
 | Mega Blaziken, nivel 25 | Onda Certera + Danza de Mil Espadas | 23.77 s |
 
-El objetivo aproximado de 1–2 minutos se alcanza con esa referencia de Deoxys. La build de Mega Blaziken lo derrota bastante antes; se conserva esa ventaja de tipos, estadísticas e Impulso. Inflar la vida para obligar a esa Mega a durar un minuto alargaría demasiado el combate de Deoxys. No se promete el mismo tiempo para todas las builds. Las referencias de duración verifican tres semillas y ambas posiciones de la ruta; queda pendiente la dificultad humana en navegador y Android.
+El objetivo aproximado de 1–2 minutos se alcanza con esa referencia de Deoxys. La build de Mega Blaziken lo derrota bastante antes; se conserva esa ventaja de tipos, estadísticas e Impulso. Inflar la vida para obligar a esa Mega a durar un minuto alargaría demasiado el combate de Deoxys. No se promete el mismo tiempo para todas las builds. Las referencias de duración verifican tres semillas en su posición fija de la ruta; queda pendiente la dificultad humana en navegador y Android.
+
+## Prueba directa
+
+El botón **Probar solo a Jirachi**, junto a Comenzar Boss Rush, usa el Pokémon, los movimientos y las mejoras de oro seleccionados. Inicia en nivel 25 con 24 elecciones de preparación y dos Vínculos disponibles; no autoselecciona cartas ni combinaciones. El combate permanece congelado hasta completar la preparación y las elecciones de Vínculo usan el sistema normal del juego. Impulso de Mega Blaziken empieza con 150 s acumulados, como referencia del tramo posterior a Kyogre.
+
+Al ganar termina la prueba sin generar Rayquaza. El resultado indica «¡Jirachi derrotado!»; volver y elegir la ruta completa restaura el comienzo en nivel 8. Toda la prueba sigue usando la cuenta invitada en memoria, sin recompensas persistentes.
 
 ## Archivos y verificaciones
 

@@ -1,6 +1,6 @@
 # Dúo Eón · Hoenn Normal
 
-Latios (381) y Latias (380) combaten juntos entre Groudon y Kyogre. La ruta conserva los dos encuentros individuales de Jirachi y Deoxys después de Kyogre; su rediseño queda separado del dúo. No hay Mega Evolución en Normal. La variante con Mega Latios y Mega Latias al 50% queda para Primigenio.
+Latios (381) y Latias (380) combaten juntos entre Groudon y Kyogre. Después de Kyogre aparece únicamente Jirachi y después Rayquaza. Deoxys queda reservado. No hay Mega Evolución en Normal. La variante con Mega Latios y Mega Latias al 50% queda para Primigenio.
 
 ## Mismos movimientos, distintas posiciones
 

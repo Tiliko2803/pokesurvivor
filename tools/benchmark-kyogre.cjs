@@ -1,6 +1,6 @@
 /* Native DPS reference for Mega Blaziken: Onda Certera + Danza de Mil Espadas.
  * Uses legal level-up cards, max gold, Groudon's native Bond and earlier
- * native encounter rewards (three for Kyogre, six for Rayquaza). Only those preceding enemies are skipped for speed.
+ * native encounter rewards (three for Kyogre, five for Rayquaza). Only those preceding enemies are skipped for speed.
  * Incoming damage is ignored and position/uptime are controlled: this measures
  * offensive duration, not human survival. Impulso carries 150s from earlier fights. */
 const vm=require('node:vm');
@@ -8,19 +8,13 @@ const {fixture}=require('../tests/helpers/boss-rush-fixture.cjs');
 const CORE=['up:aura-sphere','up:aura-sphere','up:aura-sphere','up:aura-sphere','stat:cd','evo:aura-sphere','stat:atk',
   'up:swords-dance','up:swords-dance','up:swords-dance','up:swords-dance','evo:swords-dance'];
 async function simulate({seed=123,uptime=.85,hp,build='power',distance=100,stage=3,minorDex,playerDex=257,gold=true,attack='aura-sphere'}={}){
-  if(!Number.isInteger(stage)||stage<0||stage>6)throw new Error('Unsupported reference encounter');
+  if(!Number.isInteger(stage)||stage<0||stage>5)throw new Error('Unsupported reference encounter');
   if(!['power','rapid'].includes(build)||uptime<=0||uptime>1)throw new Error('Invalid reference build');
   const f=fixture(),{G}=f;f.ctx.benchmarkSeed=seed;
   // Use the real metadata-derived hitboxes, not the fixture's small UI placeholders.
   f.load('js/core/sprites.js');
   vm.runInContext('Math.random=()=>{benchmarkSeed=(Math.imul(benchmarkSeed,1664525)+1013904223)>>>0;return benchmarkSeed/4294967296;}',f.ctx);
-  if(minorDex!==undefined){
-    const eligible=G.DEX.filter(m=>G.BossRushRules.eligibleMinor(m,G.SPRITE_META)&&[385,386].includes(m.dex)).map(m=>m.dex);
-    if(stage===0||!G.BossRushRules.MINOR_STAGES.includes(stage)||!eligible.includes(minorDex))throw new Error('Invalid reference minor');
-    const choices=eligible.slice(),target=G.BossRushRules.MINOR_STAGES.indexOf(stage)-1,from=choices.indexOf(minorDex);
-    [choices[target],choices[from]]=[choices[from],choices[target]];
-    G.BossRushRules.selectMinors=()=>choices;
-  }
+  if(minorDex!==undefined&&(stage!==4||minorDex!==385))throw new Error('Only Jirachi is active in the post-Kyogre minor slot');
   await G.DB.ready();
   if(!G.DEX_BY[playerDex]||!G.Moves.poolFor(G.DEX_BY[playerDex]).includes(attack))throw new Error('Invalid native player reference');
   // The test guest can select any native species without unlocking a real account.

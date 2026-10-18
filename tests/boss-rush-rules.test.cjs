@@ -18,13 +18,13 @@ test('Todos los mayores acordados, protagonistas DLC y personajes custom quedan 
   assert.equal(R.eligibleMinor({dex:25,leg:false},{25:{}}),false);
   assert.equal(R.eligibleMinor({dex:377,leg:true},{}),false);
 });
-test('Only seven Hoenn candidates with native sprites are eligible, including Jirachi and Deoxys',()=>{
+test('Six active Hoenn candidates are eligible; Deoxys remains reserved',()=>{
   const ids=G.DEX.filter(m=>R.eligibleMinor(m,G.SPRITE_META)).map(m=>m.dex).sort((a,b)=>a-b);
-  assert.deepEqual(Array.from(ids),[377,378,379,380,381,385,386]);
-  for(const dex of [144,145,146,243,244,245,480,481,482,488,638,639,640,641,642,645])
+  assert.deepEqual(Array.from(ids),[377,378,379,380,381,385]);
+  for(const dex of [144,145,146,243,244,245,386,480,481,482,488,638,639,640,641,642,645])
     assert.equal(R.eligibleMinor(G.DEX_BY[dex],G.SPRITE_META),false,String(dex));
   for(const dex of ids){assert.equal(G.DEX_BY[dex].gen,3);assert.ok(G.SPRITE_META[dex]);}
-  assert.throws(()=>R.selectMinors(G.DEX,G.SPRITE_META,8));
+  assert.throws(()=>R.selectMinors(G.DEX,G.SPRITE_META,7));
 });
 test('Sorteo sin repeticiones, sólo especies elegibles con sprites',()=>{
   for(let seed=0;seed<100;seed++){
@@ -37,7 +37,7 @@ test('Sorteo sin repeticiones, sólo especies elegibles con sprites',()=>{
 });
 test('The trio has 44k HP per Regi and later minor budgets retain their previous progression',()=>{
   const base=R.minorStats(0);let prev=base;
-  for(const stage of [4,5]){
+  for(const stage of [4]){
     const cur=R.minorStats(stage);
     assert.ok(cur.hp>prev.hp && cur.damage>prev.damage);
     assert.ok(cur.hp/base.hp>cur.damage/base.damage);
@@ -46,14 +46,14 @@ test('The trio has 44k HP per Regi and later minor budgets retain their previous
     prev=cur;
   }
   assert.equal(base.hp,44000);assert.equal(base.damage,21);assert.equal(base.attackRate,1.12);
-  assert.equal(prev.hp,3600000);assert.ok(prev.damage<50);
-  for(const stage of [-1,1,2,3,6,7,8,9,1.5,NaN])assert.throws(()=>R.minorStats(stage));
+  assert.equal(prev.hp,600000);assert.ok(prev.damage<50);
+  for(const stage of [-1,1,2,3,5,6,7,8,9,1.5,NaN])assert.throws(()=>R.minorStats(stage));
 });
 test('The trio rewards two base levels once; later rewards still reach Groudon 10, Kyogre 19 and Rayquaza 28',()=>{
   let level=8,xp=0;
-  const levels=[8,10,13,19,22,25,28];
-  for(let stage=0;stage<7;stage++){
-    assert.equal(level,levels[stage]);assert.equal(R.rewardLevels(stage),stage===0?2:stage===2?6:3);
+  const levels=[8,10,13,19,22,28];
+  for(let stage=0;stage<6;stage++){
+    assert.equal(level,levels[stage]);assert.equal(R.rewardLevels(stage),stage===0?2:stage===2||stage===4?6:3);
     xp+=R.rewardXp(G.Player.xpFor,level,R.rewardLevels(stage));
     while(xp>=G.Player.xpFor(level)){xp-=G.Player.xpFor(level);level++;}
   }

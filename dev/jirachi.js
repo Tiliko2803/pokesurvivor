@@ -4,7 +4,7 @@ G.Jirachi=(()=>{
   const PROFILE=[['doom',.7,[10,8.5,7]],['swift',1.7,[6,5,4.2]],['flash',5,[8,6.8,5.6]],['psychic',8,[10,8.5,7]]];
   const NAMES={doom:'Deseo Oculto',swift:'Rapidez',flash:'Foco Resplandor',psychic:'Psíquico'};
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  const hpForStage=stage=>Math.round(BASE_HP*(stage===5?1.5:1));
+  const hpForStage=()=>BASE_HP;
   function ray(b,angle,width,length=650){
     const nx=Math.cos(angle),ny=Math.sin(angle);
     if(nx>.001)length=Math.min(length,(ARENA.right-b.x)/nx);

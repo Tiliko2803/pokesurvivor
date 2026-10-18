@@ -6,6 +6,7 @@ G.BossRushPreview = (() => {
   let encounter = null, boss = null, running = false, ending = false, won = false;
   let preparing = false, choicesLeft = 0, stage = 0, transition = 0, defeated = false;
   let route = [];
+  let soloJirachi=false, preparationLevel=START_LEVEL;
   let bosses = [], bars = null;
   let returnFromUpgrades = false;
   let chosen = ['water-gun', 'bubble'], ox = 0, oy = 0;
@@ -60,14 +61,14 @@ G.BossRushPreview = (() => {
       G.Spawner.say('¡'+boss.name+' derrotado!', 2, true);
     }
   }
-  function start() {
+  function start(jirachiOnly=false) {
+    soloJirachi=jirachiOnly;preparationLevel=soloJirachi?25:START_LEVEL;
     const p = G.Game.player;
-    const minors = G.BossRushRules.selectMinors(G.DEX.filter(m=>[385,386].includes(m.dex)), G.SPRITE_META, 2);
     route = [{dex:377,members:G.Regis.IDS,group:'regis',title:'Los Tres Guardianes',major:false},
       { dex: 383, major: true, hp: G.Groudon.BASE_HP, damage: 42 },
       {dex:381,members:G.Eon.IDS,group:'eon',title:'Dúo Eón',major:false,hp:G.Eon.BASE_HP,damage:34,attackRate:1},
       {dex:382,major:true,hp:G.Kyogre.BASE_HP,damage:50},
-      ...minors.map(dex => ({dex,major:false})),
+      {dex:385,major:false},
       {dex:384,major:true,hp:G.Rayquaza.BASE_HP,damage:54}];
     ox = 16; oy = 16; p.x = ox; p.y = oy + 85;
     p.moves = []; p.slots = []; p.active = 0; p.bind = {}; p.bonds = 0;
@@ -78,7 +79,8 @@ G.BossRushPreview = (() => {
     }
     p.setActive(0);
     // Starting at level eight includes the seven level-ups from level one.
-    p.level = START_LEVEL; p.xp = 0; p.xpNext = G.Player.xpFor(START_LEVEL);
+    p.level = preparationLevel; p.xp = 0; p.xpNext = G.Player.xpFor(preparationLevel);
+    if(soloJirachi){p.bonds=2;if(p.mega==='blazikenite')p.megaElapsed=150;}
     p.baseSpd = 130; p.invuln = 1;
     G.World.setArena({ tx: 0, ty: 0, r: 20, type: 'fire' });
     // No random pools, columns or breakable objects inside the combat space.
@@ -87,11 +89,11 @@ G.BossRushPreview = (() => {
     players = localPlayers();
     // Keep the starting roster size for the whole run, including downed teammates.
     partySize = Math.max(1, players.length);
-    running = true; ending = false; won = false; stage = 0;
+    running = true; ending = false; won = false; stage = soloJirachi?4:0;
     refreshCamera();
     spawnStage();
     G.Camera.x = ox; G.Camera.y = oy - (G.Camera.rushOffsetY || 0);
-    preparing = true; choicesLeft = START_LEVEL - 1;
+    preparing = true; choicesLeft = preparationLevel - 1;
     normalPause(); // No combat clock or enemy can advance during preparation.
     offerPreparation();
   }
@@ -138,13 +140,13 @@ G.BossRushPreview = (() => {
     const p = G.Game.player;
     const count = p.cardOptions || 3;
     const list = G.LevelUp.offer(p, count + 1).filter(c => c.key !== 'stat:heal').slice(0, count);
-    G.RunUI.showLevelUp(START_LEVEL - choicesLeft + 1, list, card => {
+    G.RunUI.showLevelUp(preparationLevel - choicesLeft + 1, list, card => {
       if (!preparing) return;
       card.apply(p); choicesLeft--;
       if (choicesLeft > 0) offerPreparation();
       else {
         preparing = false; p.hp = p.maxHp; p.setActive(0);
-        G.Game.togglePause(); G.Spawner.say('Nivel ' + START_LEVEL + ' · ¡Comienza el Boss Rush!', 2.5, true);
+        G.Game.togglePause(); G.Spawner.say('Nivel ' + preparationLevel + (soloJirachi?' · ¡Prueba de Jirachi!':' · ¡Comienza el Boss Rush!'), 2.5, true);
       }
     });
     document.getElementById('lvl-hint').textContent = 'Preparación · Elige tus mejoras iniciales · Faltan ' + choicesLeft;
@@ -231,7 +233,7 @@ G.BossRushPreview = (() => {
     const root = document.createElement('section'); root.id = 'scr-boss-rush'; root.className = 'scr dim hidden';
     root.innerHTML = `<div class="panel rush-setup"><span class="rush-kicker">BOSS RUSH · HOENN</span>
       <h1>El trío de Hoenn</h1><p>Tres legendarios mayores. Aprende sus señales, esquiva y contraataca.</p>
-      <div class="rush-route"><b>Tres Regis → Groudon → Dúo Eón → Kyogre → Jirachi / Deoxys → Rayquaza</b><span>Los Regis y el Dúo Eón combaten en grupo, con ataques desfasados y barras individuales.</span></div>
+      <div class="rush-route"><b>Tres Regis → Groudon → Dúo Eón → Kyogre → Jirachi → Rayquaza</b><span>Los Regis y el Dúo Eón combaten en grupo, con ataques desfasados y barras individuales.</span></div>
       <div class="rush-fields"><label>Tu Pokémon<select id="rush-partner"></select></label>
       <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
       <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
@@ -239,8 +241,9 @@ G.BossRushPreview = (() => {
       <button class="btn small" id="rush-max">Mejorar al máximo</button>
       <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
       <p class="sub" id="rush-status" role="status"></p>
-      <p class="sub">Mega Swampert, Mega Blaziken y Mega Tyranitar están desbloqueados y equipados al elegirlos. Puedes cambiar sus piedras desde el menú.<br>Para probar Coberturas, abre Mejoras de oro y elige los movimientos compatibles; también aparecerán en los dos selectores de ataques.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual de la ruta de Hoenn. Tu cuenta y tu progreso no se modifican.</p>
+      <p class="sub">Mega Swampert, Mega Blaziken y Mega Tyranitar están desbloqueados y equipados al elegirlos. Puedes cambiar sus piedras desde el menú.<br>Para probar Coberturas, abre Mejoras de oro y elige los movimientos compatibles; también aparecerán en los dos selectores de ataques.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>La prueba directa de Jirachi empieza en nivel 25, con 24 mejoras por elegir y 2 Vínculos.<br>Prueba individual de la ruta de Hoenn. Tu cuenta y tu progreso no se modifican.</p>
       <div class="rush-actions"><button class="btn gold" id="rush-start">Comenzar Boss Rush</button>
+      <button class="btn" id="rush-jirachi">Probar solo a Jirachi</button>
       <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
       <p id="rush-error" role="status"></p></div>`;
     document.body.appendChild(root);
@@ -260,13 +263,15 @@ G.BossRushPreview = (() => {
     document.getElementById('rush-refill').onclick = refillFunds;
     document.getElementById('rush-max').onclick = () => maxUpgrades(Number(select.value));
     document.getElementById('rush-back').onclick = () => G.MenuUI.openPlayMode();
-    document.getElementById('rush-start').onclick = () => {
+    const beginSelected = mode => {
       chosen = [1, 2].map(n => document.getElementById('rush-move-' + n).value);
       if (chosen[0] === chosen[1] || chosen.every(id => G.Moves.BY_ID[id].kind === 'buff')) {
         document.getElementById('rush-error').textContent = 'Elige dos ataques distintos y al menos uno que cause daño.'; return;
       }
-      G.DB.save.partner = Number(select.value); G.Audio.unlock(); play();
+      G.DB.save.partner = Number(select.value); G.Audio.unlock(); play(mode);
     };
+    document.getElementById('rush-start').onclick=()=>beginSelected('route');
+    document.getElementById('rush-jirachi').onclick=()=>beginSelected('jirachi');
   }
   function refreshMoves(preserve = true) {
     const select = document.getElementById('rush-partner');
@@ -287,10 +292,10 @@ G.BossRushPreview = (() => {
     refreshMoves(); refreshSetup(); G.UI.show('scr-boss-rush', true);
     document.getElementById('scr-boss-rush').classList.remove('hidden');
   }
-  function play() {
+  function play(mode='route') {
     if (G.Game.state !== 'ui' || running) return;
     G.Game.startRun();
-    if (G.Game.state === 'playing') start();
+    if (G.Game.state === 'playing') start(mode==='jirachi');
   }
   function refreshSetup() {
     const el = document.getElementById('rush-balance');
@@ -371,7 +376,7 @@ G.BossRushPreview = (() => {
       } else if (transition > 0 && !G.Game.player.dead) {
         transition -= dt;
         if (transition <= 0) {
-          if (stage < route.length - 1) { stage++; spawnStage(); }
+          if (!soloJirachi && stage < route.length - 1) { stage++; spawnStage(); }
           else { won = true; ending = true; }
         }
       }
@@ -459,9 +464,9 @@ G.BossRushPreview = (() => {
     wrap(G.RunUI, 'showOver', (old, result, back) => {
       if (!running) return old(result, back);
       old({ ...result, coins: 0, record: false, breakdown: 'Prueba de combate · Sin recompensas', caught: [], megaUnlocked: false }, () => {
-        running = false; preparing = false; encounter = null; boss = null;bosses=[];bars=null; G.Game.player.slowT=0; refreshCamera(); back();
+        running = false; preparing = false; soloJirachi=false; encounter = null; boss = null;bosses=[];bars=null; G.Game.player.slowT=0; refreshCamera(); back();
       });
-      document.getElementById('over-title').textContent = won ? '¡Trío de Hoenn superado!' : 'Intento terminado';
+      document.getElementById('over-title').textContent = won ? (soloJirachi?'¡Jirachi derrotado!':'¡Trío de Hoenn superado!') : 'Intento terminado';
       document.getElementById('btn-again').textContent = 'Preparar otro intento';
       document.getElementById('over-ask')?.remove();
     });

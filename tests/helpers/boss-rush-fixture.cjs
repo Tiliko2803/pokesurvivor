@@ -61,7 +61,7 @@ function fixture(session = 'real-account') {
   G.CHANGELOG=[];load('dev/tyranitar.js');
   for(const file of ['dev/boss-rush-rules.js','dev/groudon.js','dev/regis.js','dev/eon.js','dev/boss-rush-bars.js','dev/kyogre.js','dev/rayquaza.js','dev/major-cadence.js','dev/jirachi.js','dev/boss-rush-sprites.js','dev/groudon-fx.js','dev/regis-fx.js','dev/eon-fx.js','dev/kyogre-fx.js','dev/rayquaza-fx.js','dev/jirachi-fx.js','dev/boss-rush-preview.js'])load(file);
   const choose = () => { const card=cards.find(c=>c.key==='up:water-gun') || cards.find(c=>c.key==='stat:atk') || cards.find(c=>c.key!=='stat:xp') || cards[0]; const cb=pick; cards=null; pick=null; cb(card); };
-  const prepare = () => { let n=0; while(G.BossRushPreview.preparing) { choose(); n++; assert.ok(n<=G.BossRushPreview.START_LEVEL-1); } return n; };
+  const prepare = () => { let n=0; while(G.BossRushPreview.preparing) { choose(); n++; assert.ok(n<=G.Game.player.level-1); } return n; };
   const pickBond = () => {
     const {opt,cb}=bond; bond=null; G.UI.hide('scr-bond');
     cb(opt.mode==='pair'?opt.loose.slice(0,2):opt.loose.slice(0,1));
