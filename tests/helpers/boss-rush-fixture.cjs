@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
 const root = path.join(__dirname, '../..'), read = f => fs.readFileSync(path.join(root, f), 'utf8'), noop = () => {};
-function fixture(session = 'real-account') {
+function fixture(session = 'real-account', {live=false}={}) {
   const storage = new Map([['ps.save.real-account', '{"coins":123456}'], ['ps.dev', '"existing1234"']]);
   if (session !== null) storage.set('ps.session', session);
   const before = new Map(storage), nodes = new Map();
@@ -58,10 +58,10 @@ function fixture(session = 'real-account') {
   G.RunUI.showLevelUp = (lv,list,cb) => { cards=list; pick=cb; };
   G.RunUI.showBond = (opt,cb) => { bond={opt,cb}; G.UI.show('scr-bond'); };
   G.Flow.afterRun = () => G.Game.toUI();
-  G.CHANGELOG=[];load('dev/tyranitar.js');
-  for(const file of ['dev/boss-rush-rules.js','dev/groudon.js','dev/regis.js','dev/eon.js','dev/boss-rush-bars.js','dev/kyogre.js','dev/rayquaza.js','dev/major-cadence.js','dev/jirachi.js','dev/boss-rush-sprites.js','dev/groudon-fx.js','dev/regis-fx.js','dev/eon-fx.js','dev/kyogre-fx.js','dev/rayquaza-fx.js','dev/jirachi-fx.js','dev/boss-rush-preview.js'])load(file);
+  G.CHANGELOG=[];if(!live)load('dev/tyranitar.js');
+  for(const file of ['dev/boss-rush-rules.js','dev/groudon.js','dev/regis.js','dev/eon.js','dev/boss-rush-bars.js','dev/kyogre.js','dev/rayquaza.js','dev/major-cadence.js','dev/jirachi.js','dev/boss-rush-sprites.js','dev/groudon-fx.js','dev/regis-fx.js','dev/eon-fx.js','dev/kyogre-fx.js','dev/rayquaza-fx.js','dev/jirachi-fx.js',live?'js/systems/boss-rush.js':'dev/boss-rush-preview.js'])load(file);
   const choose = () => { const card=cards.find(c=>c.key==='up:water-gun') || cards.find(c=>c.key==='stat:atk') || cards.find(c=>c.key!=='stat:xp') || cards[0]; const cb=pick; cards=null; pick=null; cb(card); };
-  const prepare = () => { let n=0; while(G.BossRushPreview.preparing) { choose(); n++; assert.ok(n<=G.Game.player.level-1); } return n; };
+  const prepare = () => { let n=0; while((live?G.BossRush:G.BossRushPreview).preparing) { choose(); n++; assert.ok(n<=G.Game.player.level-1); } return n; };
   const pickBond = () => {
     const {opt,cb}=bond; bond=null; G.UI.hide('scr-bond');
     cb(opt.mode==='pair'?opt.loose.slice(0,2):opt.loose.slice(0,1));

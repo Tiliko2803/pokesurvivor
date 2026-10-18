@@ -109,7 +109,7 @@ test('Página generada carga sólo el prototipo, sin cuenta, PWA ni config de pr
   assert.ok(html.indexOf('id="btn-boss-rush"') < html.indexOf('id="scr-challenges"'));
   for (const m of html.matchAll(/<script[^>]*src="([^"?]+)(?:\?[^"]*)?"/g)) assert.ok(fs.existsSync(path.join(root, m[1])), m[1]);
   const official = fs.readFileSync(path.join(root, 'dev.html'), 'utf8');
-  assert.ok(!official.includes('dev/groudon.js')); assert.ok(!official.includes('boss-rush-preview'));
+  assert.ok(official.includes('dev/groudon.js')); assert.ok(official.includes('js/systems/boss-rush.js')); assert.ok(!official.includes('boss-rush-preview'));
 });
 
 test('Groudon approaches between attacks, stops for warnings and remains inside the larger arena', () => {

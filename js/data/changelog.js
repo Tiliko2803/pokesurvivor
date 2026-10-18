@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Hoenn Normal llega al juego', 'Hoenn Normal is live'], new: [
+    ['Boss Rush · Hoenn ya está disponible desde Jugar. Supera a los tres Regis, Groudon, Latios y Latias, Kyogre, Jirachi y Rayquaza con tu Pokémon equipado, sus movimientos y sus mejoras compradas. Empiezas en nivel 8 con siete elecciones iniciales.',
+     'Boss Rush · Hoenn is now available under Play. Face the three Regis, Groudon, Latios and Latias, Kyogre, Jirachi and Rayquaza using your equipped Pokémon, its moves and purchased upgrades. Start at level 8 with seven preparation choices.']
+  ], chg: [
+    ['El menú oficial sólo muestra la ruta completa: sin selector extra de Pokémon, dinero gratuito, mejoras al máximo ni acceso directo a Jirachi. Las Pokémonedas ganadas se guardan; los tiempos y niveles quedan fuera de los récords y rankings de supervivencia. Hoenn Normal se juega en solitario.',
+     'The official menu shows the full route, without an extra Pokémon selector, free money, max-upgrade tools or a direct Jirachi test. Earned coins are saved; times and levels stay separate from survival records and rankings. Hoenn Normal is single-player.']
+  ] },
   { d: '2026-10-18', title: ['Una portada para Hoenn Normal', 'Hoenn Normal gets its cover'], chg: [
     ['El selector del Boss Rush de pruebas estrena una portada en pixel art del trío de Hoenn y una preparación más clara. El recorrido, las instrucciones y las herramientas de mejoras se pueden desplegar; Jirachi conserva su acceso directo.',
      'The preview Boss Rush selector features pixel-art Hoenn trio cover art and a clearer preparation layout. The route, instructions and upgrade tools can be expanded; Jirachi keeps its direct test button.']

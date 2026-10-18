@@ -17,6 +17,7 @@
 G.Game = (() => {
   let cv, ctx, dpr = 1, w = 0, h = 0;
   let state = 'ui';
+  let runMode = null;
   let time = 0, last = 0, pendingLevels = 0;
   let pl = null;
   let caught = [];          // shinies conseguidos en esta run
@@ -104,13 +105,15 @@ G.Game = (() => {
   // ---------------- run ----------------
 
   /** @param coop  { seed, host, members } para una partida en grupo */
-  function startRun(coop = null, challengeId = null, previewId = null) {
+  function startRun(coop = null, challengeId = null, previewId = null, mode = null) {
+    if (mode && (mode !== 'hoenn-normal' || !G.BossRush || state !== 'ui' || coop || challengeId || previewId || G.Coop.active || G.Social.room)) return;
     if (previewId && (previewId !== 'maomao' || coop || challengeId || !G.MaomaoPreview.allowed())) return;
     if (challengeId && (coop || G.Coop.active || G.Social.room || navigator.onLine === false)) {
       G.UI.toast('Los desafíos requieren conexión y jugar en solitario, fuera de una sala.', 4000);
       return;
     }
     if (challengeId && state !== 'ui') return;
+    runMode = mode;
     G.Challenges.begin(challengeId);
     holdBy = []; awayBy = null;
     const save = G.DB.save;
@@ -173,7 +176,7 @@ G.Game = (() => {
     G.Sprites.preload([mon.dex], 8000, pl.shiny);
     G.Audio.music(G.BIOME_MUSIC[0]);
     // Para el ranking: el servidor apunta cuándo empieza la partida (anti-trampas).
-    if (!mon.customPreview && !G.Challenges.active && (!coop || G.Coop.isHost)) G.Ranking.runStarted(coop ? 'g' : 's');
+    if (!runMode && !mon.customPreview && !G.Challenges.active && (!coop || G.Coop.isHost)) G.Ranking.runStarted(coop ? 'g' : 's');
     deathT = 0;
 
     state = 'playing';
@@ -329,21 +332,22 @@ G.Game = (() => {
       recogidas: pl.coins
     };
     const coins = Math.round((parts.tiempo + parts.derrotados + parts.jefes + parts.recogidas) * mul);
-    const record = !challenge && time > save.stats.bestTime;
+    const rush = runMode === 'hoenn-normal';
+    const record = !rush && !challenge && time > save.stats.bestTime;
 
     save.coins += coins;
     bankTickets(false);
     if (!challenge) save.stats.runs++;
     save.stats.totalKills += pl.kills;
-    if (!challenge) save.stats.bestTime = Math.max(save.stats.bestTime, Math.floor(time));
+    if (!rush && !challenge) save.stats.bestTime = Math.max(save.stats.bestTime, Math.floor(time));
     if (coop) save.stats.bestGroupTime = Math.max(save.stats.bestGroupTime || 0, Math.floor(time));
-    if (!challenge) save.stats.bestLevel = Math.max(save.stats.bestLevel, pl.level);
+    if (!rush && !challenge) save.stats.bestLevel = Math.max(save.stats.bestLevel, pl.level);
     save.stats.coinsEarned += coins;
     const judge = G.Judgment.summary();
     if (judge) G.Progress.event('judgeEnd', judge);
     G.Judgment.reset();
-    const megaUnlocked=G.Mega.finishRun(save,pl,{coop,challenge:!!challenge,clean:clean()});
-    G.Progress.event('runEnd', { time: challenge ? challenge.time : time, challenge: !!challenge, level: pl.level, coins: pl.coins, types: pl.mon.types, group: coop });
+    const megaUnlocked=G.Mega.finishRun(save,pl,{coop,challenge:!!challenge||rush,clean:clean()});
+    G.Progress.event('runEnd', { time: challenge ? challenge.time : time, challenge: !!challenge || rush, level: pl.level, coins: pl.coins, types: pl.mon.types, group: coop });
     G.Progress.checkAch();
     // A la nube: un récord, enseguida; si no, al acabar la partida (como mucho cada 20 min).
     G.DB.commit(challenge || record ? true : 'run');
@@ -353,8 +357,8 @@ G.Game = (() => {
     const mark = { t: Math.floor(time), lv: pl.level, kills: pl.kills };
     // Si la partida se ha tocado (ver clean()), no sube al ranking (sin avisar); lo demás, sí.
     const ok = !pl.mon.customPreview && clean();
-    if (!challenge && ok && !coop) G.Ranking.submitSolo(Object.assign(mark, { dex: pl.dex, shiny: pl.shiny }));
-    else if (!challenge && ok && wasHost) G.Ranking.submitGroup(Object.assign(mark, { members: team }));
+    if (!rush && !challenge && ok && !coop) G.Ranking.submitSolo(Object.assign(mark, { dex: pl.dex, shiny: pl.shiny }));
+    else if (!rush && !challenge && ok && wasHost) G.Ranking.submitGroup(Object.assign(mark, { members: team }));
 
     G.RunUI.showOver({
       dead, time: challenge ? challenge.time : time, challenge, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins, record, t1: pl.t1, t10: pl.t10, judge,
@@ -889,8 +893,8 @@ G.Game = (() => {
     quit() { if (state !== 'ui' && state !== 'over') quitRun(); },
     /** Para grabar vídeos: abre las cartas de subir de nivel. */
     debugLevelUp() { tampered = true; pl.level++; pendingLevels++; },
-    toUI() { state = 'ui'; Backdrop.restore(); },
-    get state() { return state; }, get player() { return pl; }, st
+    toUI() { state = 'ui'; runMode = null; Backdrop.restore(); },
+    get state() { return state; }, get mode() { return runMode; }, get player() { return pl; }, st
   };
 })();
 

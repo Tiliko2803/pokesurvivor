@@ -105,3 +105,7 @@ Pruebas relevantes: `tests/jirachi-direct.test.cjs`, `tests/jirachi.test.cjs`, `
 Las pruebas de integración usan el Game, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con interfaz simulada. La revisión visual usa Canvas nativo y sprites reales; no sustituye probar en navegador o Android. Pendientes: cooperativo del modo y balance humano de la ruta nueva.
 
 Hoenn Primigenio se hará después: cinco Regis o Regigigas al 50% de la vida conjunta, y Mega Latias/Latios. No forman parte de Hoenn Normal.
+
+## Versión oficial
+
+Hoenn Normal ya tiene integración oficial sin herramientas de pruebas; ver [docs/boss-rush.md](../docs/boss-rush.md). Este documento describe el adaptador aislado de `/dev/`. Para publicar el modo oficial se usa el flujo GitHub Pages de ese documento, conservando la cuenta y el actualizador reales.

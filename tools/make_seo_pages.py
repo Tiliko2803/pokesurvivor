@@ -5,10 +5,11 @@
 #   es: guia/ pokedex/ legendarios/ shinies/ tipos/ movimientos/ objetos/ logros/ novedades/
 #   en: en/ (el juego en inglés) en/guide/ en/pokedex/ en/legendaries/ ... en/news/
 #   404.html, robots.txt, sitemap.xml (con las versiones de cada idioma)
-import json, os, re, datetime, html
+import json, os, re, datetime, html, sys
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
-SITE = 'https://pokesurvivor.com/'
+PAGES_BUILD = '--github-pages' in sys.argv
+SITE = 'https://tiliko2803.github.io/pokesurvivor/' if PAGES_BUILD else 'https://pokesurvivor.com/'
 TODAY = datetime.date.today().isoformat()
 D = json.load(open(os.path.join(ROOT, 'tools', 'cache', 'gamedata.json'), encoding='utf-8'))
 DEX = D['dex']; BY = {p['dex']: p for p in DEX}
@@ -558,9 +559,12 @@ def game_en():
     # así sale bien aunque index.html se haya generado con --sin-seo.
     dev = open(os.path.join(ROOT, 'dev.html'), encoding='utf-8').read()
     idx = open(os.path.join(ROOT, 'index.html'), encoding='utf-8').read()
-    app = re.search(r'<script defer src="js/app\.min\.js\?v=[^"]+"></script>', idx).group(0)
-    a, b = dev.index('<!-- scripts:begin -->'), dev.index('<!-- scripts:end -->') + len('<!-- scripts:end -->')
-    src = dev[:a] + app + dev[b:]
+    if PAGES_BUILD:
+        src = idx.replace(SITE, 'https://pokesurvivor.com/')
+    else:
+        app = re.search(r'<script defer src="js/app\.min\.js\?v=[^"]+"></script>', idx).group(0)
+        a, b = dev.index('<!-- scripts:begin -->'), dev.index('<!-- scripts:end -->') + len('<!-- scripts:end -->')
+        src = dev[:a] + app + dev[b:]
     src = re.sub(r'<!-- seo:(begin|end) -->\n?', '', src)
     src = re.sub(r'<meta name="robots" content="noindex">\s*', '', src)
     src = re.sub(r'<!-- dev\.html: página fuente[^>]*-->\n?', '', src)
@@ -582,6 +586,8 @@ def game_en():
         ('<p>Juego de supervivencia con Pokémon, gratis en el navegador y en el móvil.</p>', '<p>A Pokémon survival game, free in your browser and on mobile.</p>'),
         ('<p class="boot-ld">Cargando…</p>', '<p class="boot-ld">Loading…</p>'),
     ]
+    if PAGES_BUILD:
+        rep[0] = (re.search(r'<title>.*?</title>', s).group(0), '<title>PokéSurvivor Tiliko — Pokémon survival and Boss Rush</title>')
     for a, b in rep:
         assert a in s, a[:60]
         s = s.replace(a, b)
@@ -590,6 +596,7 @@ def game_en():
     s = s.replace('"description": "Fan game gratuito de supervivencia (bullet heaven, estilo Survivor.io) con Pokémon: elige compañero, sobrevive a hordas, sube de nivel, evoluciona tus ataques, enfréntate a legendarios en grietas y juega en cooperativo con hasta 4 amigos."',
                   '"description": "A free Pokémon survival fan game (bullet heaven, Survivor.io style): pick a partner, survive the hordes, level up, evolve your moves, fight legendaries in rifts and play co-op with up to 4 friends."')
     s = s.replace('"inLanguage": "es"', '"inLanguage": ["es", "en"]')
+    if PAGES_BUILD: s = s.replace('https://pokesurvivor.com/', SITE)
     os.makedirs(os.path.join(ROOT, 'en'), exist_ok=True)
     open(os.path.join(ROOT, 'en', 'index.html'), 'w', encoding='utf-8').write(s)
 
@@ -618,3 +625,4 @@ for lang in ('es', 'en'):
     guide(lang); pokedex(lang); legends(lang); shinies(lang); types_page(lang); moves_page(lang); items_page(lang); ach_page(lang); news(lang); support(lang)
 game_en(); extra()
 print('ok:', 2 * (len(PAGES) - 1), 'páginas + en/ (juego en inglés), 404, robots, sitemap')
+

@@ -1,12 +1,14 @@
 <!doctype html>
+<!-- GENERADO desde dev.html por tools/build.js --github-pages: no editar a mano. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <base href="../">
+<meta name="ps-version" content="9d90a2944e">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>PokéSurvivor – Free online Pokémon survival game (Survivor.io style)</title>
+<title>PokéSurvivor Tiliko — Pokémon survival and Boss Rush</title>
 <meta name="description" content="Survive hordes of Pokémon with your partner in this free fan game for browser and mobile: 966 Pokémon, shinies, legendaries and online co-op with friends. No downloads, no ads.">
-<link rel="canonical" href="https://pokesurvivor.com/en/">
+<link rel="canonical" href="https://tiliko2803.github.io/pokesurvivor/en/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0a1430">
 <meta name="color-scheme" content="dark">
@@ -14,17 +16,17 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PokéSurvivor">
 <meta property="og:locale" content="en_US">
-<meta property="og:url" content="https://pokesurvivor.com/en/">
+<meta property="og:url" content="https://tiliko2803.github.io/pokesurvivor/en/">
 <meta property="og:title" content="PokéSurvivor – Survive the Pokémon hordes">
 <meta property="og:description" content="A free fan game for browser and mobile: 966 Pokémon, shinies, legendaries and co-op with up to 4 friends. No downloads, no ads.">
-<meta property="og:image" content="https://pokesurvivor.com/assets/og-image.jpg">
+<meta property="og:image" content="https://tiliko2803.github.io/pokesurvivor/assets/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="PokéSurvivor: un Pokémon rodeado de hordas en un mapa pixel art">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="PokéSurvivor – Survive the Pokémon hordes">
 <meta name="twitter:description" content="A free fan game for browser and mobile, with co-op for up to 4. No downloads, no ads.">
-<meta name="twitter:image" content="https://pokesurvivor.com/assets/og-image.jpg">
+<meta name="twitter:image" content="https://tiliko2803.github.io/pokesurvivor/assets/og-image.jpg">
 <script>window.PS_PAGES = true;</script>
 <link rel="manifest" href="manifest.webmanifest">
 <!-- Google sólo enseña en los resultados iconos de 48 px o múltiplos -->
@@ -47,18 +49,18 @@
   "@graph": [
     {
       "@type": "WebSite",
-      "@id": "https://pokesurvivor.com/#web",
-      "url": "https://pokesurvivor.com/",
+      "@id": "https://tiliko2803.github.io/pokesurvivor/#web",
+      "url": "https://tiliko2803.github.io/pokesurvivor/",
       "name": "PokéSurvivor",
       "inLanguage": ["es", "en"]
     },
     {
       "@type": ["VideoGame", "WebApplication"],
-      "@id": "https://pokesurvivor.com/#juego",
+      "@id": "https://tiliko2803.github.io/pokesurvivor/#juego",
       "name": "PokéSurvivor",
-      "url": "https://pokesurvivor.com/",
+      "url": "https://tiliko2803.github.io/pokesurvivor/",
       "description": "A free Pokémon survival fan game (bullet heaven, Survivor.io style): pick a partner, survive the hordes, level up, evolve your moves, fight legendaries in rifts and play co-op with up to 4 friends.",
-      "image": "https://pokesurvivor.com/assets/og-image.jpg",
+      "image": "https://tiliko2803.github.io/pokesurvivor/assets/og-image.jpg",
       "inLanguage": ["es", "en"],
       "genre": ["Roguelike", "Bullet heaven", "Acción", "Supervivencia"],
       "gamePlatform": ["Navegador web", "PC", "Android", "iOS"],
@@ -68,12 +70,13 @@
       "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 4 },
       "isAccessibleForFree": true,
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" },
-      "isPartOf": { "@id": "https://pokesurvivor.com/#web" }
+      "isPartOf": { "@id": "https://tiliko2803.github.io/pokesurvivor/#web" }
     }
   ]
 }
 </script>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=9d90a2944e">
+<link rel="stylesheet" href="dev/boss-rush.css?v=9d90a2944e">
 </head>
 <body>
 
@@ -157,6 +160,22 @@
   </div>
 </section>
 
+<!-- ====== Código de regalo ====== -->
+<section id="scr-gifts" class="scr dim hidden">
+  <div class="box settings" id="gift-panel">
+    <div class="row between"><h2>Código de regalo</h2><button class="btn small ghost" id="gift-close" type="button">Cerrar</button></div>
+    <p class="sub">Canjea Pokémon, Pokémonedas o Tickets. Un código sirve para varias cuentas, pero cada cuenta sólo recibe cada premio una vez.</p>
+    <div class="center"><canvas id="gift-stage" class="stage hidden" width="200" height="155"></canvas></div>
+    <p id="gift-owned" class="gold center hidden">★ Mao Mao · Veneno / Planta · ¡Conseguida!</p>
+    <form id="gift-form" autocomplete="off">
+      <label for="gift-code">Código de 5 caracteres</label>
+      <input id="gift-code" class="field" type="text" maxlength="5" minlength="5" placeholder="ABCDE" autocapitalize="characters" spellcheck="false" inputmode="text" autocomplete="off" aria-label="Código de regalo" style="text-align:center;text-transform:uppercase;letter-spacing:0.25em" required>
+      <p class="note" id="gift-status" aria-live="polite"></p>
+      <button class="btn gold" id="gift-redeem" type="submit" style="width:100%">Canjear regalo</button>
+    </form>
+  </div>
+</section>
+
 <!-- ====== Menú principal ====== -->
 <section id="scr-menu" class="scr hidden">
   <div class="menu-left">
@@ -169,15 +188,18 @@
       <div class="nm" id="menu-partner-name"></div>
       <div class="lv" id="menu-partner-info"></div>
       <div class="seg hidden" id="menu-shiny"><button data-v="0">Normal</button><button data-v="1"></button></div>
+      <div id="menu-mega" class="mega-menu hidden" aria-live="polite"></div>
     </div>
   </div>
   <div class="menu-right">
     <div class="box">
       <div class="menu-list">
+        <button id="btn-maomao-preview" class="menu-item hidden" type="button">Probar a Maomao<small>Veneno / Planta · prueba visual como invitado</small></button>
         <button class="menu-item play" data-go="play">Jugar<small>Entra en la mazmorra</small></button>
         <button class="menu-item" data-go="dex">Pokémon<small id="menu-dex-count">Tu colección</small></button>
         <button class="menu-item" data-go="upgrades">Mejoras<small>Haz más fuerte cada run</small></button>
         <button class="menu-item" data-go="gacha">Gacha<small>9 regiones · Pokémon y shinies</small></button>
+        <button class="menu-item" data-go="gifts">Código de regalo<small>Canjea un regalo especial de 5 caracteres</small></button>
         <button class="menu-item" data-go="goals">Misiones<small id="menu-goals-sub">Misiones, logros y perfil</small></button>
         <button class="menu-item" data-go="friends">Amigos<small id="menu-friends-sub">Juega en grupo, hasta 4</small></button>
         <button class="menu-item" data-go="rank">Ranking<small>Quién aguanta más</small></button>
@@ -402,6 +424,25 @@
   </div>
 </section>
 
+<!-- ====== Modos y desafíos ====== -->
+<section id="scr-play-mode" class="scr dim hidden">
+  <div class="box challenge-box">
+    <div class="row between"><h2>Jugar</h2><button class="btn ghost" data-back>Volver</button></div>
+    <div class="mode-buttons">
+      <button id="btn-normal-run" class="btn gold" data-sfx="confirm">Partida normal</button>
+      <button id="btn-boss-rush" class="btn gold" data-sfx="confirm">Boss Rush · Hoenn</button>
+      <button id="btn-challenges" class="btn" data-sfx="click">Desafíos</button>
+    </div>
+  </div>
+</section>
+<section id="scr-challenges" class="scr dim hidden">
+  <div class="box challenge-box">
+    <div class="row between"><h2>Desafíos</h2><button id="challenges-back" class="btn ghost">Volver</button></div>
+    <div id="challenge-list"></div>
+  </div>
+</section>
+<div id="challenge-hud" class="hidden" role="status"></div>
+
 <!-- ====== Misiones, logros y perfil ====== -->
 <section id="scr-goals" class="scr dim hidden">
   <div class="box wide">
@@ -483,6 +524,8 @@
           <button id="pull-10" class="btn gold grow" data-sfx="none">Tirar ×10 · <span id="cost-10"></span></button>
           <button id="pull-10b" class="btn gold grow" data-sfx="none">Tirar ×10 · <span id="cost-10b"></span></button>
         </div>
+        <button id="pull-elite" class="btn gold" style="width:100%;margin-top:10px" data-sfx="none">Élite ×5 · <span id="cost-elite"></span></button>
+        <p class="note">5 Pokémon de Raro para arriba · Legendaria: 4.5% por Pokémon</p>
         <p class="note tickets-line" id="gacha-tickets"></p>
         <p class="note" id="gacha-pity"></p>
       </div>
@@ -501,7 +544,7 @@
 <section id="scr-levelup" class="scr dim hidden">
   <div class="box center">
     <h2>¡Nivel <span id="lvl-num">2</span>!</h2>
-    <p class="sub">Elige una recompensa · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></p>
+    <p class="sub" id="lvl-hint">Elige una recompensa · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></p>
     <div id="cards" class="cards"></div>
     <button id="lvl-reroll" class="btn small ghost hidden" data-sfx="none" style="margin-top:10px">Cambiar opciones (<span id="lvl-rr-n">1</span>) · <kbd>R</kbd></button>
     <p id="lvl-wait" class="note hidden"></p>
@@ -550,6 +593,116 @@
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=025032c5a0"></script>
+<!-- scripts:begin -->
+<script defer src="js/core/util.js?v=9d90a2944e"></script>
+<script defer src="js/core/i18n.js?v=9d90a2944e"></script>
+<script defer src="js/data/lang-en.js?v=9d90a2944e"></script>
+<script defer src="js/core/settings.js?v=9d90a2944e"></script>
+<script defer src="js/data/music.js?v=9d90a2944e"></script>
+<script defer src="js/data/pokedex.js?v=9d90a2944e"></script>
+<script defer src="js/data/sprites-meta.js?v=9d90a2944e"></script>
+<script defer src="js/data/maomao-preview.js?v=9d90a2944e"></script>
+<script defer src="js/data/maomao-animation.js?v=9d90a2944e"></script>
+<script defer src="js/data/toji.js?v=9d90a2944e"></script>
+<script defer src="js/data/gift-codes.js?v=9d90a2944e"></script>
+<script defer src="js/systems/mega.js?v=9d90a2944e"></script>
+<!-- núcleo -->
+<script defer src="js/core/firebase-config.js?v=9d90a2944e"></script>
+<script defer src="js/systems/challenges.js?v=9d90a2944e"></script>
+<script defer src="js/core/db.js?v=9d90a2944e"></script>
+<script defer src="js/core/audio.js?v=9d90a2944e"></script>
+<script defer src="js/core/input.js?v=9d90a2944e"></script>
+<script defer src="js/core/touch.js?v=9d90a2944e"></script>
+<script defer src="js/core/sprites.js?v=9d90a2944e"></script>
+<script defer src="js/systems/mega-art.js?v=9d90a2944e"></script>
+<script defer src="js/systems/mega-sheet.js?v=9d90a2944e"></script>
+<script defer src="js/systems/blaziken.js?v=9d90a2944e"></script>
+<script defer src="js/core/camera.js?v=9d90a2944e"></script>
+<!-- datos de juego -->
+<script defer src="js/data/moves.js?v=9d90a2944e"></script>
+<script defer src="js/data/types.js?v=9d90a2944e"></script>
+<script defer src="js/data/starters.js?v=9d90a2944e"></script>
+<script defer src="js/data/enemies.js?v=9d90a2944e"></script>
+<script defer src="js/data/upgrades.js?v=9d90a2944e"></script>
+<script defer src="js/data/coverage-data.js?v=9d90a2944e"></script>
+<script defer src="js/systems/coverage.js?v=9d90a2944e"></script>
+<script defer src="js/systems/repertoire.js?v=9d90a2944e"></script>
+<script defer src="js/data/items.js?v=9d90a2944e"></script>
+<script defer src="js/data/missions.js?v=9d90a2944e"></script>
+<script defer src="js/data/achievements.js?v=9d90a2944e"></script>
+<script defer src="js/data/funding.js?v=9d90a2944e"></script>
+<script defer src="js/data/changelog.js?v=9d90a2944e"></script>
+<!-- mundo -->
+<script defer src="js/world/tiles.js?v=9d90a2944e"></script>
+<script defer src="js/world/world.js?v=9d90a2944e"></script>
+<!-- entidades -->
+<script defer src="js/entities/vfx.js?v=9d90a2944e"></script>
+<script defer src="js/entities/fx.js?v=9d90a2944e"></script>
+<script defer src="js/entities/projectile.js?v=9d90a2944e"></script>
+<script defer src="js/entities/enemy.js?v=9d90a2944e"></script>
+<script defer src="js/entities/pickup.js?v=9d90a2944e"></script>
+<script defer src="js/entities/player.js?v=9d90a2944e"></script>
+<!-- sistemas -->
+<script defer src="js/systems/combat.js?v=9d90a2944e"></script>
+<script defer src="js/systems/spawner.js?v=9d90a2944e"></script>
+<script defer src="js/systems/levelup.js?v=9d90a2944e"></script>
+<script defer src="js/systems/gacha.js?v=9d90a2944e"></script>
+<script defer src="js/systems/interact.js?v=9d90a2944e"></script>
+<script defer src="js/systems/rift.js?v=9d90a2944e"></script>
+<script defer src="js/systems/judgment.js?v=9d90a2944e"></script>
+<script defer src="js/systems/events.js?v=9d90a2944e"></script>
+<script defer src="js/systems/weather.js?v=9d90a2944e"></script>
+<script defer src="js/systems/pathing.js?v=9d90a2944e"></script>
+<script defer src="js/systems/progress.js?v=9d90a2944e"></script>
+<script defer src="js/systems/hazards.js?v=9d90a2944e"></script>
+<!-- red: amigos, salas, cooperativo y ranking -->
+<script defer src="js/net/social.js?v=9d90a2944e"></script>
+<script defer src="js/net/signups.js?v=9d90a2944e"></script>
+<script defer src="js/net/net.js?v=9d90a2944e"></script>
+<script defer src="js/net/coop.js?v=9d90a2944e"></script>
+<script defer src="js/net/ranking.js?v=9d90a2944e"></script>
+<!-- interfaz -->
+<script defer src="js/ui/icons.js?v=9d90a2944e"></script>
+<script defer src="js/ui/ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/hud.js?v=9d90a2944e"></script>
+<script defer src="js/ui/login.js?v=9d90a2944e"></script>
+<script defer src="js/ui/test.js?v=9d90a2944e"></script>
+<script defer src="js/ui/menu.js?v=9d90a2944e"></script>
+<script defer src="js/ui/gifts-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/slots.js?v=9d90a2944e"></script>
+<script defer src="js/ui/gacha-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/run-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/social-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/ranking-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/mod-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/goals-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/save-transfer.js?v=9d90a2944e"></script>
+<script defer src="js/ui/settings-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/layout-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/support-ui.js?v=9d90a2944e"></script>
+<script defer src="js/ui/news-ui.js?v=9d90a2944e"></script>
+<script defer src="js/core/updater.js?v=9d90a2944e"></script>
+<!-- juego -->
+<script defer src="js/game.js?v=9d90a2944e"></script>
+<script defer src="dev/boss-rush-rules.js?v=9d90a2944e"></script>
+<script defer src="dev/groudon.js?v=9d90a2944e"></script>
+<script defer src="dev/regis.js?v=9d90a2944e"></script>
+<script defer src="dev/eon.js?v=9d90a2944e"></script>
+<script defer src="dev/boss-rush-bars.js?v=9d90a2944e"></script>
+<script defer src="dev/kyogre.js?v=9d90a2944e"></script>
+<script defer src="dev/rayquaza.js?v=9d90a2944e"></script>
+<script defer src="dev/major-cadence.js?v=9d90a2944e"></script>
+<script defer src="dev/jirachi.js?v=9d90a2944e"></script>
+<script defer src="dev/boss-rush-arena.js?v=9d90a2944e"></script>
+<script defer src="dev/boss-rush-sprites.js?v=9d90a2944e"></script>
+<script defer src="dev/groudon-fx.js?v=9d90a2944e"></script>
+<script defer src="dev/regis-fx.js?v=9d90a2944e"></script>
+<script defer src="dev/eon-fx.js?v=9d90a2944e"></script>
+<script defer src="dev/kyogre-fx.js?v=9d90a2944e"></script>
+<script defer src="dev/rayquaza-fx.js?v=9d90a2944e"></script>
+<script defer src="dev/jirachi-fx.js?v=9d90a2944e"></script>
+<script defer src="js/systems/boss-rush.js?v=9d90a2944e"></script>
+<script defer src="js/main.js?v=9d90a2944e"></script>
+<!-- scripts:end -->
 </body>
 </html>

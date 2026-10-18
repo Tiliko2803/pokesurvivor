@@ -19,15 +19,15 @@ const dev = fs.readFileSync(DEV, 'utf8');
 // El fork en GitHub Pages publica módulos para conservar sus cambios locales.
 // Usa la misma página fuente y el actualizador, sin el bundle antiguo.
 if (process.argv.includes('--github-pages')) {
-  const scripts = [...dev.matchAll(/<script[^>]*src="(js\/[^"?]+\.js)(?:\?[^"]*)?"/g)].map(m => m[1]);
+  const scripts = [...dev.matchAll(/<script[^>]*src="((?:js|dev)\/[^"?]+\.js)(?:\?[^"]*)?"/g)].map(m => m[1]);
   const hash = crypto.createHash('sha1').update(dev + scripts.map(f =>
     fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n') +
-    fs.readFileSync(path.join(ROOT, 'css/style.css'), 'utf8')).digest('hex').slice(0, 10);
+    fs.readFileSync(path.join(ROOT, 'css/style.css'), 'utf8') + fs.readFileSync(path.join(ROOT, 'dev/boss-rush.css'), 'utf8')).digest('hex').slice(0, 10);
   let html = dev.replace(/<meta name="robots" content="noindex">\s*/, '')
     .replace(/<meta name="ps-version"[^>]*>\s*/g, '')
     .replace('<meta charset="utf-8">', `<meta charset="utf-8">\n<meta name="ps-version" content="${hash}">`)
-    .replace(/(src="js\/[^"?]+\.js)(?:\?[^"]*)?"/g, `$1?v=${hash}"`)
-    .replace(/(href="css\/style\.css)(?:\?[^"]*)?"/g, `$1?v=${hash}"`)
+    .replace(/(src="(?:js|dev)\/[^"?]+\.js)(?:\?[^"]*)?"/g, `$1?v=${hash}"`)
+    .replace(/(href="(?:css\/style|dev\/boss-rush)\.css)(?:\?[^"]*)?"/g, `$1?v=${hash}"`)
     .replaceAll('https://pokesurvivor.com/', 'https://tiliko2803.github.io/pokesurvivor/')
     .replace(/<!-- dev.html: página fuente[^>]*-->/,
       '<!-- GENERADO desde dev.html por tools/build.js --github-pages: no editar a mano. -->');
@@ -39,7 +39,7 @@ if (process.argv.includes('--github-pages')) {
 const i = dev.indexOf(BEGIN), j = dev.indexOf(END);
 if (i < 0 || j < 0) throw new Error('dev.html no tiene las marcas ' + BEGIN + ' / ' + END);
 const block = dev.slice(i, j + END.length);
-const files = [...block.matchAll(/<script[^>]*src="(js\/[^"]+\.js)"/g)].map(m => m[1]);
+const files = [...block.matchAll(/<script[^>]*src="((?:js|dev)\/[^"?]+\.js)(?:\?[^\"]*)?"/g)].map(m => m[1]);
 
 // Une los archivos en orden; cada uno separado por ';' por si alguno no acaba en punto y coma.
 let joined = files.map(f => `/* ${f} */\n` + fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n;\n');
@@ -87,3 +87,4 @@ fs.writeFileSync(OUT, html);
 // actualiza solo (en el menú, o al acabar la partida). Ver js/core/updater.js.
 fs.writeFileSync(path.join(ROOT, 'version.json'), JSON.stringify({ v: hash, at: new Date().toISOString() }) + '\n');
 console.log(`${SIN_SEO ? '[sin SEO] ' : ''}${EXPOSE ? '[SIN PROTEGER, sólo pruebas] ' : ''}ok: ${files.length} scripts · ${(joined.length / 1024).toFixed(0)} KB -> ${(min.length / 1024).toFixed(0)} KB (app.min.js?v=${hash})`);
+

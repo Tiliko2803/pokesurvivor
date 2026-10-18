@@ -610,3 +610,31 @@ G.I18n.add({
   'Ya has reportado esta marca': 'You already reported this record',
   '¿Reportar la marca de {x} como trampa?': "Report {x}'s record as cheating?", 'Gracias: la revisaremos': 'Thanks: we will review it'
 });
+
+// Hoenn Normal: official Boss Rush selector.
+G.I18n.add({
+  "Boss Rush · Hoenn": "Boss Rush · Hoenn",
+  "ELIGE TU DESAFÍO": "CHOOSE YOUR CHALLENGE",
+  "Volver a Jugar": "Back to Play",
+  "Tierra, mar y cielo.": "Land, sea and sky.",
+  "Un desafío contra los legendarios de Hoenn.": "A challenge against the legends of Hoenn.",
+  "combates": "encounters",
+  "jefes": "bosses",
+  "nivel inicial": "starting level",
+  "Ver recorrido": "View route",
+  "Tres Regis": "Three Regis",
+  "Latios y Latias": "Latios and Latias",
+  "Los Regis y el Dúo Eón combaten en grupo.": "The Regis and the Eon Duo fight in groups.",
+  "Tu compañero": "Your partner",
+  "Usas el Pokémon elegido en el menú principal, con sus movimientos, Coberturas y mejoras compradas.": "Use the Pokémon selected in the main menu, with its moves, Coverage and purchased upgrades.",
+  "Jugar Hoenn Normal": "Play Hoenn Normal",
+  "Nivel 8 · 7 mejoras antes de empezar": "Level 8 · 7 upgrades before starting",
+  "Reglas del Boss Rush": "Boss Rush rules",
+  "Vence a los nueve jefes para completar Hoenn Normal.": "Defeat all nine bosses to complete Hoenn Normal.",
+  "Cada victoria da experiencia y recupera un 20% de vida. Los mayores conceden un Vínculo para combinar movimientos.": "Each victory grants XP and restores 20% HP. Major legends grant a Bond to combine moves.",
+  "Recibes Pokémonedas al terminar. Los tiempos y niveles de este modo no entran en el ranking de supervivencia.": "Earn Pokécoins at the end. This mode’s times and levels do not enter the survival rankings.",
+  "Hoenn Normal · Un jugador": "Hoenn Normal · Single-player",
+  "¡Hoenn Normal superado!": "Hoenn Normal cleared!",
+  "Preparar otro intento": "Prepare another attempt",
+  "Intento terminado": "Attempt ended"
+});

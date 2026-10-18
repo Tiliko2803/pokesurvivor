@@ -61,3 +61,8 @@
 }
 @media(max-width:360px) { .rush-fields { grid-template-columns:1fr; } }
 @media(max-height:450px) and (min-width:641px) { .rush-setup { padding:16px 20px; } .rush-header { margin-bottom:16px; } }
+
+.rush-equipped { margin-top:16px; padding:18px; text-align:center; background:#0b192a; border:1px solid #30465e; border-radius:9px; }
+#rush-partner-art { min-height:100px; display:block; max-width:100%; margin:0 auto; }
+.rush-equipped h3 { margin-top:10px; color:#d9f6e5; font-size:22px; }
+.rush-equipped .rush-description { margin-bottom:0; }
