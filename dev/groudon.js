@@ -134,6 +134,36 @@ G.Groudon = (() => {
         this.hitCooldown.set(p,this.clock);this.lastDamage=this.clock;
       }
     }
+    onImpact() {}
+    onRecovery(a) {
+      if(a.kind==='eruption') this.hazards=a.shapes.map(s=>({...s,r:31,start:this.clock+.8,end:this.clock+5}));
+    }
+    idleDelay() { return [0,.4,.25,.15][this.phase]; }
+    chooseAttack() {
+      if (this.phase === 3 && !this.ruptured) { this.ruptured = true; this.begin('rupture'); }
+      else {
+        const pattern = this.phase === 1 ? ['blades', 'charge', 'stomp', 'eruption'] : this.phase === 2
+          ? ['eruption', 'charge', 'blades', 'stomp'] : ['blades', 'charge', 'eruption', 'stomp', 'charge'];
+        let kind = pattern[this.sequence++ % pattern.length];
+        if (kind === 'stomp' && Math.hypot(this.target().x - this.boss.x, this.target().y - this.boss.y) > 130) kind = 'eruption';
+        const kinds=[kind];
+        if(this.phase>=2) kinds.push(kind==='eruption'?'blades':'eruption');
+        if(this.phase===3) {
+          const near=Math.hypot(this.target().x-this.boss.x,this.target().y-this.boss.y)<=130;
+          const third=near?'stomp':'charge';
+          kinds.push(kinds.includes(third)?'blades':third);
+        }
+        this.beginCombo(kinds);
+      }
+    }
+    updateHazards() {
+      if (this.clock - this.lastLava >= 0.8 && this.clock - this.lastDamage >= 0.9) {
+        this.lastLava = this.clock;
+        for (const p of this.alive()) if (this.clock-(this.hitCooldown.get(p)??-99)>=.9&&this.hazards.some(h => this.clock >= h.start && contains(h, p))) {
+          this.hit(p,12,'fire');this.hitCooldown.set(p,this.clock);
+        }
+      }
+    }
     update(dt) {
       if (this.finished || !Number.isFinite(dt) || dt <= 0) return;
       // The game already caps frames; cap here too, so a resumed tab cannot skip a warning.
@@ -151,49 +181,29 @@ G.Groudon = (() => {
         for(const a of this.attacks) a.t+=dt;
         for(const a of this.attacks) {
           const before=a.t-dt;
-          if(a.t>=a.warn&&before<a.warn) this.signal('impact',a);
+          if(a.t>=a.warn&&before<a.warn) { this.onImpact(a); this.signal('impact',a); }
           if(a.kind==='charge'&&a.t>=a.warn&&a.t<a.warn+a.active) {
             const s=a.shapes[0],k=clamp((a.t-a.warn)/a.active,0,1);
             this.boss.x=s.ax+(s.bx-s.ax)*k;this.boss.y=s.ay+(s.by-s.ay)*k;
           }
           if(a.t>=a.warn+a.active&&before<a.warn+a.active) {
             if(a.kind==='charge') {const s=a.shapes[0];this.boss.x=s.bx;this.boss.y=s.by;}
-            if(a.kind==='eruption') this.hazards=a.shapes.map(s=>({...s,r:31,start:this.clock+.8,end:this.clock+5}));
+            this.onRecovery(a);
             this.signal('recovery',a);
           }
         }
         this.resolveHits();
         if(this.attacks.every(a=>a.t>=a.warn+a.active+a.recovery)) {
-          this.attacks=[];this.cooldown=[0,.4,.25,.15][this.phase];
+          this.attacks=[];this.cooldown=this.idleDelay();
         }
       } else {
         this.approach(dt);
         this.cooldown -= dt;
         if (this.cooldown <= 0) {
-          if (this.phase === 3 && !this.ruptured) { this.ruptured = true; this.begin('rupture'); }
-          else {
-            const pattern = this.phase === 1 ? ['blades', 'charge', 'stomp', 'eruption'] : this.phase === 2
-              ? ['eruption', 'charge', 'blades', 'stomp'] : ['blades', 'charge', 'eruption', 'stomp', 'charge'];
-            let kind = pattern[this.sequence++ % pattern.length];
-            // Never waste a short-range attack while the player fires from the opposite side.
-            if (kind === 'stomp' && Math.hypot(this.target().x - this.boss.x, this.target().y - this.boss.y) > 130) kind = 'eruption';
-            const kinds=[kind];
-            if(this.phase>=2) kinds.push(kind==='eruption'?'blades':'eruption');
-            if(this.phase===3) {
-              const near=Math.hypot(this.target().x-this.boss.x,this.target().y-this.boss.y)<=130;
-              const third=near?'stomp':'charge';
-              kinds.push(kinds.includes(third)?'blades':third);
-            }
-            this.beginCombo(kinds);
-          }
+          this.chooseAttack();
         }
       }
-      if (this.clock - this.lastLava >= 0.8 && this.clock - this.lastDamage >= 0.9) {
-        this.lastLava = this.clock;
-        for (const p of this.alive()) if (this.clock-(this.hitCooldown.get(p)??-99)>=.9&&this.hazards.some(h => this.clock >= h.start && contains(h, p))) {
-          this.hit(p,12,'fire');this.hitCooldown.set(p,this.clock);
-        }
-      }
+      this.updateHazards();
     }
     get attack() { return this.attacks[0] || null; }
     get recovering() { return this.attacks.length>0 && this.attacks.every(a=>a.t>=a.warn+a.active); }

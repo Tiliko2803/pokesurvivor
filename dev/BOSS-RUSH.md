@@ -1,4 +1,4 @@
-# Boss Rush de Hoenn — primer tramo
+# Boss Rush de Hoenn — Tierra y océano
 
 ## Diseño acordado
 
@@ -14,9 +14,14 @@ El jugador empieza directamente en nivel 8, elige siete mejoras antes de combati
 
 ## Implementado
 
-`dev/index.html` usa los módulos actuales del juego y carga un adaptador exclusivo de pruebas. El primer tramo es Groudon → dos legendarios menores aleatorios. La pantalla indica que Kyogre está pendiente; al vencer al segundo menor concluye este tramo, no la ruta completa.
+`dev/index.html` usa los módulos actuales del juego y carga un adaptador exclusivo de pruebas. La ruta disponible es Groudon → dos legendarios menores aleatorios → Kyogre → otros dos menores distintos. Se conserva la build durante los seis combates. Después del sexto encuentro termina esta prueba; Rayquaza sigue pendiente.
 
 - Tres Pokémon de prueba: Swampert, Blaziken y Sceptile. Selección de dos ataques distintos; al menos uno causa daño.
+- Kyogre entra en el cuarto combate, a nivel 17 sin bonos de experiencia, con 600000 PV base provisionales y fases al 70%/35%. Usa el mismo reloj, límites, movimiento entre lanzamientos, pausa y protección compartida de impactos que Groudon. Su arena marina ocupa toda la pantalla y tiene suelo transitable, sin penalización de velocidad por agua decorativa. Su victoria da tres niveles, recuperación y un Vínculo.
+- Kyogre acelera también la señal de peligro: avisos normales de 1.55/1.20/0.90 segundos y pausas entre ataques de 0.38/0.24/0.14, según fase. Una señal ya visible nunca se acorta al cruzar un umbral. En fases 2/3 combina dos/tres movimientos. Para cada jugador se verifica una salida con 0.22 segundos de reacción, velocidad máxima de referencia 130 y su velocidad efectiva si está ralentizado. Se amplía el aviso si hace falta; se quita un movimiento secundario si supera 2.1/1.65/1.3 segundos según fase. Un ataque individual puede avisar más tiempo para permitir escapar a un jugador ralentizado.
+- Surf anuncia una franja fija y la ola la cruza a 520/580/640 unidades por segundo. Sólo el frente visible causa daño, una vez por jugador. Hidrobomba y Rayo Hielo son corredores fijos desde la boca/aleta; no persiguen al jugador tras el aviso. Rayo Hielo aplica la ralentización nativa durante 0.7 segundos si el impacto realmente causa daño. Los impactos coincidentes aplican un solo golpe y comparten 0.9 segundos de protección.
+- Danza Lluvia no causa daño directo: dura 12/16/20 segundos y potencia un 15% los impactos de Agua de Kyogre (adaptación de balance del Boss Rush). Se ve lluvia en píxeles sin ocultar los avisos. Pulso Primigenio se lanza solo al llegar a fases 2 y 3, cubre las zonas anunciadas con columnas de agua y deja un refugio cercano para cada jugador vivo. Avisa un 30% más que un ataque normal y deja 1.6 segundos de recuperación. Kyogre no hereda lava, retroceso ni ataques de Groudon.
+- Sprites de efectos generados con Image Generation: atlas transparente de 4×8 celdas, cuatro fotogramas por efecto, compilado a celdas de 64×64 con vecino más cercano. Incluye roca, onda de tierra, lava, embestida, ola, Hidrobomba, hielo y Pulso Primigenio; se usa también en los ataques de Groudon. Los efectos se dibujan a resolución de píxel y se amplían sin suavizado, conservando las señales geométricas para la lectura de colisiones. Calidad gráfica baja reduce partículas y cantidad de sprites. Procedencia y prompt en `assets/boss-rush/README.md`.
 - Regla cooperativa preparada: vida de cada jefe = vida base de su posición × número de jugadores al iniciar la partida. Se aplica a mayores y menores una sola vez, al crearlos, sin multiplicar daño, cadencia ni recompensas. Groudon tiene 400000/800000/1200000/1600000 PV para 1/2/3/4 jugadores. La cifra del equipo queda fija durante el intento aunque alguien caiga o salga, y las fases siguen calculándose como porcentaje de la vida máxima. La entrada cooperativa y su sincronización siguen pendientes; estas pruebas verifican el escalado con equipos simulados.
 - Nivel 8 con siete elecciones reales usando las cartas del juego. Los ataques empiezan en nivel 1 y se mejoran mediante cartas. El combate queda pausado durante toda la preparación.
 - Estadísticas base de la especie con las compras de oro realizadas dentro de la prueba; no se importan compras de la cuenta. Velocidad base de prueba: 130, conservando el multiplicador de Zancada comprado, para que se puedan esquivar los avisos caminando.
@@ -40,16 +45,16 @@ Publicación autorizada en la URL de desarrollo existente `/dev/`, la misma usad
 
 ```sh
 node tools/build-boss-rush-preview.cjs
-node --test tests/boss-rush-rules.test.cjs tests/groudon.test.cjs tests/groudon-integration.test.cjs tests/groudon-duration.test.cjs tests/groudon-fx.test.cjs tests/groudon-combos.test.cjs
+node --test tests/boss-rush-rules.test.cjs tests/groudon.test.cjs tests/groudon-integration.test.cjs tests/groudon-duration.test.cjs tests/groudon-fx.test.cjs tests/groudon-combos.test.cjs tests/kyogre.test.cjs tests/boss-rush-sprites.test.cjs
 node tools/benchmark-groudon.cjs
 python3 -m http.server 8765
 ```
 
 Abrir `/dev/` y elegir **Jugar → Boss Rush · Hoenn** para la prueba. **Volver a Jugar** regresa al selector; **Partida normal** y los desafíos conservan sus modos propios. Al volver de la tienda de mejoras se recupera la preparación del Boss Rush. El generador nunca modifica `index.html`, `version.json` ni el bundle oficial.
 
-Las pruebas de integración ejecutan `game.js`, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con servicios de interfaz simulados. Comprueban preparación, pausas, daño, avance por los tres enemigos, XP/niveles, victoria, reintento y conservación de sesión/guardado. Las pruebas del patrón verifican avisos, rutas de escape, fases, daño único, lava y refugio de Terremoto.
+Las pruebas de integración ejecutan `game.js`, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con servicios de interfaz simulados. Comprueban preparación, pausas, daño, avance por los seis enemigos, XP/niveles, dos Vínculos, victoria, reintento y conservación de sesión/guardado. Las pruebas de patrones verifican avisos, rutas de escape en horizontal/vertical, fases, daño único, lava, frente de Surf, lluvia y refugios. Las de efectos comprueban fotogramas, coordenadas finitas, estado del lienzo y que dibujar no cambie el combate ni consuma aleatoriedad.
 
-Pendiente: revisión en navegador y Android, balance mediante partidas reales, Kyogre, Rayquaza, cooperativo y sinergias. El entorno de trabajo no disponía de Chromium y su descarga no se pudo completar; las pruebas de motor no sustituyen esa revisión visual.
+Pendiente: revisión en navegador y Android, balance de Kyogre mediante partidas reales, Rayquaza, cooperativo y sinergias. La revisión visual de esta entrega usa el dibujo real de Canvas con los sprites, sin navegador disponible; las pruebas de motor y los renders no sustituyen una partida en el dispositivo.
 
 ## Duración de Groudon
 
@@ -63,13 +68,13 @@ Con el inicio actual en nivel 8, semilla 123 y 85% del tiempo atacando (15% rese
 
 Usar movimientos reales de Pokémon con nombres en español. Sus señales, áreas y secuencias se adaptan al Boss Rush. Doble Filo causa daño Normal y retroceso equivalente a un tercio del daño efectivo causado. Los patrones de arena no son ataques nuevos.
 
-Para Kyogre, el diseño propuesto se basará en Surf (oleadas), Hidrobomba (chorro anunciado), Rayo Hielo (haz con ralentización adaptada), Danza Lluvia (clima) y Pulso Primigenio (patrón culminante). Su implementación y balance siguen pendientes.
+Kyogre implementa Surf (oleada móvil), Hidrobomba (chorro anunciado), Rayo Hielo (haz con ralentización adaptada), Danza Lluvia (clima propio) y Pulso Primigenio (patrón culminante). Sus nombres y tipos son los de Pokémon; geometría, tiempos, daño y efecto de lluvia son adaptaciones para el Boss Rush.
 
 ## Selección y progreso de menores
 
 Se sortean especies sin repetir usando la Pokédex y los sprites disponibles. Se excluyen todos los mayores indicados por el dueño (Mewtwo, aves de Johto, trío ancestral, dioses de Sinnoh, dragones de Teselia, tríos de Kalos/Alola/Galar y Koraidon/Miraidon), además de Urshifu, Calyrex, Ogerpon y Terapagos. Los personajes custom tampoco entran. Las exclusiones son explícitas: no dependen de la rareza del gacha.
 
-Con tres niveles de experiencia por victoria y sin bonos, el primer tramo lleva del nivel 8 al 17 antes del próximo mayor. Aprendizaje y otros bonos de XP conservan su efecto. La curva es provisional y requiere partidas reales para evaluar justicia y dificultad.
+Con tres niveles de experiencia por victoria y sin bonos, se llega a Kyogre a nivel 17 y se termina el sexto combate a nivel 26, antes del futuro Rayquaza. Aprendizaje y otros bonos de XP conservan su efecto. La curva y los 600000 PV de Kyogre son provisionales y requieren partidas reales para evaluar justicia, duración y dificultad con builds evolucionadas.
 
 ## Recursos para probar
 

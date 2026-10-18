@@ -20,19 +20,21 @@ G.BossRushPreview = (() => {
   const relativeBoss = { get x() { return boss.x - ox; }, set x(v) { boss.x = ox + v; },
     get y() { return boss.y - oy; }, set y(v) { boss.y = oy + v; }, get r() { return boss.r; },
     get hp() { return boss.hp; }, get maxHp() { return boss.maxHp; }, get dead() { return boss.dead; } };
+  const effects = () => boss?.dex === 382 ? G.KyogreFX : G.GroudonFX;
+  const arenaType = () => stage >= 3 ? 'water' : 'fire';
   function signal(kind, data) {
     if (kind === 'attack') {
       boss.anim.play('Charge');
       const p = G.Game.player; boss.anim.dir = G.Sprites.dirFromAngle(Math.atan2(p.y - boss.y, p.x - boss.x));
-      G.Spawner.say((data.comboName || data.name) + (data.kind === 'rupture' ? ' · ¡Busca la franja segura!' : ''), data.warn, true);
+      G.Spawner.say((data.comboName || data.name) + (data.kind === 'rupture'||data.kind==='pulse' ? ' · ¡Busca la franja segura!' : ''), data.warn, true);
     } else if (kind === 'phase') {
-      G.Audio.sfx('boss'); G.Spawner.say(data === 2 ? '¡Tierra abrasadora!' : '¡Furia continental!', 2, true);
+      G.Audio.sfx('boss'); G.Spawner.say(boss.dex===382?(data===2?'¡Marea creciente! · Avisos más rápidos':'¡Furia oceánica! · Avisos más rápidos'):(data === 2 ? '¡Tierra abrasadora!' : '¡Furia continental!'), 2, true);
     } else if (kind === 'impact') {
-      boss.anim.play(data.kind === 'eruption' ? 'Shoot' : 'Attack');
-      const sound = { blades:'melee', stomp:'nova', eruption:'beam', charge:'projectile', rupture:'nova' }[data.kind];
+      boss.anim.play(['eruption','hydro','ice'].includes(data.kind) ? 'Shoot' : 'Attack');
+      const sound = { blades:'melee', stomp:'nova', eruption:'beam', charge:'projectile', rupture:'nova',surf:'nova',hydro:'beam',ice:'beam',rain:'nova',pulse:'nova' }[data.kind];
       G.Audio.sfx('shot', { kind:sound, type:data.type });
       G.Camera.kick(data.kind === 'rupture' ? 0.55 : data.kind === 'stomp' ? 0.35 : 0.22);
-      const color = G.GroudonFX.palette(data.kind).light, count = G.Settings.get('calm') ? 4 : 10;
+      const color = effects().palette(data.kind).light, count = G.Settings.get('calm') ? 4 : 10;
       if (data.kind === 'stomp' || data.kind === 'charge') G.FX.burst(boss.x,boss.y,color,count*2,150);
       else for (const s of data.shapes) {
         const x=s.kind==='circle'?s.x:s.kind==='line'?s.ax:(s.left+s.right)/2;
@@ -42,19 +44,21 @@ G.BossRushPreview = (() => {
     } else if (kind === 'recovery') {
       if (encounter?.recovering) {
         boss.anim.loop('Idle');
-        if (data.kind === 'charge' || data.kind === 'rupture') G.Spawner.say('¡Groudon se recupera! ¡Ataca!', 2, true);
+        if (['charge','rupture','pulse'].includes(data.kind)) G.Spawner.say('¡'+boss.name+' se recupera! ¡Ataca!', 2, true);
       }
     } else if (kind === 'recoil') {
       boss.hurt(data, '#f5d1bd');
     } else if (kind === 'victory') {
-      G.Spawner.say('¡Groudon derrotado!', 2, true);
+      G.Spawner.say('¡'+boss.name+' derrotado!', 2, true);
     }
   }
   function start() {
     const p = G.Game.player;
-    const minors = G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META);
+    const minors = G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META, 4);
     route = [{ dex: 383, major: true, hp: G.Groudon.BASE_HP, damage: 42 },
-      ...minors.map(dex => ({ dex, major: false }))];
+      ...minors.slice(0,2).map(dex => ({ dex, major: false })),
+      {dex:382,major:true,hp:G.Kyogre.BASE_HP,damage:50},
+      ...minors.slice(2).map(dex => ({dex,major:false}))];
     ox = 16; oy = 16; p.x = ox; p.y = oy + 85;
     p.moves = []; p.slots = []; p.active = 0; p.bind = {}; p.bonds = 0;
     for (const id of chosen) {
@@ -88,6 +92,9 @@ G.BossRushPreview = (() => {
     const ranged = mon.types.some(t => ['psychic','electric','ghost','fairy','fire','water','ice','dragon'].includes(t));
     G.Projectiles.clear(); G.Combat.clearFields(); G.Hazards.clear();
     defeated = false; transition = 0;
+    p.slowT=0;
+    refreshCamera();
+    G.World.setBiome(G.Tiles.arenaBiome(arenaType()),true);
     boss = new G.Enemy({ dex: def.dex, name: mon.name, hp: G.BossRushRules.bossHp(stats.hp, partySize),
       spd: def.major ? 0 : Math.round(G.U.clamp(48 + (mon.spd - 78) * 0.6, 48, 105)),
       dmg: def.major ? 0 : stats.damage,
@@ -98,15 +105,17 @@ G.BossRushPreview = (() => {
     boss.rushAttackRate = def.major ? 1 : stats.attackRate;
     boss.touchCd = def.major ? 999 : 1.5;
     G.EnemyMgr.add(boss);
-    encounter = def.major ? new G.Groudon.Encounter({ boss: relativeBoss, players: () => players,
-      hit: (rp, dmg, type) => {
+    const Encounter=def.dex===382?G.Kyogre.Encounter:G.Groudon.Encounter;
+    encounter = def.major ? new Encounter({ boss: relativeBoss, players: () => players,
+      hit: (rp, dmg, type, effect) => {
         const pl = rp.source, before = pl.hp; pl.hurt(dmg, type, false, true);
         // Extra grace between scripted impacts and lava, without disabling defence.
         if (!pl.dead) pl.invuln = Math.max(pl.invuln, 0.9);
+        if(before>pl.hp&&effect?.slow)pl.slowT=Math.max(pl.slowT,effect.slow);
         return Math.max(0, before - pl.hp);
       }, signal }) : null;
     G.Sprites.preload([def.dex, p.dex], 8000);
-    G.Spawner.say(def.major ? 'Groudon · El despertar' : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);
+    G.Spawner.say(def.major ? boss.name+(def.dex===382?' · El océano despierta':' · El despertar') : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);
   }
   function offerPreparation() {
     if (!preparing) return;
@@ -140,12 +149,24 @@ G.BossRushPreview = (() => {
     if (Number.isFinite(cam.w * cam.scale) && Number.isFinite(cam.h * cam.scale))
       cam.resize(cam.w * cam.scale, cam.h * cam.scale, cam.dpr);
   }
+  let effectsCanvas=null;
+  function drawEffects(ctx) {
+    if(!encounter)return;
+    const r=G.Groudon.ARENA,w=Math.ceil((r.right-r.left+128)/2),h=Math.ceil((r.bottom-r.top+128)/2);
+    if(!effectsCanvas)effectsCanvas=document.createElement('canvas');
+    if(effectsCanvas.width!==w||effectsCanvas.height!==h){effectsCanvas.width=w;effectsCanvas.height=h;}
+    const c=effectsCanvas.getContext('2d');c.clearRect(0,0,w,h);c.save();
+    c.scale(.5,.5);c.translate(64-r.left,64-r.top);
+    effects().draw(c,encounter,relativeBoss,{quality:G.Settings.fx,calm:G.Settings.get('calm')});c.restore();
+    ctx.save();ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(effectsCanvas,r.left-64,r.top-64,w*2,h*2);ctx.restore();
+  }
   function draw(ctx) {
     if (!running) return;
     ctx.save(); ctx.fillStyle = '#1d1b22';
     ctx.fillRect(G.Camera.left()-64,G.Camera.top()-64,G.Camera.w+128,G.Camera.h+128);
     ctx.translate(ox, oy); ctx.lineWidth = 2;
-    G.BossRushArena.draw(ctx, G.Groudon.ARENA);
+    G.BossRushArena.draw(ctx, G.Groudon.ARENA,arenaType());
     ctx.lineWidth = 2;
     for (const h of encounter?.hazards || []) {
       paintShape(ctx, h, encounter.clock < h.start ? '#a9532844' : '#e45a1faa', '#ffb34f');
@@ -154,12 +175,13 @@ G.BossRushPreview = (() => {
       if (a.t >= a.warn + a.active) continue;
       const warning = a.t < a.warn;
       ctx.setLineDash(warning ? [7, 5] : []);
-      const palette = G.GroudonFX.palette(a.kind);
-      for (const s of a.shapes) paintShape(ctx, s, warning ? palette.warning : palette.impact, palette.edge);
-      if (a.safe) {
-        ctx.setLineDash([]); paintShape(ctx, a.safe, '#48d8bd30', '#8ffff0');
+      const palette = effects().palette(a.kind);
+      const shapes=!warning&&encounter.id==='kyogre'?encounter.hitShapes(a):a.shapes;
+      for (const s of shapes) paintShape(ctx, s, warning ? palette.warning : palette.impact, palette.edge);
+      for(const safe of a.safes||(a.safe?[a.safe]:[])) {
+        ctx.setLineDash([]); paintShape(ctx, safe, '#48d8bd30', '#8ffff0');
         ctx.font = 'bold 14px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#b5fff3';
-        ctx.fillText('ZONA SEGURA', 0, (a.safe.top + a.safe.bottom) / 2 + 5);
+        ctx.fillText('ZONA SEGURA', 0, (safe.top + safe.bottom) / 2 + 5);
       }
       if (warning) {
         ctx.setLineDash([]); ctx.textAlign = 'center'; ctx.font = 'bold 20px monospace'; ctx.fillStyle = '#ffe6b5';
@@ -170,7 +192,7 @@ G.BossRushPreview = (() => {
         }
       }
     }
-    if (encounter) G.GroudonFX.draw(ctx, encounter, relativeBoss, { quality:G.Settings.fx, calm:G.Settings.get('calm') });
+    drawEffects(ctx);
     ctx.restore();
   }
   function hud(ctx, w) {
@@ -182,15 +204,15 @@ G.BossRushPreview = (() => {
     const timer = encounter ? ' · ' + Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2,'0') : '';
     ctx.fillText(boss.name.toUpperCase() + (encounter ? ' · FASE ' + encounter.phase + '/3' : ' · MENOR') + timer, w / 2, 77);
     ctx.fillStyle = '#4e2b35'; ctx.fillRect(x, 82, width, 6);
-    ctx.fillStyle = encounter?.recovering ? '#7ce7bc' : '#f67846'; ctx.fillRect(x, 82, width * Math.max(0, boss.hp / boss.maxHp), 6);
+    ctx.fillStyle = encounter?.recovering ? '#7ce7bc' : arenaType()==='water'?'#51d9f4':'#f67846'; ctx.fillRect(x, 82, width * Math.max(0, boss.hp / boss.maxHp), 6);
     ctx.font = '11px monospace'; ctx.fillStyle = '#fff';
-    ctx.fillText(transition ? 'Victoria · Recupera fuerzas' : encounter?.label || 'Combate ' + (stage + 1) + '/3 · Gana experiencia', w / 2, 100); ctx.restore();
+    ctx.fillText(transition ? 'Victoria · Recupera fuerzas' : encounter?.label || 'Combate ' + (stage + 1) + '/'+route.length+' · Gana experiencia', w / 2, 100); ctx.restore();
   }
   function setup() {
     const root = document.createElement('section'); root.id = 'scr-boss-rush'; root.className = 'scr dim hidden';
     root.innerHTML = `<div class="panel rush-setup"><span class="rush-kicker">BOSS RUSH · HOENN</span>
-      <h1>El despertar de Groudon</h1><p>Primera arena de la ruta. Aprende sus señales, esquiva y contraataca.</p>
-      <div class="rush-route"><b>Groudon → 2 legendarios menores aleatorios</b><span>Después: Kyogre · Próximamente</span></div>
+      <h1>Tierra y océano</h1><p>Dos legendarios mayores. Aprende sus señales, esquiva y contraataca.</p>
+      <div class="rush-route"><b>Groudon → 2 menores → Kyogre → 2 menores</b><span>Después: Rayquaza · Próximamente</span></div>
       <div class="rush-fields"><label>Tu Pokémon<select id="rush-partner"></select></label>
       <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
       <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
@@ -340,8 +362,8 @@ G.BossRushPreview = (() => {
       cam.x = ox; cam.y = oy;
       G.Groudon.resizeArena(cam.w,cam.h);
       const tileSize=Number.isFinite(G.World.TS)?G.World.TS:32;
-      G.World.setArena({tx:0,ty:0,r:Math.ceil(Math.hypot(cam.w,cam.h)/(2*tileSize))+3,type:'fire'});
-      G.World.arena.th={...G.Tiles.ARENA_THEMES.fire,pools:0,pillars:0,props:{}};
+      G.World.setArena({tx:0,ty:0,r:Math.ceil(Math.hypot(cam.w,cam.h)/(2*tileSize))+3,type:arenaType()});
+      G.World.arena.th={...G.Tiles.ARENA_THEMES[arenaType()],pools:0,pillars:0,props:{}};
       // A rotation may shrink one axis dramatically: retire old marks before clamping actors.
       if(cam.w<previousWidth*.8||cam.h<previousHeight*.8) {
         if(encounter) {encounter.attacks=[];encounter.hazards=[];encounter.cooldown=Math.max(.8,encounter.cooldown);}
@@ -402,9 +424,9 @@ G.BossRushPreview = (() => {
     wrap(G.RunUI, 'showOver', (old, result, back) => {
       if (!running) return old(result, back);
       old({ ...result, coins: 0, record: false, breakdown: 'Prueba de combate · Sin recompensas', caught: [], megaUnlocked: false }, () => {
-        running = false; preparing = false; encounter = null; boss = null; refreshCamera(); back();
+        running = false; preparing = false; encounter = null; boss = null; G.Game.player.slowT=0; refreshCamera(); back();
       });
-      document.getElementById('over-title').textContent = won ? '¡Primer tramo superado!' : 'Intento terminado';
+      document.getElementById('over-title').textContent = won ? '¡Tierra y océano superados!' : 'Intento terminado';
       document.getElementById('btn-again').textContent = 'Preparar otro intento';
       document.getElementById('over-ask')?.remove();
     });

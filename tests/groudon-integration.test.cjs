@@ -13,9 +13,10 @@ test('Boss Rush snapshots roster size and multiplies every boss HP without compo
     assert.equal(G.BossRushPreview.encounter.players().length,n);
     for(const p of mates)p.dead=true;
     G.Game.everyone=()=>[G.Game.player]; // Leaving/downed teammates do not shrink later bosses.
-    for(const stage of [1,2]){
+    for(const stage of [1,2,3,4,5]){
       b.hurt(99999999);f.tick(201);b=G.BossRushPreview.boss;
       assert.equal(G.BossRushPreview.stage,stage);
+      if(stage===3){assert.equal(b.dex,382);assert.equal(b.maxHp,600000*n);assert.equal(born[stage].hp,b.maxHp);continue;}
       const base=G.BossRushRules.minorStats(stage);
       assert.equal(b.maxHp,base.hp*n);assert.equal(born[stage].hp,b.maxHp);
       assert.equal(b.dmg,base.damage);assert.equal(b.rushAttackRate,base.attackRate);
@@ -23,6 +24,21 @@ test('Boss Rush snapshots roster size and multiplies every boss HP without compo
     G.Game.quit();f.back();G.BossRushPreview.play();
     assert.equal(G.BossRushPreview.boss.maxHp,400000,'A new solo attempt resets the multiplier');
   }
+});
+
+test('Kyogre uses native damage and slow, freezes in pause, clears rain and slow on exit',async()=>{
+  const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
+  for(let i=0;i<3;i++){G.BossRushPreview.boss.hurt(99999999);f.tick(201);}
+  const e=G.BossRushPreview.encounter,p=G.Game.player,b=G.BossRushPreview.boss;
+  assert.equal(e.id,'kyogre');assert.ok(p.level>=17);
+  e.attacks=[];e.cooldown=99;p.invuln=0;p.x=b.x;p.y=b.y+85;
+  e.begin('ice');const hp=p.hp;
+  const dt=e.attack.warn+0.02;for(let i=0;i<Math.ceil(dt*100);i++)e.update(.01);
+  assert.ok(p.hp<hp);assert.equal(p.slowT,.7);assert.ok(p.invuln>=.9);
+  e.attacks=[];e.begin('rain');for(let i=0;i<160;i++)e.update(.01);assert.equal(e.raining,true);
+  G.Game.togglePause();const snapshot=JSON.stringify(e);f.tick(100);assert.equal(JSON.stringify(e),snapshot);
+  G.Game.quit();f.back();assert.equal(p.slowT,0);assert.equal(G.BossRushPreview.encounter,null);
+  assert.deepEqual(f.storage,f.before);assert.equal(f.rankings(),0);
 });
 test('Engine integration: temporary session, real moves hit Groudon, no ranking or account writes', async () => {
   const f=fixture(),{G}=f; await G.DB.ready(); assert.equal(G.DB.guest,true);
@@ -61,7 +77,19 @@ test('Engine integration: phases, victory and no drops/rewards', async () => {
   assert.ok(G.BossRushRules.eligibleMinor(G.DEX_BY[second.dex],G.SPRITE_META)); assert.notEqual(second.dex,firstMinor);
   assert.ok(second.maxHp>firstStats.hp && second.dmg>firstStats.dmg && second.rushAttackRate>firstStats.rate);
   G.BossRushPreview.boss.hurt(999999); f.tick(201);
-  assert.equal(G.Game.state,'over'); assert.equal(f.nodes.get('over-title').textContent,'¡Primer tramo superado!');
+  assert.equal(G.BossRushPreview.stage,3);assert.equal(G.BossRushPreview.boss.dex,382);
+  assert.equal(G.Game.player.level,17);assert.equal(G.BossRushPreview.encounter.id,'kyogre');
+  assert.equal(G.World.arena.type,'water');assert.equal(G.World.arena.th.pools,0);
+  const seen=new Set([firstMinor,second.dex]);
+  for(const next of [4,5]){
+    G.BossRushPreview.boss.hurt(99999999);f.tick(201);
+    assert.equal(G.BossRushPreview.stage,next);
+    const dex=G.BossRushPreview.boss.dex;
+    assert.ok(G.BossRushRules.eligibleMinor(G.DEX_BY[dex],G.SPRITE_META));
+    assert.ok(!seen.has(dex));seen.add(dex);
+  }
+  G.BossRushPreview.boss.hurt(99999999);f.tick(201);
+  assert.equal(G.Game.state,'over'); assert.equal(f.nodes.get('over-title').textContent,'¡Tierra y océano superados!');
   assert.equal(f.result().coins,0); assert.equal(f.rankings(),0); assert.deepEqual(f.storage,f.before);
 });
 test('Preview preserves absence of a pre-existing session too', async () => {
@@ -192,7 +220,14 @@ test('Only the major grants one Bond; selecting the native fusion pauses the int
   G.BossRushPreview.boss.hurt(999999);f.tick(201);
   assert.equal(G.BossRushPreview.stage,2);assert.equal(p.bonds,0);assert.equal(f.bond(),null);
   G.BossRushPreview.boss.hurt(999999);f.tick(201);
-  assert.equal(G.Game.state,'over');assert.equal(p.bonds,0);
+  assert.equal(G.BossRushPreview.stage,3);assert.equal(p.bonds,0);
+  const kyogre=G.BossRushPreview.boss;kyogre.hurt(99999999);kyogre.die();
+  assert.equal(p.bonds,1,'Kyogre grants one Bond too');
+  f.tick(240,{autoBond:false});
+  if(G.Game.state==='choice'){assert.equal(G.BossRushPreview.stage,3);f.pickBond();}
+  f.tick(201);assert.equal(G.BossRushPreview.stage,4);
+  for(let i=0;i<2;i++){G.BossRushPreview.boss.hurt(99999999);f.tick(201);}
+  assert.equal(G.Game.state,'over');
   assert.deepEqual(f.storage,f.before);
 });
 

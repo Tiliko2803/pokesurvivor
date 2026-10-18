@@ -33,7 +33,7 @@ function fixture(session = 'real-account') {
   Object.assign(G.Weather, { mult: () => 1, speedFor: () => 1 });
   Object.assign(G.World, { biome: 0, isLiquid: () => false, projectileBlock: () => false, propsInCircle: () => [],
     setArena: cfg => { G.World.arena = cfg; }, nearestBreakable: () => null });
-  G.Tiles = { ARENA_THEMES: { fire: {} }, arenaBiome: () => 0 };
+  G.Tiles = { ARENA_THEMES: { fire: {},water:{} }, arenaBiome: () => 0 };
   G.BIOME_MUSIC = ['boss']; G.Judgment.summary = () => null; G.Judgment.cinematic = false; G.Judgment.active = false;
   G.Rift.inArena = false; G.Input.axis = () => [0,0]; G.Input.tap = () => false; G.SettingsUI = { isOpen: false };
   G.UI.isOpen = id => !node(id).classList.contains('hidden'); G.UI.$ = node;
@@ -58,7 +58,7 @@ function fixture(session = 'real-account') {
   G.RunUI.showLevelUp = (lv,list,cb) => { cards=list; pick=cb; };
   G.RunUI.showBond = (opt,cb) => { bond={opt,cb}; G.UI.show('scr-bond'); };
   G.Flow.afterRun = () => G.Game.toUI();
-  load('dev/boss-rush-rules.js'); load('dev/groudon.js'); load('dev/groudon-fx.js'); load('dev/boss-rush-preview.js');
+  for(const file of ['dev/boss-rush-rules.js','dev/groudon.js','dev/kyogre.js','dev/boss-rush-sprites.js','dev/groudon-fx.js','dev/kyogre-fx.js','dev/boss-rush-preview.js'])load(file);
   const choose = () => { const card=cards.find(c=>c.key==='up:water-gun') || cards.find(c=>c.key==='stat:atk') || cards[0]; const cb=pick; cards=null; pick=null; cb(card); };
   const prepare = () => { let n=0; while(G.BossRushPreview.preparing) { choose(); n++; assert.ok(n<=G.BossRushPreview.START_LEVEL-1); } return n; };
   const pickBond = () => {

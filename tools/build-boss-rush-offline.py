@@ -12,7 +12,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MINORS = [144, 145, 146, 377, 378, 379]
-ROSTER = [254, 257, 260, 383, *MINORS]
+ROSTER = [254, 257, 260, 382, 383, *MINORS]
 ANIMS = ['Idle', 'Walk', 'Attack', 'Shoot', 'Charge', 'Hurt', 'Faint']
 
 
@@ -52,16 +52,18 @@ def build(destination):
                 raise ValueError('Sprite loader has changed: offline export needs updating')
             source = source.replace(old, new)
         if path == 'dev/boss-rush-preview.js':
-            source = source.replace('G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META)',
-                                    'G.BossRushRules.selectMinors(G.DEX.filter(mon => ' + json.dumps(MINORS) + '.includes(mon.dex)), G.SPRITE_META)')
+            source = source.replace('G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META, 4)',
+                                    'G.BossRushRules.selectMinors(G.DEX.filter(mon => ' + json.dumps(MINORS) + '.includes(mon.dex)), G.SPRITE_META, 4)')
             source = source.replace('Prueba individual del primer tramo.',
                                     'Prueba local sin internet. Menores: aves legendarias y Regis.')
         source = source.replace('</script', '<\\/script')
+        if path == 'dev/boss-rush-sprites.js':
+            source = source.replace('assets/boss-rush/attack-atlas-v1.png?v=1', data_url(ROOT / 'assets/boss-rush/attack-atlas-v1.png', 'image/png'))
         scripts.append(path)
         return '<script>\n/* Bundled: ' + path + ' */\n' + source + '\n</script>'
 
     html = re.sub(r'<script[^>]*src="([^"]+)"[^>]*></script>', inline, html)
-    html = html.replace('<title>PokéSurvivor · Boss Rush · Groudon</title>',
+    html = html.replace('<title>PokéSurvivor · Boss Rush · Hoenn</title>',
                         '<title>PokéSurvivor · Boss Rush · Prueba local</title>')
     if re.search(r'<script[^>]*src=|<link\b|<base\b', html):
         raise ValueError('External resources remain in exported document')

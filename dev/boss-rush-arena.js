@@ -2,7 +2,7 @@
 G.BossRushArena = (() => {
   let cache, cacheKey;
   const PAD = 64;
-  function make(bounds) {
+  function make(bounds,theme) {
     const { left, right, top, bottom } = bounds, w = right - left, h = bottom - top;
     const canvas = document.createElement('canvas');
     canvas.width = (w + PAD * 2) / 2; canvas.height = (h + PAD * 2) / 2;
@@ -14,6 +14,20 @@ G.BossRushArena = (() => {
       c.beginPath(); points.forEach(([x,y],i) => i ? c.lineTo(x,y) : c.moveTo(x,y)); c.closePath();
       c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = width; c.stroke(); }
     };
+    if(theme==='water') {
+      c.fillStyle='#173946';c.fillRect(left-PAD,top-PAD,w+PAD*2,h+PAD*2);
+      const colors=['#1b4352','#204a58','#15323f','#24505a'];
+      for(let i=0;i<110;i++){
+        const x=between(left,right),y=between(top,bottom),rx=between(15,65),ry=between(8,25);
+        polygon([[x-rx,y],[x-rx*.5,y-ry],[x+rx*.6,y-ry],[x+rx,y],[x+rx*.4,y+ry],[x-rx*.6,y+ry]],colors[i%4]);
+      }
+      for(let i=0;i<85;i++){
+        const x=Math.round(between(left,right)/2)*2,y=Math.round(between(top,bottom)/2)*2;
+        c.fillStyle='#48949a55';c.fillRect(x,y,between(8,25),2);c.fillRect(x+6,y-4,between(4,14),2);
+      }
+      for(let i=0;i<600;i++){c.fillStyle=i%2?'#78bbc525':'#071f3030';c.fillRect(between(left,right),between(top,bottom),2,2);}
+      return canvas;
+    }
     // Continuous floor includes a little overscan for camera shake; no frame or moat.
     c.fillStyle = '#393033'; c.fillRect(left-PAD,top-PAD,w+PAD*2,h+PAD*2);
     const rockColors = ['#342c30','#403437','#3d3234','#30292e','#443738'];
@@ -44,9 +58,9 @@ G.BossRushArena = (() => {
     }
     return canvas;
   }
-  function draw(ctx, bounds) {
-    const key = [bounds.left,bounds.right,bounds.top,bounds.bottom].join(',');
-    if (!cache || key !== cacheKey) { cache = make(bounds); cacheKey = key; }
+  function draw(ctx, bounds,theme='fire') {
+    const key = [theme,bounds.left,bounds.right,bounds.top,bounds.bottom].join(',');
+    if (!cache || key !== cacheKey) { cache = make(bounds,theme); cacheKey = key; }
     ctx.save(); ctx.imageSmoothingEnabled=false;
     ctx.drawImage(cache,bounds.left-PAD,bounds.top-PAD,bounds.right-bounds.left+PAD*2,bounds.bottom-bounds.top+PAD*2);
     ctx.restore();

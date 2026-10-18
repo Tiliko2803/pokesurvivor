@@ -147,6 +147,7 @@ G.GroudonFX = (() => {
     c.restore();
     }
     c.restore();
+    if(G.BossRushSprites)G.BossRushSprites.draw(c,e,boss,{quality,calm});
   }
   return { draw, palette };
 })();

@@ -6,6 +6,15 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Kyogre y efectos en pixel art', 'Kyogre and pixel-art effects'], new: [
+    ['Kyogre llega al Boss Rush después de Groudon y dos menores. Usa Surf, Hidrobomba, Rayo Hielo, Danza Lluvia y Pulso Primigenio. Después aparecen otros dos menores; conservas tu build y cada mayor entrega un Vínculo.',
+     'Kyogre joins Boss Rush after Groudon and two minor legends. It uses Surf, Hydro Pump, Ice Beam, Rain Dance and Origin Pulse. Two more minors follow; your build persists and each major grants a Bond.'],
+    ['Los ataques de Groudon y Kyogre reciben sprites animados en pixel art. Kyogre tiene arena marina a toda pantalla, olas móviles, chorros, hielo y lluvia sin ocultar las señales.',
+     'Groudon and Kyogre attacks get animated pixel-art sprites. Kyogre has a full-screen marine arena, moving waves, water jets, ice and rain that preserves readable warnings.']
+  ], chg: [
+    ['Los avisos normales de Kyogre bajan de 1.55 a 1.20 y 0.90 segundos según fase, y pasa de ataques individuales a dobles y triples. Las combinaciones comprueban una salida alcanzable y comparten protección contra impactos instantáneos.',
+     'Kyogre’s normal warnings shorten from 1.55 to 1.20 and 0.90 seconds by phase, progressing from single to double and triple attacks. Combinations check for a reachable escape and share protection against instant overlapping hits.']
+  ] },
   { d: '2026-10-17', title: ['Vida de jefes por equipo', 'Boss health per team'], chg: [
     ['El Boss Rush prepara el escalado de vida para cooperativo: los mayores y menores tendrán su vida base multiplicada por el número de jugadores al iniciar la partida. Caer durante el intento no reduce esa vida. La entrada cooperativa sigue pendiente.',
      'Boss Rush prepares cooperative health scaling: major and minor bosses will have their base health multiplied by the starting player count. Going down during the run does not reduce that health. Cooperative entry is still pending.']
