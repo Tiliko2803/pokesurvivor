@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Acceso al Boss Rush', 'Boss Rush entry'], new: [
+    ['En la página de pruebas, entra desde Jugar → Boss Rush · Hoenn. Puedes volver al selector de modos y Partida normal conserva su funcionamiento.',
+     'On the development page, enter through Play → Boss Rush · Hoenn. You can return to mode selection, and Normal Run keeps its usual behavior.']
+  ] },
   { d: '2026-10-17', title: ['Prueba del Boss Rush de Hoenn', 'Hoenn Boss Rush playtest'], new: [
     ['La página de desarrollo permite probar a Groudon con tres fases y dos legendarios menores aleatorios con sus patrones normales. Empiezas en nivel 10 eligiendo nueve mejoras; los menores escalan su vida, daño y cadencia conservando los avisos.',
      'The development page offers a three-phase Groudon and two random minor legends with native patterns. Start at level 10 with nine upgrades; minor HP, damage and attack rate scale while telegraphs keep their timing.'],

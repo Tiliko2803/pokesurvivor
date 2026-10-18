@@ -39,7 +39,7 @@ node --test tests/boss-rush-rules.test.cjs tests/groudon.test.cjs tests/groudon-
 python3 -m http.server 8765
 ```
 
-Abrir `/dev/` para la prueba. El generador nunca modifica `index.html`, `version.json` ni el bundle oficial.
+Abrir `/dev/` y elegir **Jugar → Boss Rush · Hoenn** para la prueba. **Volver a Jugar** regresa al selector; **Partida normal** y los desafíos conservan sus modos propios. Al volver de la tienda de mejoras se recupera la preparación del Boss Rush. El generador nunca modifica `index.html`, `version.json` ni el bundle oficial.
 
 Las pruebas de integración ejecutan `game.js`, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con servicios de interfaz simulados. Comprueban preparación, pausas, daño, avance por los tres enemigos, XP/niveles, victoria, reintento y conservación de sesión/guardado. Las pruebas del patrón verifican avisos, rutas de escape, fases, daño único, lava y refugio de Terremoto.
 

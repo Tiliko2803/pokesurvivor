@@ -5,6 +5,7 @@ G.BossRushPreview = (() => {
   let encounter = null, boss = null, running = false, ending = false, won = false;
   let preparing = false, choicesLeft = 0, stage = 0, transition = 0, defeated = false;
   let route = [];
+  let returnFromUpgrades = false;
   let chosen = ['water-gun', 'bubble'], ox = 0, oy = 0;
   const roster = [260, 257, 254];
   const normalPause = G.Game.togglePause;
@@ -173,7 +174,8 @@ G.BossRushPreview = (() => {
       <button class="btn small" id="rush-upgrades">Mejoras de oro</button>
       <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
       <p class="sub">Empiezas en nivel 10: elige nueve mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida.<br>Prueba individual del primer tramo. Tu cuenta y tu progreso no se modifican.</p>
-      <button class="btn gold" id="rush-start">Enfrentar a Groudon</button>
+      <div class="rush-actions"><button class="btn gold" id="rush-start">Enfrentar a Groudon</button>
+      <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
       <p id="rush-error" role="status"></p></div>`;
     document.body.appendChild(root);
     const select = document.getElementById('rush-partner');
@@ -190,18 +192,30 @@ G.BossRushPreview = (() => {
     select.onchange = () => { G.DB.save.partner = Number(select.value); moves(); }; moves();
     document.getElementById('rush-upgrades').onclick = () => {
       const dex = Number(select.value); G.DB.save.partner = dex;
+      returnFromUpgrades = true;
       document.querySelector('#scr-menu [data-go="upgrades"]').click();
       const upgradeSelect = document.getElementById('upg-mon');
       upgradeSelect.value = String(dex); upgradeSelect.onchange();
     };
     document.getElementById('rush-refill').onclick = refillFunds;
+    document.getElementById('rush-back').onclick = () => G.MenuUI.openPlayMode();
     document.getElementById('rush-start').onclick = () => {
       chosen = [1, 2].map(n => document.getElementById('rush-move-' + n).value);
       if (chosen[0] === chosen[1] || chosen.every(id => G.Moves.BY_ID[id].kind === 'buff')) {
         document.getElementById('rush-error').textContent = 'Elige dos ataques distintos y al menos uno que cause daño.'; return;
       }
-      G.DB.save.partner = Number(select.value); G.Audio.unlock(); G.Game.startRun();
+      G.DB.save.partner = Number(select.value); G.Audio.unlock(); play();
     };
+  }
+  function open() {
+    if (!document.getElementById('scr-boss-rush')) setup();
+    refreshSetup(); G.UI.show('scr-boss-rush', true);
+    document.getElementById('scr-boss-rush').classList.remove('hidden');
+  }
+  function play() {
+    if (G.Game.state !== 'ui' || running) return;
+    G.Game.startRun();
+    if (G.Game.state === 'playing') start();
   }
   function refreshSetup() {
     const el = document.getElementById('rush-balance');
@@ -233,13 +247,12 @@ G.BossRushPreview = (() => {
     wrap(G.UI, 'hideAll', old => {
       document.getElementById('scr-boss-rush')?.classList.add('hidden'); return old();
     });
-    wrap(G.MenuUI, 'open', old => {
-      old(); if (!document.getElementById('scr-boss-rush')) setup();
-      refreshSetup(); G.UI.show('scr-boss-rush', true);
+    wrap(G.MenuUI, 'init', old => {
+      old(); document.getElementById('btn-boss-rush').onclick = open;
     });
-    wrap(G.Game, 'startRun', old => {
-      if (G.Game.state !== 'ui' || running) return;
-      old(); if (G.Game.state === 'playing') start();
+    wrap(G.MenuUI, 'open', old => {
+      old();
+      if (returnFromUpgrades) { returnFromUpgrades = false; open(); }
     });
     wrap(G.Spawner, 'update', (old, dt, ...args) => {
       if (!running) return old(dt, ...args);
@@ -311,6 +324,6 @@ G.BossRushPreview = (() => {
     });
   }
   init();
-  return { refillFunds, get encounter() { return encounter; }, get boss() { return boss; }, get running() { return running; },
+  return { open, play, refillFunds, get encounter() { return encounter; }, get boss() { return boss; }, get running() { return running; },
     get preparing() { return preparing; }, get stage() { return stage; } };
 })();

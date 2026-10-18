@@ -9,12 +9,15 @@ function fixture(session = 'real-account') {
     if (!nodes.has(id)) {
       const classes = new Set(['hidden']);
       nodes.set(id, { classList: { add: x => classes.add(x), remove: x => classes.delete(x), contains: x => classes.has(x), toggle: noop },
-        remove: noop, textContent: '', innerHTML: '' });
+        remove: noop, textContent: '', innerHTML: '', value: '',
+        add(option) { if (!this.value) this.value = option.value; }, replaceChildren() { this.value = ''; } });
     }
     return nodes.get(id);
   };
   const ctx = vm.createContext({ G: {}, console, navigator: { onLine: true }, document: { hidden: false,
-    addEventListener: noop, getElementById: node }, window: {}, location: { protocol: 'file:' },
+    addEventListener: noop, getElementById: id => id === 'scr-boss-rush' ? nodes.get(id) || null : node(id),
+    createElement: () => ({}), body: { appendChild: el => nodes.set(el.id, Object.assign(node(el.id), el)) } },
+    Option: class { constructor(text,value) { this.text=text; this.value=value; } }, window: {}, location: { protocol: 'file:' },
     addEventListener: noop, requestAnimationFrame: noop, setTimeout: noop, clearTimeout: noop,
     performance: { now: () => ctx.now || 0 },
     localStorage: { getItem: k => storage.get(k) ?? null, setItem: (k,v) => storage.set(k,v), removeItem: k => storage.delete(k) } });
@@ -34,6 +37,9 @@ function fixture(session = 'real-account') {
   G.BIOME_MUSIC = ['boss']; G.Judgment.summary = () => null; G.Judgment.cinematic = false; G.Judgment.active = false;
   G.Rift.inArena = false; G.Input.axis = () => [0,0]; G.Input.tap = () => false; G.SettingsUI = { isOpen: false };
   G.UI.isOpen = id => !node(id).classList.contains('hidden'); G.UI.$ = node;
+  G.UI.show = id => { for (const [key,el] of nodes) if (key.startsWith('scr-')) el.classList.add('hidden'); node(id).classList.remove('hidden'); };
+  G.MenuUI.open = () => G.UI.show('scr-menu');
+  G.MenuUI.openPlayMode = () => G.UI.show('scr-play-mode');
   G.Camera = { x: 0, y: 0, follow(x,y) { this.x=x; this.y=y; }, sees: () => true, kick: noop, outerRadius: () => 500 };
   G.Sprites = { PX: 2, hasShiny: () => false, hovers: () => false, preload: noop, dirFromAngle: () => 0,
     bodyRadius: dex => dex === 383 ? 28 : 12, bodyHeight: () => 80, animMeta: () => ({ ay: 40, d: [10] }),
@@ -57,7 +63,7 @@ function fixture(session = 'real-account') {
 }
 test('Engine integration: temporary session, real moves hit Groudon, no ranking or account writes', async () => {
   const f=fixture(),{G}=f; await G.DB.ready(); assert.equal(G.DB.guest,true);
-  G.Game.startRun(); assert.equal(G.Game.state,'paused'); assert.equal(G.Game.player.level,10);
+  G.BossRushPreview.play(); assert.equal(G.Game.state,'paused'); assert.equal(G.Game.player.level,10);
   assert.equal(f.prepare(),9); assert.equal(G.Game.state,'playing');
   assert.equal(G.BossRushPreview.boss.dex,383); assert.ok(G.Game.player.maxHp>0);
   const hp=G.BossRushPreview.boss.hp; f.tick(180);
@@ -67,17 +73,17 @@ test('Engine integration: temporary session, real moves hit Groudon, no ranking 
   assert.equal(G.Camera.x,16); assert.equal(G.Camera.y,16);
 });
 test('Engine integration: pause stops combat; abandon and retry reset the fight', async () => {
-  const f=fixture(),{G}=f; await G.DB.ready(); G.Game.startRun(); f.prepare(); f.tick(180);
+  const f=fixture(),{G}=f; await G.DB.ready(); G.BossRushPreview.play(); f.prepare(); f.tick(180);
   G.Game.togglePause(); const time=G.BossRushPreview.encounter.clock; f.tick(100);
   assert.equal(G.BossRushPreview.encounter.clock,time);
   G.Game.quit(); assert.equal(f.result().coins,0); assert.equal(f.result().record,false);
   f.back(); assert.equal(G.Game.state,'ui'); assert.equal(G.BossRushPreview.running,false);
-  G.Game.startRun(); f.prepare(); assert.equal(G.BossRushPreview.encounter.phase,1);
+  G.BossRushPreview.play(); f.prepare(); assert.equal(G.BossRushPreview.encounter.phase,1);
   assert.equal(G.BossRushPreview.boss.hp,10000); assert.equal(G.Game.player.hp,G.Game.player.maxHp);
   assert.deepEqual(f.storage,f.before);
 });
 test('Engine integration: phases, victory and no drops/rewards', async () => {
-  const f=fixture(),{G}=f; await G.DB.ready(); G.Game.startRun(); f.prepare();
+  const f=fixture(),{G}=f; await G.DB.ready(); G.BossRushPreview.play(); f.prepare();
   const b=G.BossRushPreview.boss;
   b.hp=b.maxHp*0.7; f.tick(1); assert.equal(G.BossRushPreview.encounter.phase,2);
   b.hp=b.maxHp*0.35; f.tick(1); assert.equal(G.BossRushPreview.encounter.phase,3);
@@ -105,7 +111,7 @@ test('Test funds and three Pokemon are available; purchased perks survive prepar
   // Apply the same prices and levels as the game's gold shop.
   for(const id of ['hp','atk','spd','options']){G.DB.save.coins-=G.Upgrades.cost(id,0);levels[id]=1;}
   const afterBuying=G.DB.save.coins;assert.ok(afterBuying<100000);
-  G.Game.startRun();const p=G.Game.player;
+  G.BossRushPreview.play();const p=G.Game.player;
   assert.equal(p.maxHp,G.DEX_BY[260].hp+8);assert.equal(p.atkMul,1.04);assert.equal(p.spdMul,1.03);
   assert.equal(p.cardOptions,4);f.prepare();
   assert.equal(G.DB.save.coins,afterBuying);assert.equal(G.BossRushPreview.refillFunds(),false);
@@ -113,7 +119,7 @@ test('Test funds and three Pokemon are available; purchased perks survive prepar
   assert.equal(G.DB.save.coins,100000);assert.deepEqual(f.storage,f.before);
 });
 test('Minor scaling changes idle cooldown only; native patterns and warning durations stay intact', async()=>{
-  const f=fixture(),{G}=f;await G.DB.ready();G.Game.startRun();f.prepare();
+  const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
   const def={dex:377,hp:3200,spd:60,dmg:27,xp:0,behavior:'ranged',shotDmg:15};
   const native=new G.Enemy(def,0,0,{hp:1,spd:1,dmg:1},true);
   const later=new G.Enemy(def,0,0,{hp:1,spd:1,dmg:1},true);
@@ -130,4 +136,24 @@ test('Minor scaling changes idle cooldown only; native patterns and warning dura
   assert.equal(native.ai.cast.t,later.ai.cast.t);
   assert.deepEqual(Array.from(native.ai.melee),Array.from(later.ai.melee));
   assert.deepEqual(Array.from(native.ai.ranged),Array.from(later.ai.ranged));
+});
+
+test('Jugar exposes Boss Rush explicitly; Back returns to mode selection and normal runs stay normal', async () => {
+  const f=fixture(),{G}=f; await G.DB.ready();
+  G.MenuUI.init(); G.MenuUI.open();
+  assert.equal(G.UI.isOpen('scr-menu'),true);
+  assert.equal(f.nodes.has('scr-boss-rush'),false);
+  G.MenuUI.openPlayMode(); f.nodes.get('btn-boss-rush').onclick();
+  assert.equal(G.UI.isOpen('scr-boss-rush'),true);
+  assert.equal(G.UI.isOpen('scr-play-mode'),false);
+  f.nodes.get('rush-start').onclick();
+  assert.equal(G.BossRushPreview.running,true); assert.equal(G.Game.player.level,10);
+  f.prepare(); G.Game.quit(); f.back();
+  G.MenuUI.openPlayMode(); f.nodes.get('btn-boss-rush').onclick();
+  f.nodes.get('rush-back').onclick();
+  assert.equal(G.UI.isOpen('scr-boss-rush'),false);
+  assert.equal(G.UI.isOpen('scr-play-mode'),true);
+  G.Game.startRun();
+  assert.equal(G.Game.state,'playing'); assert.equal(G.Game.player.level,1);
+  assert.equal(G.BossRushPreview.running,false); assert.equal(G.BossRushPreview.preparing,false);
 });

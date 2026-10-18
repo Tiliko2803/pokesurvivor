@@ -4,6 +4,7 @@ const root = path.join(__dirname, '..');
 let html = fs.readFileSync(path.join(root, 'dev.html'), 'utf8')
   .replace('<head>', '<head>\n<base href="../">')
   .replace(/<title>.*?<\/title>/, '<title>PokéSurvivor · Boss Rush · Groudon</title>')
+  .replace('<button id="btn-challenges"', '<button id="btn-boss-rush" class="btn gold" data-sfx="confirm">Boss Rush · Hoenn</button>\n      <button id="btn-challenges"')
   .replace(/<!-- seo:begin -->[\s\S]*?<!-- seo:end -->/g, '')
   .replace(/<script defer src="js\/core\/firebase-config\.js"><\/script>/,
     '<script>window.G = window.G || {}; G.FIREBASE_CONFIG = null;</script>')
