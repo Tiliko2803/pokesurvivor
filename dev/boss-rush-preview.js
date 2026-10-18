@@ -231,21 +231,47 @@ G.BossRushPreview = (() => {
   }
   function setup() {
     const root = document.createElement('section'); root.id = 'scr-boss-rush'; root.className = 'scr dim hidden';
-    root.innerHTML = `<div class="panel rush-setup"><span class="rush-kicker">BOSS RUSH · HOENN</span>
-      <h1>El trío de Hoenn</h1><p>Tres legendarios mayores. Aprende sus señales, esquiva y contraataca.</p>
-      <div class="rush-route"><b>Tres Regis → Groudon → Dúo Eón → Kyogre → Jirachi → Rayquaza</b><span>Los Regis y el Dúo Eón combaten en grupo, con ataques desfasados y barras individuales.</span></div>
-      <div class="rush-fields"><label>Tu Pokémon<select id="rush-partner"></select></label>
-      <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
-      <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
-      <button class="btn small" id="rush-upgrades">Mejoras de oro</button>
-      <button class="btn small" id="rush-max">Mejorar al máximo</button>
-      <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
-      <p class="sub" id="rush-status" role="status"></p>
-      <p class="sub">Mega Swampert, Mega Blaziken y Mega Tyranitar están desbloqueados y equipados al elegirlos. Puedes cambiar sus piedras desde el menú.<br>Para probar Coberturas, abre Mejoras de oro y elige los movimientos compatibles; también aparecerán en los dos selectores de ataques.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>La prueba directa de Jirachi empieza en nivel 25, con 24 mejoras por elegir y 2 Vínculos.<br>Prueba individual de la ruta de Hoenn. Tu cuenta y tu progreso no se modifican.</p>
-      <div class="rush-actions"><button class="btn gold" id="rush-start">Comenzar Boss Rush</button>
-      <button class="btn" id="rush-jirachi">Probar solo a Jirachi</button>
-      <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
-      <p id="rush-error" role="status"></p></div>`;
+    root.innerHTML = `<div class="panel rush-setup" aria-labelledby="rush-heading">
+      <header class="rush-header"><div><span class="rush-kicker">ELIGE TU DESAFÍO</span><h1 id="rush-heading">Boss Rush</h1></div>
+      <button class="btn ghost small" id="rush-back">Volver a Jugar</button></header>
+      <div class="rush-layout">
+        <article class="rush-mode" aria-labelledby="rush-mode-title">
+          <img class="rush-cover" src="dev/assets/hoenn-normal-v1.webp" width="1536" height="1024" alt="Groudon entre volcanes, Kyogre sobre las olas y Rayquaza en el cielo de Hoenn" decoding="async">
+          <div class="rush-mode-body"><span class="rush-badge">NORMAL</span><h2 id="rush-mode-title">Hoenn</h2>
+            <p class="rush-description">Tierra, mar y cielo.<br>Un desafío contra los legendarios de Hoenn.</p>
+            <div class="rush-stats"><span><b>6</b> combates</span><span><b>9</b> jefes</span><span><b>8</b> nivel inicial</span></div>
+            <details class="rush-details rush-route"><summary>Ver recorrido</summary><ol>
+              <li>Tres Regis</li><li>Groudon</li><li>Latios y Latias</li><li>Kyogre</li><li>Jirachi</li><li>Rayquaza</li>
+            </ol><p>Los Regis y el Dúo Eón combaten en grupo.</p></details>
+          </div>
+        </article>
+        <div class="rush-preparation"><h2>Prepara tu equipo</h2>
+          <div class="rush-fields"><label class="rush-partner-field">Tu Pokémon<select id="rush-partner"></select></label>
+          <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
+          <details class="rush-details rush-tools"><summary>Mejoras y dinero de prueba</summary>
+            <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
+              <button class="btn small" id="rush-upgrades">Mejoras de oro</button>
+              <button class="btn small" id="rush-max">Mejorar al máximo</button>
+              <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button>
+            </div></div>
+          </details>
+          <p class="sub" id="rush-status" role="status"></p>
+          <button class="btn gold rush-start" id="rush-start">Jugar Hoenn Normal</button>
+          <p class="rush-start-note">Nivel ${START_LEVEL} · ${START_LEVEL-1} mejoras antes de empezar</p>
+          <p id="rush-error" role="status"></p>
+          <div class="rush-practice"><div><h3>¿Una ronda con Jirachi?</h3><p>Nivel 25 · 24 mejoras · 2 Vínculos</p></div>
+            <button class="btn small" id="rush-jirachi">Probar solo a Jirachi</button>
+          </div>
+          <details class="rush-details rush-help"><summary>Cómo funciona la prueba</summary><ul>
+            <li>Cada victoria da experiencia y recupera un 20% de vida. Los mayores conceden un Vínculo para combinar movimientos.</li>
+            <li>Mega Swampert, Mega Blaziken y Mega Tyranitar están disponibles. Puedes cambiar sus piedras desde el menú.</li>
+            <li>Para usar Coberturas, abre Mejoras de oro y elige movimientos compatibles; aparecerán en los selectores de ataques.</li>
+            <li>La prueba directa termina al derrotar a Jirachi.</li>
+          </ul></details>
+        </div>
+      </div>
+      <footer class="rush-disclaimer">Prueba individual · Tu cuenta y tu progreso no se modifican.</footer>
+    </div>`;
     document.body.appendChild(root);
     const select = document.getElementById('rush-partner');
     for (const dex of roster) select.add(new Option(G.DEX_BY[dex].name + (G.Mega.has(G.DB.save,dex) ? ' · Mega disponible' : ''), String(dex)));

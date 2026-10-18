@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Una portada para Hoenn Normal', 'Hoenn Normal gets its cover'], chg: [
+    ['El selector del Boss Rush de pruebas estrena una portada en pixel art del trío de Hoenn y una preparación más clara. El recorrido, las instrucciones y las herramientas de mejoras se pueden desplegar; Jirachi conserva su acceso directo.',
+     'The preview Boss Rush selector features pixel-art Hoenn trio cover art and a clearer preparation layout. The route, instructions and upgrade tools can be expanded; Jirachi keeps its direct test button.']
+  ] },
   { d: '2026-10-18', title: ['Jirachi directo y ruta fija de Hoenn', 'Direct Jirachi test and fixed Hoenn route'], chg: [
     ['Jirachi es el único encuentro entre Kyogre y Rayquaza. Deoxys queda reservado para después. Jirachi entrega seis niveles base de experiencia para conservar la progresión hacia el combate final.',
      'Jirachi is the only encounter between Kyogre and Rayquaza. Deoxys is reserved for later. Jirachi grants six base levels of XP to preserve progression toward the final battle.']

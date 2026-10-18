@@ -1,18 +1,63 @@
-.rush-setup { width:min(760px,94vw); max-height:92dvh; overflow-y:auto; padding:24px; text-align:center; }
-.rush-kicker { color:#ffb45e; letter-spacing:3px; font-size:12px; }
-.rush-setup h1 { margin:10px 0; font-size:clamp(24px,4vw,38px); }
-.rush-setup p { line-height:1.5; margin:12px 0; }
-.rush-route { display:flex; justify-content:center; flex-wrap:wrap; gap:12px; padding:12px; border:1px solid #79524b; border-radius:12px; background:#211d2a; }
-.rush-route b { color:#ffc986; } .rush-route span { color:#a39aa8; }
-.rush-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:18px 0; text-align:left; }
-.rush-fields label { display:grid; gap:6px; font-size:14px; color:#d7d1df; }
-.rush-fields select { width:100%; min-width:0; min-height:44px; padding:10px; border:1px solid #79524b; border-radius:8px; background:#211d2a; color:white; font:inherit; }
-.rush-setup .btn { min-height:48px; padding:12px 24px; }
-#rush-error { color:#ffb6b6; margin:6px 0 0; min-height:0; }
-#rush-status { color:#9fe4bc; margin:8px 0 0; min-height:1.4em; }
-.rush-wallet { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px; border:1px solid #79524b; border-radius:10px; }
-.rush-wallet>b { color:#ffd786; font-size:14px; }
-.rush-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
-@media(max-width:540px) { .rush-wallet { flex-direction:column; } }
-@media(max-width:540px) { .rush-fields { grid-template-columns:1fr; } .rush-setup { padding:18px; } }
-@media(max-height:450px) and (min-width:541px) { .rush-setup { padding:14px 20px; } .rush-setup h1 { margin:5px 0; } .rush-setup p { margin:7px 0; } .rush-fields { margin:10px 0; } .rush-route { padding:7px; } }
+#scr-boss-rush { padding:16px; }
+.rush-setup { width:min(920px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; padding:24px; text-align:left; color:#eef5ff; background:linear-gradient(145deg,#152c47,#101a30 65%); border:2px solid #7d9eb2; box-shadow:0 0 0 3px #080e20,0 20px 70px #0009; scrollbar-color:#58728f #101a30; }
+.rush-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:22px; }
+.rush-kicker { color:#a2c9c9; letter-spacing:2px; font-size:11px; }
+.rush-setup h1 { margin:3px 0 0; font-size:32px; line-height:1.1; }
+.rush-setup h2 { margin:0; font-size:23px; }
+.rush-setup h3 { margin:0; font-size:17px; }
+.rush-setup p { line-height:1.45; }
+.rush-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:24px; align-items:start; }
+.rush-mode { overflow:hidden; background:#0b192a; border:1px solid #668878; border-radius:12px; }
+.rush-cover { display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:contain; background:#132634; image-rendering:pixelated; }
+.rush-mode-body { padding:18px; }
+.rush-badge { display:inline-block; padding:4px 8px; margin-bottom:9px; color:#b8efcd; background:#193d37; border:1px solid #3c7a61; border-radius:5px; font-size:11px; letter-spacing:2px; }
+.rush-mode h2 { font-size:32px; line-height:1; }
+.rush-description { margin:10px 0 16px; color:#bdcbdc; font-size:15px; }
+.rush-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:12px 0; border-top:1px solid #294154; border-bottom:1px solid #294154; color:#afc3d4; font-size:12px; text-align:center; }
+.rush-stats b { display:block; color:#e7f9ee; font-size:23px; margin-bottom:3px; }
+.rush-details { color:#b9cada; font-size:14px; }
+.rush-details summary { min-height:44px; padding:12px 0; cursor:pointer; color:#d4e6f2; }
+.rush-details summary::marker { color:#89baa5; }
+.rush-details summary:focus-visible,.rush-setup .btn:focus-visible,.rush-fields select:focus-visible { outline:3px solid #9eeac8; outline-offset:3px; }
+.rush-route { margin-top:5px; }
+.rush-route ol { display:grid; grid-template-columns:1fr 1fr; gap:9px 24px; margin:4px 0 14px; padding-left:24px; }
+.rush-route p { margin:0 0 4px; font-size:13px; }
+.rush-preparation { min-width:0; padding-top:3px; }
+.rush-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:18px 0 14px; }
+.rush-partner-field { grid-column:1/-1; }
+.rush-fields label { display:grid; gap:7px; font-size:14px; color:#b9cada; min-width:0; }
+.rush-fields select { width:100%; min-width:0; min-height:46px; padding:10px; border:1px solid #526d88; border-radius:7px; background:#0c192d; color:#f0f5ff; font:inherit; }
+.rush-tools { border-top:1px solid #30465e; border-bottom:1px solid #30465e; }
+.rush-wallet { padding:0 0 14px; }
+.rush-wallet>b { display:block; margin:0 0 12px; color:#ffd786; font-size:14px; }
+.rush-actions { display:flex; flex-wrap:wrap; gap:9px; }
+.rush-setup .btn { min-height:44px; }
+.rush-setup .btn.small { font-size:14px; }
+.rush-start { width:100%; margin-top:16px; min-height:50px!important; }
+.rush-start-note { text-align:center; margin:10px 0 0; font-size:13px; color:#a6bbc9; }
+#rush-error { color:#ffb6b6; font-size:14px; margin:10px 0 0; }
+#rush-error:empty,#rush-status:empty { display:none; }
+#rush-status { color:#9fe4bc; font-size:14px; margin:12px 0 0; }
+.rush-practice { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-top:22px; padding:16px; background:#23304b; border:1px solid #576186; border-radius:9px; }
+.rush-practice h3 { color:#e4dbff; }
+.rush-practice p { margin:5px 0 0; font-size:12px; color:#b9b9d3; }
+.rush-help { margin-top:9px; }
+.rush-help ul { padding-left:19px; margin:0 0 6px; line-height:1.5; }
+.rush-help li+li { margin-top:9px; }
+.rush-disclaimer { margin-top:20px; padding-top:14px; border-top:1px solid #30465e; text-align:center; font-size:12px; line-height:1.4; color:#99b0c3; }
+@media(max-width:640px) {
+  #scr-boss-rush { padding:10px; }
+  .rush-setup { padding:16px; max-height:calc(100dvh - 20px); }
+  .rush-header { margin-bottom:16px; gap:8px; }
+  .rush-setup h1 { font-size:27px; }
+  .rush-header .btn { padding:8px 10px; font-size:12px; }
+  .rush-kicker { font-size:9px; letter-spacing:1px; }
+  .rush-layout { grid-template-columns:1fr; gap:22px; }
+  .rush-cover { max-height:260px; object-fit:contain; }
+  .rush-mode-body { padding:16px; }
+  .rush-description { margin-bottom:12px; }
+  .rush-preparation h2 { font-size:22px; }
+  .rush-practice { margin-top:20px; }
+}
+@media(max-width:360px) { .rush-fields { grid-template-columns:1fr; } }
+@media(max-height:450px) and (min-width:641px) { .rush-setup { padding:16px 20px; } .rush-header { margin-bottom:16px; } }

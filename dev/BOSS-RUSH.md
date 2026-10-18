@@ -33,6 +33,12 @@ Jirachi tiene un encuentro propio en el observatorio de los deseos: [JIRACHI.md]
 
 Su vida es 600000 PV base. La referencia ofensiva inicial dura 1:51 con Deoxys normal y 0:24 con Mega Blaziken; no se infla la vida para igualar builds y resistencias distintas. El anillo psíquico y las estrellas dañan con sus frentes y proyectiles visibles, no con toda el área anunciada. Da seis niveles base de experiencia y ningún Vínculo, para conservar el poder de llegada a Rayquaza.
 
+## Selector de Hoenn Normal
+
+El selector muestra una tarjeta de Hoenn Normal con [portada en pixel art](assets/hoenn-normal-v1.webp), seis combates y nueve jefes. La preparación agrupa Pokémon y los dos ataques; el recorrido, las herramientas de oro y las instrucciones quedan en desplegables nativos accesibles por teclado. La prueba directa de Jirachi conserva su botón visible. El diseño usa dos columnas en pantalla amplia y una columna con desplazamiento vertical en móvil.
+
+La portada se generó con la herramienta integrada de imágenes. Su fuente y prompt están documentados en [assets/HOENN-NORMAL.md](assets/HOENN-NORMAL.md). No se cambian reglas de combate ni progresión.
+
 ## Preparación y progresión
 
 - Nivel 8 con siete cartas reales. El combate queda congelado hasta elegirlas.
