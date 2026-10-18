@@ -3,7 +3,7 @@
  */
 G.Groudon = (() => {
   const BASE_HP = 400000; // Calibrated against a level-10 Mega Blaziken with all gold upgrades.
-  const ARENA = Object.freeze({ left: -360, right: 360, top: -200, bottom: 200 });
+  const ARENA = Object.freeze({ left: -480, right: 480, top: -280, bottom: 280 });
   const NAMES = { blades: 'Filo del Abismo', stomp: 'Terratemblor', eruption: 'Estallido',
     charge: 'Doble Filo', rupture: 'Terremoto' };
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));

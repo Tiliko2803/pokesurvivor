@@ -119,10 +119,10 @@ test('Groudon approaches between attacks, stops for warnings and remains inside 
   assert.equal(e.moving,true); e.begin('stomp');
   const position=[boss.x,boss.y]; tick(1);
   assert.deepEqual([boss.x,boss.y],position); assert.equal(e.moving,false);
-  assert.equal(ARENA.right-ARENA.left,720); assert.equal(ARENA.bottom-ARENA.top,400);
+  assert.equal(ARENA.right-ARENA.left,960); assert.equal(ARENA.bottom-ARENA.top,560);
 });
 test('Standing at any arena corner no longer avoids Filo del Abismo or Estallido', () => {
-  for(const kind of ['blades','eruption']) for(const x of [-340,340]) for(const y of [-180,180]) {
+  for(const kind of ['blades','eruption']) for(const x of [-460,460]) for(const y of [-260,260]) {
     const {e,p,hits,tick,contains}=fixture(); p.x=x; p.y=y; e.begin(kind);
     assert.ok(e.attack.shapes.some(s=>contains(s,p)),kind+' corner '+x+','+y);
     const snapshot=JSON.stringify(e.attack.shapes); tick(e.attack.warn+.1);

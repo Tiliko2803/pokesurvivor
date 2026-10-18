@@ -131,3 +131,25 @@ test('Rush arena fits landscape and portrait, contains actors, and restores norm
   G.Game.quit();f.back();
   assert.ok(Math.abs(G.Camera.scale-1.25)<1e-9);assert.equal(G.Camera.w,768);assert.ok(Math.abs(G.Camera.h-432)<1e-9);
 });
+
+test('Only the major grants one Bond; selecting the native fusion pauses the intermission',async()=>{
+  const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
+  const p=G.Game.player,b=G.BossRushPreview.boss;
+  assert.equal(p.bonds,0);b.hurt(999999);b.die();
+  assert.equal(p.bonds,1,'No duplicate reward from repeated die calls');
+  f.tick(1,{autoBond:false});assert.equal(G.Game.state,'choice');
+  assert.equal(f.bond().opt.mode,'pair');
+  f.tick(240,{autoBond:false});assert.equal(G.BossRushPreview.stage,0);
+  assert.equal(p.bonds,1);assert.equal(G.UI.isOpen('scr-bond'),true);
+  f.pickBond();assert.equal(G.Game.state,'playing');assert.equal(p.bonds,0);
+  assert.equal(p.activeGroup().length,2);
+  const pair=p.activeGroup().map(m=>m.id),fired=new Set(),cast=p.cast.bind(p);
+  p.cast=m=>{fired.add(m.id);cast(m);};
+  f.tick(200);assert.equal(G.BossRushPreview.stage,1);
+  for(const id of pair) assert.ok(fired.has(id),'The fused group casts '+id);
+  G.BossRushPreview.boss.hurt(999999);f.tick(201);
+  assert.equal(G.BossRushPreview.stage,2);assert.equal(p.bonds,0);assert.equal(f.bond(),null);
+  G.BossRushPreview.boss.hurt(999999);f.tick(201);
+  assert.equal(G.Game.state,'over');assert.equal(p.bonds,0);
+  assert.deepEqual(f.storage,f.before);
+});

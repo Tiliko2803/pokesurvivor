@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Más espacio, efectos y Vínculos en el Boss Rush', 'More space, effects and Bonds in Boss Rush'], chg: [
+    ['La arena de pruebas crece a 960×560. Groudon conserva sus 400.000 PV y cada movimiento recibe efectos propios: pilares de roca, ondas de tierra, lava, estelas y fracturas, con señales claras y sonidos distintos.',
+     'The playtest arena grows to 960×560. Groudon keeps 400,000 HP, and each move gets its own effects: stone pillars, ground waves, lava, trails and fissures, with clear telegraphs and distinct sounds.']
+  ], new: [
+    ['Derrotar a un legendario mayor otorga un Vínculo para combinar movimientos. Groudon lo entrega una vez por victoria; los menores siguen dando experiencia y recuperación de vida. El combate queda pausado mientras eliges la fusión.',
+     'Defeating a major legendary grants a Bond to combine moves. Groudon awards it once per victory; minor legends still give experience and healing. Combat pauses while choosing the fusion.']
+  ] },
   { d: '2026-10-17', title: ['Groudon resiste las builds al máximo', 'Groudon withstands maxed builds'], chg: [
     ['La prueba de Groudon pasa a 400.000 PV, con una duración objetivo de 3–5 minutos frente a Mega Blaziken con todas las mejoras de oro y una preparación ofensiva. La barra muestra el tiempo de combate; una build optimizada puede vencerlo antes.',
      'The Groudon playtest now has 400,000 HP, targeting 3–5 minutes against Mega Blaziken with all gold upgrades and offensive preparation. The boss bar shows combat time; an optimized build can win sooner.']

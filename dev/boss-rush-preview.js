@@ -26,7 +26,17 @@ G.BossRushPreview = (() => {
     } else if (kind === 'phase') {
       G.Audio.sfx('boss'); G.Spawner.say(data === 2 ? '¡Tierra abrasadora!' : '¡Furia continental!', 2, true);
     } else if (kind === 'impact') {
-      boss.anim.play('Attack'); G.Audio.sfx('break'); G.Camera.kick(data.kind === 'rupture' ? 0.55 : 0.22);
+      boss.anim.play(data.kind === 'eruption' ? 'Shoot' : 'Attack');
+      const sound = { blades:'melee', stomp:'nova', eruption:'beam', charge:'projectile', rupture:'nova' }[data.kind];
+      G.Audio.sfx('shot', { kind:sound, type:data.type });
+      G.Camera.kick(data.kind === 'rupture' ? 0.55 : data.kind === 'stomp' ? 0.35 : 0.22);
+      const color = G.GroudonFX.palette(data.kind).light, count = G.Settings.get('calm') ? 4 : 10;
+      if (data.kind === 'stomp' || data.kind === 'charge') G.FX.burst(boss.x,boss.y,color,count*2,150);
+      else for (const s of data.shapes) {
+        const x=s.kind==='circle'?s.x:s.kind==='line'?s.ax:(s.left+s.right)/2;
+        const y=s.kind==='circle'?s.y:s.kind==='line'?(s.ay+s.by)/2:(s.top+s.bottom)/2;
+        G.FX.burst(ox+x,oy+y,color,count,140);
+      }
     } else if (kind === 'recovery') {
       boss.anim.loop('Idle');
       if (data.kind === 'charge' || data.kind === 'rupture') G.Spawner.say('¡Groudon se recupera! ¡Ataca!', 2, true);
@@ -52,7 +62,7 @@ G.BossRushPreview = (() => {
     // Level ten includes the nine actual upgrade selections, rather than only a label.
     p.level = 10; p.xp = 0; p.xpNext = G.Player.xpFor(10);
     p.baseSpd = 130; p.invuln = 1;
-    G.World.setArena({ tx: 0, ty: 0, r: 16, type: 'fire' });
+    G.World.setArena({ tx: 0, ty: 0, r: 20, type: 'fire' });
     // No random pools, columns or breakable objects inside the combat space.
     G.World.arena.th = { ...G.Tiles.ARENA_THEMES.fire, pools: 0, pillars: 0, props: {} };
     G.World.setBiome(G.Tiles.arenaBiome('fire'), true);
@@ -133,13 +143,13 @@ G.BossRushPreview = (() => {
     ctx.lineWidth = 2;
     for (const h of encounter?.hazards || []) {
       paintShape(ctx, h, encounter.clock < h.start ? '#a9532844' : '#e45a1faa', '#ffb34f');
-      ctx.fillStyle = '#ffe0a0'; ctx.font = 'bold 16px monospace'; ctx.textAlign = 'center'; ctx.fillText('≈', h.x, h.y + 5);
     }
     const a = encounter?.attack;
     if (a && !encounter.recovering) {
       const warning = a.t < a.warn;
       ctx.setLineDash(warning ? [7, 5] : []);
-      for (const s of a.shapes) paintShape(ctx, s, warning ? '#f4863440' : '#ffae38bb', warning ? '#ffd181' : '#fff0c0');
+      const palette = G.GroudonFX.palette(a.kind);
+      for (const s of a.shapes) paintShape(ctx, s, warning ? palette.warning : palette.impact, palette.edge);
       if (a.safe) {
         ctx.setLineDash([]); paintShape(ctx, a.safe, '#48d8bd30', '#8ffff0');
         ctx.font = 'bold 14px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#b5fff3';
@@ -154,6 +164,7 @@ G.BossRushPreview = (() => {
         }
       }
     }
+    if (encounter) G.GroudonFX.draw(ctx, encounter, relativeBoss, { quality:G.Settings.fx, calm:G.Settings.get('calm') });
     ctx.restore();
   }
   function hud(ctx, w) {
@@ -179,7 +190,7 @@ G.BossRushPreview = (() => {
       <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
       <button class="btn small" id="rush-upgrades">Mejoras de oro</button>
       <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
-      <p class="sub">Mega Blaziken está desbloqueado y equipado al elegir Blaziken.<br>Empiezas en nivel 10: elige nueve mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida.<br>Prueba individual del primer tramo. Tu cuenta y tu progreso no se modifican.</p>
+      <p class="sub">Mega Blaziken está desbloqueado y equipado al elegir Blaziken.<br>Empiezas en nivel 10: elige nueve mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual del primer tramo. Tu cuenta y tu progreso no se modifican.</p>
       <div class="rush-actions"><button class="btn gold" id="rush-start">Enfrentar a Groudon</button>
       <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
       <p id="rush-error" role="status"></p></div>`;
@@ -336,6 +347,10 @@ G.BossRushPreview = (() => {
       if (!this.rushBoss && !this.rushMinor) return old.call(this);
       if (this.dead) return;
       this.dead = true; this.fade = 0.9; this.anim.play('Faint', { hold: true }); G.Audio.sfx('bossDown');
+      if (this.rushBoss) {
+        G.Game.player.bonds++;
+        G.Spawner.say('¡Legendario mayor derrotado! · +1 Vínculo', 3, true);
+      }
       G.Pickups.dropXp(this.x, this.y, this.xp, true, false, true);
     });
     wrap(G.RunUI, 'showOver', (old, result, back) => {
