@@ -6,6 +6,14 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Los menores abren el Boss Rush', 'Minor legends open Boss Rush'], chg: [
+    ['La prueba de Hoenn empieza con dos legendarios menores antes de Groudon: nueve combates y seis menores distintos durante toda la ruta. Los dos iniciales dan un nivel base de experiencia cada uno; después se conservan las recompensas de tres niveles y los bonos nativos.',
+     'The Hoenn preview starts with two minor legends before Groudon: nine encounters and six distinct minors throughout the route. Each opening minor grants one base level of XP; later fights retain three-level rewards and native bonuses.'],
+    ['Los menores tienen mucha más vida según el tramo, más daño y entre un 12% y un 35% más de cadencia. Se calibran para 1–2 minutos frente a una referencia potente de Mega Blaziken; la build, los tipos y la ejecución siguen afectando la duración.',
+     'Minors have much more health by route slot, more damage and 12%–35% faster attack cadence. They target 1–2 minutes against a strong Mega Blaziken reference; build, typing and execution still affect duration.'],
+    ['Conservan los patrones y avisos normales de PokéSurvivor. Sólo los mayores dan Vínculo; la vida de todos sigue multiplicándose por el equipo inicial. Cambios exclusivos de la versión de pruebas.',
+     'They retain normal PokéSurvivor patterns and warnings. Only major legends grant Bonds; all boss health still scales with the starting team. Preview-only changes.']
+  ] },
   { d: '2026-10-18', title: ['Mega Swampert y Coberturas en pruebas', 'Mega Swampert and Coverage in the preview'], chg: [
     ['La prueba de Hoenn incluye la Swampertita desbloqueada y equipada, junto a Mega Blaziken. Mega Swampert puede empezar el Boss Rush con Terratemblor Nv. 2; ambas piedras siguen siendo opcionales.',
      'The Hoenn preview includes Swampertite unlocked and equipped alongside Mega Blaziken. Mega Swampert can start Boss Rush with level-two Bulldoze; both stones remain optional.']

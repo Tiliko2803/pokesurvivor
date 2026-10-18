@@ -21,7 +21,7 @@ G.BossRushPreview = (() => {
     get y() { return boss.y - oy; }, set y(v) { boss.y = oy + v; }, get r() { return boss.r; },
     get hp() { return boss.hp; }, get maxHp() { return boss.maxHp; }, get dead() { return boss.dead; } };
   const effects = () => boss?.dex===384?G.RayquazaFX:boss?.dex === 382 ? G.KyogreFX : G.GroudonFX;
-  const arenaType = () => stage>=6?'flying':stage >= 3 ? 'water' : 'fire';
+  const arenaType = () => stage>=G.BossRushRules.MAJOR_STAGES.rayquaza?'flying':stage >= G.BossRushRules.MAJOR_STAGES.kyogre ? 'water' : 'fire';
   function signal(kind, data) {
     if (kind === 'attack') {
       boss.anim.play('Charge');
@@ -54,11 +54,12 @@ G.BossRushPreview = (() => {
   }
   function start() {
     const p = G.Game.player;
-    const minors = G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META, 4);
-    route = [{ dex: 383, major: true, hp: G.Groudon.BASE_HP, damage: 42 },
-      ...minors.slice(0,2).map(dex => ({ dex, major: false })),
+    const minors = G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META, 6);
+    route = [...minors.slice(0,2).map(dex => ({dex,major:false})),
+      { dex: 383, major: true, hp: G.Groudon.BASE_HP, damage: 42 },
+      ...minors.slice(2,4).map(dex => ({ dex, major: false })),
       {dex:382,major:true,hp:G.Kyogre.BASE_HP,damage:50},
-      ...minors.slice(2).map(dex => ({dex,major:false})),
+      ...minors.slice(4).map(dex => ({dex,major:false})),
       {dex:384,major:true,hp:G.Rayquaza.BASE_HP,damage:54}];
     ox = 16; oy = 16; p.x = ox; p.y = oy + 85;
     p.moves = []; p.slots = []; p.active = 0; p.bind = {}; p.bonds = 0;
@@ -99,7 +100,7 @@ G.BossRushPreview = (() => {
     boss = new G.Enemy({ dex: def.dex, name: mon.name, hp: G.BossRushRules.bossHp(stats.hp, partySize),
       spd: def.major ? 0 : Math.round(G.U.clamp(48 + (mon.spd - 78) * 0.6, 48, 105)),
       dmg: def.major ? 0 : stats.damage,
-      xp: G.BossRushRules.rewardXp(G.Player.xpFor, p.level),
+      xp: G.BossRushRules.rewardXp(G.Player.xpFor, p.level, G.BossRushRules.rewardLevels(stage)),
       behavior: def.major || !ranged ? 'charger' : 'ranged',
       shotDmg: stats.damage * 0.55, shotCd: 1.2, range: 300 }, ox, oy - 65, { hp: 1, spd: 1, dmg: 1 }, true);
     boss.rushBoss = def.major; boss.rushMinor = !def.major; boss.legend = false;
@@ -214,7 +215,7 @@ G.BossRushPreview = (() => {
     const root = document.createElement('section'); root.id = 'scr-boss-rush'; root.className = 'scr dim hidden';
     root.innerHTML = `<div class="panel rush-setup"><span class="rush-kicker">BOSS RUSH · HOENN</span>
       <h1>El trío de Hoenn</h1><p>Tres legendarios mayores. Aprende sus señales, esquiva y contraataca.</p>
-      <div class="rush-route"><b>Groudon → 2 menores → Kyogre → 2 menores → Rayquaza</b><span>Rayquaza cierra la ruta desde su arena celestial.</span></div>
+      <div class="rush-route"><b>2 menores → Groudon → 2 menores → Kyogre → 2 menores → Rayquaza</b><span>Nueve combates. Los menores preparan tu build para cada legendario mayor.</span></div>
       <div class="rush-fields"><label>Tu Pokémon<select id="rush-partner"></select></label>
       <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
       <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
@@ -223,7 +224,7 @@ G.BossRushPreview = (() => {
       <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
       <p class="sub" id="rush-status" role="status"></p>
       <p class="sub">Mega Swampert y Mega Blaziken están desbloqueados y equipados al elegirlos. Puedes cambiar sus piedras desde el menú.<br>Para probar Coberturas, abre Mejoras de oro y elige los movimientos compatibles; también aparecerán en los dos selectores de ataques.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual de la ruta de Hoenn. Tu cuenta y tu progreso no se modifican.</p>
-      <div class="rush-actions"><button class="btn gold" id="rush-start">Enfrentar a Groudon</button>
+      <div class="rush-actions"><button class="btn gold" id="rush-start">Comenzar Boss Rush</button>
       <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
       <p id="rush-error" role="status"></p></div>`;
     document.body.appendChild(root);

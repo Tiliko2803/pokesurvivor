@@ -25,8 +25,7 @@ async function simulate({ build = 'melee', uptime = 0.85, seed = 123 } = {}) {
   const plan = [...PLANS[build]], originalOffer = G.LevelUp.offer;
   let choices = 0;
   G.LevelUp.offer = p => {
-    if (!plan.length) return originalOffer(p);
-    const key = plan.shift();
+    const key = plan.length ? plan.shift() : build==='dance'&&p.moves.find(m=>m.id==='swords-dance').lvl<5 ? 'up:swords-dance' : 'stat:atk';
     // Select a reproducible, legal preparation card; do not grant extra levels/cards.
     for (let i=0;i<100;i++) {
       const card=originalOffer(p,100).find(c=>c.key===key);
@@ -36,8 +35,10 @@ async function simulate({ build = 'melee', uptime = 0.85, seed = 123 } = {}) {
   };
   G.RunUI.showLevelUp = (level,cards,pick) => pick(cards[0]);
   f.nodes.get('rush-start').onclick();
+  for(let i=0;i<G.BossRushRules.MAJOR_STAGES.groudon;i++){G.BossRushPreview.boss.hurt(1e12);f.tick(201);}
   const p = G.Game.player, boss = G.BossRushPreview.boss, encounter = G.BossRushPreview.encounter;
-  const levelAtStart = p.level;
+  const levelAtStart = p.level, choicesAtStart = choices;
+  p.hurt=()=>{};
   encounter.hit = () => 0;
   let casting = true;
   const originalTick = G.Combat.tick;
@@ -53,7 +54,7 @@ async function simulate({ build = 'melee', uptime = 0.85, seed = 123 } = {}) {
     f.tick(1); frames++;
   }
   return { build, seed, uptime, hp:boss.maxHp, seconds:+(frames/60).toFixed(2),
-    defeated:boss.dead, phase:encounter.phase, choices,
+    defeated:boss.dead, phase:encounter.phase, choices:choicesAtStart,
     maxGold:G.Upgrades.LIST.every(u=>G.DB.upgradesOf(257)[u.id]===u.max),
     mega:p.mega, levelAtStart };
 }

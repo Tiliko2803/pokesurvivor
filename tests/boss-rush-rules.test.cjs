@@ -7,7 +7,7 @@ const {G}=ctx,R=G.BossRushRules;
 test('Vida de mayores y menores se multiplica exactamente por jugadores',()=>{
   for(const n of [1,2,3,4]){
     assert.equal(R.bossHp(400000,n),400000*n);
-    assert.equal(R.bossHp(R.minorStats(2).hp,n),R.minorStats(2).hp*n);
+    assert.equal(R.bossHp(R.minorStats(0).hp,n),R.minorStats(0).hp*n);
   }
   assert.equal(R.bossHp(400000),400000);
   assert.equal(R.bossHp(400000,0),400000);
@@ -21,37 +21,33 @@ test('Todos los mayores acordados, protagonistas DLC y personajes custom quedan 
 test('Sorteo sin repeticiones, sólo especies elegibles con sprites',()=>{
   for(let seed=0;seed<100;seed++){
     let n=seed+1;const random=()=>{n=(n*1664525+1013904223)>>>0;return n/4294967296;};
-    const picks=R.selectMinors(G.DEX,G.SPRITE_META,4,random);
-    assert.equal(new Set(picks).size,4);
+    const picks=R.selectMinors(G.DEX,G.SPRITE_META,6,random);
+    assert.equal(new Set(picks).size,6);
     for(const dex of picks)assert.ok(R.eligibleMinor(G.DEX_BY[dex],G.SPRITE_META));
   }
   assert.throws(()=>R.selectMinors([],{},2));
 });
-test('Vida crece más que daño; cadencia gradual con tope incluso en furia',()=>{
-  const base=R.minorStats(1);let prev=base;
-  for(let i=2;i<=12;i++){
-    const cur=R.minorStats(i);
+test('Minor budgets grow through six slots while damage and cadence remain bounded; major slots cannot use them',()=>{
+  const base=R.minorStats(0);let prev=base;
+  for(const stage of [1,3,4,6,7]){
+    const cur=R.minorStats(stage);
     assert.ok(cur.hp>prev.hp && cur.damage>prev.damage);
     assert.ok(cur.hp/base.hp>cur.damage/base.damage);
-    assert.ok(cur.attackRate>=prev.attackRate && cur.attackRate<=1.30);
+    assert.ok(cur.attackRate>prev.attackRate && cur.attackRate<=1.35);
     assert.ok(R.extraCooldownDecay(cur.attackRate,true)+1.25<=1.5);
     prev=cur;
   }
-  assert.throws(()=>R.minorStats(0));
+  assert.equal(base.hp,240000);assert.equal(base.damage,30);assert.equal(base.attackRate,1.12);
+  assert.equal(prev.hp,3600000);assert.ok(prev.damage<50);
+  for(const stage of [-1,2,5,8,9,1.5,NaN])assert.throws(()=>R.minorStats(stage));
 });
-test('Recompensas de tres victorias llevan del nivel 8 al 17 sin bonus',()=>{
+test('Opening wins grant one base level each, then native three-level rewards reach Groudon 10, Kyogre 19 and Rayquaza 28',()=>{
   let level=8,xp=0;
-  for(let encounter=0;encounter<3;encounter++){
-    xp+=R.rewardXp(G.Player.xpFor,level);
+  const levels=[8,9,10,13,16,19,22,25,28];
+  for(let stage=0;stage<9;stage++){
+    assert.equal(level,levels[stage]);assert.equal(R.rewardLevels(stage),stage<2?1:3);
+    xp+=R.rewardXp(G.Player.xpFor,level,R.rewardLevels(stage));
     while(xp>=G.Player.xpFor(level)){xp-=G.Player.xpFor(level);level++;}
   }
-  assert.equal(level,17);assert.equal(xp,0);
-  for(let i=0;i<3;i++){
-    xp+=R.rewardXp(G.Player.xpFor,level);
-    while(xp>=G.Player.xpFor(level)){xp-=G.Player.xpFor(level);level++;}
-  }
-  assert.equal(level,26);assert.equal(xp,0);
-  xp+=R.rewardXp(G.Player.xpFor,level);
-  while(xp>=G.Player.xpFor(level)){xp-=G.Player.xpFor(level);level++;}
-  assert.equal(level,29);assert.equal(xp,0);
+  assert.equal(level,31);assert.equal(xp,0);
 });
