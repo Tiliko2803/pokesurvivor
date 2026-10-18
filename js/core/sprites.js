@@ -157,7 +157,7 @@ G.Sprites = (() => {
   /** Alto visual aproximado (para barras de vida y números de daño). */
   function bodyHeight(dex, scale = 1) {
     const m = animMeta(dex, 'Idle');
-    return (meta(dex)?.bh || (m ? m.ay : 24)) * PX * scale;
+    return (meta(dex)?.bh || (m ? m.ay : 24)) * PX * scale * (meta(dex)?.visualScale || 1);
   }
 
   /** Sombra elíptica bajo los pies, tamaño según el ShadowSize de PMD. */
@@ -252,7 +252,7 @@ G.Sprites = (() => {
     draw(ctx, x, y, opts = {}) {
       let m = animMeta(this.dex, this.cur, this.shiny);
       let s = sheet(this.dex, this.cur, this.shiny);
-      const k = PX * this.scale;
+      const k = PX * this.scale * (meta(this.dex)?.visualScale || 1);
       if (s && !s.ready) {
         // Mientras carga esta animación, enseña Idle si ya está.
         const idle = sheet(this.dex, 'Idle', this.shiny);

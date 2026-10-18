@@ -45,7 +45,7 @@ test('Las siete animaciones cargan y dibujan todos sus fotogramas en ocho direcc
     anim.play(name,{hold:true});
     for(let f=0;f<m.n;f++){
       anim.frame=f;
-      for(let dir=0;dir<8;dir++){anim.dir=dir;anim.draw(ctx,100,100);const call=calls.at(-1);assert.equal(call[1],f*m.w);assert.equal(call[2],dir*m.h);}
+      for(let dir=0;dir<8;dir++){anim.dir=dir;anim.draw(ctx,100,100);const call=calls.at(-1);assert.equal(call[1],f*m.w);assert.equal(call[2],dir*m.h);assert.equal(call[7],m.w*3);assert.equal(call[8],m.h*3);}
     }
     if(name==='Faint'){anim.update(10);assert.equal(anim.done,true);assert.equal(anim.frame,m.n-1);}
   }
