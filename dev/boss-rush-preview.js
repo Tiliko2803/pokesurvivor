@@ -39,7 +39,7 @@ G.BossRushPreview = (() => {
   function start() {
     const p = G.Game.player;
     const minors = G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META);
-    route = [{ dex: 383, major: true, hp: 22000, damage: 42 },
+    route = [{ dex: 383, major: true, hp: G.Groudon.BASE_HP, damage: 42 },
       ...minors.map(dex => ({ dex, major: false }))];
     ox = 16; oy = 16; p.x = ox; p.y = oy + 85;
     p.moves = []; p.slots = []; p.active = 0; p.bind = {}; p.bonds = 0;
@@ -161,7 +161,9 @@ G.BossRushPreview = (() => {
     const width = Math.min(420, w - 80), x = (w - width) / 2;
     ctx.save(); ctx.fillStyle = '#15121ef5'; ctx.fillRect(x - 10, 63, width + 20, 42);
     ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffe2ba';
-    ctx.fillText(boss.name.toUpperCase() + (encounter ? ' · FASE ' + encounter.phase + '/3' : ' · MENOR'), w / 2, 77);
+    const seconds = Math.floor(encounter?.clock || 0);
+    const timer = encounter ? ' · ' + Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2,'0') : '';
+    ctx.fillText(boss.name.toUpperCase() + (encounter ? ' · FASE ' + encounter.phase + '/3' : ' · MENOR') + timer, w / 2, 77);
     ctx.fillStyle = '#4e2b35'; ctx.fillRect(x, 82, width, 6);
     ctx.fillStyle = encounter?.recovering ? '#7ce7bc' : '#f67846'; ctx.fillRect(x, 82, width * Math.max(0, boss.hp / boss.maxHp), 6);
     ctx.font = '11px monospace'; ctx.fillStyle = '#fff';

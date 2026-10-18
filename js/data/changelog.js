@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Groudon resiste las builds al máximo', 'Groudon withstands maxed builds'], chg: [
+    ['La prueba de Groudon pasa a 400.000 PV, con una duración objetivo de 3–5 minutos frente a Mega Blaziken con todas las mejoras de oro y una preparación ofensiva. La barra muestra el tiempo de combate; una build optimizada puede vencerlo antes.',
+     'The Groudon playtest now has 400,000 HP, targeting 3–5 minutes against Mega Blaziken with all gold upgrades and offensive preparation. The boss bar shows combat time; an optimized build can win sooner.']
+  ] },
   { d: '2026-10-17', title: ['Groudon se pone en movimiento', 'Groudon gets moving'], chg: [
     ['En las pruebas del Boss Rush, Groudon persigue entre ataques, usa Doble Filo desde la primera fase y ataca antes y más seguido. Filo del Abismo y Estallido alcanzan también a quienes se quedan en los bordes. Sus avisos siguen dando tiempo para esquivar.',
      'In the Boss Rush playtest, Groudon pursues between attacks, uses Double-Edge from phase one and attacks sooner and more often. Precipice Blades and Eruption also threaten players at the edges. Telegraphs still allow time to dodge.'],

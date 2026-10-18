@@ -2,6 +2,7 @@
  * Coordinates are relative to the arena centre. Only the combat clock advances them.
  */
 G.Groudon = (() => {
+  const BASE_HP = 400000; // Calibrated against a level-10 Mega Blaziken with all gold upgrades.
   const ARENA = Object.freeze({ left: -360, right: 360, top: -200, bottom: 200 });
   const NAMES = { blades: 'Filo del Abismo', stomp: 'Terratemblor', eruption: 'Estallido',
     charge: 'Doble Filo', rupture: 'Terremoto' };
@@ -147,5 +148,5 @@ G.Groudon = (() => {
     get recovering() { const a = this.attack; return !!a && a.t >= a.warn + a.active; }
     get label() { return this.recovering ? '¡Aprovecha su recuperación!' : this.attack ? this.attack.name : 'Busca una buena posición'; }
   }
-  return { Encounter, ARENA, contains, segmentDistance };
+  return { Encounter, ARENA, BASE_HP, contains, segmentDistance };
 })();

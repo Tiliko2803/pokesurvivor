@@ -21,7 +21,7 @@ El jugador empieza directamente en nivel 10, elige nueve mejoras antes de combat
 - Estadísticas base de la especie con las compras de oro realizadas dentro de la prueba; no se importan compras de la cuenta. Velocidad base de prueba: 130, conservando el multiplicador de Zancada comprado, para que se puedan esquivar los avisos caminando.
 - Victoria: experiencia equivalente a la suma de los requisitos de los tres niveles siguientes, con el reparto normal de orbes; curación del 20% de vida máxima y tres segundos antes del siguiente enemigo. No hay monedas, tickets ni botín equipable.
 - Los menores conservan la IA de jefes existente, las preferencias de distancia por tipo y la velocidad de movimiento estándar de las grietas. Sus estadísticas dependen de la posición en la ruta: 3200 PV y 27 de daño como base; por cada puesto posterior al primer menor, la vida se multiplica por 1.18, el daño por 1.07 y la cadencia gana 3.5 puntos porcentuales, hasta +30%. La cadencia total con furia queda limitada a ×1.5. Sólo se reduce la espera entre ataques; no se aceleran los avisos, los proyectiles ni los movimientos. Sin hordas entre combates.
-- Groudon: 22000 PV provisionales. Fases al 70% y 35%. Persigue al jugador entre ataques a 88/100/112 unidades por segundo, se detiene durante los avisos y recuperaciones y usa Doble Filo desde la primera fase. Si el jugador está lejos, sustituye Terratemblor por Estallido. Filo del Abismo y Estallido apuntan a la posición del jugador, incluidas las esquinas, y sus señales quedan fijas después de aparecer.
+- Groudon: 400000 PV, calibrados con Mega Blaziken en nivel 10 y todas las mejoras de oro. Fases al 70% y 35%. Persigue al jugador entre ataques a 88/100/112 unidades por segundo, se detiene durante los avisos y recuperaciones y usa Doble Filo desde la primera fase. Si el jugador está lejos, sustituye Terratemblor por Estallido. Filo del Abismo y Estallido apuntan a la posición del jugador, incluidas las esquinas, y sus señales quedan fijas después de aparecer.
 - Primer aviso a los 0.85 segundos; avisos de 1.15–1.35 segundos y dos segundos para Terremoto. Recuperación normal de 0.9 segundos; Doble Filo recupera dos segundos y Terremoto tres. Intervalos de 0.65/0.5/0.35 segundos según la fase. La lava dura cinco segundos y desaparece antes de Terremoto. El refugio se coloca de modo que sea alcanzable.
 - Arena de 720×400 (antes 600×300), límites compartidos para patrones y actores. La cámara encuadra toda la arena con margen y vuelve a su escala normal al salir. Suelo volcánico con roca irregular, ceniza, grietas y lava decorativa fuera del límite; el escenario se dibuja una vez en un lienzo pequeño y se reutiliza para no recalcularlo en cada fotograma. Sin cuadrícula ni obstáculos aleatorios dentro de la arena.
 - Se conserva la defensa, tabla de tipos y estados de daño. Un impacto por ataque y jugador; gracia de 0.9 segundos tras los golpes del patrón.
@@ -36,7 +36,8 @@ Publicación autorizada en la URL de desarrollo existente `/dev/`, la misma usad
 
 ```sh
 node tools/build-boss-rush-preview.cjs
-node --test tests/boss-rush-rules.test.cjs tests/groudon.test.cjs tests/groudon-integration.test.cjs
+node --test tests/boss-rush-rules.test.cjs tests/groudon.test.cjs tests/groudon-integration.test.cjs tests/groudon-duration.test.cjs
+node tools/benchmark-groudon.cjs
 python3 -m http.server 8765
 ```
 
@@ -45,6 +46,14 @@ Abrir `/dev/` y elegir **Jugar → Boss Rush · Hoenn** para la prueba. **Volver
 Las pruebas de integración ejecutan `game.js`, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con servicios de interfaz simulados. Comprueban preparación, pausas, daño, avance por los tres enemigos, XP/niveles, victoria, reintento y conservación de sesión/guardado. Las pruebas del patrón verifican avisos, rutas de escape, fases, daño único, lava y refugio de Terremoto.
 
 Pendiente: revisión en navegador y Android, balance mediante partidas reales, Kyogre, Rayquaza, cooperativo y sinergias. El entorno de trabajo no disponía de Chromium y su descarga no se pudo completar; las pruebas de motor no sustituyen esa revisión visual.
+
+## Duración de Groudon
+
+Objetivo: aproximadamente 3–5 minutos con Mega Blaziken al máximo de mejoras de oro, nivel 10 y nueve cartas de preparación. La vida es fija durante el intento; no hay escudo por tiempo, regeneración que anule el daño ni ajuste oculto según el DPS. Las builds y la ejecución conservan su ventaja; configuraciones defensivas pueden tardar más. La barra del jefe muestra un contador que se pausa junto al combate y empieza después de la preparación.
+
+`tools/benchmark-groudon.cjs` ejecuta el combate real, golpes críticos, evolución de Golpe Kárate e Impulso. Usa nueve cartas legales y reproducibles: A Bocajarro con cinco cartas de Potencia, o A Bocajarro con Danza Espada nivel 4 y dos cartas de Potencia. Ignora el daño recibido, mantiene distancia de golpe y permite reservar una fracción del tiempo sin lanzar ataques: mide duración ofensiva, no supervivencia ni habilidad humana para esquivar.
+
+Con semilla 123 y 85% del tiempo atacando (15% reservado para esquivar), los resultados fueron 277.95 s (4:38) para A Bocajarro y 184.37 s (3:04) con Danza Espada. Las pruebas verifican ambas builds con tres semillas. El escenario de ataque perfecto con Danza Espada termina antes de los tres minutos; se permite para conservar la recompensa por optimizar la build. Los tiempos reales requieren más partidas del jugador.
 
 ## Movimientos oficiales
 
