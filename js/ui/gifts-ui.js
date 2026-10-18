@@ -3,6 +3,7 @@ G.GiftsUI = (() => {
   'use strict';
   const $ = G.UI.$;
   let busy = false;
+  let rewardDex = null;
 
   function init() {
     $('gift-close').onclick = () => G.MenuUI.open();
@@ -36,9 +37,16 @@ G.GiftsUI = (() => {
             G.Audio.sfx('shinyGet');
             G.UI.toast(`¡Recibiste ${amount} Pokémonedas!`, 4500);
           }
+        } else if (result.reward === 'toji') {
+          rewardDex = G.GiftCodes.TOJI_DEX;
+          status.textContent = result.already ? '¡Ya tienes a Toji Fushiguro en tu colección!'
+            : '¡Toji Fushiguro se ha unido a tu colección! Elígelo en Pokémon → Especial. Sus tiempos cuentan en el ranking.';
+          if (!result.already) { G.Audio.sfx('shinyGet'); G.UI.toast('¡Recibiste a Toji Fushiguro ★5!', 4500); }
         } else if (result.already) {
+          rewardDex = G.GiftCodes.MAOMAO_DEX;
           status.textContent = '¡Ya tienes a Mao Mao en tu colección!';
         } else {
+          rewardDex = G.GiftCodes.MAOMAO_DEX;
           status.textContent = '¡Mao Mao se ha unido a tu colección! Puedes elegirla como compañera en Pokémon.';
           G.Audio.sfx('shinyGet');
           G.UI.toast('¡Recibiste a Mao Mao ★5!', 4500);
@@ -58,15 +66,19 @@ G.GiftsUI = (() => {
   }
 
   function showReward() {
-    const owned = !!(G.DB.save && G.DB.save.owned[G.GiftCodes.MAOMAO_DEX]);
+    const collection = G.DB.save && G.DB.save.owned || {};
+    if (!collection[rewardDex]) rewardDex = [G.GiftCodes.TOJI_DEX, G.GiftCodes.MAOMAO_DEX].find(d => collection[d]) || null;
+    const owned = !!collection[rewardDex];
     $('gift-owned').classList.toggle('hidden', !owned);
     // El usuario puede seguir canjeando otros códigos aunque ya tenga a Mao Mao.
     $('gift-redeem').textContent = 'Canjear regalo';
     $('gift-redeem').disabled = false;
     $('gift-code').disabled = false;
     if (owned) {
+      const mon = G.DEX_BY[rewardDex];
+      $('gift-owned').textContent = '★ ' + mon.name + ' · ' + mon.types.map(t => G.U.TYPE_NAME[t]).join(' / ') + ' · ¡Conseguido!';
       $('gift-stage').classList.remove('hidden');
-      G.UI.sprite($('gift-stage'), G.GiftCodes.MAOMAO_DEX, { lively: true, scale: 3, hero: true });
+      G.UI.sprite($('gift-stage'), rewardDex, { lively: true, scale: 3, hero: true });
     } else {
       $('gift-stage').classList.add('hidden');
     }

@@ -3,6 +3,7 @@ G.MenuUI = (() => {
   const $ = G.UI.$;
   const GEN_NAMES = ['Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Teselia', 'Kalos', 'Alola', 'Galar', 'Paldea'];
   let dexFilter = 'all', dexGen = 1, dexSel = null;
+  const specialCatalog = () => Object.values(G.DEX_BY).filter(p => p.gen === 0 && G.DB.save.owned[p.dex]);
 
   function init() {
     const ICON = { play: 'ball', dex: 'book', upgrades: 'up', gacha: 'ball4', goals: 'medal3', friends: 'friends', rank: 'trophy', settings: 'gear', gifts: 'ticket' };
@@ -181,15 +182,16 @@ G.MenuUI = (() => {
       c.onclick = () => { dexFilter = k; openDex(); };
       fb.appendChild(c);
     }
-    if (s.owned[G.GiftCodes.MAOMAO_DEX]) {
+    const specials = specialCatalog();
+    if (specials.length) {
       const special = document.createElement('button');
       special.className = 'gen-tab' + (dexGen === 0 ? ' on' : '');
-      special.innerHTML = '<b>Especial</b><small>1/1</small>';
-      special.onclick = () => { dexGen = 0; dexSel = G.GiftCodes.MAOMAO_DEX; openDex(); };
+      special.innerHTML = '<b>Especial</b><small>' + specials.length + '/' + Object.values(G.DEX_BY).filter(p => p.gen === 0).length + '</small>';
+      special.onclick = () => { dexGen = 0; if (!specials.some(p => p.dex === dexSel)) dexSel = specials[0].dex; openDex(); };
       tabs.appendChild(special);
     }
+    if (dexGen === 0 && specials.length && !specials.some(p => p.dex === dexSel)) dexSel = specials[0].dex;
     renderGrid();
-    if (dexGen === 0 && s.owned[G.GiftCodes.MAOMAO_DEX]) dexSel = G.GiftCodes.MAOMAO_DEX;
     showDetail(dexSel);
   }
 
@@ -197,8 +199,7 @@ G.MenuUI = (() => {
     const s = G.DB.save;
     const grid = $('dex-grid');
     grid.innerHTML = '';
-    const catalog = dexGen === 0 && s.owned[G.GiftCodes.MAOMAO_DEX]
-      ? [G.DEX_BY[G.GiftCodes.MAOMAO_DEX]] : G.DEX;
+    const catalog = dexGen === 0 ? specialCatalog() : G.DEX;
     for (const p of catalog) {
       if (p.gen !== dexGen) continue;
       const own = !!s.owned[p.dex], sh = !!(s.shiny && s.shiny[p.dex]);

@@ -150,14 +150,14 @@ G.Sprites = (() => {
   /** Radio de colisión aproximado a partir del tamaño del sprite. */
   function bodyRadius(dex, scale = 1) {
     const m = animMeta(dex, 'Idle');
-    const w = m ? m.w : 32;
+    const w = meta(dex)?.bw || (m ? m.w : 32);
     return G.U.clamp(w * 0.22, 5, 26) * PX * scale;
   }
 
   /** Alto visual aproximado (para barras de vida y números de daño). */
   function bodyHeight(dex, scale = 1) {
     const m = animMeta(dex, 'Idle');
-    return (m ? m.ay : 24) * PX * scale;
+    return (meta(dex)?.bh || (m ? m.ay : 24)) * PX * scale;
   }
 
   /** Sombra elíptica bajo los pies, tamaño según el ShadowSize de PMD. */

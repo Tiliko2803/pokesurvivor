@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Toji Fushiguro se une al combate', 'Toji Fushiguro joins the fight'], new: [
+    ['Código TOJI1: desbloquea a Toji Fushiguro como personaje independiente de tipo Acero/Lucha, con estadísticas y movimientos basados en Cobalion. Elígelo en Pokémon → Especial.',
+     'Code TOJI1 unlocks Toji Fushiguro as an independent Steel/Fighting character with Cobalion-based stats and moves. Select him under Pokémon → Special.'],
+    ['Toji tiene animaciones en ocho direcciones, mejoras propias y tiempos válidos para el ranking en solitario y cooperativo. También puedes filtrar el histórico por Toji Fushiguro.',
+     'Toji has eight-direction animations, his own upgrades and valid solo/co-op ranking times. You can also filter the all-time leaderboard by Toji Fushiguro.']
+  ] },
   { d: '2026-10-17', title: ['Más mejoras para tu Pokémon', 'More upgrades for your Pokémon'], new: [
     ['Seis nuevas mejoras permanentes por Pokémon: Golpe Devastador (críticos hasta x2), Expansión (hasta +20% de tamaño), Persistencia (hasta +25% de duración), Drenaje, Último Aliento y Más Opciones.',
      'Six new permanent upgrades per Pokémon: Devastating Blow (up to x2 criticals), Expansion (up to +20% size), Persistence (up to +25% duration), Drain, Last Breath and More Choices.'],

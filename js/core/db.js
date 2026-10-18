@@ -278,6 +278,8 @@ G.DB = (() => {
     r.challenges = G.Challenges.mergeProgress(a.challenges, b.challenges);
     // Los regalos ya canjeados nunca se pierden por cambios de navegador.
     r.gifts = {};
+    if ((a.gifts || {}).toji === 'TOJI1' ||
+        (b.gifts || {}).toji === 'TOJI1') r.gifts.toji = 'TOJI1';
     if ((a.gifts || {}).maomao === 'MAO25' ||
         (b.gifts || {}).maomao === 'MAO25') r.gifts.maomao = 'MAO25';
     // Marcar siempre el bono de monedas una sola vez, incluso si el otro
@@ -873,34 +875,39 @@ G.DB = (() => {
   async function redeemGift(rawCode) {
     const code = G.GiftCodes.normalize(rawCode);
     const maomao = G.GiftCodes.isMaomao(code);
+    const toji = G.GiftCodes.isToji(code);
+    const character = maomao || toji;
+    const characterDex = toji ? G.GiftCodes.TOJI_DEX : G.GiftCodes.MAOMAO_DEX;
+    const characterKey = toji ? 'toji' : 'maomao';
     const bonusCoins = G.GiftCodes.isBonusCoins(code);
     const coins = G.GiftCodes.isCoins(code) || bonusCoins;
     const coinsKey = bonusCoins ? 'coins500k' : 'coins20k';
     const coinsAmount = bonusCoins ? G.GiftCodes.BONUS_COINS_AMOUNT : G.GiftCodes.COINS_AMOUNT;
     const tickets = G.GiftCodes.isTickets(code);
-    if (!maomao && !coins && !tickets) throw new Error('Código de regalo inválido.');
+    if (!character && !coins && !tickets) throw new Error('Código de regalo inválido.');
     if (!save || guest || !key)
       throw new Error('Inicia sesión en tu cuenta para canjear regalos.');
     if (G.Game.state !== 'ui')
       throw new Error('Sal de la partida para canjear el código.');
 
-    const alreadyClaimed = s => maomao
-      ? !!((s.owned || {})[G.GiftCodes.MAOMAO_DEX] || (s.gifts || {}).maomao)
+    const alreadyClaimed = s => character
+      ? !!((s.owned || {})[characterDex] || (s.gifts || {})[characterKey])
       : coins ? (s.gifts || {})[coinsKey] === code
       : (s.gifts || {}).tickets10x10 === G.GiftCodes.TICKETS_CODE;
     const result = (already, local) =>
       ({ ok: true, already, local,
-         reward: maomao ? 'maomao' : coins ? 'coins' : 'tickets10',
+         reward: character ? characterKey : coins ? 'coins' : 'tickets10',
+         dex: character ? characterDex : null,
          amount: coins ? coinsAmount : tickets ? G.GiftCodes.TICKETS_AMOUNT : 0 });
 
     if (alreadyClaimed(save)) return result(true, mode === 'local');
 
     const addPrize = s => {
       s.gifts = s.gifts || {};
-      if (maomao) {
+      if (character) {
         s.owned = s.owned || {};
-        s.owned[G.GiftCodes.MAOMAO_DEX] = { at: Date.now(), from: 'gift' };
-        s.gifts.maomao = code;
+        s.owned[characterDex] = { at: Date.now(), from: 'gift' };
+        s.gifts[characterKey] = code;
       } else if (coins) {
         s.coins = (s.coins || 0) + coinsAmount;
         s.gifts[coinsKey] = code;
