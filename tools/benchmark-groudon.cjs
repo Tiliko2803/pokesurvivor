@@ -8,9 +8,9 @@ const vm = require('node:vm');
 const { fixture } = require('../tests/helpers/boss-rush-fixture.cjs');
 const PLANS = {
   melee: ['up:karate-chop','up:karate-chop','up:karate-chop','stat:atk','evo:karate-chop',
-    'stat:atk','stat:atk','stat:atk','stat:atk'],
+    'stat:atk','stat:atk'],
   dance: ['up:karate-chop','up:karate-chop','up:karate-chop','stat:atk','evo:karate-chop',
-    'up:swords-dance','up:swords-dance','up:swords-dance','stat:atk']
+    'up:swords-dance','up:swords-dance']
 };
 async function simulate({ build = 'melee', uptime = 0.85, seed = 123 } = {}) {
   if (!PLANS[build] || !(uptime > 0 && uptime <= 1)) throw new Error('Invalid benchmark configuration');

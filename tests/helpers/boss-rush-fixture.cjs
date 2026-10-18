@@ -60,7 +60,7 @@ function fixture(session = 'real-account') {
   G.Flow.afterRun = () => G.Game.toUI();
   load('dev/boss-rush-rules.js'); load('dev/groudon.js'); load('dev/groudon-fx.js'); load('dev/boss-rush-preview.js');
   const choose = () => { const card=cards.find(c=>c.key==='up:water-gun') || cards.find(c=>c.key==='stat:atk') || cards[0]; const cb=pick; cards=null; pick=null; cb(card); };
-  const prepare = () => { let n=0; while(G.BossRushPreview.preparing) { choose(); n++; assert.ok(n<=9); } return n; };
+  const prepare = () => { let n=0; while(G.BossRushPreview.preparing) { choose(); n++; assert.ok(n<=G.BossRushPreview.START_LEVEL-1); } return n; };
   const pickBond = () => {
     const {opt,cb}=bond; bond=null; G.UI.hide('scr-bond');
     cb(opt.mode==='pair'?opt.loose.slice(0,2):opt.loose.slice(0,1));

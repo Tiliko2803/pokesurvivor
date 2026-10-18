@@ -2,8 +2,8 @@ const { test } = require('node:test'), assert = require('node:assert/strict');
 const { fixture } = require('./helpers/boss-rush-fixture.cjs');
 test('Engine integration: temporary session, real moves hit Groudon, no ranking or account writes', async () => {
   const f=fixture(),{G}=f; await G.DB.ready(); assert.equal(G.DB.guest,true);
-  G.BossRushPreview.play(); assert.equal(G.Game.state,'paused'); assert.equal(G.Game.player.level,10);
-  assert.equal(f.prepare(),9); assert.equal(G.Game.state,'playing');
+  G.BossRushPreview.play(); assert.equal(G.Game.state,'paused'); assert.equal(G.Game.player.level,8);
+  assert.equal(f.prepare(),7); assert.equal(G.Game.state,'playing');
   assert.equal(G.BossRushPreview.boss.dex,383); assert.ok(G.Game.player.maxHp>0);
   const hp=G.BossRushPreview.boss.hp; f.tick(180);
   assert.ok(G.BossRushPreview.boss.hp<hp); assert.ok(G.Game.player.dmgDealt>0);
@@ -30,7 +30,7 @@ test('Engine integration: phases, victory and no drops/rewards', async () => {
   b.hurt(999999); f.tick(1); assert.equal(G.Game.state,'playing');
   f.tick(200); const firstMinor=G.BossRushPreview.boss.dex;
   assert.ok(G.BossRushRules.eligibleMinor(G.DEX_BY[firstMinor],G.SPRITE_META));
-  assert.ok(G.Game.player.level>10); assert.equal(G.EnemyMgr.all().filter(e=>!e.dead).length,1);
+  assert.ok(G.Game.player.level>8); assert.equal(G.EnemyMgr.all().filter(e=>!e.dead).length,1);
   const firstStats={hp:G.BossRushPreview.boss.maxHp,dmg:G.BossRushPreview.boss.dmg,rate:G.BossRushPreview.boss.rushAttackRate};
   G.BossRushPreview.boss.hurt(999999); f.tick(201);
   const second=G.BossRushPreview.boss;
@@ -87,7 +87,7 @@ test('Jugar exposes Boss Rush explicitly; Back returns to mode selection and nor
   assert.equal(G.UI.isOpen('scr-boss-rush'),true);
   assert.equal(G.UI.isOpen('scr-play-mode'),false);
   f.nodes.get('rush-start').onclick();
-  assert.equal(G.BossRushPreview.running,true); assert.equal(G.Game.player.level,10);
+  assert.equal(G.BossRushPreview.running,true); assert.equal(G.Game.player.level,8);
   f.prepare(); G.Game.quit(); f.back();
   G.MenuUI.openPlayMode(); f.nodes.get('btn-boss-rush').onclick();
   f.nodes.get('rush-back').onclick();
@@ -151,5 +151,26 @@ test('Only the major grants one Bond; selecting the native fusion pauses the int
   assert.equal(G.BossRushPreview.stage,2);assert.equal(p.bonds,0);assert.equal(f.bond(),null);
   G.BossRushPreview.boss.hurt(999999);f.tick(201);
   assert.equal(G.Game.state,'over');assert.equal(p.bonds,0);
+  assert.deepEqual(f.storage,f.before);
+});
+
+test('Max Upgrades button affects only the selected guest Pokemon and starts level 8 with seven choices',async()=>{
+  const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.open();
+  const select=f.nodes.get('rush-partner');select.value='257';select.onchange();
+  const coins=G.DB.save.coins,swampert=JSON.stringify(G.DB.save.pupg[260]),sceptile=JSON.stringify(G.DB.save.pupg[254]);
+  f.nodes.get('rush-max').onclick();
+  for(const u of G.Upgrades.LIST)assert.equal(G.DB.upgradesOf(257)[u.id],u.max,u.id);
+  assert.equal(G.DB.save.coins,coins);assert.equal(JSON.stringify(G.DB.save.pupg[260]),swampert);
+  assert.equal(JSON.stringify(G.DB.save.pupg[254]),sceptile);
+  assert.equal(f.nodes.get('rush-max').disabled,true);
+  assert.match(f.nodes.get('rush-status').textContent,/Blaziken/);
+  assert.equal(G.BossRushPreview.maxUpgrades(999),false);
+  select.value='254';select.onchange();assert.equal(f.nodes.get('rush-max').disabled,false);
+  select.value='257';select.onchange();f.nodes.get('rush-start').onclick();
+  const p=G.Game.player;
+  assert.equal(p.level,8);assert.equal(p.xp,0);assert.equal(p.xpNext,G.Player.xpFor(8));
+  assert.equal(p.atkMul,1.4);assert.equal(p.cardOptions,6);
+  assert.equal(G.BossRushPreview.maxUpgrades(260),false);
+  assert.equal(f.prepare(),7);assert.equal(p.level,8);assert.equal(G.Game.state,'playing');
   assert.deepEqual(f.storage,f.before);
 });

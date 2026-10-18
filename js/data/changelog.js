@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Mejoras de prueba en un clic', 'One-click playtest upgrades'], new: [
+    ['En la preparación del Boss Rush, Mejorar al máximo completa todas las mejoras de oro del Pokémon seleccionado sin gastar monedas de prueba. El botón confirma cuándo están listas.',
+     'In Boss Rush preparation, Max Upgrades completes all gold upgrades for the selected Pokémon without spending playtest coins. The button confirms when they are ready.']
+  ], chg: [
+    ['El Boss Rush empieza en nivel 8, con siete elecciones de mejora desde nivel 1. La experiencia de las victorias sigue permitiendo ganar tres niveles por combate sin bonos.',
+     'Boss Rush starts at level 8, with seven upgrade choices from level 1. Victory experience still grants three levels per encounter without bonuses.']
+  ] },
   { d: '2026-10-17', title: ['Más espacio, efectos y Vínculos en el Boss Rush', 'More space, effects and Bonds in Boss Rush'], chg: [
     ['La arena de pruebas crece a 960×560. Groudon conserva sus 400.000 PV y cada movimiento recibe efectos propios: pilares de roca, ondas de tierra, lava, estelas y fracturas, con señales claras y sonidos distintos.',
      'The playtest arena grows to 960×560. Groudon keeps 400,000 HP, and each move gets its own effects: stone pillars, ground waves, lava, trails and fissures, with clear telegraphs and distinct sounds.']

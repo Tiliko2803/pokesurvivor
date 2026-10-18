@@ -9,6 +9,7 @@
 .rush-fields select { width:100%; min-width:0; min-height:44px; padding:10px; border:1px solid #79524b; border-radius:8px; background:#211d2a; color:white; font:inherit; }
 .rush-setup .btn { min-height:48px; padding:12px 24px; }
 #rush-error { color:#ffb6b6; margin:6px 0 0; min-height:0; }
+#rush-status { color:#9fe4bc; margin:8px 0 0; min-height:1.4em; }
 .rush-wallet { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px; border:1px solid #79524b; border-radius:10px; }
 .rush-wallet>b { color:#ffd786; font-size:14px; }
 .rush-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }

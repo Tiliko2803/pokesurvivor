@@ -2,6 +2,7 @@
  * A guest save stays in memory; no production account, rewards or rankings.
  */
 G.BossRushPreview = (() => {
+  const START_LEVEL = 8;
   let encounter = null, boss = null, running = false, ending = false, won = false;
   let preparing = false, choicesLeft = 0, stage = 0, transition = 0, defeated = false;
   let route = [];
@@ -59,8 +60,8 @@ G.BossRushPreview = (() => {
       if (p.mega && mega?.start === id) G.Moves.levelUp(p.moves.find(m => m.id === id));
     }
     p.setActive(0);
-    // Level ten includes the nine actual upgrade selections, rather than only a label.
-    p.level = 10; p.xp = 0; p.xpNext = G.Player.xpFor(10);
+    // Starting at level eight includes the seven level-ups from level one.
+    p.level = START_LEVEL; p.xp = 0; p.xpNext = G.Player.xpFor(START_LEVEL);
     p.baseSpd = 130; p.invuln = 1;
     G.World.setArena({ tx: 0, ty: 0, r: 20, type: 'fire' });
     // No random pools, columns or breakable objects inside the combat space.
@@ -71,7 +72,7 @@ G.BossRushPreview = (() => {
     refreshCamera();
     spawnStage();
     G.Camera.x = ox; G.Camera.y = oy - (G.Camera.rushOffsetY || 0);
-    preparing = true; choicesLeft = 9;
+    preparing = true; choicesLeft = START_LEVEL - 1;
     normalPause(); // No combat clock or enemy can advance during preparation.
     offerPreparation();
   }
@@ -107,13 +108,13 @@ G.BossRushPreview = (() => {
     const p = G.Game.player;
     const count = p.cardOptions || 3;
     const list = G.LevelUp.offer(p, count + 1).filter(c => c.key !== 'stat:heal').slice(0, count);
-    G.RunUI.showLevelUp(10 - choicesLeft + 1, list, card => {
+    G.RunUI.showLevelUp(START_LEVEL - choicesLeft + 1, list, card => {
       if (!preparing) return;
       card.apply(p); choicesLeft--;
       if (choicesLeft > 0) offerPreparation();
       else {
         preparing = false; p.hp = p.maxHp; p.setActive(0);
-        G.Game.togglePause(); G.Spawner.say('Nivel 10 · ¡Comienza el Boss Rush!', 2.5, true);
+        G.Game.togglePause(); G.Spawner.say('Nivel ' + START_LEVEL + ' · ¡Comienza el Boss Rush!', 2.5, true);
       }
     });
     document.getElementById('lvl-hint').textContent = 'Preparación · Elige tus mejoras iniciales · Faltan ' + choicesLeft;
@@ -189,8 +190,10 @@ G.BossRushPreview = (() => {
       <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
       <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
       <button class="btn small" id="rush-upgrades">Mejoras de oro</button>
+      <button class="btn small" id="rush-max">Mejorar al máximo</button>
       <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
-      <p class="sub">Mega Blaziken está desbloqueado y equipado al elegir Blaziken.<br>Empiezas en nivel 10: elige nueve mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual del primer tramo. Tu cuenta y tu progreso no se modifican.</p>
+      <p class="sub" id="rush-status" role="status"></p>
+      <p class="sub">Mega Blaziken está desbloqueado y equipado al elegir Blaziken.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual del primer tramo. Tu cuenta y tu progreso no se modifican.</p>
       <div class="rush-actions"><button class="btn gold" id="rush-start">Enfrentar a Groudon</button>
       <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
       <p id="rush-error" role="status"></p></div>`;
@@ -206,7 +209,10 @@ G.BossRushPreview = (() => {
         el.value = defaults[i];
       });
     }
-    select.onchange = () => { G.DB.save.partner = Number(select.value); moves(); }; moves();
+    select.onchange = () => {
+      G.DB.save.partner = Number(select.value); moves(); refreshSetup();
+      document.getElementById('rush-status').textContent = '';
+    }; moves();
     document.getElementById('rush-upgrades').onclick = () => {
       const dex = Number(select.value); G.DB.save.partner = dex;
       returnFromUpgrades = true;
@@ -215,6 +221,7 @@ G.BossRushPreview = (() => {
       upgradeSelect.value = String(dex); upgradeSelect.onchange();
     };
     document.getElementById('rush-refill').onclick = refillFunds;
+    document.getElementById('rush-max').onclick = () => maxUpgrades(Number(select.value));
     document.getElementById('rush-back').onclick = () => G.MenuUI.openPlayMode();
     document.getElementById('rush-start').onclick = () => {
       chosen = [1, 2].map(n => document.getElementById('rush-move-' + n).value);
@@ -237,6 +244,21 @@ G.BossRushPreview = (() => {
   function refreshSetup() {
     const el = document.getElementById('rush-balance');
     if (el) el.textContent = G.DB.save.coins.toLocaleString('es-MX') + ' Pokémonedas de prueba';
+    const button = document.getElementById('rush-max'), select = document.getElementById('rush-partner');
+    if (button && select) {
+      const levels = G.DB.save.pupg[Number(select.value)] || {};
+      const full = G.Upgrades.LIST.every(u => (levels[u.id] || 0) >= u.max);
+      button.disabled = full; button.textContent = full ? 'Mejoras al máximo ✓' : 'Mejorar al máximo';
+    }
+  }
+  function maxUpgrades(dex = G.DB.save?.partner) {
+    dex = Number(dex);
+    if (!G.DB.guest || G.Game.state !== 'ui' || running || !roster.includes(dex) || !G.DB.owns(dex)) return false;
+    const levels = G.DB.upgradesOf(dex);
+    for (const u of G.Upgrades.LIST) levels[u.id] = u.max;
+    const status = document.getElementById('rush-status');
+    if (status) status.textContent = G.DEX_BY[dex].name + ': todas las mejoras de oro al máximo.';
+    refreshSetup(); return true;
   }
   function refillFunds() {
     if (!G.DB.guest || running) return false;
@@ -364,6 +386,6 @@ G.BossRushPreview = (() => {
     });
   }
   init();
-  return { open, play, refillFunds, get encounter() { return encounter; }, get boss() { return boss; }, get running() { return running; },
+  return { START_LEVEL, open, play, refillFunds, maxUpgrades, get encounter() { return encounter; }, get boss() { return boss; }, get running() { return running; },
     get preparing() { return preparing; }, get stage() { return stage; } };
 })();

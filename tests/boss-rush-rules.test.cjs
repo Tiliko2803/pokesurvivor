@@ -31,11 +31,11 @@ test('Vida crece más que daño; cadencia gradual con tope incluso en furia',()=
   }
   assert.throws(()=>R.minorStats(0));
 });
-test('Recompensas de tres victorias llevan del nivel 10 al 19 sin bonus',()=>{
-  let level=10,xp=0;
+test('Recompensas de tres victorias llevan del nivel 8 al 17 sin bonus',()=>{
+  let level=8,xp=0;
   for(let encounter=0;encounter<3;encounter++){
     xp+=R.rewardXp(G.Player.xpFor,level);
     while(xp>=G.Player.xpFor(level)){xp-=G.Player.xpFor(level);level++;}
   }
-  assert.equal(level,19);assert.equal(xp,0);
+  assert.equal(level,17);assert.equal(xp,0);
 });
