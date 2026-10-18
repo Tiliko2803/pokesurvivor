@@ -7,8 +7,10 @@
  */
 G.CHANGELOG = [
   { d: '2026-10-17', title: ['Boss Rush: prototipo de Groudon', 'Boss Rush: Groudon prototype'], new: [
-    ['Versión de desarrollo: primer tramo del Boss Rush de Hoenn. Empieza en nivel 10 eligiendo nueve mejoras; enfrenta a Groudon con tres fases y después a Regirock y Regice para seguir ganando experiencia. Kyogre y Rayquaza llegarán en próximos tramos.',
-     'Development preview: first segment of the Hoenn Boss Rush. Start at level 10 with nine upgrade choices; face a three-phase Groudon, then Regirock and Regice to keep earning experience. Kyogre and Rayquaza are planned for later segments.'],
+    ['Los menores conservan los patrones normales del juego y aumentan progresivamente su vida, daño y cadencia. Se conservan los tiempos de aviso y se limita la cadencia. Los mayores y protagonistas de portada quedan excluidos del sorteo. Cada victoria da experiencia equivalente a tres niveles, antes de bonificaciones.',
+     'Minor legends keep the normal game patterns with progressively increasing HP, damage and attack rate. Telegraph durations remain unchanged and attack rate is capped. Major and cover legends are excluded from selection. Each victory awards three levels worth of XP before bonuses.'],
+    ['Versión de desarrollo: primer tramo del Boss Rush de Hoenn. Empieza en nivel 10 eligiendo nueve mejoras; enfrenta a Groudon con tres fases y después a dos legendarios menores aleatorios sin repetir para seguir ganando experiencia. Kyogre y Rayquaza llegarán en próximos tramos.',
+     'Development preview: first segment of the Hoenn Boss Rush. Start at level 10 with nine upgrade choices; face a three-phase Groudon, then two random, non-repeating minor legends to keep earning experience. Kyogre and Rayquaza are planned for later segments.'],
     ['Groudon usa Filo del Abismo, Terratemblor, Estallido, Doble Filo y Terremoto con patrones adaptados al Boss Rush. Terremoto deja una franja segura y una oportunidad para contraatacar. Esta prueba es individual y usa una sesión temporal sin modificar la cuenta.',
      'Groudon uses Precipice Blades, Bulldoze, Eruption, Double-Edge and Earthquake with patterns adapted to Boss Rush. Earthquake leaves a safe lane and a counterattack window. This solo preview uses a temporary session without modifying your account.']
   ] },

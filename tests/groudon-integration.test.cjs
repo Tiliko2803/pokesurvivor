@@ -22,7 +22,7 @@ function fixture(session = 'real-account') {
   const G = ctx.G;
   // util.js deliberately owns the browser's global G.
   ctx.window.G = G;
-  for (const f of ['js/core/util.js', 'js/data/pokedex.js', 'js/data/moves.js', 'js/data/types.js', 'js/data/starters.js', 'js/data/upgrades.js',
+  for (const f of ['js/core/util.js', 'js/data/pokedex.js', 'js/data/sprites-meta.js', 'js/data/moves.js', 'js/data/types.js', 'js/data/starters.js', 'js/data/upgrades.js',
     'js/systems/mega.js', 'js/systems/repertoire.js', 'js/systems/challenges.js', 'js/core/db.js']) load(f);
   const stub = () => new Proxy({}, { get: (o,k) => k in o ? o[k] : noop });
   for (const name of ['UI','FX','Pickups','Spawner','Rift','Judgment','Events','Weather','Path','Hazards','World','Interact','Audio','Progress','Social','Coop','Input','RunUI','Settings','MenuUI','Updater','HUD']) G[name] = stub();
@@ -49,7 +49,7 @@ function fixture(session = 'real-account') {
   G.RunUI.showOver = (r,b) => { result=r; back=b; };
   G.RunUI.showLevelUp = (lv,list,cb) => { cards=list; pick=cb; };
   G.Flow.afterRun = () => G.Game.toUI();
-  load('dev/groudon.js'); load('dev/boss-rush-preview.js');
+  load('dev/boss-rush-rules.js'); load('dev/groudon.js'); load('dev/boss-rush-preview.js');
   const choose = () => { const card=cards.find(c=>c.key==='up:water-gun') || cards.find(c=>c.key==='stat:atk') || cards[0]; const cb=pick; cards=null; pick=null; cb(card); };
   const prepare = () => { let n=0; while(G.BossRushPreview.preparing) { choose(); n++; assert.ok(n<=9); } return n; };
   const tick = n => { for (let i=0;i<n;i++) {ctx.now=(ctx.now||0)+1000/60; G.Game._frame(ctx.now); if(G.Game.state==='levelup') choose();} };
@@ -82,13 +82,37 @@ test('Engine integration: phases, victory and no drops/rewards', async () => {
   b.hp=b.maxHp*0.7; f.tick(1); assert.equal(G.BossRushPreview.encounter.phase,2);
   b.hp=b.maxHp*0.35; f.tick(1); assert.equal(G.BossRushPreview.encounter.phase,3);
   b.hurt(999999); f.tick(1); assert.equal(G.Game.state,'playing');
-  f.tick(200); assert.equal(G.BossRushPreview.boss.dex,377);
+  f.tick(200); const firstMinor=G.BossRushPreview.boss.dex;
+  assert.ok(G.BossRushRules.eligibleMinor(G.DEX_BY[firstMinor],G.SPRITE_META));
   assert.ok(G.Game.player.level>10); assert.equal(G.EnemyMgr.all().filter(e=>!e.dead).length,1);
-  G.BossRushPreview.boss.hurt(999999); f.tick(201); assert.equal(G.BossRushPreview.boss.dex,378);
+  const firstStats={hp:G.BossRushPreview.boss.maxHp,dmg:G.BossRushPreview.boss.dmg,rate:G.BossRushPreview.boss.rushAttackRate};
+  G.BossRushPreview.boss.hurt(999999); f.tick(201);
+  const second=G.BossRushPreview.boss;
+  assert.ok(G.BossRushRules.eligibleMinor(G.DEX_BY[second.dex],G.SPRITE_META)); assert.notEqual(second.dex,firstMinor);
+  assert.ok(second.maxHp>firstStats.hp && second.dmg>firstStats.dmg && second.rushAttackRate>firstStats.rate);
   G.BossRushPreview.boss.hurt(999999); f.tick(201);
   assert.equal(G.Game.state,'over'); assert.equal(f.nodes.get('over-title').textContent,'¡Primer tramo superado!');
   assert.equal(f.result().coins,0); assert.equal(f.rankings(),0); assert.deepEqual(f.storage,f.before);
 });
 test('Preview preserves absence of a pre-existing session too', async () => {
   const f=fixture(null); await f.G.DB.ready(); assert.deepEqual(f.storage,f.before);
+});
+test('Minor scaling changes idle cooldown only; native patterns and warning durations stay intact', async()=>{
+  const f=fixture(),{G}=f;await G.DB.ready();G.Game.startRun();f.prepare();
+  const def={dex:377,hp:3200,spd:60,dmg:27,xp:0,behavior:'ranged',shotDmg:15};
+  const native=new G.Enemy(def,0,0,{hp:1,spd:1,dmg:1},true);
+  const later=new G.Enemy(def,0,0,{hp:1,spd:1,dmg:1},true);
+  native.bossInit();later.bossInit();
+  later.rushMinor=true;later.rushAttackRate=1.3;
+  for(const e of [native,later]){e.ai.cd=2;e.ai.mode='far';e.ai.modeT=99;}
+  const p=G.Game.player;
+  native.bossMove(0.1,p,200,1,0,60);later.bossMove(0.1,p,200,1,0,60);
+  assert.ok(Math.abs(native.ai.cd-1.9)<1e-9);assert.ok(Math.abs(later.ai.cd-1.87)<1e-9);
+  native.bossStart('beam',p);later.bossStart('beam',p);
+  assert.equal(native.ai.cast.wind,later.ai.cast.wind);
+  assert.equal(native.ai.cast.after,later.ai.cast.after);
+  native.bossMove(0.1,p,200,1,0,60);later.bossMove(0.1,p,200,1,0,60);
+  assert.equal(native.ai.cast.t,later.ai.cast.t);
+  assert.deepEqual(Array.from(native.ai.melee),Array.from(later.ai.melee));
+  assert.deepEqual(Array.from(native.ai.ranged),Array.from(later.ai.ranged));
 });

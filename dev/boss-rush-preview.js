@@ -4,11 +4,7 @@
 G.BossRushPreview = (() => {
   let encounter = null, boss = null, running = false, ending = false, won = false;
   let preparing = false, choicesLeft = 0, stage = 0, transition = 0, defeated = false;
-  const ROUTE = [
-    { dex: 383, major: true, hp: 10000, damage: 38 },
-    { dex: 377, major: false, hp: 3200, damage: 27 },
-    { dex: 378, major: false, hp: 4000, damage: 30 }
-  ];
+  let route = [];
   let chosen = ['water-gun', 'bubble'], ox = 0, oy = 0;
   const roster = [260, 257, 254];
   const normalPause = G.Game.togglePause;
@@ -41,10 +37,13 @@ G.BossRushPreview = (() => {
   }
   function start() {
     const p = G.Game.player;
+    const minors = G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META);
+    route = [{ dex: 383, major: true, hp: 10000, damage: 38 },
+      ...minors.map(dex => ({ dex, major: false }))];
     ox = 16; oy = 16; p.x = ox; p.y = oy + 85;
     p.moves = []; p.slots = []; p.active = 0; p.bind = {}; p.bonds = 0;
     for (const id of chosen) {
-      p.addMove(id); const m = p.moves.find(m => m.id === id);
+      p.addMove(id);
     }
     p.setActive(0);
     // Level ten includes the nine actual upgrade selections, rather than only a label.
@@ -63,14 +62,20 @@ G.BossRushPreview = (() => {
     offerPreparation();
   }
   function spawnStage() {
-    const def = ROUTE[stage], p = G.Game.player;
+    const def = route[stage], p = G.Game.player;
+    const stats = def.major ? def : G.BossRushRules.minorStats(stage);
+    const mon = G.DEX_BY[def.dex];
+    const ranged = mon.types.some(t => ['psychic','electric','ghost','fairy','fire','water','ice','dragon'].includes(t));
     G.Projectiles.clear(); G.Combat.clearFields(); G.Hazards.clear();
     defeated = false; transition = 0;
-    boss = new G.Enemy({ dex: def.dex, name: G.DEX_BY[def.dex].name, hp: def.hp,
-      spd: def.major ? 0 : 58 + stage * 5, dmg: def.major ? 0 : def.damage,
-      xp: Math.round(G.Player.xpFor(p.level) * 2.2), behavior: def.major ? 'charger' : 'ranged',
-      shotDmg: def.damage * 0.55, shotCd: 1.2, range: 300 }, ox, oy - 65, { hp: 1, spd: 1, dmg: 1 }, true);
+    boss = new G.Enemy({ dex: def.dex, name: mon.name, hp: stats.hp,
+      spd: def.major ? 0 : Math.round(G.U.clamp(48 + (mon.spd - 78) * 0.6, 48, 105)),
+      dmg: def.major ? 0 : stats.damage,
+      xp: G.BossRushRules.rewardXp(G.Player.xpFor, p.level),
+      behavior: def.major || !ranged ? 'charger' : 'ranged',
+      shotDmg: stats.damage * 0.55, shotCd: 1.2, range: 300 }, ox, oy - 65, { hp: 1, spd: 1, dmg: 1 }, true);
     boss.rushBoss = def.major; boss.rushMinor = !def.major; boss.legend = false;
+    boss.rushAttackRate = def.major ? 1 : stats.attackRate;
     boss.touchCd = def.major ? 999 : 1.5;
     G.EnemyMgr.add(boss);
     encounter = def.major ? new G.Groudon.Encounter({ boss: relativeBoss, players: () => players,
@@ -160,7 +165,7 @@ G.BossRushPreview = (() => {
     const root = document.createElement('section'); root.id = 'scr-boss-rush'; root.className = 'scr dim hidden';
     root.innerHTML = `<div class="panel rush-setup"><span class="rush-kicker">BOSS RUSH · HOENN</span>
       <h1>El despertar de Groudon</h1><p>Primera arena de la ruta. Aprende sus señales, esquiva y contraataca.</p>
-      <div class="rush-route"><b>Groudon → Regirock → Regice</b><span>Después: Kyogre · Próximamente</span></div>
+      <div class="rush-route"><b>Groudon → 2 legendarios menores aleatorios</b><span>Después: Kyogre · Próximamente</span></div>
       <div class="rush-fields"><label>Tu Pokémon<select id="rush-partner"></select></label>
       <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
       <p class="sub">Empiezas en nivel 10: elige nueve mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida.<br>Prueba individual del primer tramo. Tu cuenta y tu progreso no se modifican.</p>
@@ -233,7 +238,7 @@ G.BossRushPreview = (() => {
       } else if (transition > 0 && !G.Game.player.dead) {
         transition -= dt;
         if (transition <= 0) {
-          if (stage < ROUTE.length - 1) { stage++; spawnStage(); }
+          if (stage < route.length - 1) { stage++; spawnStage(); }
           else { won = true; ending = true; }
         }
       }
@@ -245,6 +250,13 @@ G.BossRushPreview = (() => {
     wrap(G.Camera, 'follow', (old, x, y, dt) => old.call(G.Camera, running ? ox : x, running ? oy : y, dt));
     wrap(G.World, 'drawLiquid', (old, ctx, ...args) => { old(ctx, ...args); draw(ctx); });
     wrap(G.HUD, 'draw', (old, ctx, w, ...args) => { old(ctx, w, ...args); hud(ctx, w); });
+    wrap(G.Enemy.prototype, 'bossMove', function(old, dt, ...args) {
+      if (this.rushMinor) {
+        if (!this.ai) this.bossInit();
+        if (!this.ai.cast) this.ai.cd -= dt * G.BossRushRules.extraCooldownDecay(this.rushAttackRate, this.ai.fury);
+      }
+      return old.call(this, dt, ...args);
+    });
     wrap(G.Enemy.prototype, 'update', function(old, dt, p) {
       if (!this.rushBoss) return old.call(this, dt, p);
       this.anim.update(dt); this.flash = Math.max(0, this.flash - dt); this.touchCd = 999;
