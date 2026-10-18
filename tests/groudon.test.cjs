@@ -8,7 +8,7 @@ function fixture() {
   const boss = { x: 0, y: -65, r: 28, hp: 18000, maxHp: 18000, dead: false };
   const p = { x: 0, y: 80, r: 12, dead: false }, ps = [p], hits = [], events = [];
   const e = new ctx.G.Groudon.Encounter({ boss, players: () => ps,
-    hit: (...args) => hits.push(args), signal: (...args) => events.push(args), random: () => 0.5 });
+    hit: (...args) => { hits.push(args); }, signal: (...args) => events.push(args), random: () => 0.5 });
   const tick = seconds => { for (let i = 0; i < Math.round(seconds * 100); i++) e.update(0.01); };
   return { ...ctx.G.Groudon, boss, p, ps, hits, events, e, tick };
 }
@@ -75,6 +75,15 @@ test('Cuatro jugadores: un impacto para cada uno, máximo cuatro charcos', () =>
   for (let i = 0; i < 3; i++) ps.push({ ...p });
   e.begin('eruption'); assert.equal(e.attack.shapes.length, 4); tick(1.75);
   assert.equal(hits.length, 4); assert.equal(e.hazards.length, 4);
+});
+test('Movimientos reales: tipos y retroceso de Doble Filo sobre daño efectivo', () => {
+  const { e, events, tick } = fixture();
+  e.hit = () => 30; e.begin('charge');
+  assert.equal(e.attack.name, 'Doble Filo'); assert.equal(e.attack.type, 'normal'); tick(2);
+  assert.ok(events.some(ev => ev[0] === 'recoil' && ev[1] === 10));
+  const f = fixture(); f.e.begin('rupture'); assert.equal(f.e.attack.name, 'Terremoto');
+  const s = fixture(); s.e.begin('stomp'); assert.equal(s.e.attack.name, 'Terratemblor');
+  const b = fixture(); b.e.begin('eruption'); assert.equal(b.e.attack.name, 'Estallido');
 });
 test('No hay daño de lava durante la gracia después del impacto', () => {
   const { e, p, hits, tick } = fixture(); e.begin('blades');

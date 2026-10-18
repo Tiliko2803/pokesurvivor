@@ -9,8 +9,8 @@ G.CHANGELOG = [
   { d: '2026-10-17', title: ['Boss Rush: prototipo de Groudon', 'Boss Rush: Groudon prototype'], new: [
     ['Versión de desarrollo: primer tramo del Boss Rush de Hoenn. Empieza en nivel 10 eligiendo nueve mejoras; enfrenta a Groudon con tres fases y después a Regirock y Regice para seguir ganando experiencia. Kyogre y Rayquaza llegarán en próximos tramos.',
      'Development preview: first segment of the Hoenn Boss Rush. Start at level 10 with nine upgrade choices; face a three-phase Groudon, then Regirock and Regice to keep earning experience. Kyogre and Rayquaza are planned for later segments.'],
-    ['Groudon anuncia grietas, pisotones, erupciones y cargas. Ruptura Continental deja una franja segura y una oportunidad para contraatacar. Esta prueba es individual y usa una sesión temporal sin modificar la cuenta.',
-     'Groudon telegraphs blades, stomps, eruptions and charges. Continental Rupture leaves a safe lane and a counterattack window. This solo preview uses a temporary session without modifying your account.']
+    ['Groudon usa Filo del Abismo, Terratemblor, Estallido, Doble Filo y Terremoto con patrones adaptados al Boss Rush. Terremoto deja una franja segura y una oportunidad para contraatacar. Esta prueba es individual y usa una sesión temporal sin modificar la cuenta.',
+     'Groudon uses Precipice Blades, Bulldoze, Eruption, Double-Edge and Earthquake with patterns adapted to Boss Rush. Earthquake leaves a safe lane and a counterattack window. This solo preview uses a temporary session without modifying your account.']
   ] },
   { d: '2026-10-17', title: ['Más mejoras para tu Pokémon', 'More upgrades for your Pokémon'], new: [
     ['Seis nuevas mejoras permanentes por Pokémon: Golpe Devastador (críticos hasta x2), Expansión (hasta +20% de tamaño), Persistencia (hasta +25% de duración), Drenaje, Último Aliento y Más Opciones.',

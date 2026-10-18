@@ -33,6 +33,8 @@ G.BossRushPreview = (() => {
     } else if (kind === 'recovery') {
       boss.anim.loop('Idle');
       if (data.kind === 'charge' || data.kind === 'rupture') G.Spawner.say('¡Groudon se recupera! ¡Ataca!', 2, true);
+    } else if (kind === 'recoil') {
+      boss.hurt(data, '#f5d1bd');
     } else if (kind === 'victory') {
       G.Spawner.say('¡Groudon derrotado!', 2, true);
     }
@@ -73,9 +75,10 @@ G.BossRushPreview = (() => {
     G.EnemyMgr.add(boss);
     encounter = def.major ? new G.Groudon.Encounter({ boss: relativeBoss, players: () => players,
       hit: (rp, dmg, type) => {
-        const pl = rp.source; pl.hurt(dmg, type, false, true);
+        const pl = rp.source, before = pl.hp; pl.hurt(dmg, type, false, true);
         // Extra grace between scripted impacts and lava, without disabling defence.
         if (!pl.dead) pl.invuln = Math.max(pl.invuln, 0.9);
+        return Math.max(0, before - pl.hp);
       }, signal }) : null;
     G.Sprites.preload([def.dex, p.dex], 8000);
     G.Spawner.say(def.major ? 'Groudon · El despertar' : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);

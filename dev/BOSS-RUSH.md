@@ -21,8 +21,8 @@ El jugador empieza directamente en nivel 10, elige nueve mejoras antes de combat
 - Estadísticas base de la especie, sin compras de la cuenta. Velocidad base de prueba: 130, para que se puedan esquivar los avisos caminando.
 - Victoria: experiencia equivalente al 220% del requisito del nivel actual, con el reparto normal de orbes; curación del 20% de vida máxima y tres segundos antes del siguiente enemigo. No hay monedas, tickets ni botín equipable.
 - Los menores conservan la IA de jefes existente, con HP/daño propios de la ruta: Regirock 3200/27 y Regice 4000/30. Sin hordas entre combates.
-- Groudon: 10000 PV provisionales. Fases al 70% y 35%; Filo del Abismo y Pisotón en fase 1, Erupción y Carga desde fase 2, patrones más seguidos y una Ruptura Continental desde fase 3.
-- Avisos de 1.25–1.4 segundos y dos segundos para Ruptura. Carga recupera tres segundos; Ruptura cuatro. La lava dura cinco segundos y desaparece antes de Ruptura. El refugio se coloca de modo que sea alcanzable.
+- Groudon: 10000 PV provisionales. Fases al 70% y 35%; Filo del Abismo y Terratemblor en fase 1, Estallido y Doble Filo desde fase 2, patrones más seguidos y Terremoto desde fase 3.
+- Avisos de 1.25–1.4 segundos y dos segundos para Terremoto. Doble Filo recupera tres segundos; Terremoto cuatro. La lava dura cinco segundos y desaparece antes de Terremoto. El refugio se coloca de modo que sea alcanzable.
 - Se conserva la defensa, tabla de tipos y estados de daño. Un impacto por ataque y jugador; gracia de 0.9 segundos tras los golpes del patrón.
 
 ## Aislamiento
@@ -41,6 +41,12 @@ python3 -m http.server 8765
 
 Abrir `/dev/` para la prueba. El generador nunca modifica `index.html`, `version.json` ni el bundle oficial.
 
-Las pruebas de integración ejecutan `game.js`, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con servicios de interfaz simulados. Comprueban preparación, pausas, daño, avance por los tres enemigos, XP/niveles, victoria, reintento y conservación de sesión/guardado. Las pruebas del patrón verifican avisos, rutas de escape, fases, daño único, lava y refugio de Ruptura.
+Las pruebas de integración ejecutan `game.js`, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con servicios de interfaz simulados. Comprueban preparación, pausas, daño, avance por los tres enemigos, XP/niveles, victoria, reintento y conservación de sesión/guardado. Las pruebas del patrón verifican avisos, rutas de escape, fases, daño único, lava y refugio de Terremoto.
 
 Pendiente: revisión en navegador y Android, balance mediante partidas reales, Kyogre, Rayquaza, selección variable de menores, cooperativo y sinergias. El entorno de trabajo no disponía de Chromium y su descarga no se pudo completar; las pruebas de motor no sustituyen esa revisión visual.
+
+## Movimientos oficiales
+
+Usar movimientos reales de Pokémon con nombres en español. Sus señales, áreas y secuencias se adaptan al Boss Rush. Doble Filo causa daño Normal y retroceso equivalente a un tercio del daño efectivo causado. Los patrones de arena no son ataques nuevos.
+
+Para Kyogre, el diseño propuesto se basará en Surf (oleadas), Hidrobomba (chorro anunciado), Rayo Hielo (haz con ralentización adaptada), Danza Lluvia (clima) y Pulso Primigenio (patrón culminante). Su implementación y balance siguen pendientes.

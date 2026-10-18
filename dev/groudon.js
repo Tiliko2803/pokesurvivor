@@ -3,8 +3,8 @@
  */
 G.Groudon = (() => {
   const ARENA = Object.freeze({ left: -300, right: 300, top: -150, bottom: 150 });
-  const NAMES = { blades: 'Filo del Abismo', stomp: 'Pisotón Sísmico', eruption: 'Erupción',
-    charge: 'Carga Continental', rupture: 'Ruptura Continental' };
+  const NAMES = { blades: 'Filo del Abismo', stomp: 'Terratemblor', eruption: 'Estallido',
+    charge: 'Doble Filo', rupture: 'Terremoto' };
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
   function segmentDistance(x, y, ax, ay, bx, by) {
     const dx = bx - ax, dy = by - ay;
@@ -60,7 +60,7 @@ G.Groudon = (() => {
         length = Math.max(0, length);
         a.shapes = [{ kind: 'line', ax: b.x, ay: b.y, bx: b.x + nx * length,
           by: b.y + ny * length, width: b.r * 2 + 10 }];
-        a.active = 0.65; a.recovery = 3; a.damage = 48;
+        a.active = 0.65; a.recovery = 3; a.damage = 48; a.type = 'normal';
       } else if (kind === 'rupture') {
         // Guaranteed reachable refuge centred on a living player. Clear old lava.
         const y = clamp(target.y, -70, 70), half = 52;
@@ -100,7 +100,10 @@ G.Groudon = (() => {
             const collision = a.kind === 'charge' ? Math.hypot(p.x - this.boss.x, p.y - this.boss.y) < p.r + this.boss.r
               : a.shapes.some(s => contains(s, p));
             if (collision && !a.hit.has(p)) {
-              a.hit.add(p); this.hit(p, a.damage, a.type); this.lastDamage = this.clock;
+              a.hit.add(p);
+              const dealt = this.hit(p, a.damage, a.type);
+              if (a.kind === 'charge' && Number.isFinite(dealt) && dealt > 0) this.signal('recoil', dealt / 3);
+              this.lastDamage = this.clock;
             }
           }
         }
