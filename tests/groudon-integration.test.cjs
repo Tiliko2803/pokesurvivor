@@ -3,7 +3,7 @@ const { fixture } = require('./helpers/boss-rush-fixture.cjs');
 function advanceTo(f,stage) {
   const {G}=f;
   while(G.BossRushPreview.stage<stage) {
-    G.BossRushPreview.boss.hurt(1e12);f.tick(201);
+    for(const b of G.BossRushPreview.bosses)b.hurt(1e12);f.tick(201);
     assert.equal(G.Game.state,'playing');
   }
 }
@@ -12,24 +12,24 @@ test('Boss Rush snapshots roster size and multiplies every boss HP without compo
     const f=fixture(),{G}=f;await G.DB.ready();
     const mates=Array.from({length:n-1},()=>({x:16,y:101,r:12,dead:false}));
     const born=[],add=G.EnemyMgr.add.bind(G.EnemyMgr);
-    G.EnemyMgr.add=b=>{born.push({hp:b.hp,maxHp:b.maxHp});return add(b);};
+    G.EnemyMgr.add=b=>{born.push({dex:b.dex,hp:b.hp,maxHp:b.maxHp});return add(b);};
     G.Game.everyone=()=>[G.Game.player,...mates];
     G.BossRushPreview.play();f.prepare();
     let b=G.BossRushPreview.boss;
     assert.equal(b.maxHp,G.BossRushRules.minorStats(0).hp*n);assert.equal(b.hp,b.maxHp);
-    assert.equal(G.BossRushPreview.encounter,null);
+    assert.equal(G.BossRushPreview.encounter.id,'regis');
     for(const p of mates)p.dead=true;
     G.Game.everyone=()=>[G.Game.player]; // Leaving/downed teammates do not shrink later bosses.
-    for(const stage of [1,2,3,4,5,6,7,8]){
-      b.hurt(99999999);f.tick(201);b=G.BossRushPreview.boss;
+    for(const stage of [1,2,3,4,5,6,7]){
+      for(const e of G.BossRushPreview.bosses)e.hurt(99999999);f.tick(201);b=G.BossRushPreview.boss;
       assert.equal(G.BossRushPreview.stage,stage);
-      if([2,5,8].includes(stage)){
-        const [dex,hp]=stage===2?[383,400000]:stage===5?[382,2500000]:[384,5000000];
-        assert.equal(b.dex,dex);assert.equal(b.maxHp,hp*n);assert.equal(born[stage].hp,b.maxHp);
+      if([1,4,7].includes(stage)){
+        const [dex,hp]=stage===1?[383,400000]:stage===4?[382,2500000]:[384,5000000];
+        assert.equal(b.dex,dex);assert.equal(b.maxHp,hp*n);assert.equal(born.find(x=>x.dex===b.dex).hp,b.maxHp);
         assert.equal(G.BossRushPreview.encounter.players().length,n);continue;
       }
       const base=G.BossRushRules.minorStats(stage);
-      assert.equal(b.maxHp,base.hp*n);assert.equal(born[stage].hp,b.maxHp);
+      assert.equal(b.maxHp,base.hp*n);assert.equal(born.find(x=>x.dex===b.dex).hp,b.maxHp);
       assert.equal(b.dmg,base.damage);assert.equal(b.rushAttackRate,base.attackRate);
     }
     G.Game.quit();f.back();G.BossRushPreview.play();
@@ -39,7 +39,7 @@ test('Boss Rush snapshots roster size and multiplies every boss HP without compo
 
 test('Kyogre uses native damage and slow, freezes in pause, clears rain and slow on exit',async()=>{
   const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
-  advanceTo(f,5);
+  advanceTo(f,4);
   const e=G.BossRushPreview.encounter,p=G.Game.player,b=G.BossRushPreview.boss;
   assert.equal(e.id,'kyogre');assert.ok(p.level>=19);
   e.attacks=[];e.cooldown=99;p.invuln=0;p.x=b.x;p.y=b.y+85;
@@ -54,7 +54,7 @@ test('Kyogre uses native damage and slow, freezes in pause, clears rain and slow
 
 test('Final Rayquaza uses native damage, visible ascent, pause and safe rotation without changing the account',async()=>{
   const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
-  advanceTo(f,8);
+  advanceTo(f,7);
   const e=G.BossRushPreview.encounter,b=G.BossRushPreview.boss,p=G.Game.player;
   assert.equal(e.id,'rayquaza');assert.equal(p.level,28);assert.equal(b.types.join(','),'dragon,flying');
   e.attacks=[];e.begin('ascent');f.tick(20);assert.ok(b.jumpLift>0);
@@ -71,7 +71,7 @@ test('Engine integration: temporary session, real moves hit Groudon, no ranking 
   const f=fixture(),{G}=f; await G.DB.ready(); assert.equal(G.DB.guest,true);
   G.BossRushPreview.play(); assert.equal(G.Game.state,'paused'); assert.equal(G.Game.player.level,8);
   assert.equal(f.prepare(),7); assert.equal(G.Game.state,'playing');
-  advanceTo(f,2);
+  advanceTo(f,1);
   assert.equal(G.BossRushPreview.boss.dex,383); assert.ok(G.Game.player.maxHp>0);
   const hp=G.BossRushPreview.boss.hp; f.tick(300);
   assert.ok(G.BossRushPreview.boss.hp<hp); assert.ok(G.Game.player.dmgDealt>0);
@@ -81,28 +81,31 @@ test('Engine integration: temporary session, real moves hit Groudon, no ranking 
   assert.equal(G.Camera.x,16); assert.equal(G.Camera.y,16-(G.Camera.rushOffsetY||0));
 });
 test('Engine integration: pause stops combat; abandon and retry reset the fight', async () => {
-  const f=fixture(),{G}=f; await G.DB.ready(); G.BossRushPreview.play(); f.prepare();advanceTo(f,2);f.tick(180);
+  const f=fixture(),{G}=f; await G.DB.ready(); G.BossRushPreview.play(); f.prepare();advanceTo(f,1);f.tick(180);
   G.Game.togglePause(); const time=G.BossRushPreview.encounter.clock; f.tick(100);
   assert.equal(G.BossRushPreview.encounter.clock,time);
   G.Game.quit(); assert.equal(f.result().coins,0); assert.equal(f.result().record,false);
   f.back(); assert.equal(G.Game.state,'ui'); assert.equal(G.BossRushPreview.running,false);
-  G.BossRushPreview.play(); f.prepare(); assert.equal(G.BossRushPreview.encounter,null);
+  G.BossRushPreview.play(); f.prepare(); assert.equal(G.BossRushPreview.encounter.id,'regis');
   assert.equal(G.BossRushPreview.stage,0);assert.equal(G.Game.player.level,8);
   assert.equal(G.BossRushPreview.boss.hp,G.BossRushRules.minorStats(0).hp); assert.equal(G.Game.player.hp,G.Game.player.maxHp);
   assert.deepEqual(f.storage,f.before);
 });
-test('Nine encounters start with two unique minors, retain fair XP, major phases, three Bonds and guest isolation',async()=>{
+test('Eight encounters start with three simultaneous Regis, retain fair XP, major phases, three Bonds and guest isolation',async()=>{
   const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
   const seen=new Set();let previous;
-  const levels=[8,9,10,13,16,19,22,25,28];
-  for(let stage=0;stage<9;stage++){
+  const levels=[8,10,13,16,19,22,25,28];
+  for(let stage=0;stage<8;stage++){
     const b=G.BossRushPreview.boss,e=G.BossRushPreview.encounter,p=G.Game.player;
     assert.equal(G.BossRushPreview.stage,stage);assert.equal(p.level,levels[stage]);
-    assert.equal(G.EnemyMgr.all().filter(b=>!b.dead).length,1);
-    if([2,5,8].includes(stage)){
-      assert.equal(b.dex,stage===2?383:stage===5?382:384);
+    assert.equal(G.EnemyMgr.all().filter(b=>!b.dead).length,stage===0?3:1);
+    if([1,4,7].includes(stage)){
+      assert.equal(b.dex,stage===1?383:stage===4?382:384);
       assert.equal(e.phase,1);b.hp=b.maxHp*.7;f.tick(1);assert.equal(e.phase,2);
       b.hp=b.maxHp*.35;f.tick(1);assert.equal(e.phase,3);
+    }else if(stage===0){
+      assert.equal(e.id,'regis');assert.equal(G.BossRushPreview.bosses.length,3);
+      for(const b of G.BossRushPreview.bosses){assert.ok(!seen.has(b.dex));seen.add(b.dex);}
     }else{
       assert.equal(e,null);assert.ok(G.BossRushRules.eligibleMinor(G.DEX_BY[b.dex],G.SPRITE_META));
       assert.ok(!seen.has(b.dex));seen.add(b.dex);
@@ -110,12 +113,12 @@ test('Nine encounters start with two unique minors, retain fair XP, major phases
       if(previous)assert.ok(b.maxHp>previous.hp&&b.dmg>previous.damage&&b.rushAttackRate>previous.rate);
       previous={hp:b.maxHp,damage:b.dmg,rate:b.rushAttackRate};
     }
-    assert.equal(G.World.arena.type,stage===8?'flying':stage>=5?'water':'fire');
+    assert.equal(G.World.arena.type,stage===7?'flying':stage>=4?'water':'fire');
     assert.equal(G.World.arena.th.pools,0);assert.equal(G.World.arena.th.pillars,0);
-    b.hurt(1e12);b.die();assert.equal(p.bonds,[2,5,8].includes(stage)?1:0);
+    for(const b of G.BossRushPreview.bosses){b.hurt(1e12);b.die();}assert.equal(p.bonds,[1,4,7].includes(stage)?1:0);
     f.tick(201);
   }
-  assert.equal(seen.size,6);assert.equal(G.Game.player.level,31);
+  assert.equal(seen.size,7);assert.equal(G.Game.player.level,31);
   assert.equal(G.Game.state,'over');assert.equal(f.nodes.get('over-title').textContent,'¡Trío de Hoenn superado!');
   assert.equal(f.result().coins,0);assert.equal(f.rankings(),0);assert.deepEqual(f.storage,f.before);
 });
@@ -229,7 +232,7 @@ test('Rush refreshes purchased coverage on return, preserves valid attacks and s
 
 test('Rush arena fills every viewport edge, contains actors, and restores normal camera after exit',async()=>{
   const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
-  advanceTo(f,2);
+  advanceTo(f,1);
   const r=G.Groudon.ARENA;
   for(const [w,h] of [[1280,560],[360,720],[960,540]]) {
     G.Camera.resize(w,h,2);
@@ -251,7 +254,7 @@ test('Rush arena fills every viewport edge, contains actors, and restores normal
 
 test('Rotation retires old warnings and lava before moving actors into the new bounds',async()=>{
   const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
-  advanceTo(f,2);
+  advanceTo(f,1);
   G.Camera.resize(360,720,2);
   const e=G.BossRushPreview.encounter,p=G.Game.player,b=G.BossRushPreview.boss;
   p.y=800;b.y=-700;e.beginCombo(['blades','eruption']);
@@ -268,31 +271,31 @@ test('Rotation retires old warnings and lava before moving actors into the new b
 
 test('Only the major grants one Bond; selecting the native fusion pauses the intermission',async()=>{
   const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
-  advanceTo(f,2);
+  advanceTo(f,1);
   const p=G.Game.player,b=G.BossRushPreview.boss;
   assert.equal(p.bonds,0);b.hurt(999999);b.die();
   assert.equal(p.bonds,1,'No duplicate reward from repeated die calls');
   f.tick(1,{autoBond:false});assert.equal(G.Game.state,'choice');
   assert.equal(f.bond().opt.mode,'pair');
-  f.tick(240,{autoBond:false});assert.equal(G.BossRushPreview.stage,2);
+  f.tick(240,{autoBond:false});assert.equal(G.BossRushPreview.stage,1);
   assert.equal(p.bonds,1);assert.equal(G.UI.isOpen('scr-bond'),true);
   f.pickBond();assert.equal(G.Game.state,'playing');assert.equal(p.bonds,0);
   assert.equal(p.activeGroup().length,2);
   const pair=p.activeGroup().map(m=>m.id),fired=new Set(),cast=p.cast.bind(p);
   p.cast=m=>{fired.add(m.id);cast(m);};
-  f.tick(200);assert.equal(G.BossRushPreview.stage,3);
+  f.tick(200);assert.equal(G.BossRushPreview.stage,2);
   for(const id of pair) assert.ok(fired.has(id),'The fused group casts '+id);
-  G.BossRushPreview.boss.hurt(1e12);f.tick(201);
-  assert.equal(G.BossRushPreview.stage,4);assert.equal(p.bonds,0);assert.equal(f.bond(),null);
-  G.BossRushPreview.boss.hurt(1e12);f.tick(201);
-  assert.equal(G.BossRushPreview.stage,5);assert.equal(p.bonds,0);
+  for(const b of G.BossRushPreview.bosses)b.hurt(1e12);f.tick(201);
+  assert.equal(G.BossRushPreview.stage,3);assert.equal(p.bonds,0);assert.equal(f.bond(),null);
+  for(const b of G.BossRushPreview.bosses)b.hurt(1e12);f.tick(201);
+  assert.equal(G.BossRushPreview.stage,4);assert.equal(p.bonds,0);
   const kyogre=G.BossRushPreview.boss;kyogre.hurt(99999999);kyogre.die();
   assert.equal(p.bonds,1,'Kyogre grants one Bond too');
   f.tick(240,{autoBond:false});
-  if(G.Game.state==='choice'){assert.equal(G.BossRushPreview.stage,5);f.pickBond();}
-  f.tick(201);assert.equal(G.BossRushPreview.stage,6);
+  if(G.Game.state==='choice'){assert.equal(G.BossRushPreview.stage,4);f.pickBond();}
+  f.tick(201);assert.equal(G.BossRushPreview.stage,5);
   for(let i=0;i<2;i++){G.BossRushPreview.boss.hurt(99999999);f.tick(201);}
-  assert.equal(G.BossRushPreview.stage,8);
+  assert.equal(G.BossRushPreview.stage,7);
   const ray=G.BossRushPreview.boss,before=p.bonds;ray.hurt(99999999);ray.die();
   assert.equal(p.bonds,before+1,'Rayquaza grants exactly one Bond');
   f.tick(201);

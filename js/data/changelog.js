@@ -6,6 +6,15 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Los Tres Guardianes abren Hoenn', 'The Three Guardians open Hoenn'], new: [
+    ['Regirock, Regice y Registeel luchan juntos antes de Groudon en la prueba de Hoenn Normal. Cada uno tiene 44000 PV base por jugador y su barra independiente dentro del ancho habitual. Al caer, la barra tiembla, se deforma y desaparece; las restantes se recolocan.',
+     'Regirock, Regice and Registeel fight together before Groudon in the Normal Hoenn preview. Each has 44,000 base HP per player and an independent bar within the usual total width. Defeated bars shake, twist and fade; the remaining bars reflow.'],
+    ['Regirock crea rocas temporales con Tumba Rocas y Avalancha; Regice ralentiza con Rayo Hielo y Viento Hielo; Registeel usa Foco Resplandor y Garra Metal. Cada movimiento tiene enfriamiento y desfase propios, con como máximo dos ataques simultáneos y salidas comprobadas para esquivar.',
+     'Regirock creates temporary rocks with Rock Tomb and Rock Slide; Regice slows with Ice Beam and Icy Wind; Registeel uses Flash Cannon and Metal Claw. Each move has its own cooldown and offset, with at most two concurrent attacks and verified escape routes.']
+  ], chg: [
+    ['El grupo sustituye los dos menores iniciales y entrega experiencia de dos niveles base y una curación del 20% al vencer a los tres. No hay recompensa parcial ni Vínculo de los Regis; los mayores conservan sus Vínculos. Los cuatro menores posteriores no repiten a los guardianes.',
+     'The group replaces the two opening minors and grants two base levels of XP and one 20% heal after all three fall. Regis grant no partial reward or Bond; majors retain their Bonds. The four later minors do not repeat the guardians.']
+  ] },
   { d: '2026-10-18', title: ['Hoenn también en los menores', 'Hoenn minor legends too'], chg: [
     ['El Boss Rush de Hoenn sortea seis menores distintos entre Regirock, Regice, Registeel, Latias, Latios, Jirachi y Deoxys. Los dos singulares se incluyen en este grupo de combate; queda uno fuera al azar en cada intento. Se conserva la dificultad por tramo de la prueba.',
      'The Hoenn Boss Rush draws six distinct minors from Regirock, Regice, Registeel, Latias, Latios, Jirachi and Deoxys. The two Mythical Pokémon are included in this encounter group; one is randomly left out each attempt. Preview difficulty by route slot is preserved.']

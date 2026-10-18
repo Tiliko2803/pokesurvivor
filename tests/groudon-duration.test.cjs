@@ -1,7 +1,7 @@
 const { test } = require('node:test'), assert = require('node:assert/strict');
 const { simulate } = require('../tools/benchmark-groudon.cjs');
 
-test('Groudon reference builds reach level 10 through two opening minors and nine legal cards',async()=>{
+test('Groudon reference builds reach level 10 through the opening Regi trio and nine legal cards',async()=>{
   for (const build of ['melee','dance']) for (const seed of [7,123,456]) {
     const result=await simulate({build,seed,uptime:0.85});
     assert.equal(result.mega,'blazikenite'); assert.equal(result.maxGold,true);

@@ -35,9 +35,9 @@ test('Sorteo sin repeticiones, sólo especies elegibles con sprites',()=>{
   }
   assert.throws(()=>R.selectMinors([],{},2));
 });
-test('Minor budgets grow through six slots while damage and cadence remain bounded; major slots cannot use them',()=>{
+test('The trio has 44k HP per Regi and later minor budgets retain their previous progression',()=>{
   const base=R.minorStats(0);let prev=base;
-  for(const stage of [1,3,4,6,7]){
+  for(const stage of [2,3,5,6]){
     const cur=R.minorStats(stage);
     assert.ok(cur.hp>prev.hp && cur.damage>prev.damage);
     assert.ok(cur.hp/base.hp>cur.damage/base.damage);
@@ -45,15 +45,15 @@ test('Minor budgets grow through six slots while damage and cadence remain bound
     assert.ok(R.extraCooldownDecay(cur.attackRate,true)+1.25<=1.5);
     prev=cur;
   }
-  assert.equal(base.hp,240000);assert.equal(base.damage,30);assert.equal(base.attackRate,1.12);
+  assert.equal(base.hp,44000);assert.equal(base.damage,21);assert.equal(base.attackRate,1.12);
   assert.equal(prev.hp,3600000);assert.ok(prev.damage<50);
-  for(const stage of [-1,2,5,8,9,1.5,NaN])assert.throws(()=>R.minorStats(stage));
+  for(const stage of [-1,1,4,7,8,9,1.5,NaN])assert.throws(()=>R.minorStats(stage));
 });
-test('Opening wins grant one base level each, then native three-level rewards reach Groudon 10, Kyogre 19 and Rayquaza 28',()=>{
+test('The trio rewards two base levels once; later rewards still reach Groudon 10, Kyogre 19 and Rayquaza 28',()=>{
   let level=8,xp=0;
-  const levels=[8,9,10,13,16,19,22,25,28];
-  for(let stage=0;stage<9;stage++){
-    assert.equal(level,levels[stage]);assert.equal(R.rewardLevels(stage),stage<2?1:3);
+  const levels=[8,10,13,16,19,22,25,28];
+  for(let stage=0;stage<8;stage++){
+    assert.equal(level,levels[stage]);assert.equal(R.rewardLevels(stage),stage===0?2:3);
     xp+=R.rewardXp(G.Player.xpFor,level,R.rewardLevels(stage));
     while(xp>=G.Player.xpFor(level)){xp-=G.Player.xpFor(level);level++;}
   }

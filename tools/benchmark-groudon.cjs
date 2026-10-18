@@ -35,7 +35,7 @@ async function simulate({ build = 'melee', uptime = 0.85, seed = 123 } = {}) {
   };
   G.RunUI.showLevelUp = (level,cards,pick) => pick(cards[0]);
   f.nodes.get('rush-start').onclick();
-  for(let i=0;i<G.BossRushRules.MAJOR_STAGES.groudon;i++){G.BossRushPreview.boss.hurt(1e12);f.tick(201);}
+  for(let i=0;i<G.BossRushRules.MAJOR_STAGES.groudon;i++){for(const b of G.BossRushPreview.bosses)b.hurt(1e12);f.tick(201);}
   const p = G.Game.player, boss = G.BossRushPreview.boss, encounter = G.BossRushPreview.encounter;
   const levelAtStart = p.level, choicesAtStart = choices;
   p.hurt=()=>{};

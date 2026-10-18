@@ -52,8 +52,6 @@ def build(destination):
                 raise ValueError('Sprite loader has changed: offline export needs updating')
             source = source.replace(old, new)
         if path == 'dev/boss-rush-preview.js':
-            source = source.replace('G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META, 6)',
-                                    'G.BossRushRules.selectMinors(G.DEX.filter(mon => ' + json.dumps(MINORS) + '.includes(mon.dex)), G.SPRITE_META, 6)')
             source = source.replace('Prueba individual de la ruta de Hoenn.',
                                     'Prueba local sin internet. Menores exclusivos de Hoenn.')
         if path == 'dev/rayquaza-fx.js':
