@@ -2,7 +2,7 @@
  * Attack geometry is locked when telegraphed; only Surf's announced wave front travels. */
 G.Kyogre = (() => {
   const {ARENA,contains}=G.Groudon;
-  const BASE_HP=3000000; // Calibrated against fused Onda Certera + Danza de Mil Espadas, max-gold Mega Blaziken.
+  const BASE_HP=2500000; // Owner-selected balance after testing evolved Onda Certera + Danza de Mil Espadas.
   const WARN=[0,1.55,1.2,.9], MAX_WARN=[0,2.1,1.65,1.3];
   const NAMES={surf:'Surf',hydro:'Hidrobomba',ice:'Rayo Hielo',rain:'Danza Lluvia',pulse:'Pulso Primigenio'};
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));

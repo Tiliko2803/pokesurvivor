@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Ajuste de vida de Kyogre', 'Kyogre health adjustment'], chg: [
+    ['Kyogre queda en 2.5 millones de PV base. Con 2, 3 y 4 jugadores tendrá 5, 7.5 y 10 millones de PV, respectivamente.',
+     'Kyogre now has 2.5 million base HP. With 2, 3 and 4 players it will have 5, 7.5 and 10 million HP, respectively.']
+  ] },
   { d: '2026-10-17', title: ['Kyogre resiste y sus haces se unen', 'Kyogre withstands evolved builds with continuous beams'], chg: [
     ['Kyogre pasa de 600 mil a 3 millones de PV base, multiplicados por jugadores. La referencia con Mega Blaziken, Onda Certera y Danza de Mil Espadas evolucionadas, Vínculo y oro máximo apunta a 3–5 minutos reservando tiempo para esquivar.',
      'Kyogre goes from 600,000 to 3 million base HP, multiplied by players. The reference with max-gold Mega Blaziken, evolved Focus Blast and Thousand Swords Dance, and a Bond targets 3–5 minutes while allowing time to dodge.']
