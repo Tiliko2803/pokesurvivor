@@ -58,6 +58,7 @@ function fixture(session = 'real-account') {
   G.RunUI.showLevelUp = (lv,list,cb) => { cards=list; pick=cb; };
   G.RunUI.showBond = (opt,cb) => { bond={opt,cb}; G.UI.show('scr-bond'); };
   G.Flow.afterRun = () => G.Game.toUI();
+  G.CHANGELOG=[];load('dev/tyranitar.js');
   for(const file of ['dev/boss-rush-rules.js','dev/groudon.js','dev/kyogre.js','dev/rayquaza.js','dev/boss-rush-sprites.js','dev/groudon-fx.js','dev/kyogre-fx.js','dev/rayquaza-fx.js','dev/boss-rush-preview.js'])load(file);
   const choose = () => { const card=cards.find(c=>c.key==='up:water-gun') || cards.find(c=>c.key==='stat:atk') || cards.find(c=>c.key!=='stat:xp') || cards[0]; const cb=pick; cards=null; pick=null; cb(card); };
   const prepare = () => { let n=0; while(G.BossRushPreview.preparing) { choose(); n++; assert.ok(n<=G.BossRushPreview.START_LEVEL-1); } return n; };

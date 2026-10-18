@@ -8,7 +8,7 @@ G.BossRushPreview = (() => {
   let route = [];
   let returnFromUpgrades = false;
   let chosen = ['water-gun', 'bubble'], ox = 0, oy = 0;
-  const roster = [260, 257, 254];
+  const roster = [260, 257, 254, 248];
   const normalPause = G.Game.togglePause;
   const originals = {};
   const wrap = (obj, name, fn) => { const old = obj[name]; originals[name] = old; obj[name] = function(...args) { return fn.call(this, old, ...args); }; };
@@ -223,7 +223,7 @@ G.BossRushPreview = (() => {
       <button class="btn small" id="rush-max">Mejorar al máximo</button>
       <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
       <p class="sub" id="rush-status" role="status"></p>
-      <p class="sub">Mega Swampert y Mega Blaziken están desbloqueados y equipados al elegirlos. Puedes cambiar sus piedras desde el menú.<br>Para probar Coberturas, abre Mejoras de oro y elige los movimientos compatibles; también aparecerán en los dos selectores de ataques.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual de la ruta de Hoenn. Tu cuenta y tu progreso no se modifican.</p>
+      <p class="sub">Mega Swampert, Mega Blaziken y Mega Tyranitar están desbloqueados y equipados al elegirlos. Puedes cambiar sus piedras desde el menú.<br>Para probar Coberturas, abre Mejoras de oro y elige los movimientos compatibles; también aparecerán en los dos selectores de ataques.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual de la ruta de Hoenn. Tu cuenta y tu progreso no se modifican.</p>
       <div class="rush-actions"><button class="btn gold" id="rush-start">Comenzar Boss Rush</button>
       <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
       <p id="rush-error" role="status"></p></div>`;
@@ -258,7 +258,7 @@ G.BossRushPreview = (() => {
     const dex = Number(select.value), mon = G.DEX_BY[dex];
     const pool = G.Coverage ? G.Coverage.pool(mon, G.DB.save) : G.Moves.poolFor(mon);
     const mega = G.Mega.equipped(G.DB.save,dex) && G.Mega.definition(dex);
-    const defaults = dex === 260 ? [mega ? mega.start : 'water-gun', 'bubble'] : dex === 257 ? ['karate-chop', 'ember'] : ['vine-whip', 'razor-leaf'];
+    const defaults = dex === 260 ? [mega ? mega.start : 'water-gun', 'bubble'] : dex === 257 ? ['karate-chop', 'ember'] : dex === 248 ? ['rock-throw', 'bite'] : ['vine-whip', 'razor-leaf'];
     [1,2].forEach((n,i) => {
       const el = document.getElementById('rush-move-' + n), previous = el.value;
       el.replaceChildren();
@@ -307,7 +307,7 @@ G.BossRushPreview = (() => {
       try { if (session === null) localStorage.removeItem('ps.session'); else localStorage.setItem('ps.session', session); } catch (_) {}
       const s = G.DB.save; s.partner = s.starter = 260; s.coins = 100000; s.pupg = {}; s.megaEquipped = {};
       for (const dex of roster) s.owned[dex] = { at: Date.now(), from: 'boss-rush-preview' };
-      for (const dex of [260,257]) {
+      for (const dex of [260,257,248]) {
         s.megaStones[G.Mega.definition(dex).id] = Date.now(); G.Mega.equip(s,dex,true);
       }
       return true;

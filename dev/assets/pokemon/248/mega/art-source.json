@@ -1,0 +1,8 @@
+{
+  "generator": "Built-in image generator",
+  "asset": "Mega Tyranitar / PokéSurvivor",
+  "sourceImage": "exec-0106e4d3-9c0c-4506-bc8e-4b55bcf1de6b.png",
+  "prompt": "Mega Tyranitar official form, crisp pixel art matching Pokemon Mystery Dungeon Explorers of Sky Nintendo DS. Transparent eight-column by eight-row sprite sheet,64 complete full-body poses. Olive green armor, red triangular chest markings, large jagged spikes and thick spiked tail. Rows: south, southwest, west, northwest, north, northeast, east, southeast. Columns: idle neutral, idle breathing, walk left foot forward, walk right foot forward, claw windup, claw strike, ranged charge arms raised, ranged roar mouth open. Keep anatomy and scale consistent; genuinely different body poses and back views. No text, labels, grid lines, background or shadow. Generous transparent gutters and complete spike tips and tail ends in all frames.",
+  "refinement": "Keep the design, palette, direction and actions of every cell. Add transparent padding around all64 poses and keep all spike tips and tail ends complete. Use visible square pixel clusters, dark contours and limited shading.",
+  "packing": "tools/prepare_mega_tyranitar.py; uniform70% nearest-neighbor rescale, ground-contact anchors, binary alpha cleanup, lossless WebP; no generated poses replaced with procedural art."
+}
