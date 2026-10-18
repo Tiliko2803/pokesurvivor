@@ -133,10 +133,10 @@ G.GroudonFX = (() => {
       }
       c.restore();
     }
-    const a=e.attack;
-    if(!a) { c.restore(); return; }
+    for (const a of e.attacks || (e.attack ? [e.attack] : [])) {
     const elapsed=a.t-a.warn;
-    if(elapsed>a.active+.65) { c.restore(); return; }
+    if(elapsed>a.active+.65) continue;
+    c.save();
     const progress=clamp(a.t/a.warn), active=elapsed>=0?clamp(elapsed/.08):0;
     const fade=elapsed<a.active?1:clamp(1-(elapsed-a.active)/.65);
     if(a.kind==='blades') blades(c,a,progress,active,fade,density);
@@ -144,6 +144,8 @@ G.GroudonFX = (() => {
     else if(a.kind==='eruption') eruption(c,a,progress,active,fade,density);
     else if(a.kind==='charge') charge(c,a,progress,active,fade,boss,calm);
     else if(a.kind==='rupture') rupture(c,a,progress,active,fade,density);
+    c.restore();
+    }
     c.restore();
   }
   return { draw, palette };

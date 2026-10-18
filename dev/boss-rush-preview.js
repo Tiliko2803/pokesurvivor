@@ -23,7 +23,7 @@ G.BossRushPreview = (() => {
     if (kind === 'attack') {
       boss.anim.play('Charge');
       const p = G.Game.player; boss.anim.dir = G.Sprites.dirFromAngle(Math.atan2(p.y - boss.y, p.x - boss.x));
-      G.Spawner.say(data.name + (data.kind === 'rupture' ? ' · ¡Busca la franja segura!' : ''), data.warn, true);
+      G.Spawner.say((data.comboName || data.name) + (data.kind === 'rupture' ? ' · ¡Busca la franja segura!' : ''), data.warn, true);
     } else if (kind === 'phase') {
       G.Audio.sfx('boss'); G.Spawner.say(data === 2 ? '¡Tierra abrasadora!' : '¡Furia continental!', 2, true);
     } else if (kind === 'impact') {
@@ -39,8 +39,10 @@ G.BossRushPreview = (() => {
         G.FX.burst(ox+x,oy+y,color,count,140);
       }
     } else if (kind === 'recovery') {
-      boss.anim.loop('Idle');
-      if (data.kind === 'charge' || data.kind === 'rupture') G.Spawner.say('¡Groudon se recupera! ¡Ataca!', 2, true);
+      if (encounter?.recovering) {
+        boss.anim.loop('Idle');
+        if (data.kind === 'charge' || data.kind === 'rupture') G.Spawner.say('¡Groudon se recupera! ¡Ataca!', 2, true);
+      }
     } else if (kind === 'recoil') {
       boss.hurt(data, '#f5d1bd');
     } else if (kind === 'victory') {
@@ -145,8 +147,8 @@ G.BossRushPreview = (() => {
     for (const h of encounter?.hazards || []) {
       paintShape(ctx, h, encounter.clock < h.start ? '#a9532844' : '#e45a1faa', '#ffb34f');
     }
-    const a = encounter?.attack;
-    if (a && !encounter.recovering) {
+    for (const a of encounter?.attacks || []) {
+      if (a.t >= a.warn + a.active) continue;
       const warning = a.t < a.warn;
       ctx.setLineDash(warning ? [7, 5] : []);
       const palette = G.GroudonFX.palette(a.kind);

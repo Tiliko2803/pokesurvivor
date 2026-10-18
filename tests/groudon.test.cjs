@@ -61,14 +61,14 @@ test('Ruptura limpia lava y ofrece refugio al borde de la arena', () => {
     assert.ok(Math.abs(targetY - p.y) / 130 < 1.8);
     p.y = targetY; tick(2.4); assert.equal(hits.length, 0);
     assert.ok(!a.shapes.some(s => contains(s, p))); assert.equal(e.recovering, true);
-    tick(2.7); assert.equal(e.attack.kind, 'rupture'); tick(0.3); assert.equal(e.attack, null);
+    tick(2.2); assert.equal(e.attack.kind, 'rupture'); tick(0.3); assert.equal(e.attack, null);
   }
 });
-test('Carga recorre su corredor, no daña por delante y da dos segundos de recuperación', () => {
+test('Carga recorre su corredor, no daña por delante y recupera 1.35 segundos', () => {
   const { e, p, boss, hits, tick } = fixture(); p.y = 110; e.begin('charge');
   const a = e.attack, y = boss.y; tick(a.warn - 0.02); assert.equal(boss.y, y); assert.equal(hits.length, 0);
   tick(0.7); assert.equal(e.recovering, true); assert.equal(hits.length, 1);
-  assert.ok(boss.y > y); assert.equal(a.recovery, 2);
+  assert.ok(boss.y > y); assert.equal(a.recovery, 1.35);
 });
 test('Cuatro jugadores: un impacto para cada uno, máximo cuatro charcos', () => {
   const { e, p, ps, hits, tick } = fixture();

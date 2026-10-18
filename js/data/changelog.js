@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Groudon combina sus ataques', 'Groudon combines its attacks'], chg: [
+    ['Groudon ataca más seguido: reduce sus esperas y recuperaciones. En la segunda fase combina dos movimientos simultáneos y en la tercera hasta tres, con todos sus avisos y efectos visibles. Terremoto conserva su franja segura y se lanza solo.',
+     'Groudon attacks more often with shorter waits and recoveries. Phase two combines two simultaneous moves and phase three up to three, showing every telegraph and effect. Earthquake keeps its safe lane and is cast alone.'],
+    ['Las combinaciones comprueban que exista una salida alcanzable a pie. Sus avisos se amplían si hace falta y los golpes coincidentes comparten una breve protección para evitar daño triple instantáneo.',
+     'Combinations check for a reachable walking escape. Warnings lengthen when needed, and overlapping impacts share a brief damage grace period to avoid instant triple damage.']
+  ] },
   { d: '2026-10-17', title: ['Mejoras de prueba en un clic', 'One-click playtest upgrades'], new: [
     ['En la preparación del Boss Rush, Mejorar al máximo completa todas las mejoras de oro del Pokémon seleccionado sin gastar monedas de prueba. El botón confirma cuándo están listas.',
      'In Boss Rush preparation, Max Upgrades completes all gold upgrades for the selected Pokémon without spending playtest coins. The button confirms when they are ready.']

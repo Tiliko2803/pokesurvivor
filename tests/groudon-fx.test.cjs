@@ -15,11 +15,12 @@ test('All five move effects render at warning, impact and recovery without alter
   const ctx=vm.createContext({G:{}});
   for(const file of ['dev/groudon.js','dev/groudon-fx.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
   vm.runInContext('Math.random=()=>{throw new Error("Visual renderer must not consume combat randomness")}',ctx);
-  for(const kind of ['blades','stomp','eruption','charge','rupture']) for(const calm of [true,false]) for(const state of ['warning','impact','recovery']) {
+  for(const kinds of [['blades'],['stomp'],['eruption'],['charge'],['rupture'],['blades','eruption'],['charge','eruption','blades']]) for(const calm of [true,false]) for(const state of ['warning','impact','recovery']) {
     const boss={x:0,y:-65,r:35,hp:400000,maxHp:400000,dead:false},p={x:10,y:70,r:24};
     const encounter=new ctx.G.Groudon.Encounter({boss,players:()=>[p],hit:()=>assert.fail('Rendering caused damage')});
-    encounter.begin(kind);encounter.clock=12;
-    const a=encounter.attack;a.t=state==='warning'?a.warn*.6:state==='impact'?a.warn+.15:a.warn+a.active+.3;
+    encounter.beginCombo(kinds);encounter.clock=12;
+    assert.equal(encounter.attacks.length,kinds.length);
+    for(const a of encounter.attacks) a.t=state==='warning'?a.warn*.6:state==='impact'?a.warn+.15:a.warn+a.active+.3;
     const before=JSON.stringify({encounter,boss,p}),{context,calls}=recordingContext();
     ctx.G.GroudonFX.draw(context,encounter,boss,{quality:calm?0:2,calm});
     const first=JSON.stringify(calls);calls.length=0;
