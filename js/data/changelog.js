@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Mega Swampert y Coberturas en pruebas', 'Mega Swampert and Coverage in the preview'], chg: [
+    ['La prueba de Hoenn incluye la Swampertita desbloqueada y equipada, junto a Mega Blaziken. Mega Swampert puede empezar el Boss Rush con Terratemblor Nv. 2; ambas piedras siguen siendo opcionales.',
+     'The Hoenn preview includes Swampertite unlocked and equipped alongside Mega Blaziken. Mega Swampert can start Boss Rush with level-two Bulldoze; both stones remain optional.']
+  ], fix: [
+    ['Los selectores de ataques del Boss Rush se actualizan al volver de Mejoras para incluir las Coberturas elegidas en la tienda del Live y conservar las selecciones que sigan disponibles. Sólo afecta a la sesión temporal de pruebas.',
+     'Boss Rush move selectors refresh on returning from Upgrades to include Coverage choices from the Live shop and retain selections that remain available. This only affects the temporary preview session.']
+  ] },
   { d: '2026-10-18', title: ['Nieve Polvo evoluciona a Ventisca', 'Powder Snow evolves into Blizzard'], chg: [
     ['Nieve Polvo Nv. 5 evoluciona con Carrera a Ventisca: ×1,8 daño, +50% de radio y ralentización del 65% en un área completa alrededor del Pokémon, con copos en pixel art.',
      'Level 5 Powder Snow evolves with Sprint into Blizzard: ×1.8 damage, +50% radius and 65% slowing in a full area around the Pokémon, with pixel-art snowflakes.'],

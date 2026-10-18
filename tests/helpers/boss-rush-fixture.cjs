@@ -10,7 +10,7 @@ function fixture(session = 'real-account') {
       const classes = new Set(['hidden']);
       nodes.set(id, { classList: { add: x => classes.add(x), remove: x => classes.delete(x), contains: x => classes.has(x), toggle: noop },
         remove: noop, textContent: '', innerHTML: '', value: '',
-        add(option) { if (!this.value) this.value = option.value; }, replaceChildren() { this.value = ''; } });
+        options: [], add(option) { this.options.push(option); if (!this.value) this.value = option.value; }, replaceChildren() { this.value = ''; this.options = []; } });
     }
     return nodes.get(id);
   };
@@ -26,7 +26,7 @@ function fixture(session = 'real-account') {
   // util.js deliberately owns the browser's global G.
   ctx.window.G = G;
   for (const f of ['js/core/util.js', 'js/data/pokedex.js', 'js/data/sprites-meta.js', 'js/data/moves.js', 'js/data/types.js', 'js/data/starters.js', 'js/data/upgrades.js',
-    'js/systems/mega.js', 'js/systems/repertoire.js', 'js/systems/challenges.js', 'js/core/db.js']) load(f);
+    'js/data/coverage-data.js', 'js/systems/coverage.js', 'js/systems/mega.js', 'js/systems/repertoire.js', 'js/systems/challenges.js', 'js/core/db.js']) load(f);
   const stub = () => new Proxy({}, { get: (o,k) => k in o ? o[k] : noop });
   for (const name of ['UI','FX','Pickups','Spawner','Rift','Judgment','Events','Weather','Path','Hazards','World','Interact','Audio','Progress','Social','Coop','Input','RunUI','Settings','MenuUI','Updater','HUD']) G[name] = stub();
   Object.assign(G.Coop, { active: false, isHost: false }); Object.assign(G.Social, { room: null, me: null });

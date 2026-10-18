@@ -126,7 +126,7 @@ test('Test funds and three Pokemon are available; purchased perks survive prepar
   for(const id of ['hp','atk','spd','options']){G.DB.save.coins-=G.Upgrades.cost(id,0);levels[id]=1;}
   const afterBuying=G.DB.save.coins;assert.ok(afterBuying<100000);
   G.BossRushPreview.play();const p=G.Game.player;
-  assert.equal(p.maxHp,G.DEX_BY[260].hp+8);assert.equal(p.atkMul,1.04);assert.equal(p.spdMul,1.03);
+  assert.equal(p.maxHp,G.Mega.form(G.DEX_BY[260],G.DB.save).hp+8);assert.equal(p.atkMul,1.04);assert.equal(p.spdMul,1.03);
   assert.equal(p.cardOptions,4);f.prepare();
   assert.equal(G.DB.save.coins,afterBuying);assert.equal(G.BossRushPreview.refillFunds(),false);
   G.Game.quit();f.back();assert.equal(G.BossRushPreview.refillFunds(),true);
@@ -185,6 +185,41 @@ test('Mega Blaziken is unlocked and equipped in the temporary save and works in 
   f.prepare(); p.x=G.BossRushPreview.boss.x; p.y=G.BossRushPreview.boss.y+30; f.tick(180);
   assert.ok(p.megaElapsed>0); assert.ok(p.dmgDealt>0);
   assert.deepEqual(f.storage,f.before);
+});
+
+test('Mega Swampert starts equipped with level-two Bulldoze and remains optional in the guest save',async()=>{
+  const f=fixture(),{G}=f;await G.DB.ready();
+  assert.equal(G.Mega.has(G.DB.save,260),true);assert.equal(G.Mega.equipped(G.DB.save,260),true);
+  G.BossRushPreview.open();assert.equal(f.nodes.get('rush-move-1').value,'bulldoze');
+  f.nodes.get('rush-start').onclick();const p=G.Game.player;
+  assert.equal(p.mega,'swampertite');assert.equal(p.mon.name,'Mega Swampert');
+  assert.equal(p.moves.find(m=>m.id==='bulldoze').lvl,2);assert.equal(f.prepare(),7);
+  G.Game.quit();f.back();G.Mega.equip(G.DB.save,260,false);
+  f.nodes.get('rush-partner').onchange();assert.equal(f.nodes.get('rush-move-1').value,'water-gun');
+  f.nodes.get('rush-start').onclick();assert.equal(G.Game.player.mega,null);
+  assert.deepEqual(f.storage,f.before);assert.equal(f.rankings(),0);
+});
+
+test('Rush refreshes purchased coverage on return, preserves valid attacks and snapshots the live move pool',async()=>{
+  const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.open();
+  const ids=()=>f.nodes.get('rush-move-2').options.map(o=>o.value);
+  assert.ok(!ids().includes('ice-beam'));
+  G.BossRushPreview.maxUpgrades(260);
+  assert.equal(G.Coverage.choose(G.DEX_BY[260],G.DB.save,['ice-beam','powder-snow']),true);
+  G.BossRushPreview.open();assert.ok(ids().includes('ice-beam'));assert.ok(ids().includes('powder-snow'));
+  f.nodes.get('rush-move-2').value='ice-beam';G.BossRushPreview.open();
+  assert.equal(f.nodes.get('rush-move-2').value,'ice-beam');
+  f.nodes.get('rush-start').onclick();const p=G.Game.player;
+  assert.equal(p.mega,'swampertite');assert.equal(p.coverage.join(','),'ice-beam,powder-snow');
+  assert.equal(p.moves.map(m=>m.id).join(','),'bulldoze,ice-beam');assert.equal(p.maxMoves,4);
+  G.Coverage.choose(G.DEX_BY[260],G.DB.save,[]);
+  assert.equal(p.coverage.join(','),'ice-beam,powder-snow','An active run keeps its original coverage');
+  f.prepare();p.invuln=999;p.setActive(p.slots.findIndex(g=>g.some(m=>m.id==='ice-beam')));
+  p.x=G.BossRushPreview.boss.x;p.y=G.BossRushPreview.boss.y+70;
+  const hp=G.BossRushPreview.boss.hp;f.tick(180);assert.ok(G.BossRushPreview.boss.hp<hp);
+  G.Game.quit();f.back();G.BossRushPreview.open();
+  assert.ok(!ids().includes('ice-beam'));assert.equal(f.nodes.get('rush-move-2').value,'bubble');
+  assert.deepEqual(f.storage,f.before);assert.equal(f.rankings(),0);
 });
 
 test('Rush arena fills every viewport edge, contains actors, and restores normal camera after exit',async()=>{

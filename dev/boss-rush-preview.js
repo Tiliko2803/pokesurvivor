@@ -222,26 +222,17 @@ G.BossRushPreview = (() => {
       <button class="btn small" id="rush-max">Mejorar al máximo</button>
       <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
       <p class="sub" id="rush-status" role="status"></p>
-      <p class="sub">Mega Blaziken está desbloqueado y equipado al elegir Blaziken.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual de la ruta de Hoenn. Tu cuenta y tu progreso no se modifican.</p>
+      <p class="sub">Mega Swampert y Mega Blaziken están desbloqueados y equipados al elegirlos. Puedes cambiar sus piedras desde el menú.<br>Para probar Coberturas, abre Mejoras de oro y elige los movimientos compatibles; también aparecerán en los dos selectores de ataques.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual de la ruta de Hoenn. Tu cuenta y tu progreso no se modifican.</p>
       <div class="rush-actions"><button class="btn gold" id="rush-start">Enfrentar a Groudon</button>
       <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
       <p id="rush-error" role="status"></p></div>`;
     document.body.appendChild(root);
     const select = document.getElementById('rush-partner');
-    for (const dex of roster) select.add(new Option(dex === 257 ? 'Blaziken · Mega disponible' : G.DEX_BY[dex].name, String(dex)));
-    function moves() {
-      const dex = Number(select.value), pool = G.Coverage ? G.Coverage.pool(G.DEX_BY[dex], G.DB.save) : G.Moves.poolFor(G.DEX_BY[dex]);
-      const defaults = dex === 260 ? ['water-gun', 'bubble'] : dex === 257 ? ['karate-chop', 'ember'] : ['vine-whip', 'razor-leaf'];
-      [1, 2].forEach((n, i) => {
-        const el = document.getElementById('rush-move-' + n); el.replaceChildren();
-        for (const id of pool) el.add(new Option(G.Moves.BY_ID[id].name, id));
-        el.value = defaults[i];
-      });
-    }
+    for (const dex of roster) select.add(new Option(G.DEX_BY[dex].name + (G.Mega.has(G.DB.save,dex) ? ' · Mega disponible' : ''), String(dex)));
     select.onchange = () => {
-      G.DB.save.partner = Number(select.value); moves(); refreshSetup();
+      G.DB.save.partner = Number(select.value); refreshMoves(false); refreshSetup();
       document.getElementById('rush-status').textContent = '';
-    }; moves();
+    }; refreshMoves(false);
     document.getElementById('rush-upgrades').onclick = () => {
       const dex = Number(select.value); G.DB.save.partner = dex;
       returnFromUpgrades = true;
@@ -260,9 +251,23 @@ G.BossRushPreview = (() => {
       G.DB.save.partner = Number(select.value); G.Audio.unlock(); play();
     };
   }
+  function refreshMoves(preserve = true) {
+    const select = document.getElementById('rush-partner');
+    if (!select) return;
+    const dex = Number(select.value), mon = G.DEX_BY[dex];
+    const pool = G.Coverage ? G.Coverage.pool(mon, G.DB.save) : G.Moves.poolFor(mon);
+    const mega = G.Mega.equipped(G.DB.save,dex) && G.Mega.definition(dex);
+    const defaults = dex === 260 ? [mega ? mega.start : 'water-gun', 'bubble'] : dex === 257 ? ['karate-chop', 'ember'] : ['vine-whip', 'razor-leaf'];
+    [1,2].forEach((n,i) => {
+      const el = document.getElementById('rush-move-' + n), previous = el.value;
+      el.replaceChildren();
+      for (const id of pool) el.add(new Option(G.Moves.BY_ID[id].name, id));
+      el.value = preserve && pool.includes(previous) ? previous : defaults[i];
+    });
+  }
   function open() {
     if (!document.getElementById('scr-boss-rush')) setup();
-    refreshSetup(); G.UI.show('scr-boss-rush', true);
+    refreshMoves(); refreshSetup(); G.UI.show('scr-boss-rush', true);
     document.getElementById('scr-boss-rush').classList.remove('hidden');
   }
   function play() {
@@ -301,7 +306,9 @@ G.BossRushPreview = (() => {
       try { if (session === null) localStorage.removeItem('ps.session'); else localStorage.setItem('ps.session', session); } catch (_) {}
       const s = G.DB.save; s.partner = s.starter = 260; s.coins = 100000; s.pupg = {}; s.megaEquipped = {};
       for (const dex of roster) s.owned[dex] = { at: Date.now(), from: 'boss-rush-preview' };
-      s.megaStones.blazikenite = Date.now(); G.Mega.equip(s, 257, true);
+      for (const dex of [260,257]) {
+        s.megaStones[G.Mega.definition(dex).id] = Date.now(); G.Mega.equip(s,dex,true);
+      }
       return true;
     };
     G.Updater.init = () => {};

@@ -97,7 +97,9 @@ Después de probar el ajuste a 3000000, el dueño fijó 2500000 PV base (2.5/5/7
 
 Cada carga inicia una sesión temporal con 100000 Pokémonedas y Swampert, Blaziken y Sceptile desbloqueados. El botón Mejoras de oro abre la tienda nativa para el Pokémon seleccionado. Reponer dinero de prueba restaura 100000 monedas conservando las compras de esta sesión; no funciona durante una partida. Las compras se aplican al siguiente intento, incluyendo Zancada y Más Opciones durante la preparación. Recargar la página reinicia esta sesión temporal.
 
-Blaziken incluye la Blazikenita desbloqueada y equipada al cargar. Seleccionarlo permite usar Mega Blaziken tanto en Boss Rush como en partida normal; Golpe Kárate comienza en nivel 2 si se elige en la preparación del Boss Rush. El equipo sigue siendo opcional desde el menú nativo.
+Swampert y Blaziken incluyen sus piedras desbloqueadas y equipadas al cargar. Permiten usar Mega Swampert y Mega Blaziken tanto en Boss Rush como en partida normal; Terratemblor y Golpe Kárate, respectivamente, comienzan en nivel 2 si se eligen en la preparación. Terratemblor es la selección inicial para Mega Swampert. El equipo sigue siendo opcional desde el menú nativo.
+
+La prueba carga los módulos actuales del Live, incluidas las mejoras de oro y Coberturas (Nieve Polvo → Ventisca y Rayo Hielo → Rayo Polar). Desde **Mejoras de oro** se compran los niveles y se eligen movimientos compatibles, o se usa **Mejorar al máximo** para completar todos los niveles sin coste en esta sesión. Al regresar se reconstruyen ambos selectores con las Coberturas elegidas y se conservan los ataques válidos; se retiran las opciones deseleccionadas. Cada intento toma su propia copia de Coberturas mediante el inicio de partida nativo. Puño Hielo no está implementado en el catálogo actual del Live.
 
 ## Maximizar mejoras para probar
 
