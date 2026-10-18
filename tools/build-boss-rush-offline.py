@@ -1,7 +1,7 @@
 """Export the current development prototype as one offline HTML file.
 
 Usage: python3 tools/build-boss-rush-offline.py /absolute/path/preview.html
-Requires the normal sprites for the three starters, Groudon, birds and Regis.
+Requires the normal sprites for the three starters, the three Hoenn bosses, birds and Regis.
 Does not modify the official or development pages.
 """
 import base64
@@ -12,7 +12,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MINORS = [144, 145, 146, 377, 378, 379]
-ROSTER = [254, 257, 260, 382, 383, *MINORS]
+ROSTER = [254, 257, 260, 382, 383, 384, *MINORS]
 ANIMS = ['Idle', 'Walk', 'Attack', 'Shoot', 'Charge', 'Hurt', 'Faint']
 
 
@@ -54,8 +54,10 @@ def build(destination):
         if path == 'dev/boss-rush-preview.js':
             source = source.replace('G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META, 4)',
                                     'G.BossRushRules.selectMinors(G.DEX.filter(mon => ' + json.dumps(MINORS) + '.includes(mon.dex)), G.SPRITE_META, 4)')
-            source = source.replace('Prueba individual del primer tramo.',
+            source = source.replace('Prueba individual de la ruta de Hoenn.',
                                     'Prueba local sin internet. Menores: aves legendarias y Regis.')
+        if path == 'dev/rayquaza-fx.js':
+            source = source.replace('assets/boss-rush/rayquaza-attacks-v1.png?v=1', data_url(ROOT / 'assets/boss-rush/rayquaza-attacks-v1.png', 'image/png'))
         source = source.replace('</script', '<\\/script')
         if path == 'dev/boss-rush-sprites.js':
             source = source.replace('assets/boss-rush/attack-atlas-v1.png?v=1', data_url(ROOT / 'assets/boss-rush/attack-atlas-v1.png', 'image/png'))

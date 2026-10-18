@@ -51,4 +51,7 @@ test('Recompensas de tres victorias llevan del nivel 8 al 17 sin bonus',()=>{
     while(xp>=G.Player.xpFor(level)){xp-=G.Player.xpFor(level);level++;}
   }
   assert.equal(level,26);assert.equal(xp,0);
+  xp+=R.rewardXp(G.Player.xpFor,level);
+  while(xp>=G.Player.xpFor(level)){xp-=G.Player.xpFor(level);level++;}
+  assert.equal(level,29);assert.equal(xp,0);
 });

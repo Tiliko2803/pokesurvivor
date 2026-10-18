@@ -6,6 +6,15 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Rayquaza cierra el Boss Rush de Hoenn', 'Rayquaza completes the Hoenn Boss Rush'], new: [
+    ['Rayquaza llega después de Groudon, Kyogre y cuatro menores. Es el séptimo combate: conserva tu build, entrega un Vínculo al vencerlo y tiene una arena celestial a toda pantalla.',
+     'Rayquaza arrives after Groudon, Kyogre and four minor legends. It is the seventh encounter: your build persists, victory grants a Bond, and it has a full-screen celestial arena.'],
+    ['Usa Ascenso Draco, Velocidad Extrema, Pulso Dragón, Vendaval y Cometa Draco con sprites animados en pixel art. Pasa de uno a dos y hasta tres ataques a la vez, con avisos más rápidos por fase y una recuperación clara tras los meteoros.',
+     'It uses Dragon Ascent, Extreme Speed, Dragon Pulse, Hurricane and Draco Meteor with animated pixel-art sprites. It progresses from single to double and triple attacks, with faster phase warnings and a clear recovery after meteors.']
+  ], chg: [
+    ['Rayquaza empieza con 5 millones de PV base multiplicados por jugadores. Las combinaciones comprueban salidas alcanzables y comparten protección contra impactos instantáneos. Cometa Draco se lanza solo.',
+     'Rayquaza starts at 5 million base HP multiplied by players. Combinations check for reachable escapes and share protection against instant overlapping impacts. Draco Meteor is cast alone.']
+  ] },
   { d: '2026-10-17', title: ['Ajuste de vida de Kyogre', 'Kyogre health adjustment'], chg: [
     ['Kyogre queda en 2.5 millones de PV base. Con 2, 3 y 4 jugadores tendrá 5, 7.5 y 10 millones de PV, respectivamente.',
      'Kyogre now has 2.5 million base HP. With 2, 3 and 4 players it will have 5, 7.5 and 10 million HP, respectively.']

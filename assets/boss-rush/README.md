@@ -1,5 +1,15 @@
 # Boss Rush attack art
 
+## Rayquaza attack atlas
+
+`rayquaza-attacks-v1.png` is a transparent 256×320 PNG: four columns and five rows of 64×64 cells, four animation frames per effect. Rows: Dragon Ascent, Extreme Speed, Dragon Pulse, Hurricane, Draco Meteor. Dragon Pulse is drawn as one continuous beam using a central 64×24 strip. Meteor and dive descent frames play before impact; explosion frames begin when damage activates. The runtime disables smoothing and uses the shared low-resolution effects canvas.
+
+Integrated on 2026-10-18. Created with the built-in Image Generation tool; generated source 1122×1402 RGBA, compiled with nearest-neighbor sampling to the uniform atlas, preserving alpha. Consumed by `dev/rayquaza-fx.js`. The PNG only supplies cosmetic art; collision geometry is computed independently.
+
+### Rayquaza generation prompt
+
+undefined
+
 ## Continuous Kyogre beams
 
 `kyogre-beams-v1.png` is a transparent 512×64 PNG: four columns and two rows, with 128×32 cells. Row 1: Hydro Pump; row 2: Ice Beam. Four animation frames per beam. The renderer samples the inner 126×28 content rectangle and draws it once from the casting origin to the corridor endpoint. Each beam has one continuous core and a single tip. It is never repeated as a row of projectiles. Surf uses the original atlas; its collision rectangle is no longer painted during impact.

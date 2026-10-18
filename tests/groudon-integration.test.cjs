@@ -13,10 +13,11 @@ test('Boss Rush snapshots roster size and multiplies every boss HP without compo
     assert.equal(G.BossRushPreview.encounter.players().length,n);
     for(const p of mates)p.dead=true;
     G.Game.everyone=()=>[G.Game.player]; // Leaving/downed teammates do not shrink later bosses.
-    for(const stage of [1,2,3,4,5]){
+    for(const stage of [1,2,3,4,5,6]){
       b.hurt(99999999);f.tick(201);b=G.BossRushPreview.boss;
       assert.equal(G.BossRushPreview.stage,stage);
       if(stage===3){assert.equal(b.dex,382);assert.equal(b.maxHp,2500000*n);assert.equal(born[stage].hp,b.maxHp);continue;}
+      if(stage===6){assert.equal(b.dex,384);assert.equal(b.maxHp,5000000*n);assert.equal(born[stage].hp,b.maxHp);continue;}
       const base=G.BossRushRules.minorStats(stage);
       assert.equal(b.maxHp,base.hp*n);assert.equal(born[stage].hp,b.maxHp);
       assert.equal(b.dmg,base.damage);assert.equal(b.rushAttackRate,base.attackRate);
@@ -38,6 +39,22 @@ test('Kyogre uses native damage and slow, freezes in pause, clears rain and slow
   e.attacks=[];e.begin('rain');for(let i=0;i<160;i++)e.update(.01);assert.equal(e.raining,true);
   G.Game.togglePause();const snapshot=JSON.stringify(e);f.tick(100);assert.equal(JSON.stringify(e),snapshot);
   G.Game.quit();f.back();assert.equal(p.slowT,0);assert.equal(G.BossRushPreview.encounter,null);
+  assert.deepEqual(f.storage,f.before);assert.equal(f.rankings(),0);
+});
+
+test('Final Rayquaza uses native damage, visible ascent, pause and safe rotation without changing the account',async()=>{
+  const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
+  for(let i=0;i<6;i++){G.BossRushPreview.boss.hurt(99999999);f.tick(201);}
+  const e=G.BossRushPreview.encounter,b=G.BossRushPreview.boss,p=G.Game.player;
+  assert.equal(e.id,'rayquaza');assert.equal(p.level,26);assert.equal(b.types.join(','),'dragon,flying');
+  e.attacks=[];e.begin('ascent');f.tick(20);assert.ok(b.jumpLift>0);
+  p.invuln=0;const hp=p.hp;
+  while(e.attack&&e.attack.t<e.attack.warn+.04)e.update(.01);
+  assert.ok(p.hp<hp);assert.ok(p.invuln>=.9);
+  G.Game.togglePause();const clock=e.clock;f.tick(100);assert.equal(e.clock,clock);
+  G.Camera.resize(360,720,2);e.attacks=[];e.begin('dragon');G.Camera.resize(960,540,2);
+  assert.equal(e.attacks.length,0);assert.ok(p.invuln>=1);
+  G.Game.quit();f.back();assert.equal(G.BossRushPreview.running,false);
   assert.deepEqual(f.storage,f.before);assert.equal(f.rankings(),0);
 });
 test('Engine integration: temporary session, real moves hit Groudon, no ranking or account writes', async () => {
@@ -89,7 +106,12 @@ test('Engine integration: phases, victory and no drops/rewards', async () => {
     assert.ok(!seen.has(dex));seen.add(dex);
   }
   G.BossRushPreview.boss.hurt(99999999);f.tick(201);
-  assert.equal(G.Game.state,'over'); assert.equal(f.nodes.get('over-title').textContent,'¡Tierra y océano superados!');
+  assert.equal(G.Game.state,'playing');assert.equal(G.BossRushPreview.stage,6);
+  assert.equal(G.BossRushPreview.boss.dex,384);assert.equal(G.BossRushPreview.encounter.id,'rayquaza');
+  assert.equal(G.Game.player.level,26);assert.equal(G.World.arena.type,'flying');
+  assert.equal(G.World.arena.th.pools,0);assert.equal(G.World.arena.th.pillars,0);
+  G.BossRushPreview.boss.hurt(99999999);f.tick(201);
+  assert.equal(G.Game.state,'over'); assert.equal(f.nodes.get('over-title').textContent,'¡Trío de Hoenn superado!');
   assert.equal(f.result().coins,0); assert.equal(f.rankings(),0); assert.deepEqual(f.storage,f.before);
 });
 test('Preview preserves absence of a pre-existing session too', async () => {
@@ -227,6 +249,10 @@ test('Only the major grants one Bond; selecting the native fusion pauses the int
   if(G.Game.state==='choice'){assert.equal(G.BossRushPreview.stage,3);f.pickBond();}
   f.tick(201);assert.equal(G.BossRushPreview.stage,4);
   for(let i=0;i<2;i++){G.BossRushPreview.boss.hurt(99999999);f.tick(201);}
+  assert.equal(G.BossRushPreview.stage,6);
+  const ray=G.BossRushPreview.boss,before=p.bonds;ray.hurt(99999999);ray.die();
+  assert.equal(p.bonds,before+1,'Rayquaza grants exactly one Bond');
+  f.tick(201);
   assert.equal(G.Game.state,'over');
   assert.deepEqual(f.storage,f.before);
 });

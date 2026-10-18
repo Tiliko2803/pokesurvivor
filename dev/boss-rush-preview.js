@@ -20,18 +20,18 @@ G.BossRushPreview = (() => {
   const relativeBoss = { get x() { return boss.x - ox; }, set x(v) { boss.x = ox + v; },
     get y() { return boss.y - oy; }, set y(v) { boss.y = oy + v; }, get r() { return boss.r; },
     get hp() { return boss.hp; }, get maxHp() { return boss.maxHp; }, get dead() { return boss.dead; } };
-  const effects = () => boss?.dex === 382 ? G.KyogreFX : G.GroudonFX;
-  const arenaType = () => stage >= 3 ? 'water' : 'fire';
+  const effects = () => boss?.dex===384?G.RayquazaFX:boss?.dex === 382 ? G.KyogreFX : G.GroudonFX;
+  const arenaType = () => stage>=6?'flying':stage >= 3 ? 'water' : 'fire';
   function signal(kind, data) {
     if (kind === 'attack') {
       boss.anim.play('Charge');
       const p = G.Game.player; boss.anim.dir = G.Sprites.dirFromAngle(Math.atan2(p.y - boss.y, p.x - boss.x));
       G.Spawner.say((data.comboName || data.name) + (data.kind === 'rupture'||data.kind==='pulse' ? ' · ¡Busca la franja segura!' : ''), data.warn, true);
     } else if (kind === 'phase') {
-      G.Audio.sfx('boss'); G.Spawner.say(boss.dex===382?(data===2?'¡Marea creciente! · Avisos más rápidos':'¡Furia oceánica! · Avisos más rápidos'):(data === 2 ? '¡Tierra abrasadora!' : '¡Furia continental!'), 2, true);
+      G.Audio.sfx('boss'); G.Spawner.say(boss.dex===384?(data===2?'¡Se abren los cielos! · Avisos más rápidos':'¡Furia del firmamento! · Avisos más rápidos'):boss.dex===382?(data===2?'¡Marea creciente! · Avisos más rápidos':'¡Furia oceánica! · Avisos más rápidos'):(data === 2 ? '¡Tierra abrasadora!' : '¡Furia continental!'), 2, true);
     } else if (kind === 'impact') {
-      boss.anim.play(['eruption','hydro','ice'].includes(data.kind) ? 'Shoot' : 'Attack');
-      const sound = { blades:'melee', stomp:'nova', eruption:'beam', charge:'projectile', rupture:'nova',surf:'nova',hydro:'beam',ice:'beam',rain:'nova',pulse:'nova' }[data.kind];
+      boss.anim.play(['eruption','hydro','ice','dragon'].includes(data.kind) ? 'Shoot' : 'Attack');
+      const sound = { blades:'melee', stomp:'nova', eruption:'beam', charge:'projectile', rupture:'nova',surf:'nova',hydro:'beam',ice:'beam',rain:'nova',pulse:'nova',ascent:'melee',dragon:'beam',hurricane:'nova',meteor:'nova' }[data.kind];
       G.Audio.sfx('shot', { kind:sound, type:data.type });
       G.Camera.kick(data.kind === 'rupture' ? 0.55 : data.kind === 'stomp' ? 0.35 : 0.22);
       const color = effects().palette(data.kind).light, count = G.Settings.get('calm') ? 4 : 10;
@@ -44,7 +44,7 @@ G.BossRushPreview = (() => {
     } else if (kind === 'recovery') {
       if (encounter?.recovering) {
         boss.anim.loop('Idle');
-        if (['charge','rupture','pulse'].includes(data.kind)) G.Spawner.say('¡'+boss.name+' se recupera! ¡Ataca!', 2, true);
+        if (['charge','rupture','pulse','meteor'].includes(data.kind)) G.Spawner.say('¡'+boss.name+' se recupera! ¡Ataca!', 2, true);
       }
     } else if (kind === 'recoil') {
       boss.hurt(data, '#f5d1bd');
@@ -58,7 +58,8 @@ G.BossRushPreview = (() => {
     route = [{ dex: 383, major: true, hp: G.Groudon.BASE_HP, damage: 42 },
       ...minors.slice(0,2).map(dex => ({ dex, major: false })),
       {dex:382,major:true,hp:G.Kyogre.BASE_HP,damage:50},
-      ...minors.slice(2).map(dex => ({dex,major:false}))];
+      ...minors.slice(2).map(dex => ({dex,major:false})),
+      {dex:384,major:true,hp:G.Rayquaza.BASE_HP,damage:54}];
     ox = 16; oy = 16; p.x = ox; p.y = oy + 85;
     p.moves = []; p.slots = []; p.active = 0; p.bind = {}; p.bonds = 0;
     for (const id of chosen) {
@@ -105,7 +106,7 @@ G.BossRushPreview = (() => {
     boss.rushAttackRate = def.major ? 1 : stats.attackRate;
     boss.touchCd = def.major ? 999 : 1.5;
     G.EnemyMgr.add(boss);
-    const Encounter=def.dex===382?G.Kyogre.Encounter:G.Groudon.Encounter;
+    const Encounter=def.dex===384?G.Rayquaza.Encounter:def.dex===382?G.Kyogre.Encounter:G.Groudon.Encounter;
     encounter = def.major ? new Encounter({ boss: relativeBoss, players: () => players,
       hit: (rp, dmg, type, effect) => {
         const pl = rp.source, before = pl.hp; pl.hurt(dmg, type, false, true);
@@ -115,7 +116,7 @@ G.BossRushPreview = (() => {
         return Math.max(0, before - pl.hp);
       }, signal }) : null;
     G.Sprites.preload([def.dex, p.dex], 8000);
-    G.Spawner.say(def.major ? boss.name+(def.dex===382?' · El océano despierta':' · El despertar') : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);
+    G.Spawner.say(def.major ? boss.name+(def.dex===384?' · Señor de los cielos':def.dex===382?' · El océano despierta':' · El despertar') : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);
   }
   function offerPreparation() {
     if (!preparing) return;
@@ -177,7 +178,7 @@ G.BossRushPreview = (() => {
       ctx.setLineDash(warning ? [7, 5] : []);
       const palette = effects().palette(a.kind);
       const shapes=!warning&&encounter.id==='kyogre'?encounter.hitShapes(a):a.shapes;
-      const spriteImpact=!warning&&encounter.id==='kyogre'&&['surf','hydro','ice'].includes(a.kind);
+      const spriteImpact=!warning&&(encounter.id==='rayquaza'||encounter.id==='kyogre'&&['surf','hydro','ice'].includes(a.kind));
       if(!spriteImpact)for (const s of shapes) paintShape(ctx, s, warning ? palette.warning : palette.impact, palette.edge);
       for(const safe of a.safes||(a.safe?[a.safe]:[])) {
         ctx.setLineDash([]); paintShape(ctx, safe, '#48d8bd30', '#8ffff0');
@@ -205,15 +206,15 @@ G.BossRushPreview = (() => {
     const timer = encounter ? ' · ' + Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2,'0') : '';
     ctx.fillText(boss.name.toUpperCase() + (encounter ? ' · FASE ' + encounter.phase + '/3' : ' · MENOR') + timer, w / 2, 77);
     ctx.fillStyle = '#4e2b35'; ctx.fillRect(x, 82, width, 6);
-    ctx.fillStyle = encounter?.recovering ? '#7ce7bc' : arenaType()==='water'?'#51d9f4':'#f67846'; ctx.fillRect(x, 82, width * Math.max(0, boss.hp / boss.maxHp), 6);
+    ctx.fillStyle = encounter?.recovering ? '#7ce7bc' : arenaType()==='flying'?'#72efb0':arenaType()==='water'?'#51d9f4':'#f67846'; ctx.fillRect(x, 82, width * Math.max(0, boss.hp / boss.maxHp), 6);
     ctx.font = '11px monospace'; ctx.fillStyle = '#fff';
     ctx.fillText(transition ? 'Victoria · Recupera fuerzas' : encounter?.label || 'Combate ' + (stage + 1) + '/'+route.length+' · Gana experiencia', w / 2, 100); ctx.restore();
   }
   function setup() {
     const root = document.createElement('section'); root.id = 'scr-boss-rush'; root.className = 'scr dim hidden';
     root.innerHTML = `<div class="panel rush-setup"><span class="rush-kicker">BOSS RUSH · HOENN</span>
-      <h1>Tierra y océano</h1><p>Dos legendarios mayores. Aprende sus señales, esquiva y contraataca.</p>
-      <div class="rush-route"><b>Groudon → 2 menores → Kyogre → 2 menores</b><span>Después: Rayquaza · Próximamente</span></div>
+      <h1>El trío de Hoenn</h1><p>Tres legendarios mayores. Aprende sus señales, esquiva y contraataca.</p>
+      <div class="rush-route"><b>Groudon → 2 menores → Kyogre → 2 menores → Rayquaza</b><span>Rayquaza cierra la ruta desde su arena celestial.</span></div>
       <div class="rush-fields"><label>Tu Pokémon<select id="rush-partner"></select></label>
       <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
       <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
@@ -221,7 +222,7 @@ G.BossRushPreview = (() => {
       <button class="btn small" id="rush-max">Mejorar al máximo</button>
       <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
       <p class="sub" id="rush-status" role="status"></p>
-      <p class="sub">Mega Blaziken está desbloqueado y equipado al elegir Blaziken.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual del primer tramo. Tu cuenta y tu progreso no se modifican.</p>
+      <p class="sub">Mega Blaziken está desbloqueado y equipado al elegir Blaziken.<br>Empiezas en nivel ${START_LEVEL}: elige ${START_LEVEL-1} mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida. Los legendarios mayores dan un Vínculo para combinar movimientos.<br>Prueba individual de la ruta de Hoenn. Tu cuenta y tu progreso no se modifican.</p>
       <div class="rush-actions"><button class="btn gold" id="rush-start">Enfrentar a Groudon</button>
       <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
       <p id="rush-error" role="status"></p></div>`;
@@ -396,6 +397,8 @@ G.BossRushPreview = (() => {
     wrap(G.Enemy.prototype, 'update', function(old, dt, p) {
       if (!this.rushBoss) return old.call(this, dt, p);
       this.anim.update(dt); this.flash = Math.max(0, this.flash - dt); this.touchCd = 999;
+      const ascent=this.dex===384?encounter?.attacks.find(a=>a.kind==='ascent'):null;
+      this.jumpLift=ascent&&ascent.t<ascent.warn?Math.sin(Math.min(1,ascent.t/ascent.warn)*Math.PI)*70:0;
       if (this.dead) { this.fade -= dt; return; }
       if (!encounter?.attack || encounter.recovering) {
         this.anim.loop(encounter?.moving ? 'Walk' : 'Idle');
@@ -427,7 +430,7 @@ G.BossRushPreview = (() => {
       old({ ...result, coins: 0, record: false, breakdown: 'Prueba de combate · Sin recompensas', caught: [], megaUnlocked: false }, () => {
         running = false; preparing = false; encounter = null; boss = null; G.Game.player.slowT=0; refreshCamera(); back();
       });
-      document.getElementById('over-title').textContent = won ? '¡Tierra y océano superados!' : 'Intento terminado';
+      document.getElementById('over-title').textContent = won ? '¡Trío de Hoenn superado!' : 'Intento terminado';
       document.getElementById('btn-again').textContent = 'Preparar otro intento';
       document.getElementById('over-ask')?.remove();
     });
