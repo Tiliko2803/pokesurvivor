@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Prueba del Boss Rush de Hoenn', 'Hoenn Boss Rush playtest'], new: [
+    ['La página de desarrollo permite probar a Groudon con tres fases y dos legendarios menores aleatorios con sus patrones normales. Empiezas en nivel 10 eligiendo nueve mejoras; los menores escalan su vida, daño y cadencia conservando los avisos.',
+     'The development page offers a three-phase Groudon and two random minor legends with native patterns. Start at level 10 with nine upgrades; minor HP, damage and attack rate scale while telegraphs keep their timing.'],
+    ['La prueba incluye 100.000 Pokémonedas temporales, Swampert, Blaziken y Sceptile desbloqueados, mejoras de oro y un botón para reponer fondos. Usa una sesión invitada aislada: no modifica tu cuenta ni publica récords.',
+     'The playtest includes 100,000 temporary coins, unlocked Swampert, Blaziken and Sceptile, gold upgrades and a funds refill button. It uses an isolated guest session without changing your account or publishing records.']
+  ] },
   { d: '2026-10-17', title: ['Toji al tamaño de Ferropaladín', 'Toji matches Iron Valiant’s size'], chg: [
     ['El tamaño visual de Toji se ajusta a la altura de Ferropaladín. Su presentación y miniaturas se centran usando el cuerpo visible, sin contar el espacio vacío de la hoja.',
      'Toji’s visual height now matches Iron Valiant. His menu presentation and thumbnails are centered using the visible body rather than empty sprite-sheet padding.']
@@ -261,3 +267,4 @@ G.CHANGELOG = [
     ['Primera versión pública de PokéSurvivor.', 'First public version of PokéSurvivor.']
   ] }
 ];
+

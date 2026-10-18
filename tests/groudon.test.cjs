@@ -1,0 +1,109 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
+const root = path.join(__dirname, '..');
+function fixture() {
+  const ctx = vm.createContext({ G: {} });
+  vm.runInContext(fs.readFileSync(path.join(root, 'dev/groudon.js'), 'utf8'), ctx);
+  const boss = { x: 0, y: -65, r: 28, hp: 18000, maxHp: 18000, dead: false };
+  const p = { x: 0, y: 80, r: 12, dead: false }, ps = [p], hits = [], events = [];
+  const e = new ctx.G.Groudon.Encounter({ boss, players: () => ps,
+    hit: (...args) => { hits.push(args); }, signal: (...args) => events.push(args), random: () => 0.5 });
+  const tick = seconds => { for (let i = 0; i < Math.round(seconds * 100); i++) e.update(0.01); };
+  return { ...ctx.G.Groudon, boss, p, ps, hits, events, e, tick };
+}
+test('Filo: aviso completo, marcas fijas y un solo impacto por jugador', () => {
+  const { e, p, hits, tick } = fixture(); e.begin('blades');
+  tick(1.2); assert.equal(hits.length, 0);
+  tick(0.1); assert.equal(hits.length, 1);
+  tick(0.2); assert.equal(hits.length, 1);
+  assert.equal(hits[0][1], 38); assert.equal(hits[0][2], 'ground');
+  assert.equal(e.attack.hit.has(p), true);
+});
+test('Se puede salir caminando de cada aviso con 130 unidades/s', () => {
+  for (const kind of ['blades', 'stomp', 'eruption', 'charge']) {
+    const { e, p, hits, contains } = fixture(); p.y = kind === 'stomp' ? -65 : 70; e.begin(kind);
+    const a = e.attack;
+    let goal = null;
+    for (let x = -275; x <= 275; x += 10) for (let y = -125; y <= 125; y += 10) {
+      const candidate = { x, y, r: p.r };
+      if (!a.shapes.some(s => contains(s, candidate))) {
+        const distance = Math.hypot(x - p.x, y - p.y);
+        if (!goal || distance < goal.distance) goal = { x, y, distance };
+      }
+    }
+    assert.ok(goal && goal.distance / 130 < a.warn - 0.2, kind + ': falta tiempo de reacción');
+    p.x = goal.x; p.y = goal.y;
+    for (let i = 0; i < (a.warn + a.active) * 100; i++) e.update(0.01);
+    assert.equal(hits.length, 0, kind);
+  }
+});
+test('Erupción congela el blanco y la lava expira', () => {
+  const { e, p, hits, tick } = fixture(); e.begin('eruption');
+  const x = e.attack.shapes[0].x; p.x = 200;
+  tick(1.8); assert.equal(hits.length, 0); assert.equal(e.hazards[0].x, x);
+  assert.ok(e.hazards[0].start > e.clock); tick(6); assert.equal(e.hazards.length, 0);
+});
+test('Umbrales 70/35 y Ruptura una sola vez sin saltarse el ataque activo', () => {
+  const { e, boss, events, tick } = fixture(); e.begin('stomp');
+  boss.hp = boss.maxHp * 0.7; tick(0.01); assert.equal(e.phase, 2);
+  boss.hp = boss.maxHp * 0.35; tick(0.01); assert.equal(e.phase, 3);
+  assert.equal(e.attack.kind, 'stomp'); tick(7);
+  assert.equal(events.filter(ev => ev[0] === 'attack' && ev[1].kind === 'rupture').length, 1);
+  tick(25); assert.equal(events.filter(ev => ev[0] === 'attack' && ev[1].kind === 'rupture').length, 1);
+});
+test('Ruptura limpia lava y ofrece refugio al borde de la arena', () => {
+  for (const y of [-138, 138, 0]) {
+    const { e, p, hits, tick, contains } = fixture(); p.y = y;
+    e.hazards = [{ x: p.x, y: p.y, r: 40, end: 99 }]; e.begin('rupture');
+    assert.equal(e.hazards.length, 0);
+    const a = e.attack, targetY = (a.safe.top + a.safe.bottom) / 2;
+    assert.ok(Math.abs(targetY - p.y) / 130 < 1.8);
+    p.y = targetY; tick(2.4); assert.equal(hits.length, 0);
+    assert.ok(!a.shapes.some(s => contains(s, p))); assert.equal(e.recovering, true);
+    tick(3.8); assert.equal(e.attack.kind, 'rupture'); tick(0.3); assert.equal(e.attack, null);
+  }
+});
+test('Carga recorre su corredor, no daña por delante y da tres segundos de recuperación', () => {
+  const { e, p, boss, hits, tick } = fixture(); p.y = 110; e.begin('charge');
+  const a = e.attack, y = boss.y; tick(a.warn - 0.02); assert.equal(boss.y, y); assert.equal(hits.length, 0);
+  tick(0.7); assert.equal(e.recovering, true); assert.equal(hits.length, 1);
+  assert.ok(boss.y > y); assert.equal(a.recovery, 3);
+});
+test('Cuatro jugadores: un impacto para cada uno, máximo cuatro charcos', () => {
+  const { e, p, ps, hits, tick } = fixture();
+  for (let i = 0; i < 3; i++) ps.push({ ...p });
+  e.begin('eruption'); assert.equal(e.attack.shapes.length, 4); tick(1.75);
+  assert.equal(hits.length, 4); assert.equal(e.hazards.length, 4);
+});
+test('Movimientos reales: tipos y retroceso de Doble Filo sobre daño efectivo', () => {
+  const { e, events, tick } = fixture();
+  e.hit = () => 30; e.begin('charge');
+  assert.equal(e.attack.name, 'Doble Filo'); assert.equal(e.attack.type, 'normal'); tick(2);
+  assert.ok(events.some(ev => ev[0] === 'recoil' && ev[1] === 10));
+  const f = fixture(); f.e.begin('rupture'); assert.equal(f.e.attack.name, 'Terremoto');
+  const s = fixture(); s.e.begin('stomp'); assert.equal(s.e.attack.name, 'Terratemblor');
+  const b = fixture(); b.e.begin('eruption'); assert.equal(b.e.attack.name, 'Estallido');
+});
+test('No hay daño de lava durante la gracia después del impacto', () => {
+  const { e, p, hits, tick } = fixture(); e.begin('blades');
+  e.hazards = [{ kind: 'circle', x: p.x, y: p.y, r: 40, start: 1.26, end: 99 }];
+  tick(2.1); assert.equal(hits.length, 1);
+});
+test('Victoria limpia ataques y lava, señal única; reloj no avanza en pausa ni con saltos', () => {
+  const { e, boss, events } = fixture(); e.begin('blades');
+  e.update(100); assert.equal(e.clock, 0.05); assert.equal(e.attack.t, 0.05);
+  e.update(NaN); e.update(-1); e.update(0); assert.equal(e.clock, 0.05);
+  boss.hp = 0; e.update(0.01); e.update(1);
+  assert.equal(e.attack, null); assert.equal(e.hazards.length, 0);
+  assert.equal(events.filter(ev => ev[0] === 'victory').length, 1);
+});
+test('Página generada carga sólo el prototipo, sin cuenta, PWA ni config de producción', () => {
+  const html = fs.readFileSync(path.join(root, 'dev/index.html'), 'utf8');
+  assert.ok(html.includes('G.FIREBASE_CONFIG = null'));
+  assert.ok(!html.includes('src="js/core/firebase-config.js"'));
+  assert.ok(!html.includes('src="js/main.js"'));
+  for (const m of html.matchAll(/<script[^>]*src="([^"?]+)(?:\?[^"]*)?"/g)) assert.ok(fs.existsSync(path.join(root, m[1])), m[1]);
+  const official = fs.readFileSync(path.join(root, 'dev.html'), 'utf8');
+  assert.ok(!official.includes('dev/groudon.js')); assert.ok(!official.includes('boss-rush-preview'));
+});
