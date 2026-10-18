@@ -263,7 +263,7 @@ G.MenuUI = (() => {
         ${bar('Velocidad', p.spd, max.spd, p.spd)}
         <p style="font-size:14px;margin:10px 0 4px">Empieza con <b class="gold">${G.Moves.BY_ID[G.startMoveOf(dex)].name}</b></p>
         <p class="move-icons" title="Movimientos que puede aprender">
-          ${G.Moves.poolFor(p).map(id => `<span title="${G.Moves.BY_ID[id].name}">${G.Icons.html('move:' + id, 16)}</span>`).join('')}</p>
+          ${(G.Coverage ? G.Coverage.pool(p, s) : G.Moves.poolFor(p)).map(id => `<span title="${G.Moves.BY_ID[id].name}">${G.Icons.html('move:' + id, 16)}</span>`).join('')}</p>
         ${usingThis
           ? '<button class="btn grow" disabled style="width:100%">Es tu compañero</button>'
           : `<button id="dex-pick" class="btn gold" data-sfx="confirm" style="width:100%">Elegir de compañero${viewShiny ? ' (shiny)' : ''}</button>`}
@@ -288,7 +288,7 @@ G.MenuUI = (() => {
 
   // ---------------- mejoras ----------------
 
-  let upgDex = null, repertoireOpen = false;
+  let upgDex = null, repertoireOpen = false, coverageOpen = false;
 
   function openUpgrades() {
     G.UI.show('scr-upgrades', true);
@@ -316,7 +316,8 @@ G.MenuUI = (() => {
     box.innerHTML = '';
     for (const u of G.Upgrades.LIST) {
       const lvl = levels[u.id] || 0;
-      const maxed = lvl >= u.max;
+      const available = u.id === 'coverage' ? Math.min(u.max, G.Coverage.eligible(mon).length) : u.max;
+      const maxed = lvl >= available;
       const cost = maxed ? 0 : G.Upgrades.cost(u.id, lvl);
       const el = document.createElement('div');
       el.className = 'panel upg-item' + (u.id === 'moves' ? ' repertoire-upgrade' : '');
@@ -324,23 +325,27 @@ G.MenuUI = (() => {
         <div class="ic">${G.Icons.html(u.icon, 32)}</div>
         <div>
           <b>${u.name}</b> <span style="color:var(--muted);font-size:13px">${u.id === 'moves' ? 'Empiezas con 2 movimientos; eliges el extra' : u.id === 'options' ? `${u.unit} · ${3 + lvl} → ${3 + Math.min(lvl + 1, u.max)}` : u.unit}</span>
-          <div class="pips">${Array.from({ length: u.max }, (_, i) => `<i class="${i < lvl ? 'on' : ''}"></i>`).join('')}</div>
+          <div class="pips">${Array.from({ length: available }, (_, i) => `<i class="${i < lvl ? 'on' : ''}"></i>`).join('')}</div>
         </div>
         <div class="upg-btns">
+          ${u.id === 'coverage' && lvl > 0 ? `<button class="btn small" data-coverage>Elegir coberturas (${G.Coverage.selected(mon, s).length}/${G.Coverage.slots(mon, s)})</button>` : ''}
           ${u.id === 'moves' && lvl > 0 ? '<button class="btn small" data-repertoire>Elegir ataque</button>' : ''}
           ${u.id === 'ban' && lvl > 0 ? `<button class="btn small" data-ban>Elegir (${banList().length}/${lvl})</button>` : ''}
           <button class="btn small ${maxed ? '' : 'gold'}" data-buy data-sfx="none" ${maxed || s.coins < cost ? 'disabled' : ''}>
-          ${maxed ? 'Máx.' : `<span class="coin"></span> ${cost}`}</button></div>`;
+          ${available === 0 ? 'Sin compatibles' : maxed ? 'Máx.' : `<span class="coin"></span> ${cost}`}</button></div>`;
+      if (u.id === 'coverage' && lvl > 0) el.querySelector('[data-coverage]').onclick = () => { coverageOpen = !coverageOpen; renderUpgrades(); };
       if (u.id === 'moves' && lvl > 0) el.querySelector('[data-repertoire]').onclick = () => { repertoireOpen = !repertoireOpen; renderUpgrades(); };
       if (u.id === 'ban' && lvl > 0) el.querySelector('[data-ban]').onclick = () => { banOpen = !banOpen; renderUpgrades(); };
       el.querySelector('[data-buy]').onclick = () => {
         // Se vuelve a leer todo al pulsar (la partida puede haber cambiado desde que se dibujó).
         const sv = G.DB.save, lv = G.DB.upgradesOf(upgDex), now = lv[u.id] || 0;
-        if (now >= u.max) { renderUpgrades(); return; }
+        const limit = u.id === 'coverage' ? Math.min(u.max, G.Coverage.eligible(G.DEX_BY[upgDex]).length) : u.max;
+        if (now >= limit) { renderUpgrades(); return; }
         const price = G.Upgrades.cost(u.id, now);
         if (sv.coins < price) { renderUpgrades(); return; }
         sv.coins -= price;
         lv[u.id] = now + 1;
+        if (u.id === 'coverage') coverageOpen = true;
         G.DB.commit(true);
         G.Audio.sfx('buy');
         G.UI.refreshCoins();
@@ -348,10 +353,43 @@ G.MenuUI = (() => {
         renderUpgrades();
       };
       box.appendChild(el);
+      if (u.id === 'coverage' && available === 0) {
+        const note = document.createElement('p'); note.className = 'sub coverage-empty';
+        note.textContent = 'Este Pokémon no tiene coberturas compatibles entre los movimientos actuales del juego.';
+        box.appendChild(note);
+      }
+      if (u.id === 'coverage' && lvl > 0 && coverageOpen) box.appendChild(coveragePicker());
       if (u.id === 'moves' && lvl > 0 && repertoireOpen) box.appendChild(repertoirePicker());
       if (u.id === 'ban' && lvl > 0 && banOpen) box.appendChild(banPicker(lvl));
     }
     box.appendChild(bindPanel());
+  }
+
+  function coveragePicker() {
+    const s = G.DB.save, mon = G.Mega.form(G.DEX_BY[upgDex], s);
+    const selected = G.Coverage.selected(mon, s), slots = G.Coverage.slots(mon, s);
+    const banned = new Set(banList().slice(0, G.Upgrades.perks(G.DB.upgradesOf(upgDex)).bans));
+    const ids = G.Coverage.eligible(mon).sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
+    const el = document.createElement('div'); el.className = 'panel ban-picker coverage-picker';
+    el.innerHTML = `<div class="row between"><b>Coberturas · Movimientos adicionales</b><span data-coverage-count>${selected.length}/${slots}</span></div>
+      <p class="sub">Elige ataques para que puedan salir en las cartas. Puedes cambiarlos antes de cada partida; conservas cuatro espacios de movimientos.</p>
+      <p class="sub">Los ataques elegidos también aparecen en Repertorio, Veto y Atajos. Si Veto bloquea uno, no aparecerá en las cartas.</p>
+      <div class="ban-moves">${ids.map(id => { const m = G.Moves.BY_ID[id], on = selected.includes(id);
+        return `<button type="button" class="chip ${on ? 'on' : ''}" data-coverage-id="${id}" aria-pressed="${on}" ${!on && selected.length >= slots ? 'disabled' : ''}>
+          ${G.Icons.html('move:' + id, 16)} ${m.name} <span class="coverage-type">${G.U.TYPE_NAME[m.type]}</span>${banned.has(id) ? ' · Veto' : ''}</button>`;
+      }).join('')}</div><button type="button" class="btn small ghost" data-coverage-clear ${selected.length ? '' : 'disabled'}>Vaciar coberturas</button>`;
+    const commit = ids => {
+      if (!G.Coverage.choose(mon, s, ids)) return;
+      G.DB.commit(true); G.Audio.sfx('select'); renderUpgrades();
+    };
+    el.querySelectorAll('[data-coverage-id]').forEach(b => {
+      b.onclick = () => {
+        const current = G.Coverage.selected(mon, s), id = b.dataset.coverageId;
+        commit(current.includes(id) ? current.filter(x => x !== id) : current.concat(id));
+      };
+    });
+    el.querySelector('[data-coverage-clear]').onclick = () => commit([]);
+    return el;
   }
 
   function repertoirePicker() {
@@ -384,7 +422,7 @@ G.MenuUI = (() => {
     s.pbind = s.pbind || {};
     const list = s.pbind[upgDex] || [null, null, null, null];
     const mon = G.DEX_BY[upgDex];
-    const ids = G.Moves.poolFor(mon).concat([G.startMoveOf(upgDex)]).filter((v, i, a) => a.indexOf(v) === i)
+    const ids = (G.Coverage ? G.Coverage.pool(mon, s) : G.Moves.poolFor(mon)).concat([G.startMoveOf(upgDex)]).filter((v, i, a) => a.indexOf(v) === i)
       .sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
     const el = document.createElement('div');
     el.className = 'panel bind-panel';
@@ -421,9 +459,10 @@ G.MenuUI = (() => {
   function banPicker(max) {
     const mon = G.DEX_BY[upgDex];
     const start = G.startMoveOf(upgDex);
-    const ids = G.Moves.poolFor(mon).filter(id => id !== start)
-      .sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
     const list = banList();
+    const learnable = G.Coverage ? G.Coverage.pool(mon, G.DB.save) : G.Moves.poolFor(mon);
+    const ids = [...new Set(learnable.concat(list))].filter(id => id !== start && G.Moves.BY_ID[id])
+      .sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
     const el = document.createElement('div');
     el.className = 'panel ban-picker';
     el.innerHTML = `<p class="sub" style="margin:0 0 8px">Toca los movimientos que no quieres que te salgan en las cartas (${list.length}/${max}). El movimiento de inicio no se puede vetar.</p>

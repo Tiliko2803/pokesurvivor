@@ -230,7 +230,7 @@ G.BossRushPreview = (() => {
     const select = document.getElementById('rush-partner');
     for (const dex of roster) select.add(new Option(dex === 257 ? 'Blaziken · Mega disponible' : G.DEX_BY[dex].name, String(dex)));
     function moves() {
-      const dex = Number(select.value), pool = G.Moves.poolFor(G.DEX_BY[dex]);
+      const dex = Number(select.value), pool = G.Coverage ? G.Coverage.pool(G.DEX_BY[dex], G.DB.save) : G.Moves.poolFor(G.DEX_BY[dex]);
       const defaults = dex === 260 ? ['water-gun', 'bubble'] : dex === 257 ? ['karate-chop', 'ember'] : ['vine-whip', 'razor-leaf'];
       [1, 2].forEach((n, i) => {
         const el = document.getElementById('rush-move-' + n); el.replaceChildren();

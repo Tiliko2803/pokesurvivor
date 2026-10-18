@@ -4,6 +4,17 @@
  * son los oficiales en inglés.
  */
 G.I18n.add({
+  // Coberturas.
+  "Coberturas": "Coverage",
+  "+1 movimiento compatible de otros tipos para elegir (máx. 3)": "Select +1 compatible move from other types (max. 3)",
+  "Elegir coberturas ({x})": "Choose coverage ({x})",
+  "Coberturas · Movimientos adicionales": "Coverage · Additional moves",
+  "Elige ataques para que puedan salir en las cartas. Puedes cambiarlos antes de cada partida; conservas cuatro espacios de movimientos.": "Choose attacks to add to your card pool. Change them before each run; you keep four move slots.",
+  "Los ataques elegidos también aparecen en Repertorio, Veto y Atajos. Si Veto bloquea uno, no aparecerá en las cartas.": "Selected attacks also appear in Repertoire, Ban and Shortcuts. Banned moves do not appear in cards.",
+  "Vaciar coberturas": "Clear coverage",
+  "Sin compatibles": "No compatible moves",
+  "Este Pokémon no tiene coberturas compatibles entre los movimientos actuales del juego.": "This Pokémon has no compatible coverage among the moves currently in the game.",
+
   '+3% de probabilidad de crítico': '+3% critical hit chance',
   // Mejoras permanentes de octubre.
   "Golpe Devastador": "Devastating Blow",

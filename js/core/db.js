@@ -83,6 +83,7 @@ G.DB = (() => {
       personality: null,      // { trait, scores }
       upgrades: {},           // (antiguo) mejoras de la cuenta; ahora van por Pokémon
       prepertoire: {},        // dex -> ataque extra elegido (null = aleatorio)
+      pcoverage: {},          // dex -> { moves: [id], at }: coberturas y fecha de elección
       pupg: {},               // dex -> { id -> nivel }: mejoras de cada Pokémon
       tickets: { t1: 0, t10: 0 },   // tickets del gacha (x1 y x10)
       pity: {},               // generación del banner -> tiradas sin ★5
@@ -154,6 +155,7 @@ G.DB = (() => {
         s.pban[d] = [...new Set(l.filter(id => typeof id === 'string' && (!G.Moves || G.Moves.BY_ID[id])))].slice(0, 3);
       }
     } else s.pban = {};
+    if (G.Coverage) G.Coverage.sanitize(s);
     // Preferencia de Repertorio; la compatibilidad y Veto se validan al usarla.
     if (!s.prepertoire || typeof s.prepertoire !== 'object' || Array.isArray(s.prepertoire)) s.prepertoire = {};
     for (const [d, id] of Object.entries(s.prepertoire)) {
@@ -261,6 +263,8 @@ G.DB = (() => {
     r.pupgDone = r.pupgDone || older.pupgDone;
     // Preferencias más recientes; conservar las de versiones que aún no tienen el campo.
     r.prepertoire = Object.assign({}, older.prepertoire || {}, newer.prepertoire || {});
+    r.pcoverage = G.Coverage ? G.Coverage.mergeChoices(a.pcoverage, b.pcoverage)
+      : Object.assign({}, older.pcoverage || {}, newer.pcoverage || {});
     // Lo conseguido nunca se pierde: unión de legendarios, arenas, objetos, logros...
     for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach']) {
       r[coll] = r[coll] || {};

@@ -139,6 +139,7 @@ G.Game = (() => {
     runReal = performance.now(); tampered = false;
 
     pl = new G.Player(mon, perks, !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
+    pl.coverage = G.Coverage && !previewId ? G.Coverage.selected(mon, save) : [];
     G.Challenges.bindPlayer(pl);
     banked = { t1: 0, t10: 0 };
     caught = [];

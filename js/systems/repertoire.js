@@ -8,7 +8,8 @@ G.Repertoire = (() => {
   function pool(mon, save, known = [initialMove(mon)]) {
     const perks = G.Upgrades.perks((save.pupg || {})[mon.dex] || {});
     const banned = new Set(((save.pban || {})[mon.dex] || []).slice(0, perks.bans));
-    return G.Moves.poolFor(mon).filter(id =>
+    const learnable = G.Coverage ? G.Coverage.pool(mon, save) : G.Moves.poolFor(mon);
+    return learnable.filter(id =>
       !known.includes(id) && !banned.has(id) && G.Moves.BY_ID[id] && G.Moves.BY_ID[id].kind !== 'buff');
   }
 

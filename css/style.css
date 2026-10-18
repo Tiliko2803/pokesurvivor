@@ -952,3 +952,10 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
   #cards.more-options .nm { font-size: 15px; }
   #cards.more-options .ds { font-size: 12px; }
 }
+
+/* Coberturas: selector reutilizable de ataques compatibles por Pokémon. */
+.coverage-picker .ban-moves { margin-bottom: 10px; }
+.coverage-picker .chip { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.coverage-picker .chip:disabled { opacity: .4; cursor: default; }
+.coverage-type { font-size: 11px; opacity: .8; }
+.coverage-empty { padding: 0 8px; }

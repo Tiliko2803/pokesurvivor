@@ -6,6 +6,14 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Coberturas para tu Pokémon', 'Coverage for your Pokémon'], new: [
+    ['Coberturas tiene tres niveles por Pokémon: elige hasta tres movimientos compatibles de otros tipos desde Mejoras. Podrán salir al subir de nivel sin aumentar tus cuatro espacios de movimientos.',
+     'Coverage has three levels per Pokémon: select up to three compatible moves from other types in Upgrades. They join level-up offers without increasing your four move slots.'],
+    ['Los ataques elegidos se integran con Repertorio, Veto y Atajos, y pueden mejorarse, evolucionar y vincularse. Puedes cambiar la selección entre partidas; se guarda por Pokémon y se sincroniza entre dispositivos.',
+     'Selected attacks work with Repertoire, Ban and Shortcuts, and can be upgraded, evolved and bonded. Change selections between runs; they are saved per Pokémon and synced between devices.'],
+    ['Compatibilidades por especie basadas en aprendizaje por nivel, MT, tutor o crianza de los juegos principales, entre los ataques ya implementados. Mao Mao y Toji tienen listas personalizadas. Los Pokémon sin ataques adicionales compatibles muestran el motivo en Mejoras.',
+     'Species compatibility follows level-up, machine, tutor or egg learning in main-series games, among implemented attacks. Mao Mao and Toji have custom lists. Pokémon without compatible extra attacks show an explanation in Upgrades.']
+  ] },
   { d: '2026-10-18', title: ['Rayquaza cierra el Boss Rush de Hoenn', 'Rayquaza completes the Hoenn Boss Rush'], new: [
     ['Rayquaza llega después de Groudon, Kyogre y cuatro menores. Es el séptimo combate: conserva tu build, entrega un Vínculo al vencerlo y tiene una arena celestial a toda pantalla.',
      'Rayquaza arrives after Groudon, Kyogre and four minor legends. It is the seventh encounter: your build persists, victory grants a Bond, and it has a full-screen celestial arena.'],

@@ -21,7 +21,8 @@ G.Upgrades = (() => {
     { id: 'duration', icon: 'clock', name: 'Persistencia', unit: '+5% de duración de buffs, minas, torretas y rastros (máx. +25%)', max: 5, base: 200, grow: 1.5 },
     { id: 'drain', icon: 'heart', name: 'Drenaje', unit: '+0.2 vida por enemigo derrotado por tu equipo (máx. 1; tope 2 vida/s)', max: 5, base: 300, grow: 1.5 },
     { id: 'lastBreath', icon: 'shield', name: 'Último Aliento', unit: 'Sobrevives con 1 vida y 3 s de invulnerabilidad, una vez por run', max: 1, base: 2500, grow: 1 },
-    { id: 'options', icon: 'cards', name: 'Más Opciones', unit: '+1 carta a elegir por nivel (4 / 5 / 6); recibes una', max: 3, base: 2000, grow: 1, prices: [2000, 6000, 15000] }
+    { id: 'options', icon: 'cards', name: 'Más Opciones', unit: '+1 carta a elegir por nivel (4 / 5 / 6); recibes una', max: 3, base: 2000, grow: 1, prices: [2000, 6000, 15000] },
+    { id: 'coverage', icon: 'book', name: 'Coberturas', unit: '+1 movimiento compatible de otros tipos para elegir (máx. 3)', max: 3, base: 1500, grow: 1, prices: [1500, 4000, 10000] }
   ];
   const BY = {};
   for (const u of LIST) BY[u.id] = u;
@@ -54,7 +55,8 @@ G.Upgrades = (() => {
       durationMul: 1 + L('duration') * 0.05,
       drainPerKill: L('drain') * 0.2,
       lastBreath: L('lastBreath') > 0,
-      cardOptions: 3 + L('options')
+      cardOptions: 3 + L('options'),
+      coverageSlots: L('coverage')
     };
   }
 
