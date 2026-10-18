@@ -3,7 +3,12 @@
  */
 G.Groudon = (() => {
   const BASE_HP = 400000; // Calibrated against a level-10 Mega Blaziken with all gold upgrades.
-  const ARENA = Object.freeze({ left: -480, right: 480, top: -280, bottom: 280 });
+  const ARENA = Object.seal({ left: -480, right: 480, top: -280, bottom: 280 });
+  function resizeArena(width,height) {
+    if(!Number.isFinite(width)||!Number.isFinite(height)||width<=0||height<=0) return false;
+    ARENA.left=-width/2;ARENA.right=width/2;ARENA.top=-height/2;ARENA.bottom=height/2;
+    return true;
+  }
   const NAMES = { blades: 'Filo del Abismo', stomp: 'Terratemblor', eruption: 'Estallido',
     charge: 'Doble Filo', rupture: 'Terremoto' };
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
@@ -69,7 +74,7 @@ G.Groudon = (() => {
         length = Math.max(0, length);
         a.shapes = [{ kind: 'line', ax: b.x, ay: b.y, bx: b.x + nx * length,
           by: b.y + ny * length, width: b.r * 2 + 10 }];
-        a.active = clamp(length / 600, 0.35, 1.25); a.recovery = 1.35; a.damage = 56; a.type = 'normal';
+        a.active = Math.max(length / 600, 0.35); a.recovery = 1.35; a.damage = 56; a.type = 'normal';
       } else if (kind === 'rupture') {
         // Guaranteed reachable refuge centred on a living player. Clear old lava.
         const half = 50, y = clamp(target.y, ARENA.top + half + 20, ARENA.bottom - half - 20);
@@ -194,5 +199,5 @@ G.Groudon = (() => {
     get recovering() { return this.attacks.length>0 && this.attacks.every(a=>a.t>=a.warn+a.active); }
     get label() { return this.recovering?'¡Aprovecha su recuperación!':this.attacks.length?this.attacks.map(a=>a.name).join(' + '):'Busca una buena posición'; }
   }
-  return { Encounter, ARENA, BASE_HP, contains, segmentDistance };
+  return { Encounter, ARENA, BASE_HP, resizeArena, contains, segmentDistance };
 })();

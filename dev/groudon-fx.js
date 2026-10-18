@@ -38,9 +38,9 @@ G.GroudonFX = (() => {
   }
   function blades(c,a,progress,active,fade,density) {
     for(const s of a.shapes) {
-      const count=Math.ceil((s.by-s.ay)/64);
+      const count=Math.min(Math.round(8+8*density),Math.ceil((s.by-s.ay)/64));
       for(let i=0;i<count;i++) {
-        const y=s.ay+35+i*64, x=s.ax, h=(38+noise(i)*30)*active;
+        const y=s.ay+35+i*(s.by-s.ay-70)/Math.max(1,count-1), x=s.ax, h=(38+noise(i)*30)*active;
         line(c,[[x-4,y-25],[x+5,y-9],[x-4,y+9],[x+3,y+26]],'#ffbe73',1+progress*2);
         if(active>0) {
           c.globalAlpha=fade;

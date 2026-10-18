@@ -14,17 +14,8 @@ G.BossRushArena = (() => {
       c.beginPath(); points.forEach(([x,y],i) => i ? c.lineTo(x,y) : c.moveTo(x,y)); c.closePath();
       c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = width; c.stroke(); }
     };
-    const outline = (grow, bevel = 20) => [[left-grow+bevel,top-grow],[right+grow-bevel,top-grow],
-      [right+grow,top-grow+bevel],[right+grow,bottom+grow-bevel],[right+grow-bevel,bottom+grow],
-      [left-grow+bevel,bottom+grow],[left-grow,bottom+grow-bevel],[left-grow,top-grow+bevel]];
-    c.fillStyle = '#1d1b22'; c.fillRect(left-PAD,top-PAD,w+PAD*2,h+PAD*2);
-    // A molten moat stays outside the actual movement boundary.
-    polygon(outline(40,32), '#392526', '#17171e', 10);
-    polygon(outline(31,28), '#a63822', '#612723', 6);
-    polygon(outline(20,24), '#f07830', '#da4e23', 8);
-    polygon(outline(9,20), '#ffb34c', '#f28a33', 4);
-    polygon(outline(0,16), '#393033', '#241f27', 6);
-    c.save(); c.beginPath(); outline(0,16).forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y)); c.closePath(); c.clip();
+    // Continuous floor includes a little overscan for camera shake; no frame or moat.
+    c.fillStyle = '#393033'; c.fillRect(left-PAD,top-PAD,w+PAD*2,h+PAD*2);
     const rockColors = ['#342c30','#403437','#3d3234','#30292e','#443738'];
     for (let i=0;i<135;i++) {
       const x=between(left,right), y=between(top,bottom), rx=between(16,64), ry=between(8,25);
@@ -50,17 +41,6 @@ G.BossRushArena = (() => {
       c.strokeStyle='#503c38'; c.lineWidth=6; c.stroke();
       c.beginPath(); c.ellipse(0,0,110,73,0,angle+.02,angle+.40);
       c.strokeStyle='#2b252b'; c.lineWidth=3; c.stroke();
-    }
-    c.restore();
-    // Uneven basalt ledges frame the arena without covering its playable floor.
-    for(let i=0;i<56;i++) {
-      const side=i%4, along=rand();
-      const x=side<2?left+w*along:side===2?left-37:right+37;
-      const y=side>=2?top+h*along:side===0?top-37:bottom+37;
-      const rx=between(10,25), ry=between(7,15);
-      polygon([[x-rx,y+ry*.4],[x-rx*.7,y-ry*.7],[x+rx*.1,y-ry],[x+rx,y-ry*.1],[x+rx*.7,y+ry]],
-        '#25232a','#15161c',3);
-      polygon([[x-rx*.7,y-ry*.7],[x+rx*.1,y-ry],[x+rx*.65,y-ry*.1],[x-rx*.2,y]],'#493737');
     }
     return canvas;
   }

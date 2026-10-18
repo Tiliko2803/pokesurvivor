@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Arena de Boss Rush a toda pantalla', 'Full-screen Boss Rush arena'], chg: [
+    ['La arena de pruebas se adapta al ancho y alto de la pantalla, con suelo volcánico continuo hasta los bordes y sin el marco de lava. Al girar el celular, los límites y ataques se ajustan al nuevo espacio.',
+     'The playtest arena adapts to the screen width and height, with continuous volcanic flooring to every edge and no lava frame. Rotating your phone adjusts the boundaries and attacks to the new space.']
+  ] },
   { d: '2026-10-17', title: ['Groudon combina sus ataques', 'Groudon combines its attacks'], chg: [
     ['Groudon ataca más seguido: reduce sus esperas y recuperaciones. En la segunda fase combina dos movimientos simultáneos y en la tercera hasta tres, con todos sus avisos y efectos visibles. Terremoto conserva su franja segura y se lanza solo.',
      'Groudon attacks more often with shorter waits and recoveries. Phase two combines two simultaneous moves and phase three up to three, showing every telegraph and effect. Earthquake keeps its safe lane and is cast alone.'],

@@ -331,15 +331,34 @@ G.BossRushPreview = (() => {
       G.Camera.rushOffsetY = 0;
       if (!running) return;
       const r = G.Groudon.ARENA, cam = G.Camera;
-      const [w,h] = args, padding = Math.min(176,h*0.5);
-      cam.scale = Math.min(cam.scale, (w-Math.min(48,w*0.2))/(r.right-r.left), (h-padding)/(r.bottom-r.top));
+      const [w,h] = args, previousWidth=r.right-r.left,previousHeight=r.bottom-r.top;
+      cam.scale = Math.min(w/960,h/560);
       cam.w = w/cam.scale; cam.h = h/cam.scale;
-      // Reserve screen pixels above for the boss bar and below for touch controls.
-      cam.rushOffsetY = padding * (112/176-0.5) / cam.scale;
-      cam.x = ox; cam.y = oy-cam.rushOffsetY;
+      cam.x = ox; cam.y = oy;
+      G.Groudon.resizeArena(cam.w,cam.h);
+      const tileSize=Number.isFinite(G.World.TS)?G.World.TS:32;
+      G.World.setArena({tx:0,ty:0,r:Math.ceil(Math.hypot(cam.w,cam.h)/(2*tileSize))+3,type:'fire'});
+      G.World.arena.th={...G.Tiles.ARENA_THEMES.fire,pools:0,pillars:0,props:{}};
+      // A rotation may shrink one axis dramatically: retire old marks before clamping actors.
+      if(cam.w<previousWidth*.8||cam.h<previousHeight*.8) {
+        if(encounter) {encounter.attacks=[];encounter.hazards=[];encounter.cooldown=Math.max(.8,encounter.cooldown);}
+        if(boss?.ai) {boss.ai.cast=null;boss.ai.melee=[];boss.ai.cd=Math.max(1,boss.ai.cd||0);}
+        G.Projectiles.clear();G.Combat.clearFields();G.Hazards.clear();
+        if(G.Game.player)G.Game.player.invuln=Math.max(1,G.Game.player.invuln);
+      }
+      for(const p of players) {
+        p.x=Math.max(r.left+p.r+6,Math.min(r.right-p.r-6,p.x));
+        p.y=Math.max(r.top+p.r+6,Math.min(r.bottom-p.r-6,p.y));
+      }
+      if(boss) {
+        boss.x=Math.max(ox+r.left+boss.r+6,Math.min(ox+r.right-boss.r-6,boss.x));
+        boss.y=Math.max(oy+r.top+boss.r+6,Math.min(oy+r.bottom-boss.r-6,boss.y));
+      }
     });
     wrap(G.Camera, 'follow', (old, x, y, dt) => old.call(G.Camera, running ? ox : x, running ? oy-(G.Camera.rushOffsetY||0) : y, dt));
-    wrap(G.World, 'drawLiquid', (old, ctx, ...args) => { old(ctx, ...args); draw(ctx); });
+    wrap(G.World, 'drawGround', (old, ...args) => { if(!running)return old(...args); });
+    wrap(G.World, 'visibleProps', (old, ...args) => running?[]:old(...args));
+    wrap(G.World, 'drawLiquid', (old, ctx, ...args) => { if(running)draw(ctx);else old(ctx,...args); });
     wrap(G.HUD, 'draw', (old, ctx, w, ...args) => { old(ctx, w, ...args); hud(ctx, w); });
     wrap(G.Enemy.prototype, 'bossMove', function(old, dt, ...args) {
       if (this.rushMinor) {

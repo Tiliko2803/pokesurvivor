@@ -113,16 +113,18 @@ test('Mega Blaziken is unlocked and equipped in the temporary save and works in 
   assert.deepEqual(f.storage,f.before);
 });
 
-test('Rush arena fits landscape and portrait, contains actors, and restores normal camera after exit',async()=>{
+test('Rush arena fills every viewport edge, contains actors, and restores normal camera after exit',async()=>{
   const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
   const r=G.Groudon.ARENA;
   for(const [w,h] of [[1280,560],[360,720],[960,540]]) {
     G.Camera.resize(w,h,2);
-    assert.ok((16+r.left-G.Camera.left())*G.Camera.scale>=24-1e-9);
-    assert.ok((16+r.top-G.Camera.top())*G.Camera.scale>=112-1e-9);
-    assert.ok((16+r.bottom-G.Camera.top())*G.Camera.scale<=h-64+1e-9);
+    assert.ok(Math.abs((16+r.left-G.Camera.left())*G.Camera.scale)<1e-9);
+    assert.ok(Math.abs((16+r.right-G.Camera.left())*G.Camera.scale-w)<1e-9);
+    assert.ok(Math.abs((16+r.top-G.Camera.top())*G.Camera.scale)<1e-9);
+    assert.ok(Math.abs((16+r.bottom-G.Camera.top())*G.Camera.scale-h)<1e-9);
     assert.ok(Math.abs(G.Camera.w*G.Camera.scale-w)<1e-9);
     assert.ok(Math.abs(G.Camera.h*G.Camera.scale-h)<1e-9);
+    assert.ok(G.World.arena.r*32>Math.hypot(r.right,r.bottom)+32,'Native walls stay beyond visible corners');
   }
   const p=G.Game.player,b=G.BossRushPreview.boss,initialY=b.y;
   f.tick(30); assert.ok(b.y>initialY);
@@ -130,6 +132,22 @@ test('Rush arena fits landscape and portrait, contains actors, and restores norm
   assert.ok(p.x<=16+r.right-p.r-6);assert.ok(p.y>=16+r.top+p.r+6);
   G.Game.quit();f.back();
   assert.ok(Math.abs(G.Camera.scale-1.25)<1e-9);assert.equal(G.Camera.w,768);assert.ok(Math.abs(G.Camera.h-432)<1e-9);
+});
+
+test('Rotation retires old warnings and lava before moving actors into the new bounds',async()=>{
+  const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
+  G.Camera.resize(360,720,2);
+  const e=G.BossRushPreview.encounter,p=G.Game.player,b=G.BossRushPreview.boss;
+  p.y=800;b.y=-700;e.beginCombo(['blades','eruption']);
+  assert.ok(e.findEscape({x:p.x-16,y:p.y-16,r:p.r},e.attacks),'Portrait warnings leave a reachable escape');
+  e.hazards.push({kind:'circle',x:0,y:800,r:45,start:e.clock,end:e.clock+5});
+  const hp=p.hp;G.Camera.resize(960,540,2);
+  assert.equal(e.attacks.length,0);assert.equal(e.hazards.length,0);
+  assert.ok(p.invuln>=1);assert.equal(p.hp,hp);
+  const r=G.Groudon.ARENA;
+  for(const actor of [p,b]) assert.ok(actor.y>=16+r.top+actor.r+6&&actor.y<=16+r.bottom-actor.r-6);
+  e.beginCombo(['blades','eruption']);
+  assert.ok(e.findEscape({x:p.x-16,y:p.y-16,r:p.r},e.attacks),'New warnings leave a reachable escape');
 });
 
 test('Only the major grants one Bond; selecting the native fusion pauses the intermission',async()=>{
