@@ -16,9 +16,9 @@ html = html.replace('<!-- dev.html: página fuente. Aquí se edita; index.html l
 html = html.replace('<script defer src="dev/boss-rush-rules.js"></script>',
   '<script defer src="dev/tyranitar.js"></script>\n<script defer src="dev/boss-rush-rules.js"></script>');
 html = html.replace('<script defer src="dev/groudon.js"></script>',
-  '<script defer src="dev/groudon.js"></script>\n<script defer src="dev/regis.js"></script>\n<script defer src="dev/boss-rush-bars.js"></script>');
+  '<script defer src="dev/groudon.js"></script>\n<script defer src="dev/regis.js"></script>\n<script defer src="dev/eon.js"></script>\n<script defer src="dev/boss-rush-bars.js"></script>');
 html = html.replace('<script defer src="dev/groudon-fx.js"></script>',
-  '<script defer src="dev/groudon-fx.js"></script>\n<script defer src="dev/regis-fx.js"></script>');
+  '<script defer src="dev/groudon-fx.js"></script>\n<script defer src="dev/regis-fx.js"></script>\n<script defer src="dev/eon-fx.js"></script>');
 const scripts = [...html.matchAll(/<script[^>]*src="([^"?]+)(?:\?[^"]*)?"/g)].map(m => m[1]);
 const version = crypto.createHash('sha1').update(html + scripts.map(p => fs.readFileSync(path.join(root, p),'utf8')).join('\n') +
   fs.readFileSync(path.join(root,'dev/boss-rush.css'),'utf8')).digest('hex').slice(0,10);

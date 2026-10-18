@@ -1,15 +1,15 @@
 # Boss Rush de Hoenn · versión de pruebas
 
-La URL `/dev/` usa los módulos actuales del Live y un adaptador aislado. La cuenta real no se modifica. La ruta actual tiene ocho encuentros y diez enemigos:
+La URL `/dev/` usa los módulos actuales del Live y un adaptador aislado. La cuenta real no se modifica. La ruta actual tiene siete encuentros y diez enemigos:
 
 1. **Regirock + Regice + Registeel juntos**, Los Tres Guardianes.
 2. **Groudon**.
-3. Dos menores de Hoenn, uno por encuentro.
+3. **Latios + Latias juntos**, el Dúo Eón.
 4. **Kyogre**.
-5. Los otros dos menores de Hoenn, uno por encuentro.
+5. **Jirachi y Deoxys**, uno por encuentro, en orden aleatorio.
 6. **Rayquaza**.
 
-Los cuatro menores posteriores son Latias, Latios, Jirachi y Deoxys, barajados sin repetir; los Regis iniciales no reaparecen. Jirachi y Deoxys son singulares incluidos expresamente en el grupo de encuentros menores del juego. Los mayores y personajes custom no se sortean como menores.
+El Dúo Eón ocupa un solo encuentro después de Groudon. Jirachi y Deoxys conservan sus dos encuentros individuales tras Kyogre, barajados sin repetir; los Regis y el Dúo Eón no reaparecen. Jirachi y Deoxys son singulares incluidos expresamente en el grupo de encuentros menores del juego. Los mayores y personajes custom no se sortean como menores.
 
 ## Los Tres Guardianes
 
@@ -17,9 +17,15 @@ Diseño, relojes independientes, seguridad de combinaciones, barras y referencia
 
 Cada Regi tiene 44000 PV base y su propia barra; el trío suma 132000 PV en solitario. Regirock crea obstáculos temporales con Tumba Rocas y Avalancha; Regice usa Rayo Hielo y Viento Hielo con ralentización; Registeel combina Foco Resplandor y Garra Metal. Son adaptaciones de movimientos Pokémon para este modo.
 
-Cada movimiento tiene enfriamiento y desfase propios, con como máximo dos lanzamientos simultáneos entre los tres. Se respetan salidas alcanzables, avisos fijos, velocidad del jugador ralentizado y una protección compartida de 0.9 s contra impactos coincidentes. La revisión comprobó que la IA nativa sólo usa `ai.cd`; el nuevo coordinador se aplica a los Regis de esta prueba. La IA normal y los patrones de los mayores se conservan.
+Cada movimiento tiene enfriamiento y desfase propios, con como máximo dos lanzamientos simultáneos entre los tres. Se respetan salidas alcanzables, avisos fijos, velocidad del jugador ralentizado y una protección compartida de 0.9 s contra impactos coincidentes. La revisión comprobó que la IA nativa sólo usa `ai.cd`; el nuevo coordinador se aplica a los grupos de esta prueba. El Dúo Eón reutiliza ese coordinador; la IA normal y los patrones de los mayores se conservan.
 
 Las tres barras comparten el ancho habitual. Al caer un Regi, su barra tiembla, se deforma y se desvanece; las restantes se redistribuyen. El grupo termina sólo cuando caen los tres. Las bajas parciales no curan ni entregan experiencia o Vínculo.
+
+## Dúo Eón
+
+Detalle del modelo, seguridad, efectos y balance en [EON.md](EON.md). Latios y Latias tienen 190000 PV cada uno (380000 conjuntos en solitario), sin Megas. Comparten Cabezazo Zen, Pulso Dragón y Psíquico con las mismas animaciones: Latios persigue a corta distancia y Latias retrocede y orbita. Cabezazo Zen desplaza al lanzador por una trayectoria fija anunciada y daña con su cuerpo; Pulso Dragón es un proyectil único; Psíquico marca áreas fijas.
+
+Usan el mismo coordinador de desincronización que los Regis: seis relojes independientes, desfases de inicio, como máximo dos movimientos simultáneos, salidas alcanzables y protección compartida. Cada barra tiene el color de su Pokémon y la superviviente se amplía al caer el otro. No se entrega nada por bajas parciales; al vencer a ambos se reciben seis niveles base de XP y una curación del 20%. No dan Vínculo.
 
 ## Preparación y progresión
 
@@ -27,8 +33,8 @@ Las tres barras comparten el ancho habitual. Al caer un Regi, su barra tiembla, 
 - Cuatro Pokémon de prueba: Swampert, Blaziken, Sceptile y Tyranitar. Las tres piedras Mega están desbloqueadas y equipadas; se pueden quitar desde el menú. Mega Tyranitar: [MEGA-TYRANITAR.md](MEGA-TYRANITAR.md).
 - Dos ataques iniciales distintos, al menos uno de daño. El movimiento propio de cada Mega empieza en nivel 2 si se elige: Terratemblor, Golpe Kárate o Lanzarrocas.
 - Se conservan movimientos, cartas y estadísticas durante todos los encuentros. Sólo los mayores dan un Vínculo; se usa el sistema nativo de fusión, con intermedio pausado mientras se elige.
-- El trío inicial entrega una única recompensa de dos niveles base y 20% de vida al caer los tres. Desde Groudon, cada victoria da XP equivalente a los requisitos de tres niveles siguientes, 20% de curación y tres segundos de intermedio. Se conservan bonos de experiencia y reparto nativo de orbes.
-- Sin bonos se llega a Groudon a nivel 10, Kyogre a 19 y Rayquaza a 28, terminando en 31. Con Sabiduría de oro máxima y sin cartas de Aprendizaje, las referencias llegan en niveles 10/22/34.
+- El trío inicial entrega una única recompensa de dos niveles base y 20% de vida al caer los tres. El Dúo Eón entrega seis niveles base en una única recompensa; las victorias individuales posteriores dan XP equivalente a los requisitos de tres niveles siguientes, 20% de curación y tres segundos de intermedio. Se conservan bonos de experiencia y reparto nativo de orbes.
+- Sin bonos se llega a Groudon a nivel 10, Kyogre a 19 y Rayquaza a 28, terminando en 31. Con Sabiduría de oro máxima y sin cartas de Aprendizaje, las referencias llegan en niveles 10/21/33; el bono se aplica a una recompensa conjunta del dúo en vez de dos victorias separadas.
 - La vida de cada enemigo se multiplica una sola vez por el número de jugadores inicial. Las bajas y salidas no reducen esa cifra. La entrada cooperativa y sincronización del modo siguen pendientes; el escalado se verifica con equipos simulados.
 
 ## Vida y dificultad
@@ -37,16 +43,15 @@ Las tres barras comparten el ancho habitual. Al caer un Regi, su barra tiembla, 
 | --- | ---: | ---: | ---: |
 | Tres Regis juntos | 44000 cada uno | 21 base, movimientos 18–24 | Relojes por movimiento |
 | Groudon | 400000 | Patrones propios | Por fases |
-| Menor posterior 1 | 800000 | 36 | ×1.21 |
-| Menor posterior 2 | 1200000 | 40 | ×1.255 |
+| Dúo Eón | 190000 cada uno | Movimientos 33–40 | Relojes por movimiento |
 | Kyogre | 2500000 | Patrones propios | Por fases |
-| Menor posterior 3 | 2400000 | 44 | ×1.30 |
-| Menor posterior 4 | 3600000 | 48 | ×1.345 |
+| Jirachi / Deoxys, primero | 2400000 | 44 | ×1.30 |
+| Jirachi / Deoxys, segundo | 3600000 | 48 | ×1.345 |
 | Rayquaza | 5000000 | Patrones propios | Por fases |
 
 No hay vida adaptativa al DPS, regeneración del jefe para alargar peleas ni invulnerabilidad por tiempo. Se conservan tipos, defensa, críticos y estados. En los menores individuales sólo se reduce la espera entre ataques; sus avisos, proyectiles y movimiento conservan las reglas normales. La cadencia total con furia no supera ×1.5.
 
-La revisión anterior con Deoxys mostró que 240000 PV para un primer menor individual podían dar 5:54 contra Jirachi incluso con oro máximo. El trío no reutiliza tres veces ese presupuesto. La referencia nueva completa dura aproximadamente 1:25 con Deoxys y 0:32 con Mega Blaziken. Son simulaciones ofensivas, con daño recibido ignorado y posición controlada, no partidas humanas.
+La revisión anterior con Deoxys mostró que 240000 PV para un primer menor individual podían dar 5:54 contra Jirachi incluso con oro máximo. El trío no reutiliza tres veces ese presupuesto. La referencia nueva completa dura aproximadamente 1:25 con Deoxys y 0:32 con Mega Blaziken. El Dúo Eón completo da 1:06 con Mega Blaziken y 1:52 con Deoxys. Son simulaciones ofensivas, con daño recibido ignorado y posición controlada, no partidas humanas.
 
 Los menores posteriores conservan la referencia de 1–2 minutos con Mega Blaziken potente, oro máximo, evoluciones, Vínculo y 85% de tiempo atacando; las builds, tipos y ejecución cambian la duración. La referencia anterior de 12:11 del dueño corresponde a la ruta antigua de siete combates.
 
@@ -62,11 +67,11 @@ Los mayores conservan su protección compartida de 0.9 s. Sus relojes y avisos s
 
 ## Arena y efectos
 
-Arena a pantalla completa: mínimo de 960×560 unidades, tamaño adaptado a la proporción y paredes fuera de las esquinas. Suelo continuo, sin cuadrícula, marco ni obstáculos aleatorios. Los mayores usan roca volcánica, fondo marino y templo celestial. Toda la decoración es transitable; las rocas temporales anunciadas de Regirock sí tienen colisión.
+Arena a pantalla completa: mínimo de 960×560 unidades, tamaño adaptado a la proporción y paredes fuera de las esquinas. Suelo continuo, sin cuadrícula, marco ni obstáculos aleatorios. Los mayores usan roca volcánica, fondo marino y templo celestial. El Dúo Eón combate también en el templo celestial. Toda la decoración es transitable; las rocas temporales anunciadas de Regirock sí tienen colisión.
 
 Actores, patrones y cámara comparten `G.Groudon.ARENA`. Al girar y reducir mucho un eje, se eliminan señales anteriores y se concede un segundo de protección al recolocar todos los actores. Al salir se restaura la cámara normal.
 
-Los efectos se dibujan en un lienzo de baja resolución ampliado sin suavizado. Los atlas generados existentes aportan roca/lava/agua/hielo y ataques de Rayquaza; procedencia en `assets/boss-rush/README.md`. Los Regis usan el haz de hielo continuo existente y píxeles propios de roca/acero/garras. Los renders no cambian el combate ni consumen su azar. Las opciones gráficas reducen partículas; pausa congela efectos y barras.
+Los efectos se dibujan en un lienzo de baja resolución ampliado sin suavizado. Los atlas generados existentes aportan roca/lava/agua/hielo y ataques de Rayquaza; procedencia en `assets/boss-rush/README.md`. Los Regis usan el haz de hielo continuo existente y píxeles propios de roca/acero/garras. Los renders no cambian el combate ni consumen su azar. El Dúo Eón añade estelas, pulsos y anillos dibujados a píxeles, sin consumir azar del combate. Las opciones gráficas reducen partículas; pausa congela efectos y barras.
 
 ## Recursos y aislamiento
 
@@ -80,8 +85,8 @@ No se carga configuración Firebase ni se registra service worker. Se conserva `
 
 Sólo para cambios de este prototipo se ejecuta `node tools/build-boss-rush-preview.cjs`; genera exclusivamente `dev/index.html`. Nunca se regenera el `index.html` oficial, bundle ni `version.json`. Se publica con los archivos concretos sobre el `main` más reciente para conservar trabajo concurrente.
 
-Pruebas relevantes: `tests/regis.test.cjs`, `tests/regis-integration.test.cjs`, `tests/regis-duration.test.cjs`, `tests/boss-rush-rules.test.cjs` y las de integración, duración, geometría y efectos de los tres mayores. También se mantienen las regresiones de Coberturas, mejoras de oro y las Megas. Bancos nativos: `tools/benchmark-regis.cjs`, `tools/benchmark-minors.cjs`, `tools/benchmark-groudon.cjs`, `tools/benchmark-kyogre.cjs` y `tools/benchmark-rayquaza.cjs`.
+Pruebas relevantes: `tests/eon.test.cjs`, `tests/eon-integration.test.cjs`, `tests/eon-duration.test.cjs`, `tests/regis.test.cjs`, `tests/regis-integration.test.cjs`, `tests/regis-duration.test.cjs`, `tests/boss-rush-rules.test.cjs` y las de integración, duración, geometría y efectos de los tres mayores. También se mantienen las regresiones de Coberturas, mejoras de oro y las Megas. Bancos nativos: `tools/benchmark-eon.cjs`, `tools/benchmark-regis.cjs`, `tools/benchmark-minors.cjs`, `tools/benchmark-groudon.cjs`, `tools/benchmark-kyogre.cjs` y `tools/benchmark-rayquaza.cjs`.
 
 Las pruebas de integración usan el Game, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con interfaz simulada. La revisión visual usa Canvas nativo y sprites reales; no sustituye probar en navegador o Android. Pendientes: cooperativo del modo y balance humano de la ruta nueva.
 
-Hoenn Primigenio se hará después: cinco Regis o Regigigas al 50% de la vida conjunta, y Mega Latias/Latios. No forman parte de esta entrega del encuentro inicial normal.
+Hoenn Primigenio se hará después: cinco Regis o Regigigas al 50% de la vida conjunta, y Mega Latias/Latios. No forman parte de Hoenn Normal.

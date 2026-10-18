@@ -20,7 +20,7 @@ G.BossRushBars = class {
       c.fillStyle='#15121ef5';c.fillRect(-bw/2,-14,bw,37);
       c.textAlign='center';c.font='bold 11px monospace';c.fillStyle='#f1eadc';c.fillText(e.boss.name,-0,0,Math.max(1,bw-8));
       c.fillStyle='#4e2b35';c.fillRect(-bw/2+3,6,bw-6,7);
-      c.fillStyle=e.boss.dex===377?'#dbaf72':e.boss.dex===378?'#83dff5':'#c2d4e8';
+      c.fillStyle=e.boss.dex===380?'#f191a4':e.boss.dex===381?'#79bdff':e.boss.dex===377?'#dbaf72':e.boss.dex===378?'#83dff5':'#c2d4e8';
       c.fillRect(-bw/2+3,6,(bw-6)*Math.max(0,e.boss.hp/e.boss.maxHp),7);
       c.font='9px monospace';c.fillStyle='#ffffff';c.fillText(dying?'DERROTADO':Math.ceil(Math.max(0,e.boss.hp)).toLocaleString('es-MX')+' PV',0,22,Math.max(1,bw-8));c.restore();
     }

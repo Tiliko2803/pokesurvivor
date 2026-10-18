@@ -21,13 +21,13 @@ G.BossRushPreview = (() => {
   const relativeBoss = { get x() { return boss.x - ox; }, set x(v) { boss.x = ox + v; },
     get y() { return boss.y - oy; }, set y(v) { boss.y = oy + v; }, get r() { return boss.r; },
     get hp() { return boss.hp; }, get maxHp() { return boss.maxHp; }, get dead() { return boss.dead; } };
-  const effects = () => encounter?.id==='regis'?G.RegisFX:boss?.dex===384?G.RayquazaFX:boss?.dex === 382 ? G.KyogreFX : G.GroudonFX;
-  const arenaType = () => stage>=G.BossRushRules.MAJOR_STAGES.rayquaza?'flying':stage >= G.BossRushRules.MAJOR_STAGES.kyogre ? 'water' : 'fire';
+  const effects = () => encounter?.id==='eon'?G.EonFX:encounter?.id==='regis'?G.RegisFX:boss?.dex===384?G.RayquazaFX:boss?.dex === 382 ? G.KyogreFX : G.GroudonFX;
+  const arenaType = () => stage===2||stage>=G.BossRushRules.MAJOR_STAGES.rayquaza?'flying':stage >= G.BossRushRules.MAJOR_STAGES.kyogre ? 'water' : 'fire';
   function signal(kind, data) {
-    if(encounter?.id==='regis'){
+    if(encounter?.members){
       const actor=data?.owner?.source;
-      if(kind==='attack'){actor.anim.play('Charge');G.Spawner.say(data.owner.name+' · '+data.name,data.warn,true);}
-      if(kind==='impact'){actor.anim.play(['rocks','slide','claw'].includes(data.kind)?'Attack':'Shoot');G.Audio.sfx('shot',{kind:'beam',type:data.type});}
+      if(kind==='attack'){const pl=G.Game.player;actor.anim.dir=G.Sprites.dirFromAngle(Math.atan2(pl.y-actor.y,pl.x-actor.x));actor.anim.play('Charge');G.Spawner.say(data.owner.name+' · '+data.name,data.warn,true);}
+      if(kind==='impact'){actor.anim.play(['rocks','slide','claw','zen'].includes(data.kind)?'Attack':'Shoot');G.Audio.sfx('shot',{kind:'beam',type:data.type});}
       if(kind==='recovery')actor.anim.loop('Idle');
       return;
     }
@@ -62,12 +62,12 @@ G.BossRushPreview = (() => {
   }
   function start() {
     const p = G.Game.player;
-    const minors = G.BossRushRules.selectMinors(G.DEX.filter(m=>!G.Regis.IDS.includes(m.dex)), G.SPRITE_META, 4);
-    route = [{dex:377,members:G.Regis.IDS,major:false},
+    const minors = G.BossRushRules.selectMinors(G.DEX.filter(m=>[385,386].includes(m.dex)), G.SPRITE_META, 2);
+    route = [{dex:377,members:G.Regis.IDS,group:'regis',title:'Los Tres Guardianes',major:false},
       { dex: 383, major: true, hp: G.Groudon.BASE_HP, damage: 42 },
-      ...minors.slice(0,2).map(dex => ({ dex, major: false })),
+      {dex:381,members:G.Eon.IDS,group:'eon',title:'Dúo Eón',major:false,hp:G.Eon.BASE_HP,damage:34,attackRate:1},
       {dex:382,major:true,hp:G.Kyogre.BASE_HP,damage:50},
-      ...minors.slice(2).map(dex => ({dex,major:false})),
+      ...minors.map(dex => ({dex,major:false})),
       {dex:384,major:true,hp:G.Rayquaza.BASE_HP,damage:54}];
     ox = 16; oy = 16; p.x = ox; p.y = oy + 85;
     p.moves = []; p.slots = []; p.active = 0; p.bind = {}; p.bonds = 0;
@@ -97,7 +97,7 @@ G.BossRushPreview = (() => {
   }
   function spawnStage() {
     const def = route[stage], p = G.Game.player;
-    const stats = def.major ? def : G.BossRushRules.minorStats(stage);
+    const stats = def.major || def.group==='eon' ? def : G.BossRushRules.minorStats(stage);
     G.Projectiles.clear(); G.Combat.clearFields(); G.Hazards.clear();
     defeated = false; transition = 0;
     p.slowT=0;
@@ -111,8 +111,8 @@ G.BossRushPreview = (() => {
       dmg: def.major ? 0 : stats.damage,
       xp: def.members?0:G.BossRushRules.rewardXp(G.Player.xpFor, p.level, G.BossRushRules.rewardLevels(stage)),
       behavior: def.major || !ranged ? 'charger' : 'ranged',
-      shotDmg: stats.damage * 0.55, shotCd: 1.2, range: 300 }, ox+(def.members?(i-1)*170:0), oy - (def.members&&i===1?150:65), { hp: 1, spd: 1, dmg: 1 }, true);
-    b.rushBoss = def.major; b.rushMinor = !def.major; b.rushRegi=!!def.members;b.legend = false;
+      shotDmg: stats.damage * 0.55, shotCd: 1.2, range: 300 }, ox+(def.members?(def.group==='eon'?(i-.5)*220:(i-1)*170):0), oy - (def.members&&i===1?150:65), { hp: 1, spd: 1, dmg: 1 }, true);
+    b.rushBoss = def.major; b.rushMinor = !def.major; b.rushGroup=!!def.members;b.legend = false;
     b.rushAttackRate = def.major ? 1 : stats.attackRate;
     b.touchCd = def.major||def.members ? 999 : 1.5;
     G.EnemyMgr.add(b);return b;
@@ -127,9 +127,9 @@ G.BossRushPreview = (() => {
         if(before>pl.hp&&effect?.slow)pl.slowT=Math.max(pl.slowT,effect.slow);
         return Math.max(0, before - pl.hp);
       },signal};
-    encounter = def.members?new G.Regis.Encounter({...options,bosses:bosses.map(b=>({dex:b.dex,name:b.name,source:b,get x(){return b.x-ox;},set x(v){b.x=ox+v;},get y(){return b.y-oy;},set y(v){b.y=oy+v;},r:b.r,get hp(){return b.hp;},get maxHp(){return b.maxHp;},get dead(){return b.dead;}}))}):def.major?new Encounter(options):null;
+    encounter = def.members?new (def.group==='eon'?G.Eon.Encounter:G.Regis.Encounter)({...options,bosses:bosses.map(b=>({dex:b.dex,name:b.name,source:b,get x(){return b.x-ox;},set x(v){b.x=ox+v;},get y(){return b.y-oy;},set y(v){b.y=oy+v;},r:b.r,get hp(){return b.hp;},get maxHp(){return b.maxHp;},get dead(){return b.dead;}}))}):def.major?new Encounter(options):null;
     G.Sprites.preload([...bosses.map(b=>b.dex), p.dex], 8000);
-    G.Spawner.say(def.members?'Los Tres Guardianes · ¡Vence a los tres Regis!':def.major ? boss.name+(def.dex===384?' · Señor de los cielos':def.dex===382?' · El océano despierta':' · El despertar') : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);
+    G.Spawner.say(def.members?def.title+' · ¡Vence a todos!':def.major ? boss.name+(def.dex===384?' · Señor de los cielos':def.dex===382?' · El océano despierta':' · El despertar') : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);
   }
   function offerPreparation() {
     if (!preparing) return;
@@ -190,8 +190,8 @@ G.BossRushPreview = (() => {
       const warning = a.t < a.warn;
       ctx.setLineDash(warning ? [7, 5] : []);
       const palette = effects().palette(a.kind);
-      const shapes=!warning&&['kyogre','regis'].includes(encounter.id)?encounter.hitShapes(a):a.shapes;
-      const spriteImpact=!warning&&(encounter.id==='regis'||encounter.id==='rayquaza'||encounter.id==='kyogre'&&['surf','hydro','ice'].includes(a.kind));
+      const shapes=!warning&&['kyogre','regis','eon'].includes(encounter.id)?encounter.hitShapes(a):a.shapes;
+      const spriteImpact=!warning&&(encounter.members||encounter.id==='rayquaza'||encounter.id==='kyogre'&&['surf','hydro','ice'].includes(a.kind));
       if(!spriteImpact)for (const s of shapes) paintShape(ctx, s, warning ? palette.warning : palette.impact, palette.edge);
       for(const safe of a.safes||(a.safe?[a.safe]:[])) {
         ctx.setLineDash([]); paintShape(ctx, safe, '#48d8bd30', '#8ffff0');
@@ -212,7 +212,7 @@ G.BossRushPreview = (() => {
   }
   function hud(ctx, w) {
     if (!running || !boss) return;
-    if(bars){bars.draw(ctx,w);ctx.save();ctx.font='11px monospace';ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.fillText(transition?'¡Guardianes derrotados! · Recupera fuerzas':'Los Tres Guardianes · '+bosses.filter(b=>!b.dead).length+'/3 · '+Math.floor(encounter.clock)+' s',w/2,114);ctx.restore();return;}
+    if(bars){bars.draw(ctx,w);ctx.save();ctx.font='11px monospace';ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.fillText(transition?'¡'+route[stage].title+' derrotado! · Recupera fuerzas':route[stage].title+' · '+bosses.filter(b=>!b.dead).length+'/'+bosses.length+' · '+Math.floor(encounter.clock)+' s',w/2,114);ctx.restore();return;}
     const width = Math.min(420, w - 80), x = (w - width) / 2;
     ctx.save(); ctx.fillStyle = '#15121ef5'; ctx.fillRect(x - 10, 63, width + 20, 42);
     ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffe2ba';
@@ -228,7 +228,7 @@ G.BossRushPreview = (() => {
     const root = document.createElement('section'); root.id = 'scr-boss-rush'; root.className = 'scr dim hidden';
     root.innerHTML = `<div class="panel rush-setup"><span class="rush-kicker">BOSS RUSH · HOENN</span>
       <h1>El trío de Hoenn</h1><p>Tres legendarios mayores. Aprende sus señales, esquiva y contraataca.</p>
-      <div class="rush-route"><b>Tres Regis → Groudon → 2 menores → Kyogre → 2 menores → Rayquaza</b><span>Los Tres Guardianes combaten juntos, con ataques desfasados y barras individuales.</span></div>
+      <div class="rush-route"><b>Tres Regis → Groudon → Dúo Eón → Kyogre → Jirachi / Deoxys → Rayquaza</b><span>Los Regis y el Dúo Eón combaten en grupo, con ataques desfasados y barras individuales.</span></div>
       <div class="rush-fields"><label>Tu Pokémon<select id="rush-partner"></select></label>
       <label>Ataque 1<select id="rush-move-1"></select></label><label>Ataque 2<select id="rush-move-2"></select></label></div>
       <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
@@ -361,10 +361,10 @@ G.BossRushPreview = (() => {
         boss.y = Math.max(oy + r.top + 6 + boss.r, Math.min(oy + r.bottom - 6 - boss.r, boss.y));
       }
       if (bosses.length&&bosses.every(b=>b.dead) && !defeated) {
-        if(route[stage].members)G.Pickups.dropXp(ox,oy,G.BossRushRules.rewardXp(G.Player.xpFor,G.Game.player.level,2),true,false,true);
+        if(route[stage].members)G.Pickups.dropXp(ox,oy,G.BossRushRules.rewardXp(G.Player.xpFor,G.Game.player.level,G.BossRushRules.rewardLevels(stage)),true,false,true);
         defeated = true; transition = 3; G.Hazards.clear(); G.Projectiles.clear(); G.Combat.clearFields();
         G.Game.player.heal(G.Game.player.maxHp * 0.2); G.Pickups.pullAll();
-        G.Spawner.say('¡' + boss.name + ' derrotado! · +20% de vida', 2.5, true);
+        G.Spawner.say('¡' + (route[stage].title||boss.name) + ' derrotado! · +20% de vida', 2.5, true);
       } else if (transition > 0 && !G.Game.player.dead) {
         transition -= dt;
         if (transition <= 0) {
@@ -420,15 +420,15 @@ G.BossRushPreview = (() => {
       return old.call(this, dt, ...args);
     });
     wrap(G.Enemy.prototype, 'update', function(old, dt, p) {
-      if (!this.rushBoss&&!this.rushRegi) return old.call(this, dt, p);
+      if (!this.rushBoss&&!this.rushGroup) return old.call(this, dt, p);
       this.anim.update(dt); this.flash = Math.max(0, this.flash - dt); this.touchCd = 999;
       if(this.slowT>0){this.slowT-=dt;if(this.slowT<=0)this.slow=0;}
       const ascent=this.dex===384?encounter?.attacks.find(a=>a.kind==='ascent'):null;
       this.jumpLift=ascent&&ascent.t<ascent.warn?Math.sin(Math.min(1,ascent.t/ascent.warn)*Math.PI)*70:0;
       if (this.dead) { this.fade -= dt; return; }
-      const casting=this.rushRegi?encounter?.attacks.some(a=>a.owner.source===this&&a.t<a.warn+a.active):encounter?.attack&&!encounter.recovering;
+      const casting=this.rushGroup?encounter?.attacks.some(a=>a.owner.source===this&&a.t<a.warn+a.active):encounter?.attack&&!encounter.recovering;
       if (!casting) {
-        const moving=this.rushRegi?encounter?.movingMembers.has(encounter.members.find(b=>b.source===this)):encounter?.moving;
+        const moving=this.rushGroup?encounter?.movingMembers.has(encounter.members.find(b=>b.source===this)):encounter?.moving;
         this.anim.loop(moving ? 'Walk' : 'Idle');
         if (moving) this.anim.dir = G.Sprites.dirFromAngle(Math.atan2(p.y - this.y, p.x - this.x));
       }

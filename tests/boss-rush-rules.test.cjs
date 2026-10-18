@@ -37,7 +37,7 @@ test('Sorteo sin repeticiones, sólo especies elegibles con sprites',()=>{
 });
 test('The trio has 44k HP per Regi and later minor budgets retain their previous progression',()=>{
   const base=R.minorStats(0);let prev=base;
-  for(const stage of [2,3,5,6]){
+  for(const stage of [4,5]){
     const cur=R.minorStats(stage);
     assert.ok(cur.hp>prev.hp && cur.damage>prev.damage);
     assert.ok(cur.hp/base.hp>cur.damage/base.damage);
@@ -47,13 +47,13 @@ test('The trio has 44k HP per Regi and later minor budgets retain their previous
   }
   assert.equal(base.hp,44000);assert.equal(base.damage,21);assert.equal(base.attackRate,1.12);
   assert.equal(prev.hp,3600000);assert.ok(prev.damage<50);
-  for(const stage of [-1,1,4,7,8,9,1.5,NaN])assert.throws(()=>R.minorStats(stage));
+  for(const stage of [-1,1,2,3,6,7,8,9,1.5,NaN])assert.throws(()=>R.minorStats(stage));
 });
 test('The trio rewards two base levels once; later rewards still reach Groudon 10, Kyogre 19 and Rayquaza 28',()=>{
   let level=8,xp=0;
-  const levels=[8,10,13,16,19,22,25,28];
-  for(let stage=0;stage<8;stage++){
-    assert.equal(level,levels[stage]);assert.equal(R.rewardLevels(stage),stage===0?2:3);
+  const levels=[8,10,13,19,22,25,28];
+  for(let stage=0;stage<7;stage++){
+    assert.equal(level,levels[stage]);assert.equal(R.rewardLevels(stage),stage===0?2:stage===2?6:3);
     xp+=R.rewardXp(G.Player.xpFor,level,R.rewardLevels(stage));
     while(xp>=G.Player.xpFor(level)){xp-=G.Player.xpFor(level);level++;}
   }

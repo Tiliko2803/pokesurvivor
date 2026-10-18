@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['El Dúo Eón llega al Boss Rush', 'The Eon Duo joins Boss Rush'], new: [
+    ['Latios y Latias luchan juntos después de Groudon en la prueba de Hoenn Normal, con 190000 PV base por Pokémon. Comparten Cabezazo Zen, Pulso Dragón y Psíquico: Latios persigue de cerca y Latias mantiene distancia. Sus ataques tienen avisos fijos, relojes desfasados y efectos de píxeles propios.',
+     'Latios and Latias fight together after Groudon in the Normal Hoenn preview, with 190,000 base HP each. They share Zen Headbutt, Dragon Pulse and Psychic: Latios pursues up close and Latias keeps her distance. Their attacks have fixed warnings, staggered clocks and dedicated pixel effects.'],
+    ['Cada uno tiene su barra de vida; al caer uno, la barra restante se amplía. La recompensa llega al vencer a ambos: seis niveles base de experiencia y una curación del 20%, sin Vínculo. Jirachi y Deoxys conservan sus encuentros individuales después de Kyogre.',
+     'Each has an independent health bar; when one falls, the remaining bar expands. Defeating both grants six base levels of XP and one 20% heal, without a Bond. Jirachi and Deoxys retain their individual encounters after Kyogre.']
+  ] },
   { d: '2026-10-18', title: ['Los Tres Guardianes abren Hoenn', 'The Three Guardians open Hoenn'], new: [
     ['Regirock, Regice y Registeel luchan juntos antes de Groudon en la prueba de Hoenn Normal. Cada uno tiene 44000 PV base por jugador y su barra independiente dentro del ancho habitual. Al caer, la barra tiembla, se deforma y desaparece; las restantes se recolocan.',
      'Regirock, Regice and Registeel fight together before Groudon in the Normal Hoenn preview. Each has 44,000 base HP per player and an independent bar within the usual total width. Defeated bars shake, twist and fade; the remaining bars reflow.'],

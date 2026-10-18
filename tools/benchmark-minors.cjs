@@ -3,7 +3,7 @@
  * Incoming damage is ignored; 85% casting uptime approximates time spent dodging.
  * These are offensive references, not a promise for every species, build or player. */
 const {simulate:run}=require('./benchmark-kyogre.cjs');
-const STAGES=[2,3,5,6];
+const STAGES=[4,5];
 const simulate=options=>run({minorDex:385,...options});
 module.exports={simulate,STAGES};
 if(require.main===module)(async()=>{
