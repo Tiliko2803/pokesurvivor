@@ -6,6 +6,14 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Nieve Polvo evoluciona a Ventisca', 'Powder Snow evolves into Blizzard'], chg: [
+    ['Nieve Polvo Nv. 5 evoluciona con Carrera a Ventisca: ×1,8 daño, +50% de radio y ralentización del 65% en un área completa alrededor del Pokémon, con copos en pixel art.',
+     'Level 5 Powder Snow evolves with Sprint into Blizzard: ×1.8 damage, +50% radius and 65% slowing in a full area around the Pokémon, with pixel-art snowflakes.'],
+    ['La evolución de Rayo Hielo se llama Rayo Polar y conserva su comportamiento y potencia de rayo. Ventisca identifica ahora la evolución de área de Nieve Polvo.',
+     'Ice Beam now evolves into Polar Beam, retaining its beam behavior and power. Blizzard now identifies Powder Snow’s area evolution.'],
+    ['Coberturas reconoce la rama Nieve Polvo → Ventisca cuando la especie puede aprender Ventisca, incluido Swampert. Se muestra la rama completa al elegirla.',
+     'Coverage recognizes the Powder Snow → Blizzard branch when a species can learn Blizzard, including Swampert. The full branch is shown in the picker.']
+  ] },
   { d: '2026-10-18', title: ['Coberturas para tu Pokémon', 'Coverage for your Pokémon'], new: [
     ['Coberturas tiene tres niveles por Pokémon: elige hasta tres movimientos compatibles de otros tipos desde Mejoras. Podrán salir al subir de nivel sin aumentar tus cuatro espacios de movimientos.',
      'Coverage has three levels per Pokémon: select up to three compatible moves from other types in Upgrades. They join level-up offers without increasing your four move slots.'],

@@ -159,6 +159,18 @@ G.VFX = (() => {
       P.set(1, 1, 'd'); P.set(1, 3, 'd');
       P.outline();
     } },
+    snowflake: { w: 11, h: 11, frames: 2, spin: true, gen(P, f) {
+      for (let i = -4; i <= 4; i++) {
+        P.set(5 + i, 5, Math.abs(i) > 2 ? 'm' : 'l');
+        P.set(5, 5 + i, Math.abs(i) > 2 ? 'm' : 'l');
+      }
+      for (const [dx, dy] of [[1,1],[-1,1],[1,-1],[-1,-1]]) {
+        for (let i = 1; i <= 3; i++) P.set(5 + dx * i, 5 + dy * i, 'l');
+        P.set(5 + dx * 2, 5 + dy * 4, f ? 'm' : 'l');
+        P.set(5 + dx * 4, 5 + dy * 2, f ? 'l' : 'm');
+      }
+      P.set(5, 5, 'w'); P.set(4, 5, 'w'); P.set(6, 5, 'w');
+    } },
     star: { w: 11, h: 11, frames: 2, spin: true, gen(P, f) {
       const L = f ? 3 : 4;
       for (let i = -L; i <= L; i++) { P.set(5 + i, 5, Math.abs(i) === L ? 'm' : 'l'); P.set(5, 5 + i, Math.abs(i) === L ? 'm' : 'l'); }
@@ -351,7 +363,7 @@ G.VFX = (() => {
     'rock-throw':    { proj: 'rock', trail: 'dirt' },
     'rock-slide':    { proj: 'rock', trail: 'dirt' },
     'ice-beam':      { beam: 'shard' },
-    'powder-snow':   { aura: 'star' },
+    'powder-snow':   { aura: 'snowflake' },
     'karate-chop':   { melee: 'impact' },
     'aura-sphere':   { proj: 'ball', pal: 'aura', trail: 'spark' },
     'lick':          { melee: 'impact' },

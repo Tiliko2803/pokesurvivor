@@ -21,8 +21,13 @@ form IDs are never treated as National Dex numbers. No learnset is inferred
 from another family member. Current Megas share their base species and types;
 if later transformations change types, the ordinary pool is filtered at runtime.
 Already available same-type and Normal moves are removed from the coverage list.
-Only the 64 implemented moves are considered, not their evolution names as
-separate attacks. For example, Sludge Bomb is represented by evolved Sludge.
+Only the 64 implemented base moves are selectable; their evolutions are not
+separate attacks. Explicit family aliases in the generator also accept the
+final move's official learnset for the associated base branch. Currently this
+is `powder-snow` -> `blizzard`, so Swampert can select Powder Snow -> Blizzard
+because it learns Blizzard. The picker labels the whole branch. This does not
+grant every Ice move or infer compatibility from another Pokémon's learnset.
+Sludge Bomb remains the evolution of Sludge, rather than a separate move.
 
 The snapshot yields extra choices for 919 of the 966 catalog species. Species
 without extra implemented moves show an explanation and cannot buy the upgrade.

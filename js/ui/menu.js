@@ -375,8 +375,10 @@ G.MenuUI = (() => {
       <p class="sub">Elige ataques para que puedan salir en las cartas. Puedes cambiarlos antes de cada partida; conservas cuatro espacios de movimientos.</p>
       <p class="sub">Los ataques elegidos también aparecen en Repertorio, Veto y Atajos. Si Veto bloquea uno, no aparecerá en las cartas.</p>
       <div class="ban-moves">${ids.map(id => { const m = G.Moves.BY_ID[id], on = selected.includes(id);
+        const family = G.CoverageData.families && G.CoverageData.families[id] && G.Moves.EVO[id];
+        const label = family ? m.name + ' → ' + family[0] : m.name;
         return `<button type="button" class="chip ${on ? 'on' : ''}" data-coverage-id="${id}" aria-pressed="${on}" ${!on && selected.length >= slots ? 'disabled' : ''}>
-          ${G.Icons.html('move:' + id, 16)} ${m.name} <span class="coverage-type">${G.U.TYPE_NAME[m.type]}</span>${banned.has(id) ? ' · Veto' : ''}</button>`;
+          ${G.Icons.html('move:' + id, 16)} ${label} <span class="coverage-type">${G.U.TYPE_NAME[m.type]}</span>${banned.has(id) ? ' · Veto' : ''}</button>`;
       }).join('')}</div><button type="button" class="btn small ghost" data-coverage-clear ${selected.length ? '' : 'disabled'}>Vaciar coberturas</button>`;
     const commit = ids => {
       if (!G.Coverage.choose(mon, s, ids)) return;

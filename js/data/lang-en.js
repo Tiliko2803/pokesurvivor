@@ -4,6 +4,11 @@
  * son los oficiales en inglés.
  */
 G.I18n.add({
+  // Evoluciones de Hielo.
+  "Rayo Polar": "Polar Beam",
+  "Nieve en área a tu alrededor que ralentiza; evoluciona a Ventisca.": "Slowing snow around you; evolves into Blizzard.",
+  "×1,8 daño, +50% de radio y ralentiza un 65% en 360°": "×1.8 damage, +50% radius and 65% slow in all directions",
+
   // Coberturas.
   "Coberturas": "Coverage",
   "+1 movimiento compatible de otros tipos para elegir (máx. 3)": "Select +1 compatible move from other types (max. 3)",

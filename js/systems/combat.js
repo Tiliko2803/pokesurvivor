@@ -189,14 +189,15 @@ G.Combat = (() => {
     G.FX.ring(pl.x, pl.y, m.radius * 0.5, m.radius, col, 0.28, 2);
     const vis = G.VFX.forMove(m);
     if (vis.aura) {
-      for (let i = 0; i < 5; i++) {
+      const storm = m.id === 'powder-snow' && m.evolved;
+      for (let i = 0; i < (storm ? 14 : 5); i++) {
         const a = Math.random() * 6.2832, r = m.radius * G.U.rand(0.45, 1);
         const x = pl.x + Math.cos(a) * r, y = pl.y + Math.sin(a) * r * 0.8 - G.LIFT * 0.5;
         // Hierba Lazo tira hacia ti; veneno y sombras suben; el resto gira.
         const v = vis.inward ? [-Math.cos(a) * r * 2.2, -Math.sin(a) * r * 1.8]
                 : vis.rise ? [G.U.rand(-10, 10), -55]
-                : [-Math.sin(a) * 70, Math.cos(a) * 55];
-        G.FX.sp(vis.aura, vis.pal, x, y, { vx: v[0], vy: v[1], life: 0.42,
+                : [-Math.sin(a) * (storm ? 125 : 70), Math.cos(a) * (storm ? 100 : 55)];
+        G.FX.sp(vis.aura, vis.pal, x, y, { vx: v[0], vy: v[1], life: storm ? 0.5 : 0.42, scale: storm ? G.U.rand(0.65, 1.05) : 1,
           spin: G.VFX.spins(vis.aura) ? G.U.rand(-6, 6) : 0 });
       }
     }

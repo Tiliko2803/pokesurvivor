@@ -25,7 +25,7 @@ const root=path.join(__dirname,'..'),port=8897;
    await page.locator('[data-go="upgrades"]').click();
    const row=id=>page.locator('.upg-item').filter({has:page.locator('b',{hasText:new RegExp('^'+id+'$')})});
    const coverage=row(lang==='en'?'Coverage':'Coberturas');
-   for(const [i,id]of ['ice-beam','rock-slide','toxic'].entries()){
+   for(const [i,id]of ['powder-snow','rock-slide','toxic'].entries()){
     const price=[1500,4000,10000][i],before=await page.evaluate(()=>G.DB.save.coins);
     assert.match(await coverage.locator('[data-buy]').innerText(),new RegExp(String(price)));
     await coverage.locator('[data-buy]').click();
@@ -36,15 +36,15 @@ const root=path.join(__dirname,'..'),port=8897;
    }
    assert.equal(await coverage.locator('[data-buy]').isDisabled(),true);
    await row(lang==='en'?'Repertoire':'Repertorio').locator('[data-buy]').click();
-   await page.locator('[data-repertoire]').click();await page.locator('[data-repertoire-id="ice-beam"]').click();
-   assert.equal(await page.evaluate(()=>G.DB.save.prepertoire[260]),'ice-beam');
+   await page.locator('[data-repertoire]').click();await page.locator('[data-repertoire-id="powder-snow"]').click();
+   assert.equal(await page.evaluate(()=>G.DB.save.prepertoire[260]),'powder-snow');
    await row(lang==='en'?'Ban':'Veto').locator('[data-buy]').click();await page.locator('[data-ban]').click();
-   await page.locator('.ban-picker:not(.coverage-picker):not(.repertoire-picker) [data-id="ice-beam"]').click();
+   await page.locator('.ban-picker:not(.coverage-picker):not(.repertoire-picker) [data-id="powder-snow"]').click();
    assert.equal(await page.evaluate(()=>G.Repertoire.selected(G.DEX_BY[260],G.DB.save)),null);
-   await page.locator('.ban-picker:not(.coverage-picker):not(.repertoire-picker) [data-id="ice-beam"]').click();
-   assert.equal(await page.evaluate(()=>G.Repertoire.selected(G.DEX_BY[260],G.DB.save)),'ice-beam');
-   const selection=await page.evaluate(()=>G.Coverage.selected(G.DEX_BY[260],G.DB.save));assert.deepEqual(selection,['ice-beam','rock-slide','toxic']);
-   assert.ok(await page.locator('[data-slot="0"] option[value="ice-beam"]').count());
+   await page.locator('.ban-picker:not(.coverage-picker):not(.repertoire-picker) [data-id="powder-snow"]').click();
+   assert.equal(await page.evaluate(()=>G.Repertoire.selected(G.DEX_BY[260],G.DB.save)),'powder-snow');
+   const selection=await page.evaluate(()=>G.Coverage.selected(G.DEX_BY[260],G.DB.save));assert.deepEqual(selection,['powder-snow','rock-slide','toxic']);
+   assert.ok(await page.locator('[data-slot="0"] option[value="powder-snow"]').count());
    const button=page.locator('[data-coverage-id="toxic"]');await button.scrollIntoViewIfNeeded();
    const box=await button.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=viewport.width+1,JSON.stringify(box));
    await page.screenshot({path:`/tmp/coverage-${viewport.width}-${lang}.png`});
@@ -52,11 +52,26 @@ const root=path.join(__dirname,'..'),port=8897;
    assert.deepEqual(await page.evaluate(()=>G.Coverage.selected(G.DEX_BY[260],G.DB.save)),selection);
    await page.evaluate(()=>{G.Flow.goMenu();document.getElementById('tap-start').classList.add('hidden');G.Game.startRun();G.Game.player.invuln=999;});
    assert.deepEqual(await page.evaluate(()=>G.Game.player.coverage),selection);
-   assert.deepEqual(await page.evaluate(()=>G.Game.player.moves.map(m=>m.id)),['water-gun','ice-beam']);
+   assert.deepEqual(await page.evaluate(()=>G.Game.player.moves.map(m=>m.id)),['water-gun','powder-snow']);
    assert.equal(await page.evaluate(()=>G.Game.player.maxMoves),4);
+   await page.evaluate(()=>{
+    const p=G.Game.player,m=p.moves.find(m=>m.id==='powder-snow');
+    while(m.lvl<m.def.maxLvl)G.Moves.levelUp(m);p.statsTaken.spd=1;
+    const card=G.LevelUp.offer(p).find(c=>c.key==='evo:powder-snow');
+    if(!card)throw new Error('Missing Blizzard evolution card');card.apply(p);p.setActive(1);
+   });
+   assert.equal(await page.evaluate(()=>G.Game.player.activeMove().name),'Ventisca');
+   assert.equal(await page.evaluate(()=>G.Game.player.activeMove().kind),'aura');
+   const pixels=await page.evaluate(()=>{
+    const canvas=G.VFX.sprite('snowflake','ice',0),ctx=canvas.getContext('2d');
+    return [ctx.getImageData(0,0,1,1).data[3],ctx.getImageData(Math.floor(canvas.width/2),Math.floor(canvas.height/2),1,1).data[3]];
+   });
+   assert.deepEqual(pixels,[0,255]);
+   await page.waitForFunction(()=>G.Game.player.activeMove().castAt>0);
+   await page.screenshot({path:`/tmp/blizzard-${viewport.width}-${lang}.png`});
    // End only the local test run; do not touch live Firebase or real accounts.
    await page.evaluate(()=>{G.Game.quit();G.Flow.goMenu();});await page.locator('[data-go="upgrades"]').click();
-   if(!(await page.locator('[data-coverage-id="ice-beam"]').count()))await page.locator('[data-coverage]').click();
+   if(!(await page.locator('[data-coverage-id="powder-snow"]').count()))await page.locator('[data-coverage]').click();
    await page.locator('[data-coverage-clear]').click();
    assert.deepEqual(await page.evaluate(()=>G.Coverage.selected(G.DEX_BY[260],G.DB.save)),[]);
    await page.locator('#upg-mon').selectOption('129');assert.equal(await coverage.locator('[data-buy]').isDisabled(),true);

@@ -21,6 +21,9 @@ CACHE = ROOT / 'tools' / 'cache' / 'coverage' / SOURCE_SHA
 FILES = ['moves.csv', 'pokemon.csv', 'pokemon_moves.csv', 'pokemon_move_methods.csv', 'version_groups.csv']
 METHODS = {'level-up', 'egg', 'tutor', 'machine'}
 EXCLUDED_GAMES = {'colosseum', 'xd', 'champions'}
+# Learning the final move unlocks its playable base branch (Powder Snow -> Blizzard).
+# Kept explicit; unrelated same-type attacks never grant compatibility.
+FAMILY_ALIASES = {'powder-snow': ['blizzard']}
 # Explicit game-design lists for gift characters, never PokéAPI form IDs 10001/10002.
 CUSTOM = {
     '10001': ['thunderbolt', 'rock-slide', 'confusion'],
@@ -60,6 +63,11 @@ console.log(JSON.stringify({mons:G.DEX,moves:G.Moves.ALL.map(m=>m.id),pool:G.Mov
         raise ValueError(f'Game moves missing from PokéAPI: {missing}')
     moves = catalog['moves']
     index_by_id = {move_ids[name]: i for i, name in enumerate(moves)}
+    for root, aliases in FAMILY_ALIASES.items():
+        for name in aliases:
+            if name not in move_ids or root not in moves:
+                raise ValueError(f'Unknown coverage family: {root} / {name}')
+            index_by_id[move_ids[name]] = moves.index(root)
     mons = {int(mon['dex']): mon for mon in catalog['mons']}
     pokemon = {int(p['id']): p for p in tables['pokemon.csv']}
     for dex in mons:
@@ -79,6 +87,7 @@ console.log(JSON.stringify({mons:G.DEX,moves:G.Moves.ALL.map(m=>m.id),pool:G.Mov
         'excludedGames': sorted(EXCLUDED_GAMES),
         'sha256': {name: hashlib.sha256(data).hexdigest() for name, data in raw.items()},
         'moves': moves,
+        'families': FAMILY_ALIASES,
         'learnsets': {str(dex): sorted(ids) for dex, ids in sorted(learnsets.items())},
         'custom': CUSTOM,
     }

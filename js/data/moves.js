@@ -290,7 +290,7 @@
       cd: 1.1, dmg: 20, radius: 220, width: 30, slow: 0.7 },
 
     { id: 'powder-snow', name: 'Nieve Polvo', type: 'ice', kind: 'aura',
-      desc: 'Ventisca a tu alrededor que ralentiza.',
+      desc: 'Nieve en área a tu alrededor que ralentiza; evoluciona a Ventisca.',
       cd: 0.55, dmg: 8, radius: 76, slow: 0.45 },
 
     // ---------------- LUCHA ----------------
@@ -507,8 +507,8 @@
     'gust': ['Vendaval', 'spd'],             'wing-attack': ['Pájaro Osado', 'atk'],
     'bug-bite': ['Tijera X', 'atk'],         'string-shot': ['Red Viscosa', 'cd'],
     'bug-buzz': ['Enjambre', 'rgn'],         'rock-throw': ['Roca Afilada', 'atk'],
-    'rock-slide': ['Trampa Rocas', 'cd'],    'ice-beam': ['Ventisca', 'atk'],
-    'powder-snow': ['Viento Hielo', 'spd'],  'karate-chop': ['A Bocajarro', 'atk'],
+    'rock-slide': ['Trampa Rocas', 'cd'],    'ice-beam': ['Rayo Polar', 'atk'],
+    'powder-snow': ['Ventisca', 'spd'],  'karate-chop': ['A Bocajarro', 'atk'],
     'aura-sphere': ['Onda Certera', 'cd'],   'lick': ['Puño Sombra', 'atk'],
     'shadow-ball': ['Golpe Fantasma', 'cd'], 'dragon-rage': ['Cometa Draco', 'atk'],
     'fairy-wind': ['Fuerza Lunar', 'atk'],   'dazzling-gleam': ['Campo de Niebla', 'rgn'],
@@ -522,8 +522,12 @@
     'aerial-ace': ['Acróbata', 'spd'],       'flame-wheel': ['Envite Ígneo', 'spd'],
     'bubble-beam': ['Acua Cola', 'atk'],     'hex': ['Poltergeist', 'mag']
   };
-  // Evoluciones propias de las danzas; no habilitan los demás potenciadores.
+  // Evoluciones específicas; los buffs no registrados siguen sin evolucionar.
   const EVO_BY_ID = {
+    'powder-snow': {
+      t: '×1,8 daño, +50% de radio y ralentiza un 65% en 360°',
+      m: { dmg: 1.8, radius: 1.5, slow: 0.65 }
+    },
     'swords-dance': {
       t: '8 acumulaciones de +30% de ataque (máximo +240%) durante 12 s',
       m: { stacks: 1, amount: 0.30 / (0.13 * 1.40 * 1.40), dur: 12 / (7 * 1.50) }
