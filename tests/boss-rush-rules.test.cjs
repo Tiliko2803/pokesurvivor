@@ -4,6 +4,14 @@ const root=path.join(__dirname,'..'),ctx=vm.createContext({G:{}});
 for(const file of ['js/data/pokedex.js','js/data/sprites-meta.js','js/entities/player.js','dev/boss-rush-rules.js'])
   vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx,{filename:file});
 const {G}=ctx,R=G.BossRushRules;
+test('Vida de mayores y menores se multiplica exactamente por jugadores',()=>{
+  for(const n of [1,2,3,4]){
+    assert.equal(R.bossHp(400000,n),400000*n);
+    assert.equal(R.bossHp(R.minorStats(2).hp,n),R.minorStats(2).hp*n);
+  }
+  assert.equal(R.bossHp(400000),400000);
+  assert.equal(R.bossHp(400000,0),400000);
+});
 test('Todos los mayores acordados, protagonistas DLC y personajes custom quedan fuera',()=>{
   for(const dex of [150,249,250,382,383,384,483,484,487,493,643,644,646,716,717,718,791,792,800,888,889,890,892,898,1007,1008,1017,1024,10001,10002])
     assert.equal(R.eligibleMinor({dex,leg:true},{[dex]:{}}),false,String(dex));

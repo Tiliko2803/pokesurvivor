@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Vida de jefes por equipo', 'Boss health per team'], chg: [
+    ['El Boss Rush prepara el escalado de vida para cooperativo: los mayores y menores tendrán su vida base multiplicada por el número de jugadores al iniciar la partida. Caer durante el intento no reduce esa vida. La entrada cooperativa sigue pendiente.',
+     'Boss Rush prepares cooperative health scaling: major and minor bosses will have their base health multiplied by the starting player count. Going down during the run does not reduce that health. Cooperative entry is still pending.']
+  ] },
   { d: '2026-10-17', title: ['Arena de Boss Rush a toda pantalla', 'Full-screen Boss Rush arena'], chg: [
     ['La arena de pruebas se adapta al ancho y alto de la pantalla, con suelo volcánico continuo hasta los bordes y sin el marco de lava. Al girar el celular, los límites y ataques se ajustan al nuevo espacio.',
      'The playtest arena adapts to the screen width and height, with continuous volcanic flooring to every edge and no lava frame. Rotating your phone adjusts the boundaries and attacks to the new space.']

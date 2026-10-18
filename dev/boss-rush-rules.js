@@ -20,6 +20,10 @@ G.BossRushRules = (() => {
     return { hp: Math.round(3200 * 1.18 ** n), damage: Math.round(27 * 1.07 ** n),
       attackRate: Math.min(1.30, 1 + 0.035 * n) };
   }
+  function bossHp(baseHp, playerCount = 1) {
+    const count = Number.isSafeInteger(playerCount) && playerCount > 0 ? playerCount : 1;
+    return Math.round(baseHp * count);
+  }
   // Change only the wait between casts. Do not accelerate tells, movement, or projectiles.
   function extraCooldownDecay(attackRate, fury) {
     const normal = fury ? 1.25 : 1;
@@ -30,5 +34,5 @@ G.BossRushRules = (() => {
     for (let i = 0; i < levels; i++) total += xpFor(level + i);
     return total;
   }
-  return { eligibleMinor, selectMinors, minorStats, extraCooldownDecay, rewardXp };
+  return { eligibleMinor, selectMinors, minorStats, bossHp, extraCooldownDecay, rewardXp };
 })();

@@ -16,6 +16,7 @@ G.BossRushPreview = (() => {
     get y() { return p.y - oy; }, set y(v) { p.y = oy + v; }, r: p.r, get dead() { return p.dead; }, source: p }));
   // Stable player identities are needed to enforce one hit per attack.
   let players = [];
+  let partySize = 1;
   const relativeBoss = { get x() { return boss.x - ox; }, set x(v) { boss.x = ox + v; },
     get y() { return boss.y - oy; }, set y(v) { boss.y = oy + v; }, get r() { return boss.r; },
     get hp() { return boss.hp; }, get maxHp() { return boss.maxHp; }, get dead() { return boss.dead; } };
@@ -70,6 +71,8 @@ G.BossRushPreview = (() => {
     G.World.arena.th = { ...G.Tiles.ARENA_THEMES.fire, pools: 0, pillars: 0, props: {} };
     G.World.setBiome(G.Tiles.arenaBiome('fire'), true);
     players = localPlayers();
+    // Keep the starting roster size for the whole run, including downed teammates.
+    partySize = Math.max(1, players.length);
     running = true; ending = false; won = false; stage = 0;
     refreshCamera();
     spawnStage();
@@ -85,7 +88,7 @@ G.BossRushPreview = (() => {
     const ranged = mon.types.some(t => ['psychic','electric','ghost','fairy','fire','water','ice','dragon'].includes(t));
     G.Projectiles.clear(); G.Combat.clearFields(); G.Hazards.clear();
     defeated = false; transition = 0;
-    boss = new G.Enemy({ dex: def.dex, name: mon.name, hp: stats.hp,
+    boss = new G.Enemy({ dex: def.dex, name: mon.name, hp: G.BossRushRules.bossHp(stats.hp, partySize),
       spd: def.major ? 0 : Math.round(G.U.clamp(48 + (mon.spd - 78) * 0.6, 48, 105)),
       dmg: def.major ? 0 : stats.damage,
       xp: G.BossRushRules.rewardXp(G.Player.xpFor, p.level),

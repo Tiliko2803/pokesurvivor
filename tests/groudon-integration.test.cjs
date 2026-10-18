@@ -1,5 +1,29 @@
 const { test } = require('node:test'), assert = require('node:assert/strict');
 const { fixture } = require('./helpers/boss-rush-fixture.cjs');
+test('Boss Rush snapshots roster size and multiplies every boss HP without compounding or changing damage',async()=>{
+  for(const n of [1,2,3,4]){
+    const f=fixture(),{G}=f;await G.DB.ready();
+    const mates=Array.from({length:n-1},()=>({x:16,y:101,r:12,dead:false}));
+    const born=[],add=G.EnemyMgr.add.bind(G.EnemyMgr);
+    G.EnemyMgr.add=b=>{born.push({hp:b.hp,maxHp:b.maxHp});return add(b);};
+    G.Game.everyone=()=>[G.Game.player,...mates];
+    G.BossRushPreview.play();f.prepare();
+    let b=G.BossRushPreview.boss;
+    assert.equal(b.maxHp,400000*n);assert.equal(b.hp,b.maxHp);
+    assert.equal(G.BossRushPreview.encounter.players().length,n);
+    for(const p of mates)p.dead=true;
+    G.Game.everyone=()=>[G.Game.player]; // Leaving/downed teammates do not shrink later bosses.
+    for(const stage of [1,2]){
+      b.hurt(99999999);f.tick(201);b=G.BossRushPreview.boss;
+      assert.equal(G.BossRushPreview.stage,stage);
+      const base=G.BossRushRules.minorStats(stage);
+      assert.equal(b.maxHp,base.hp*n);assert.equal(born[stage].hp,b.maxHp);
+      assert.equal(b.dmg,base.damage);assert.equal(b.rushAttackRate,base.attackRate);
+    }
+    G.Game.quit();f.back();G.BossRushPreview.play();
+    assert.equal(G.BossRushPreview.boss.maxHp,400000,'A new solo attempt resets the multiplier');
+  }
+});
 test('Engine integration: temporary session, real moves hit Groudon, no ranking or account writes', async () => {
   const f=fixture(),{G}=f; await G.DB.ready(); assert.equal(G.DB.guest,true);
   G.BossRushPreview.play(); assert.equal(G.Game.state,'paused'); assert.equal(G.Game.player.level,8);
