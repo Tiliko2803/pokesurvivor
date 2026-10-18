@@ -6,6 +6,15 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Jirachi abre el observatorio de los deseos', 'Jirachi opens the wish observatory'], new: [
+    ['Jirachi tiene un combate propio en la prueba de Hoenn con Deseo Oculto, Rapidez, Foco Resplandor y Psíquico. Sus fases cambian al 70% y 35%: primero ataques individuales, después hasta dos movimientos desfasados y finalmente avisos más rápidos.',
+     'Jirachi has a dedicated Hoenn preview encounter with Doom Desire, Swift, Flash Cannon and Psychic. Phases change at 70% and 35%: single attacks first, then up to two staggered moves, followed by faster warnings.'],
+    ['Deseo Oculto conserva 2.5 segundos de aviso en la fase 2; al terminar sus ataques pendientes deja una ventana para contraatacar. Las estrellas y el anillo psíquico dañan con sus posiciones visibles. Estrena arena de constelaciones y efectos en píxeles dorados, plateados y violetas.',
+     'Doom Desire keeps a 2.5-second warning in phase two; after pending attacks finish, Jirachi leaves a counterattack window. Stars and the psychic ring deal damage at their visible positions. The fight features a constellation arena and gold, silver and violet pixel effects.']
+  ], chg: [
+    ['Jirachi tiene 600000 o 900000 PV base según su posición después de Kyogre. La referencia con Deoxys normal ronda 1–2 minutos; una Mega Blaziken optimizada gana bastante antes. Se conservan las recompensas de menor, sin Vínculo.',
+     'Jirachi has 600,000 or 900,000 base HP depending on its slot after Kyogre. The normal Deoxys reference lasts around 1–2 minutes; optimized Mega Blaziken wins substantially faster. Minor rewards are preserved, without a Bond.']
+  ] },
   { d: '2026-10-18', title: ['Los mayores desincronizan sus ataques', 'Major bosses stagger their attacks'], chg: [
     ['Groudon, Kyogre y Rayquaza tienen enfriamientos y desfases independientes por movimiento en la prueba del Boss Rush. Pueden preparar un ataque mientras otro sigue en curso, con hasta uno, dos o tres movimientos según la fase y separación entre avisos e impactos.',
      'Groudon, Kyogre and Rayquaza have independent move cooldowns and offsets in the Boss Rush preview. They can prepare a move while another is still running, with up to one, two or three moves by phase and spacing between warnings and impacts.'],

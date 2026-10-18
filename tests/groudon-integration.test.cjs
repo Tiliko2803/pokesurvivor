@@ -29,7 +29,7 @@ test('Boss Rush snapshots roster size and multiplies every boss HP without compo
         assert.equal(G.BossRushPreview.encounter.players().length,n);continue;
       }
       const base=stage===2?{hp:G.Eon.BASE_HP,damage:34,attackRate:1}:G.BossRushRules.minorStats(stage);
-      assert.equal(b.maxHp,base.hp*n);assert.equal(born.find(x=>x.dex===b.dex).hp,b.maxHp);
+      assert.equal(b.maxHp,(b.dex===385?G.Jirachi.hpForStage(stage):base.hp)*n);assert.equal(born.find(x=>x.dex===b.dex).hp,b.maxHp);
       assert.equal(b.dmg,base.damage);assert.equal(b.rushAttackRate,base.attackRate);
     }
     G.Game.quit();f.back();G.BossRushPreview.play();
@@ -107,13 +107,13 @@ test('Seven encounters start with three simultaneous Regis, retain fair XP, majo
       assert.equal(e.id,stage===0?'regis':'eon');assert.equal(G.BossRushPreview.bosses.length,stage===0?3:2);
       for(const b of G.BossRushPreview.bosses){assert.ok(!seen.has(b.dex));seen.add(b.dex);}
     }else{
-      assert.equal(e,null);assert.ok(G.BossRushRules.eligibleMinor(G.DEX_BY[b.dex],G.SPRITE_META));
+      if(b.dex===385){assert.equal(e.id,'jirachi');assert.equal(e.phase,1);}else assert.equal(e,null);assert.ok(G.BossRushRules.eligibleMinor(G.DEX_BY[b.dex],G.SPRITE_META));
       assert.ok(!seen.has(b.dex));seen.add(b.dex);
       assert.equal(p.bonds,0);
-      if(previous)assert.ok(b.maxHp>previous.hp&&b.dmg>previous.damage&&b.rushAttackRate>previous.rate);
+      if(previous)assert.ok(b.dmg>previous.damage&&b.rushAttackRate>previous.rate);
       previous={hp:b.maxHp,damage:b.dmg,rate:b.rushAttackRate};
     }
-    assert.equal(G.World.arena.type,stage===2||stage===6?'flying':stage>=3?'water':'fire');
+    assert.equal(G.World.arena.type,b.dex===385||stage===2||stage===6?'flying':stage>=3?'water':'fire');
     assert.equal(G.World.arena.th.pools,0);assert.equal(G.World.arena.th.pillars,0);
     for(const b of G.BossRushPreview.bosses){b.hurt(1e12);b.die();}assert.equal(p.bonds,[1,3,6].includes(stage)?1:0);
     f.tick(201);

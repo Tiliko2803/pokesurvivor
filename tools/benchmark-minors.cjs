@@ -1,5 +1,5 @@
-/* Native Boss Rush minor combat, legal Mega Blaziken cards and prior XP/Bonds.
- * Jirachi is a neutral Fighting matchup with real native boss movement and hitboxes.
+/* Boss Rush minor combat in the native engine, legal Mega Blaziken cards and prior XP/Bonds.
+ * Jirachi now uses its scripted encounter; Deoxys retains its native patterns.
  * Incoming damage is ignored; 85% casting uptime approximates time spent dodging.
  * These are offensive references, not a promise for every species, build or player. */
 const {simulate:run}=require('./benchmark-kyogre.cjs');

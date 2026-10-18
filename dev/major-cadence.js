@@ -1,4 +1,4 @@
-/* Independent move clocks for the three preview majors. Geometry, damage, FX and
+/* Independent move clocks for scripted preview encounters. Geometry, damage, FX and
  * native hit grace stay in their encounter models; group encounters are untouched. */
 G.MajorCadence=(()=>{
   const {contains}=G.Groudon;
@@ -25,19 +25,21 @@ G.MajorCadence=(()=>{
     if(top<r.bottom)a.shapes.push({kind:'rect',left:r.left,right:r.right,top,bottom:r.bottom});
   }
   class Cadence {
-    constructor(e){
+    constructor(e,options={}){
       Object.defineProperty(this,'e',{value:e});this.id=e.id||'groudon';this.lastStart=-99;this.lastImpact=-99;
-      this.schedules=PROFILES[this.id].map(([kind,offset,cd])=>({kind,offset,cd,readyAt:offset,casts:0,retryAt:0}));
+      this.options=options;this.restUntil=0;this.restPending=false;
+      this.schedules=(options.profile||PROFILES[this.id]).map(([kind,offset,cd])=>({kind,offset,cd,readyAt:offset,casts:0,retryAt:0}));
     }
+    get limit(){return this.options.limits?.[this.e.phase]??this.e.phase;}
     specialDue(){
       const e=this.e;
       if(this.id==='groudon')return e.phase===3&&!e.ruptured?'rupture':null;
       if(this.id==='kyogre')return e.rainPhase<e.phase?'rain':e.phase>=2&&e.pulsePhase<e.phase?'pulse':null;
-      return e.phase>=2&&e.meteorPhase<e.phase?'meteor':null;
+      return this.id==='rayquaza'&&e.phase>=2&&e.meteorPhase<e.phase?'meteor':null;
     }
     compatible(a,checkImpact=true){
       const e=this.e;
-      if(e.finished||e.boss.dead||e.boss.hp<=0||e.attacks.length>=e.phase||this.e.clock-this.lastStart<startGap(e.phase)-1e-9)return false;
+      if(e.finished||e.boss.dead||e.boss.hp<=0||e.attacks.length>=this.limit||this.restPending||e.clock<this.restUntil||this.e.clock-this.lastStart<startGap(e.phase)-1e-9)return false;
       if(e.attacks.some(b=>b.kind===a.kind||EXCLUSIVE.has(b.kind)||EXCLUSIVE.has(a.kind)))return false;
       const live=e.attacks.filter(b=>b.t<b.warn+b.active);
       // A boss cannot charge/dive while emitting a beam or anchoring a stomp.
@@ -77,7 +79,9 @@ G.MajorCadence=(()=>{
       e.signal('attack',a);return true;
     }
     choose(){
-      const e=this.e;if(e.cooldown>0||e.attacks.length>=e.phase||e.clock-this.lastStart<startGap(e.phase)-1e-9||e.attacks.some(a=>EXCLUSIVE.has(a.kind)))return;
+      const e=this.e;
+      if(this.restPending){if(!e.attacks.length){this.restPending=false;this.restUntil=e.clock+(this.options.rest||1);}return;}
+      if(e.cooldown>0||e.clock<this.restUntil||e.attacks.length>=this.limit||e.clock-this.lastStart<startGap(e.phase)-1e-9||e.attacks.some(a=>EXCLUSIVE.has(a.kind)))return;
       const special=this.specialDue();
       if(special){if(!e.attacks.length&&e.clock>=(this.specialRetry||0)&&!this.begin(special))this.specialRetry=e.clock+.25;return;}
       const due=this.schedules.filter(m=>m.readyAt<=e.clock&&m.retryAt<=e.clock).sort((a,b)=>a.readyAt-b.readyAt);
@@ -96,7 +100,7 @@ G.MajorCadence=(()=>{
       e.onImpact(a);e.signal('impact',a);
     }
     interrupt(){
-      const e=this.e;e.attacks=[];e.hazards=[];this.lastStart=e.clock;e.cooldown=1;this.specialRetry=e.clock+1;
+      const e=this.e;e.attacks=[];e.hazards=[];this.restPending=false;this.restUntil=0;this.lastStart=e.clock;e.cooldown=1;this.specialRetry=e.clock+1;
       for(const [i,m]of this.schedules.entries()){m.readyAt=Math.max(m.readyAt,e.clock+1+i*.25);m.retryAt=0;}
     }
     update(dt){
@@ -116,6 +120,7 @@ G.MajorCadence=(()=>{
         if(before<a.warn+a.active&&a.t>=a.warn+a.active){
           if(a.kind==='charge'){const s=a.shapes[0];e.boss.x=s.bx;e.boss.y=s.by;}
           e.onRecovery(a);e.signal('recovery',a);
+          if(this.options.restAfter?.includes(a.kind))this.restPending=true;
         }
       }
       e.resolveHits();e.attacks=e.attacks.filter(a=>a.t<a.warn+a.active+a.recovery);
@@ -123,9 +128,9 @@ G.MajorCadence=(()=>{
       this.choose();e.updateHazards();
     }
   }
-  function attach(e){
+  function attach(e,options){
     if(!e||e.members||e.cadence)return e;
-    const c=e.cadence=new Cadence(e);e.schedules=c.schedules;
+    const c=e.cadence=new Cadence(e,options);e.schedules=c.schedules;
     e.update=dt=>c.update(dt);e.begin=kind=>c.begin(kind);e.chooseAttack=()=>c.choose();e.interrupt=()=>c.interrupt();
     // Legacy tooling starts the first eligible move; later casts belong to the scheduler.
     e.beginCombo=kinds=>Array.isArray(kinds)&&kinds.some(kind=>c.begin(kind));

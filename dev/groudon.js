@@ -19,6 +19,7 @@ G.Groudon = (() => {
   }
   function contains(s, p) {
     const r = p.r || 0;
+    if(s.kind==='ring'){const d=Math.hypot(p.x-s.x,p.y-s.y);return d<s.outer+r&&d>s.inner-r;}
     if (s.kind === 'circle') return Math.hypot(p.x - s.x, p.y - s.y) < s.r + r;
     if (s.kind === 'line') return segmentDistance(p.x, p.y, s.ax, s.ay, s.bx, s.by) < s.width / 2 + r;
     return p.x + r > s.left && p.x - r < s.right && p.y + r > s.top && p.y - r < s.bottom;

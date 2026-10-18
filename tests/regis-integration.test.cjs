@@ -8,6 +8,7 @@ test('The opening trio has separate HP; partial kills grant no XP, heal or victo
   assert.equal(G.BossRushPreview.stage,0);assert.equal(p.level,8);assert.equal(p.xp,0);assert.equal(p.hp,30);assert.equal(p.bonds,0);
   assert.ok(bs[1].hp>0&&bs[2].hp>0);assert.equal(G.BossRushPreview.boss.dex,378);
   bs[1].hurt(1e10);f.tick(60);assert.equal(G.BossRushPreview.stage,0);
+  const offer=G.LevelUp.offer;G.LevelUp.offer=pl=>{for(let i=0;i<100;i++){const card=offer(pl,100).find(c=>c.key==='stat:atk');if(card)return [card];}throw Error('No legal reward card');};
   bs[2].hurt(1e10);f.tick(201);assert.equal(G.BossRushPreview.stage,1);assert.equal(G.BossRushPreview.boss.dex,383);
   assert.equal(p.level,10);assert.equal(p.hp,30+p.maxHp*.2);assert.equal(p.bonds,0);
   assert.deepEqual(f.storage,f.before);assert.equal(f.rankings(),0);

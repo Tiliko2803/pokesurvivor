@@ -14,6 +14,21 @@ G.BossRushArena = (() => {
       c.beginPath(); points.forEach(([x,y],i) => i ? c.lineTo(x,y) : c.moveTo(x,y)); c.closePath();
       c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = width; c.stroke(); }
     };
+    if(theme==='astral'){
+      c.fillStyle='#25263e';c.fillRect(left-PAD,top-PAD,w+PAD*2,h+PAD*2);
+      for(let i=0;i<80;i++){
+        const x=between(left,right),y=between(top,bottom),rx=between(25,90),ry=between(12,35);
+        polygon([[x-rx,y],[x-rx*.4,y-ry],[x+rx*.6,y-ry],[x+rx,y],[x+rx*.4,y+ry],[x-rx*.6,y+ry]],i%2?'#2d2d48':'#292c43');
+      }
+      for(let j=0;j<7;j++){
+        const x=between(left+60,right-60),y=between(top+60,bottom-60),points=[];
+        for(let i=0;i<5;i++)points.push([x+between(-65,65),y+between(-45,45)]);
+        c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.strokeStyle='#b3a4d62c';c.lineWidth=2;c.stroke();
+        for(const [x,y]of points){c.fillStyle='#b6a8d24a';c.fillRect(Math.round(x)-3,Math.round(y)-3,6,6);c.fillStyle='#e8d9ab55';c.fillRect(Math.round(x)-1,Math.round(y)-1,2,2);}
+      }
+      for(let i=0;i<220;i++){c.fillStyle=i%3?'#bfb4e522':'#ddc58b36';c.fillRect(Math.round(between(left,right)),Math.round(between(top,bottom)),2,i%3?2:4);}
+      return canvas;
+    }
     if(theme==='flying') {
       // A continuous floating temple floor with cloud-shaped stone inlays, no outside frame.
       c.fillStyle='#304153';c.fillRect(left-PAD,top-PAD,w+PAD*2,h+PAD*2);

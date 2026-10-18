@@ -20,9 +20,9 @@ G.BossRushPreview = (() => {
   let partySize = 1;
   const relativeBoss = { get x() { return boss.x - ox; }, set x(v) { boss.x = ox + v; },
     get y() { return boss.y - oy; }, set y(v) { boss.y = oy + v; }, get r() { return boss.r; },
-    get hp() { return boss.hp; }, get maxHp() { return boss.maxHp; }, get dead() { return boss.dead; } };
-  const effects = () => encounter?.id==='eon'?G.EonFX:encounter?.id==='regis'?G.RegisFX:boss?.dex===384?G.RayquazaFX:boss?.dex === 382 ? G.KyogreFX : G.GroudonFX;
-  const arenaType = () => stage===2||stage>=G.BossRushRules.MAJOR_STAGES.rayquaza?'flying':stage >= G.BossRushRules.MAJOR_STAGES.kyogre ? 'water' : 'fire';
+    get hp() { return boss.hp; }, get maxHp() { return boss.maxHp; }, get dead() { return boss.dead; }, get source(){return boss;} };
+  const effects = () => encounter?.id==='jirachi'?G.JirachiFX:encounter?.id==='eon'?G.EonFX:encounter?.id==='regis'?G.RegisFX:boss?.dex===384?G.RayquazaFX:boss?.dex === 382 ? G.KyogreFX : G.GroudonFX;
+  const arenaType = () => route[stage]?.dex===385||stage===2||stage>=G.BossRushRules.MAJOR_STAGES.rayquaza?'flying':stage >= G.BossRushRules.MAJOR_STAGES.kyogre ? 'water' : 'fire';
   function signal(kind, data) {
     if(encounter?.members){
       const actor=data?.owner?.source;
@@ -36,17 +36,17 @@ G.BossRushPreview = (() => {
       const p = G.Game.player; boss.anim.dir = G.Sprites.dirFromAngle(Math.atan2(p.y - boss.y, p.x - boss.x));
       G.Spawner.say((data.comboName || data.name) + (data.kind === 'rupture'||data.kind==='pulse' ? ' · ¡Busca la franja segura!' : ''), data.warn, true);
     } else if (kind === 'phase') {
-      G.Audio.sfx('boss'); G.Spawner.say(boss.dex===384?(data===2?'¡Se abren los cielos! · Avisos más rápidos':'¡Furia del firmamento! · Avisos más rápidos'):boss.dex===382?(data===2?'¡Marea creciente! · Avisos más rápidos':'¡Furia oceánica! · Avisos más rápidos'):(data === 2 ? '¡Tierra abrasadora!' : '¡Furia continental!'), 2, true);
+      G.Audio.sfx('boss'); G.Spawner.say(boss.dex===385?(data===2?'¡Los deseos se entrelazan!':'¡El cielo de los deseos! · Avisos más rápidos'):boss.dex===384?(data===2?'¡Se abren los cielos! · Avisos más rápidos':'¡Furia del firmamento! · Avisos más rápidos'):boss.dex===382?(data===2?'¡Marea creciente! · Avisos más rápidos':'¡Furia oceánica! · Avisos más rápidos'):(data === 2 ? '¡Tierra abrasadora!' : '¡Furia continental!'), 2, true);
     } else if (kind === 'impact') {
-      boss.anim.play(['eruption','hydro','ice','dragon'].includes(data.kind) ? 'Shoot' : 'Attack');
-      const sound = { blades:'melee', stomp:'nova', eruption:'beam', charge:'projectile', rupture:'nova',surf:'nova',hydro:'beam',ice:'beam',rain:'nova',pulse:'nova',ascent:'melee',dragon:'beam',hurricane:'nova',meteor:'nova' }[data.kind];
+      boss.anim.play(['eruption','hydro','ice','dragon','doom','flash','swift'].includes(data.kind) ? 'Shoot' : 'Attack');
+      const sound = { blades:'melee', stomp:'nova', eruption:'beam', charge:'projectile', rupture:'nova',surf:'nova',hydro:'beam',ice:'beam',rain:'nova',pulse:'nova',ascent:'melee',dragon:'beam',hurricane:'nova',meteor:'nova',doom:'nova',swift:'projectile',flash:'beam',psychic:'nova' }[data.kind];
       G.Audio.sfx('shot', { kind:sound, type:data.type });
       G.Camera.kick(data.kind === 'rupture' ? 0.55 : data.kind === 'stomp' ? 0.35 : 0.22);
       const color = effects().palette(data.kind).light, count = G.Settings.get('calm') ? 4 : 10;
       if (data.kind === 'stomp' || data.kind === 'charge') G.FX.burst(boss.x,boss.y,color,count*2,150);
       else for (const s of data.shapes) {
-        const x=s.kind==='circle'?s.x:s.kind==='line'?s.ax:(s.left+s.right)/2;
-        const y=s.kind==='circle'?s.y:s.kind==='line'?(s.ay+s.by)/2:(s.top+s.bottom)/2;
+        const x=['circle','ring'].includes(s.kind)?s.x:s.kind==='line'?s.ax:(s.left+s.right)/2;
+        const y=['circle','ring'].includes(s.kind)?s.y:s.kind==='line'?(s.ay+s.by)/2:(s.top+s.bottom)/2;
         G.FX.burst(ox+x,oy+y,color,count,140);
       }
     } else if (kind === 'recovery') {
@@ -98,6 +98,7 @@ G.BossRushPreview = (() => {
   function spawnStage() {
     const def = route[stage], p = G.Game.player;
     const stats = def.major || def.group==='eon' ? def : G.BossRushRules.minorStats(stage);
+    if(def.dex===385)stats.hp=G.Jirachi.hpForStage(stage);
     G.Projectiles.clear(); G.Combat.clearFields(); G.Hazards.clear();
     defeated = false; transition = 0;
     p.slowT=0;
@@ -112,13 +113,13 @@ G.BossRushPreview = (() => {
       xp: def.members?0:G.BossRushRules.rewardXp(G.Player.xpFor, p.level, G.BossRushRules.rewardLevels(stage)),
       behavior: def.major || !ranged ? 'charger' : 'ranged',
       shotDmg: stats.damage * 0.55, shotCd: 1.2, range: 300 }, ox+(def.members?(def.group==='eon'?(i-.5)*220:(i-1)*170):0), oy - (def.members&&i===1?150:65), { hp: 1, spd: 1, dmg: 1 }, true);
-    b.rushBoss = def.major; b.rushMinor = !def.major; b.rushGroup=!!def.members;b.legend = false;
+    b.rushBoss = def.major; b.rushMinor = !def.major; b.rushGroup=!!def.members;b.rushScripted=dex===385;b.legend = false;
     b.rushAttackRate = def.major ? 1 : stats.attackRate;
-    b.touchCd = def.major||def.members ? 999 : 1.5;
+    b.touchCd = def.major||def.members||b.rushScripted ? 999 : 1.5;
     G.EnemyMgr.add(b);return b;
     });
     boss=bosses[0];bars=def.members?new G.BossRushBars(bosses):null;
-    const Encounter=def.dex===384?G.Rayquaza.Encounter:def.dex===382?G.Kyogre.Encounter:G.Groudon.Encounter;
+    const Encounter=def.dex===385?G.Jirachi.Encounter:def.dex===384?G.Rayquaza.Encounter:def.dex===382?G.Kyogre.Encounter:G.Groudon.Encounter;
     const options={boss:relativeBoss,players:()=>players,
       hit: (rp, dmg, type, effect) => {
         const pl = rp.source, before = pl.hp; pl.hurt(dmg, type, false, true);
@@ -127,10 +128,10 @@ G.BossRushPreview = (() => {
         if(before>pl.hp&&effect?.slow)pl.slowT=Math.max(pl.slowT,effect.slow);
         return Math.max(0, before - pl.hp);
       },signal};
-    encounter = def.members?new (def.group==='eon'?G.Eon.Encounter:G.Regis.Encounter)({...options,bosses:bosses.map(b=>({dex:b.dex,name:b.name,source:b,get x(){return b.x-ox;},set x(v){b.x=ox+v;},get y(){return b.y-oy;},set y(v){b.y=oy+v;},r:b.r,get hp(){return b.hp;},get maxHp(){return b.maxHp;},get dead(){return b.dead;}}))}):def.major?new Encounter(options):null;
+    encounter = def.members?new (def.group==='eon'?G.Eon.Encounter:G.Regis.Encounter)({...options,bosses:bosses.map(b=>({dex:b.dex,name:b.name,source:b,get x(){return b.x-ox;},set x(v){b.x=ox+v;},get y(){return b.y-oy;},set y(v){b.y=oy+v;},r:b.r,get hp(){return b.hp;},get maxHp(){return b.maxHp;},get dead(){return b.dead;}}))}):def.major||def.dex===385?new Encounter(def.dex===385?{...options,damageScale:stats.damage/G.Jirachi.DAMAGE}:options):null;
     if(def.major)G.MajorCadence.attach(encounter);
     G.Sprites.preload([...bosses.map(b=>b.dex), p.dex], 8000);
-    G.Spawner.say(def.members?def.title+' · ¡Vence a todos!':def.major ? boss.name+(def.dex===384?' · Señor de los cielos':def.dex===382?' · El océano despierta':' · El despertar') : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);
+    G.Spawner.say(def.members?def.title+' · ¡Vence a todos!':def.dex===385?'Jirachi · El observatorio de los deseos':def.major ? boss.name+(def.dex===384?' · Señor de los cielos':def.dex===382?' · El océano despierta':' · El despertar') : 'Combate ' + (stage + 1) + ' · ' + boss.name, 2.4, true);
   }
   function offerPreparation() {
     if (!preparing) return;
@@ -150,7 +151,8 @@ G.BossRushPreview = (() => {
   }
   function shape(ctx, s) {
     ctx.beginPath();
-    if (s.kind === 'circle') ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    if(s.kind==='ring'){ctx.arc(s.x,s.y,s.outer,0,Math.PI*2);ctx.moveTo(s.x+s.inner,s.y);ctx.arc(s.x,s.y,s.inner,0,Math.PI*2,true);}
+    else if (s.kind === 'circle') ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
     else if (s.kind === 'line') {
       const dx = s.bx - s.ax, dy = s.by - s.ay, n = Math.hypot(dx, dy) || 1;
       const x = -dy / n * s.width / 2, y = dx / n * s.width / 2;
@@ -181,7 +183,7 @@ G.BossRushPreview = (() => {
     ctx.save(); ctx.fillStyle = '#1d1b22';
     ctx.fillRect(G.Camera.left()-64,G.Camera.top()-64,G.Camera.w+128,G.Camera.h+128);
     ctx.translate(ox, oy); ctx.lineWidth = 2;
-    G.BossRushArena.draw(ctx, G.Groudon.ARENA,arenaType());
+    G.BossRushArena.draw(ctx, G.Groudon.ARENA,boss?.dex===385?'astral':arenaType());
     ctx.lineWidth = 2;
     for (const h of encounter?.hazards || []) {
       paintShape(ctx, h, encounter.id==='regis'?'#59483888':encounter.clock < h.start ? '#a9532844' : '#e45a1faa', encounter.id==='regis'?'#bca58b':'#ffb34f');
@@ -191,8 +193,8 @@ G.BossRushPreview = (() => {
       const warning = a.t < a.warn;
       ctx.setLineDash(warning ? [7, 5] : []);
       const palette = effects().palette(a.kind);
-      const shapes=!warning&&['kyogre','regis','eon'].includes(encounter.id)?encounter.hitShapes(a):a.shapes;
-      const spriteImpact=!warning&&(encounter.members||encounter.id==='rayquaza'||encounter.id==='kyogre'&&['surf','hydro','ice'].includes(a.kind));
+      const shapes=!warning&&['kyogre','regis','eon','jirachi'].includes(encounter.id)?encounter.hitShapes(a):a.shapes;
+      const spriteImpact=!warning&&(encounter.members||encounter.id==='jirachi'||encounter.id==='rayquaza'||encounter.id==='kyogre'&&['surf','hydro','ice'].includes(a.kind));
       if(!spriteImpact)for (const s of shapes) paintShape(ctx, s, warning ? palette.warning : palette.impact, palette.edge);
       for(const safe of a.safes||(a.safe?[a.safe]:[])) {
         ctx.setLineDash([]); paintShape(ctx, safe, '#48d8bd30', '#8ffff0');
@@ -202,8 +204,8 @@ G.BossRushPreview = (() => {
       if (warning) {
         ctx.setLineDash([]); ctx.textAlign = 'center'; ctx.font = 'bold 20px monospace'; ctx.fillStyle = '#ffe6b5';
         for (const s of a.shapes) {
-          const x = s.kind === 'circle' ? s.x : s.kind === 'line' ? (s.ax + s.bx) / 2 : (s.left + s.right) / 2;
-          const y = s.kind === 'circle' ? s.y : s.kind === 'line' ? (s.ay + s.by) / 2 : (s.top + s.bottom) / 2;
+          const x = ['circle','ring'].includes(s.kind) ? s.x : s.kind === 'line' ? (s.ax + s.bx) / 2 : (s.left + s.right) / 2;
+          const y = ['circle','ring'].includes(s.kind) ? s.y : s.kind === 'line' ? (s.ay + s.by) / 2 : (s.top + s.bottom) / 2;
           ctx.fillText('!', x, y + 6);
         }
       }
@@ -421,11 +423,11 @@ G.BossRushPreview = (() => {
       return old.call(this, dt, ...args);
     });
     wrap(G.Enemy.prototype, 'update', function(old, dt, p) {
-      if (!this.rushBoss&&!this.rushGroup) return old.call(this, dt, p);
+      if (!this.rushBoss&&!this.rushGroup&&!this.rushScripted) return old.call(this, dt, p);
       this.anim.update(dt); this.flash = Math.max(0, this.flash - dt); this.touchCd = 999;
       if(this.slowT>0){this.slowT-=dt;if(this.slowT<=0)this.slow=0;}
       const ascent=this.dex===384?encounter?.attacks.find(a=>a.kind==='ascent'):null;
-      this.jumpLift=ascent&&ascent.t<ascent.warn?Math.sin(Math.min(1,ascent.t/ascent.warn)*Math.PI)*70:0;
+      this.jumpLift=this.dex===385?Math.sin((encounter?.clock||0)*2)*3:ascent&&ascent.t<ascent.warn?Math.sin(Math.min(1,ascent.t/ascent.warn)*Math.PI)*70:0;
       if (this.dead) { this.fade -= dt; return; }
       const casting=this.rushGroup?encounter?.attacks.some(a=>a.owner.source===this&&a.t<a.warn+a.active):encounter?.attack&&!encounter.recovering;
       if (!casting) {

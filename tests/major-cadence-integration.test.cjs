@@ -1,10 +1,11 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {fixture}=require('./helpers/boss-rush-fixture.cjs');
-test('The preview connects independent clocks only to the three majors and preserves the group coordinators',async()=>{
+test('The preview connects independent clocks to majors and Jirachi while preserving the group coordinators',async()=>{
   const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
   for(let stage=0;stage<7;stage++){
     const e=G.BossRushPreview.encounter;
     if([1,3,6].includes(stage)){assert.ok(e.cadence);assert.equal(e.schedules.length,4);}
+    else if(e?.id==='jirachi'){assert.ok(e.cadence);assert.equal(e.cadence.limit,1);}
     else if(e){assert.equal(e.cadence,undefined);assert.ok(['regis','eon'].includes(e.id));}
     for(const b of G.BossRushPreview.bosses)b.hurt(1e12);f.tick(201);
   }

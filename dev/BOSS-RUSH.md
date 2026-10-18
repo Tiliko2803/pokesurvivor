@@ -27,6 +27,12 @@ Detalle del modelo, seguridad, efectos y balance en [EON.md](EON.md). Latios y L
 
 Usan el mismo coordinador de desincronización que los Regis: seis relojes independientes, desfases de inicio, como máximo dos movimientos simultáneos, salidas alcanzables y protección compartida. Cada barra tiene el color de su Pokémon y la superviviente se amplía al caer el otro. No se entrega nada por bajas parciales; al vencer a ambos se reciben seis niveles base de XP y una curación del 20%. No dan Vínculo.
 
+## Jirachi
+
+Jirachi tiene un encuentro propio en el observatorio de los deseos: [JIRACHI.md](JIRACHI.md). Usa Deseo Oculto, Rapidez, Foco Resplandor y Psíquico, con fases al 70%/35%. En fase 2 combina hasta dos movimientos conservando 2.5 s para Deseo Oculto; en fase 3 acelera los avisos nuevos y conserva el límite de dos. Tras terminar Deseo Oculto y los movimientos pendientes deja un segundo adicional para contraatacar.
+
+Su vida es 600000 / 900000 PV según aparezca antes o después de Deoxys. La referencia ofensiva inicial dura 1:51 con Deoxys normal y 0:24 con Mega Blaziken; no se infla la vida para igualar builds y resistencias distintas. El anillo psíquico y las estrellas dañan con sus frentes y proyectiles visibles, no con toda el área anunciada. Sigue dando la recompensa de un menor y ningún Vínculo.
+
 ## Preparación y progresión
 
 - Nivel 8 con siete cartas reales. El combate queda congelado hasta elegirlas.
@@ -45,15 +51,16 @@ Usan el mismo coordinador de desincronización que los Regis: seis relojes indep
 | Groudon | 400000 | Patrones propios | Por fases |
 | Dúo Eón | 190000 cada uno | Movimientos 33–40 | Relojes por movimiento |
 | Kyogre | 2500000 | Patrones propios | Por fases |
-| Jirachi / Deoxys, primero | 2400000 | 44 | ×1.30 |
-| Jirachi / Deoxys, segundo | 3600000 | 48 | ×1.345 |
+| Deoxys, primer tramo | 2400000 | 44 | ×1.30 |
+| Deoxys, segundo tramo | 3600000 | 48 | ×1.345 |
+| Jirachi, primer / segundo tramo | 600000 / 900000 | Movimientos 24–48; ×48/44 en el segundo | Relojes por movimiento |
 | Rayquaza | 5000000 | Patrones propios | Por fases |
 
-No hay vida adaptativa al DPS, regeneración del jefe para alargar peleas ni invulnerabilidad por tiempo. Se conservan tipos, defensa, críticos y estados. En los menores individuales sólo se reduce la espera entre ataques; sus avisos, proyectiles y movimiento conservan las reglas normales. La cadencia total con furia no supera ×1.5.
+No hay vida adaptativa al DPS, regeneración del jefe para alargar peleas ni invulnerabilidad por tiempo. Se conservan tipos, defensa, críticos y estados. En los menores que aún usan la IA nativa sólo se reduce la espera entre ataques; sus avisos, proyectiles y movimiento conservan las reglas normales. La cadencia total con furia no supera ×1.5.
 
 La revisión anterior con Deoxys mostró que 240000 PV para un primer menor individual podían dar 5:54 contra Jirachi incluso con oro máximo. El trío no reutiliza tres veces ese presupuesto. La referencia nueva completa dura aproximadamente 1:25 con Deoxys y 0:32 con Mega Blaziken. El Dúo Eón completo da 1:06 con Mega Blaziken y 1:52 con Deoxys. Son simulaciones ofensivas, con daño recibido ignorado y posición controlada, no partidas humanas.
 
-Los menores posteriores conservan la referencia de 1–2 minutos con Mega Blaziken potente, oro máximo, evoluciones, Vínculo y 85% de tiempo atacando; las builds, tipos y ejecución cambian la duración. La referencia anterior de 12:11 del dueño corresponde a la ruta antigua de siete combates.
+Los menores nativos anteriores se calibraron contra Mega Blaziken potente, oro máximo, evoluciones, Vínculo y 85% de tiempo atacando. Jirachi se calibra ahora también con Deoxys normal; las builds, tipos y ejecución cambian la duración. La referencia anterior de 12:11 del dueño corresponde a la ruta antigua de siete combates.
 
 ## Mayores
 
@@ -87,7 +94,7 @@ No se carga configuración Firebase ni se registra service worker. Se conserva `
 
 Sólo para cambios de este prototipo se ejecuta `node tools/build-boss-rush-preview.cjs`; genera exclusivamente `dev/index.html`. Nunca se regenera el `index.html` oficial, bundle ni `version.json`. Se publica con los archivos concretos sobre el `main` más reciente para conservar trabajo concurrente.
 
-Pruebas relevantes: `tests/major-cadence.test.cjs`, `tests/major-cadence-integration.test.cjs`, `tests/eon.test.cjs`, `tests/eon-integration.test.cjs`, `tests/eon-duration.test.cjs`, `tests/regis.test.cjs`, `tests/regis-integration.test.cjs`, `tests/regis-duration.test.cjs`, `tests/boss-rush-rules.test.cjs` y las de integración, duración, geometría y efectos de los tres mayores. También se mantienen las regresiones de Coberturas, mejoras de oro y las Megas. Bancos nativos: `tools/benchmark-eon.cjs`, `tools/benchmark-regis.cjs`, `tools/benchmark-minors.cjs`, `tools/benchmark-groudon.cjs`, `tools/benchmark-kyogre.cjs` y `tools/benchmark-rayquaza.cjs`.
+Pruebas relevantes: `tests/jirachi.test.cjs`, `tests/jirachi-integration.test.cjs`, `tests/jirachi-duration.test.cjs`, `tests/major-cadence.test.cjs`, `tests/major-cadence-integration.test.cjs`, `tests/eon.test.cjs`, `tests/eon-integration.test.cjs`, `tests/eon-duration.test.cjs`, `tests/regis.test.cjs`, `tests/regis-integration.test.cjs`, `tests/regis-duration.test.cjs`, `tests/boss-rush-rules.test.cjs` y las de integración, duración, geometría y efectos de los tres mayores. También se mantienen las regresiones de Coberturas, mejoras de oro y las Megas. Bancos nativos: `tools/benchmark-jirachi.cjs`, `tools/benchmark-eon.cjs`, `tools/benchmark-regis.cjs`, `tools/benchmark-minors.cjs`, `tools/benchmark-groudon.cjs`, `tools/benchmark-kyogre.cjs` y `tools/benchmark-rayquaza.cjs`.
 
 Las pruebas de integración usan el Game, Player, Enemy, Combat, Projectiles, Pickups y LevelUp reales con interfaz simulada. La revisión visual usa Canvas nativo y sprites reales; no sustituye probar en navegador o Android. Pendientes: cooperativo del modo y balance humano de la ruta nueva.
 
