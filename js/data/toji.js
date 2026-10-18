@@ -11,7 +11,8 @@ G.Toji = (() => {
   };
   G.DEX_BY[DEX] = mon;
   // Weapon padding belongs to art, not the body used by collisions and life bars.
-  G.SPRITE_META[DEX] = { s: 1, bw: 32, bh: 36, visualScale: 1.5, a: Object.fromEntries(Object.entries(durations).map(([name, d]) =>
+  // Idle silhouettes: Toji ~39 art pixels, Iron Valiant ~30; 0.78 matches their on-screen height.
+  G.SPRITE_META[DEX] = { s: 1, bw: 32, bh: 39, visualScale: 0.78, a: Object.fromEntries(Object.entries(durations).map(([name, d]) =>
     [name, { w: 80, h: 64, n: d.length, r: 8, d, ax: 40, ay: 55 }])) };
   return { DEX, mon };
 })();

@@ -233,12 +233,13 @@ G.UI = (() => {
 
       // Escala entera para que los píxeles queden nítidos.
       const m = G.Sprites.animMeta(s.dex, 'Idle');
-      const ay = m ? m.ay : 24;
+      const art = G.Sprites.meta(s.dex), visual = art?.visualScale || 1;
+      // Custom sheets include weapon padding; size/center their visible body.
+      const ay = art?.bh ? art.bh * visual : m ? m.ay : 24;
       let k = s.opts.scale || 2;
       if (s.opts.hero) k = Math.max(1, Math.min(k, Math.floor(cv.height * 0.8 / ay)));
       // Larger custom art still fits collection/ranking thumbnails; the
       // gameplay animator keeps its full visual scale and original collision.
-      const art = G.Sprites.meta(s.dex), visual = art?.visualScale || 1;
       if (visual > 1) k = Math.min(k, cv.height * 0.82 / ((art.bh || ay) * visual), cv.width * 0.9 / ((art.bw || m.w) * visual));
       s.a.scale = s.opts.mega ? Math.min(1.25, cv.height / 150) : k / G.Sprites.PX;
       // Si no cabe de pie, se centra el cuerpo en el recuadro.

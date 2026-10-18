@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Toji al tamaño de Ferropaladín', 'Toji matches Iron Valiant’s size'], chg: [
+    ['El tamaño visual de Toji se ajusta a la altura de Ferropaladín. Su presentación y miniaturas se centran usando el cuerpo visible, sin contar el espacio vacío de la hoja.',
+     'Toji’s visual height now matches Iron Valiant. His menu presentation and thumbnails are centered using the visible body rather than empty sprite-sheet padding.']
+  ] },
   { d: '2026-10-17', title: ['Toji más grande', 'Larger Toji'], chg: [
     ['Toji Fushiguro se ve un 50% más grande en combate y en su presentación del menú. Su área de colisión y sus estadísticas se mantienen; las miniaturas se ajustan al espacio disponible.',
      'Toji Fushiguro appears 50% larger in combat and in the main menu. His collision area and stats stay the same; thumbnails fit their available space.']
