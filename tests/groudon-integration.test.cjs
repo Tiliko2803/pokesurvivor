@@ -16,7 +16,7 @@ test('Boss Rush snapshots roster size and multiplies every boss HP without compo
     for(const stage of [1,2,3,4,5]){
       b.hurt(99999999);f.tick(201);b=G.BossRushPreview.boss;
       assert.equal(G.BossRushPreview.stage,stage);
-      if(stage===3){assert.equal(b.dex,382);assert.equal(b.maxHp,600000*n);assert.equal(born[stage].hp,b.maxHp);continue;}
+      if(stage===3){assert.equal(b.dex,382);assert.equal(b.maxHp,3000000*n);assert.equal(born[stage].hp,b.maxHp);continue;}
       const base=G.BossRushRules.minorStats(stage);
       assert.equal(b.maxHp,base.hp*n);assert.equal(born[stage].hp,b.maxHp);
       assert.equal(b.dmg,base.damage);assert.equal(b.rushAttackRate,base.attackRate);

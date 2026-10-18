@@ -59,6 +59,7 @@ def build(destination):
         source = source.replace('</script', '<\\/script')
         if path == 'dev/boss-rush-sprites.js':
             source = source.replace('assets/boss-rush/attack-atlas-v1.png?v=1', data_url(ROOT / 'assets/boss-rush/attack-atlas-v1.png', 'image/png'))
+            source = source.replace('assets/boss-rush/kyogre-beams-v1.png?v=1', data_url(ROOT / 'assets/boss-rush/kyogre-beams-v1.png', 'image/png'))
         scripts.append(path)
         return '<script>\n/* Bundled: ' + path + ' */\n' + source + '\n</script>'
 

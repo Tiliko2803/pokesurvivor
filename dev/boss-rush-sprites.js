@@ -2,6 +2,7 @@
  * Gameplay shapes stay independent of the art. No smoothing, network retries or per-frame allocation. */
 G.BossRushSprites = (() => {
   const image=new Image();image.src='assets/boss-rush/attack-atlas-v1.png?v=1';
+  const beams=new Image();beams.src='assets/boss-rush/kyogre-beams-v1.png?v=1';
   const rows={blades:0,stomp:1,eruption:2,charge:3,surf:4,hydro:5,ice:6,pulse:7};
   function frame(c,kind,x,y,w,h,t,{angle=0,flipX=false,anchor=.5,alpha=1}={}) {
     if(!image.complete||!image.naturalWidth||rows[kind]===undefined)return false;
@@ -9,6 +10,14 @@ G.BossRushSprites = (() => {
     c.save();c.imageSmoothingEnabled=false;c.globalAlpha*=alpha;
     c.translate(Math.round(x),Math.round(y));if(angle)c.rotate(angle);if(flipX)c.scale(-1,1);
     c.drawImage(image,col*64,rows[kind]*64,64,64,Math.round(-w/2),Math.round(-h*anchor),w,h);c.restore();return true;
+  }
+  function beam(c,a,s,t,alpha) {
+    const angle=Math.atan2(s.by-s.ay,s.bx-s.ax),length=Math.hypot(s.bx-s.ax,s.by-s.ay);
+    if(!beams.complete||!beams.naturalWidth)return frame(c,a.kind,(s.ax+s.bx)/2,(s.ay+s.by)/2,length+4,s.width+22,t,{angle,alpha});
+    const col=Math.min(3,Math.max(0,Math.floor(t*4))),row=a.kind==='ice'?1:0;
+    c.save();c.imageSmoothingEnabled=false;c.globalAlpha*=alpha;c.translate(s.ax,s.ay);c.rotate(angle);
+    // One uninterrupted core from origin to tip; trim compilation padding, no repeated caps.
+    c.drawImage(beams,col*128+1,row*32+2,126,28,0,-s.width/2,length,s.width);c.restore();return true;
   }
   function draw(c,e,boss,{quality=2,calm=false}={}) {
     const limit=quality===0?5:quality===1?8:12;
@@ -26,9 +35,8 @@ G.BossRushSprites = (() => {
         frame(c,a.kind,(s.left+s.right)/2,(s.top+s.bottom)/2,110,s.bottom-s.top+24,calm?.5:t,{flipX:a.direction<0,alpha});
       }
       else if(a.kind==='hydro'||a.kind==='ice') for(const s of a.shapes) {
-        const angle=Math.atan2(s.by-s.ay,s.bx-s.ax),length=Math.hypot(s.bx-s.ax,s.by-s.ay);
-        const n=Math.min(limit,Math.max(1,Math.ceil(length/90)));
-        for(let i=0;i<n;i++) {const k=(i+.5)/n;frame(c,a.kind,s.ax+(s.bx-s.ax)*k,s.ay+(s.by-s.ay)*k,length/n+18,s.width+22,t,{angle,alpha});}
+        // One continuous casting image across the corridor, never a row of projectiles.
+        beam(c,a,s,t,alpha);
       }
       else if(a.kind==='pulse'||a.kind==='rupture') for(const s of a.shapes){
         c.save();c.beginPath();c.rect(s.left,s.top,s.right-s.left,s.bottom-s.top);c.clip();

@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Kyogre resiste y sus haces se unen', 'Kyogre withstands evolved builds with continuous beams'], chg: [
+    ['Kyogre pasa de 600 mil a 3 millones de PV base, multiplicados por jugadores. La referencia con Mega Blaziken, Onda Certera y Danza de Mil Espadas evolucionadas, Vínculo y oro máximo apunta a 3–5 minutos reservando tiempo para esquivar.',
+     'Kyogre goes from 600,000 to 3 million base HP, multiplied by players. The reference with max-gold Mega Blaziken, evolved Focus Blast and Thousand Swords Dance, and a Bond targets 3–5 minutes while allowing time to dodge.']
+  ], fix: [
+    ['Surf ya no muestra un cuadrado alrededor de la ola al causar daño. Hidrobomba y Rayo Hielo usan nuevos sprites de haces continuos en pixel art, sin formar hileras de proyectiles pequeños. Se conservan los avisos previos para esquivar.',
+     'Surf no longer shows a box around its damaging wave. Hydro Pump and Ice Beam use new continuous pixel-art beam sprites instead of rows of small projectiles. Advance warnings remain visible for dodging.']
+  ] },
   { d: '2026-10-17', title: ['Kyogre y efectos en pixel art', 'Kyogre and pixel-art effects'], new: [
     ['Kyogre llega al Boss Rush después de Groudon y dos menores. Usa Surf, Hidrobomba, Rayo Hielo, Danza Lluvia y Pulso Primigenio. Después aparecen otros dos menores; conservas tu build y cada mayor entrega un Vínculo.',
      'Kyogre joins Boss Rush after Groudon and two minor legends. It uses Surf, Hydro Pump, Ice Beam, Rain Dance and Origin Pulse. Two more minors follow; your build persists and each major grants a Bond.'],

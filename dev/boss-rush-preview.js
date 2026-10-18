@@ -177,7 +177,8 @@ G.BossRushPreview = (() => {
       ctx.setLineDash(warning ? [7, 5] : []);
       const palette = effects().palette(a.kind);
       const shapes=!warning&&encounter.id==='kyogre'?encounter.hitShapes(a):a.shapes;
-      for (const s of shapes) paintShape(ctx, s, warning ? palette.warning : palette.impact, palette.edge);
+      const spriteImpact=!warning&&encounter.id==='kyogre'&&['surf','hydro','ice'].includes(a.kind);
+      if(!spriteImpact)for (const s of shapes) paintShape(ctx, s, warning ? palette.warning : palette.impact, palette.edge);
       for(const safe of a.safes||(a.safe?[a.safe]:[])) {
         ctx.setLineDash([]); paintShape(ctx, safe, '#48d8bd30', '#8ffff0');
         ctx.font = 'bold 14px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#b5fff3';
