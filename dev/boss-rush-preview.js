@@ -45,6 +45,8 @@ G.BossRushPreview = (() => {
     p.moves = []; p.slots = []; p.active = 0; p.bind = {}; p.bonds = 0;
     for (const id of chosen) {
       p.addMove(id);
+      const mega = G.Mega.definition(p.dex);
+      if (p.mega && mega?.start === id) G.Moves.levelUp(p.moves.find(m => m.id === id));
     }
     p.setActive(0);
     // Level ten includes the nine actual upgrade selections, rather than only a label.
@@ -173,13 +175,13 @@ G.BossRushPreview = (() => {
       <div class="rush-wallet"><b id="rush-balance"></b><div class="rush-actions">
       <button class="btn small" id="rush-upgrades">Mejoras de oro</button>
       <button class="btn small ghost" id="rush-refill">Reponer dinero de prueba</button></div></div>
-      <p class="sub">Empiezas en nivel 10: elige nueve mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida.<br>Prueba individual del primer tramo. Tu cuenta y tu progreso no se modifican.</p>
+      <p class="sub">Mega Blaziken está desbloqueado y equipado al elegir Blaziken.<br>Empiezas en nivel 10: elige nueve mejoras antes de combatir. Cada victoria da experiencia y recupera un 20% de vida.<br>Prueba individual del primer tramo. Tu cuenta y tu progreso no se modifican.</p>
       <div class="rush-actions"><button class="btn gold" id="rush-start">Enfrentar a Groudon</button>
       <button class="btn ghost" id="rush-back">Volver a Jugar</button></div>
       <p id="rush-error" role="status"></p></div>`;
     document.body.appendChild(root);
     const select = document.getElementById('rush-partner');
-    for (const dex of roster) select.add(new Option(G.DEX_BY[dex].name, String(dex)));
+    for (const dex of roster) select.add(new Option(dex === 257 ? 'Blaziken · Mega disponible' : G.DEX_BY[dex].name, String(dex)));
     function moves() {
       const dex = Number(select.value), pool = G.Moves.poolFor(G.DEX_BY[dex]);
       const defaults = dex === 260 ? ['water-gun', 'bubble'] : dex === 257 ? ['karate-chop', 'ember'] : ['vine-whip', 'razor-leaf'];
@@ -233,6 +235,7 @@ G.BossRushPreview = (() => {
       try { if (session === null) localStorage.removeItem('ps.session'); else localStorage.setItem('ps.session', session); } catch (_) {}
       const s = G.DB.save; s.partner = s.starter = 260; s.coins = 100000; s.pupg = {}; s.megaEquipped = {};
       for (const dex of roster) s.owned[dex] = { at: Date.now(), from: 'boss-rush-preview' };
+      s.megaStones.blazikenite = Date.now(); G.Mega.equip(s, 257, true);
       return true;
     };
     G.Updater.init = () => {};

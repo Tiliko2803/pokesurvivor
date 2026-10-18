@@ -17,7 +17,7 @@ function fixture(session = 'real-account') {
   const ctx = vm.createContext({ G: {}, console, navigator: { onLine: true }, document: { hidden: false,
     addEventListener: noop, getElementById: id => id === 'scr-boss-rush' ? nodes.get(id) || null : node(id),
     createElement: () => ({}), body: { appendChild: el => nodes.set(el.id, Object.assign(node(el.id), el)) } },
-    Option: class { constructor(text,value) { this.text=text; this.value=value; } }, window: {}, location: { protocol: 'file:' },
+    Option: class { constructor(text,value) { this.text=text; this.value=value; } }, Image: class {}, window: {}, location: { protocol: 'file:' },
     addEventListener: noop, requestAnimationFrame: noop, setTimeout: noop, clearTimeout: noop,
     performance: { now: () => ctx.now || 0 },
     localStorage: { getItem: k => storage.get(k) ?? null, setItem: (k,v) => storage.set(k,v), removeItem: k => storage.delete(k) } });
@@ -45,6 +45,7 @@ function fixture(session = 'real-account') {
     bodyRadius: dex => dex === 383 ? 28 : 12, bodyHeight: () => 80, animMeta: () => ({ ay: 40, d: [10] }),
     Animator: class { constructor() {this.cur='Idle'; this.dir=0;} update(){} play(a){this.cur=a;} loop(){} busy(){return false;} progress(){return 1;} } };
   G.VFX = { forMove: () => ({ pal: 'water', proj: 'orb' }), forType: () => ({pal:'ground'}) };
+  G.MegaArt = { Animator: G.Sprites.Animator }; load('js/systems/blaziken.js');
   let rankings = 0; G.Ranking = { runStarted: () => rankings++, submitSolo: () => rankings++, submitGroup: () => rankings++ };
   for (const f of ['js/entities/projectile.js', 'js/entities/enemy.js', 'js/entities/player.js', 'js/systems/combat.js', 'js/systems/levelup.js', 'js/entities/pickup.js']) load(f);
   const instrumented = read('js/game.js').replace('function render() {', 'function render() { return;')
@@ -156,4 +157,19 @@ test('Jugar exposes Boss Rush explicitly; Back returns to mode selection and nor
   G.Game.startRun();
   assert.equal(G.Game.state,'playing'); assert.equal(G.Game.player.level,1);
   assert.equal(G.BossRushPreview.running,false); assert.equal(G.BossRushPreview.preparing,false);
+});
+
+test('Mega Blaziken is unlocked and equipped in the temporary save and works in Boss Rush', async () => {
+  const f=fixture(),{G}=f; await G.DB.ready();
+  assert.equal(G.Mega.has(G.DB.save,257),true);
+  assert.equal(G.Mega.equipped(G.DB.save,257),true);
+  G.BossRushPreview.open();
+  const select=f.nodes.get('rush-partner'); select.value='257'; select.onchange();
+  f.nodes.get('rush-start').onclick();
+  const p=G.Game.player;
+  assert.equal(p.mega,'blazikenite'); assert.equal(p.mon.name,'Mega Blaziken');
+  assert.equal(p.moves.find(m=>m.id==='karate-chop').lvl,2);
+  f.prepare(); p.x=G.BossRushPreview.boss.x; p.y=G.BossRushPreview.boss.y+30; f.tick(180);
+  assert.ok(p.megaElapsed>0); assert.ok(p.dmgDealt>0);
+  assert.deepEqual(f.storage,f.before);
 });

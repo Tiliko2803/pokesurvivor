@@ -60,3 +60,5 @@ Con tres niveles de experiencia por victoria y sin bonos, el primer tramo lleva 
 ## Recursos para probar
 
 Cada carga inicia una sesión temporal con 100000 Pokémonedas y Swampert, Blaziken y Sceptile desbloqueados. El botón Mejoras de oro abre la tienda nativa para el Pokémon seleccionado. Reponer dinero de prueba restaura 100000 monedas conservando las compras de esta sesión; no funciona durante una partida. Las compras se aplican al siguiente intento, incluyendo Zancada y Más Opciones durante la preparación. Recargar la página reinicia esta sesión temporal.
+
+Blaziken incluye la Blazikenita desbloqueada y equipada al cargar. Seleccionarlo permite usar Mega Blaziken tanto en Boss Rush como en partida normal; Golpe Kárate comienza en nivel 2 si se elige en la preparación del Boss Rush. El equipo sigue siendo opcional desde el menú nativo.

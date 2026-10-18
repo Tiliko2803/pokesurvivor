@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-17', title: ['Mega Blaziken en las pruebas', 'Mega Blaziken in the playtest'], new: [
+    ['La página de pruebas incluye la Blazikenita desbloqueada y equipada. Elige Blaziken para jugar como Mega Blaziken; Golpe Kárate conserva su inicio en nivel 2 en el Boss Rush.',
+     'The development page includes unlocked and equipped Blazikenite. Choose Blaziken to play as Mega Blaziken; Karate Chop retains its level-2 start in Boss Rush.']
+  ] },
   { d: '2026-10-18', title: ['Acceso al Boss Rush', 'Boss Rush entry'], new: [
     ['En la página de pruebas, entra desde Jugar → Boss Rush · Hoenn. Puedes volver al selector de modos y Partida normal conserva su funcionamiento.',
      'On the development page, enter through Play → Boss Rush · Hoenn. You can return to mode selection, and Normal Run keeps its usual behavior.']
