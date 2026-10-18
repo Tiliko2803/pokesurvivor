@@ -39,7 +39,7 @@ G.BossRushPreview = (() => {
   function start() {
     const p = G.Game.player;
     const minors = G.BossRushRules.selectMinors(G.DEX, G.SPRITE_META);
-    route = [{ dex: 383, major: true, hp: 10000, damage: 38 },
+    route = [{ dex: 383, major: true, hp: 22000, damage: 42 },
       ...minors.map(dex => ({ dex, major: false }))];
     ox = 16; oy = 16; p.x = ox; p.y = oy + 85;
     p.moves = []; p.slots = []; p.active = 0; p.bind = {}; p.bonds = 0;
@@ -51,15 +51,16 @@ G.BossRushPreview = (() => {
     p.setActive(0);
     // Level ten includes the nine actual upgrade selections, rather than only a label.
     p.level = 10; p.xp = 0; p.xpNext = G.Player.xpFor(10);
-    p.baseSpd = 130; p.invuln = 2;
-    G.World.setArena({ tx: 0, ty: 0, r: 13, type: 'fire' });
+    p.baseSpd = 130; p.invuln = 1;
+    G.World.setArena({ tx: 0, ty: 0, r: 16, type: 'fire' });
     // No random pools, columns or breakable objects inside the combat space.
     G.World.arena.th = { ...G.Tiles.ARENA_THEMES.fire, pools: 0, pillars: 0, props: {} };
     G.World.setBiome(G.Tiles.arenaBiome('fire'), true);
     players = localPlayers();
     running = true; ending = false; won = false; stage = 0;
+    refreshCamera();
     spawnStage();
-    G.Camera.x = ox; G.Camera.y = oy;
+    G.Camera.x = ox; G.Camera.y = oy - (G.Camera.rushOffsetY || 0);
     preparing = true; choicesLeft = 9;
     normalPause(); // No combat clock or enemy can advance during preparation.
     offerPreparation();
@@ -118,16 +119,17 @@ G.BossRushPreview = (() => {
     } else ctx.rect(s.left, s.top, s.right - s.left, s.bottom - s.top);
   }
   function paintShape(ctx, s, fill, stroke) { shape(ctx, s); ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = stroke; ctx.stroke(); }
+  function refreshCamera() {
+    const cam = G.Camera;
+    if (Number.isFinite(cam.w * cam.scale) && Number.isFinite(cam.h * cam.scale))
+      cam.resize(cam.w * cam.scale, cam.h * cam.scale, cam.dpr);
+  }
   function draw(ctx) {
     if (!running) return;
-    ctx.save(); ctx.translate(ox, oy); ctx.lineWidth = 2;
-    const r = G.Groudon.ARENA;
-    ctx.fillStyle = '#27222b'; ctx.fillRect(r.left - 12, r.top - 12, 624, 324);
-    ctx.fillStyle = '#3a3033'; ctx.fillRect(r.left, r.top, 600, 300);
-    ctx.strokeStyle = '#d8a56c'; ctx.strokeRect(r.left, r.top, 600, 300);
-    ctx.strokeStyle = '#564044'; ctx.lineWidth = 1;
-    for (let x = -280; x < 300; x += 40) { ctx.beginPath(); ctx.moveTo(x, -150); ctx.lineTo(x, 150); ctx.stroke(); }
-    for (let y = -130; y < 150; y += 40) { ctx.beginPath(); ctx.moveTo(-300, y); ctx.lineTo(300, y); ctx.stroke(); }
+    ctx.save(); ctx.fillStyle = '#1d1b22';
+    ctx.fillRect(G.Camera.left()-64,G.Camera.top()-64,G.Camera.w+128,G.Camera.h+128);
+    ctx.translate(ox, oy); ctx.lineWidth = 2;
+    G.BossRushArena.draw(ctx, G.Groudon.ARENA);
     ctx.lineWidth = 2;
     for (const h of encounter?.hazards || []) {
       paintShape(ctx, h, encounter.clock < h.start ? '#a9532844' : '#e45a1faa', '#ffb34f');
@@ -261,13 +263,15 @@ G.BossRushPreview = (() => {
       if (!running) return old(dt, ...args);
       G.Spawner.tickBanner(dt);
       for (const p of players) {
-        p.x = Math.max(-294 + p.r, Math.min(294 - p.r, p.x));
-        p.y = Math.max(-144 + p.r, Math.min(144 - p.r, p.y));
+        const r = G.Groudon.ARENA;
+        p.x = Math.max(r.left + 6 + p.r, Math.min(r.right - 6 - p.r, p.x));
+        p.y = Math.max(r.top + 6 + p.r, Math.min(r.bottom - 6 - p.r, p.y));
       }
       if (encounter) encounter.update(dt);
       if (boss && !boss.dead) {
-        boss.x = Math.max(ox - 294 + boss.r, Math.min(ox + 294 - boss.r, boss.x));
-        boss.y = Math.max(oy - 144 + boss.r, Math.min(oy + 144 - boss.r, boss.y));
+        const r = G.Groudon.ARENA;
+        boss.x = Math.max(ox + r.left + 6 + boss.r, Math.min(ox + r.right - 6 - boss.r, boss.x));
+        boss.y = Math.max(oy + r.top + 6 + boss.r, Math.min(oy + r.bottom - 6 - boss.r, boss.y));
       }
       if (boss?.dead && !defeated) {
         defeated = true; transition = 3; G.Hazards.clear(); G.Projectiles.clear(); G.Combat.clearFields();
@@ -285,7 +289,19 @@ G.BossRushPreview = (() => {
     for (const obj of [G.Rift, G.Judgment, G.Events, G.Weather, G.Interact]) {
       wrap(obj, 'update', (old, ...args) => { if (!running) return old(...args); });
     }
-    wrap(G.Camera, 'follow', (old, x, y, dt) => old.call(G.Camera, running ? ox : x, running ? oy : y, dt));
+    wrap(G.Camera, 'resize', (old, ...args) => {
+      old.apply(G.Camera, args);
+      G.Camera.rushOffsetY = 0;
+      if (!running) return;
+      const r = G.Groudon.ARENA, cam = G.Camera;
+      const [w,h] = args, padding = Math.min(176,h*0.5);
+      cam.scale = Math.min(cam.scale, (w-Math.min(48,w*0.2))/(r.right-r.left), (h-padding)/(r.bottom-r.top));
+      cam.w = w/cam.scale; cam.h = h/cam.scale;
+      // Reserve screen pixels above for the boss bar and below for touch controls.
+      cam.rushOffsetY = padding * (112/176-0.5) / cam.scale;
+      cam.x = ox; cam.y = oy-cam.rushOffsetY;
+    });
+    wrap(G.Camera, 'follow', (old, x, y, dt) => old.call(G.Camera, running ? ox : x, running ? oy-(G.Camera.rushOffsetY||0) : y, dt));
     wrap(G.World, 'drawLiquid', (old, ctx, ...args) => { old(ctx, ...args); draw(ctx); });
     wrap(G.HUD, 'draw', (old, ctx, w, ...args) => { old(ctx, w, ...args); hud(ctx, w); });
     wrap(G.Enemy.prototype, 'bossMove', function(old, dt, ...args) {
@@ -299,6 +315,10 @@ G.BossRushPreview = (() => {
       if (!this.rushBoss) return old.call(this, dt, p);
       this.anim.update(dt); this.flash = Math.max(0, this.flash - dt); this.touchCd = 999;
       if (this.dead) { this.fade -= dt; return; }
+      if (!encounter?.attack || encounter.recovering) {
+        this.anim.loop(encounter?.moving ? 'Walk' : 'Idle');
+        if (encounter?.moving) this.anim.dir = G.Sprites.dirFromAngle(Math.atan2(p.y - this.y, p.x - this.x));
+      }
       if (this.burn > 0) {
         this.burnT -= dt; this.burnTick -= dt;
         if (this.burnTick <= 0) { this.burnTick = 0.5; this.hurt(1.6 * this.burn * (1 + p.level * 0.06), '#ff9a4d'); }
@@ -319,7 +339,7 @@ G.BossRushPreview = (() => {
     wrap(G.RunUI, 'showOver', (old, result, back) => {
       if (!running) return old(result, back);
       old({ ...result, coins: 0, record: false, breakdown: 'Prueba de combate · Sin recompensas', caught: [], megaUnlocked: false }, () => {
-        running = false; preparing = false; encounter = null; boss = null; back();
+        running = false; preparing = false; encounter = null; boss = null; refreshCamera(); back();
       });
       document.getElementById('over-title').textContent = won ? '¡Primer tramo superado!' : 'Intento terminado';
       document.getElementById('btn-again').textContent = 'Preparar otro intento';

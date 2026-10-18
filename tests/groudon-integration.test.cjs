@@ -40,7 +40,7 @@ function fixture(session = 'real-account') {
   G.UI.show = id => { for (const [key,el] of nodes) if (key.startsWith('scr-')) el.classList.add('hidden'); node(id).classList.remove('hidden'); };
   G.MenuUI.open = () => G.UI.show('scr-menu');
   G.MenuUI.openPlayMode = () => G.UI.show('scr-play-mode');
-  G.Camera = { x: 0, y: 0, follow(x,y) { this.x=x; this.y=y; }, sees: () => true, kick: noop, outerRadius: () => 500 };
+  load('js/core/camera.js'); G.Camera.resize(960,540,1);
   G.Sprites = { PX: 2, hasShiny: () => false, hovers: () => false, preload: noop, dirFromAngle: () => 0,
     bodyRadius: dex => dex === 383 ? 28 : 12, bodyHeight: () => 80, animMeta: () => ({ ay: 40, d: [10] }),
     Animator: class { constructor() {this.cur='Idle'; this.dir=0;} update(){} play(a){this.cur=a;} loop(){} busy(){return false;} progress(){return 1;} } };
@@ -69,9 +69,10 @@ test('Engine integration: temporary session, real moves hit Groudon, no ranking 
   assert.equal(G.BossRushPreview.boss.dex,383); assert.ok(G.Game.player.maxHp>0);
   const hp=G.BossRushPreview.boss.hp; f.tick(180);
   assert.ok(G.BossRushPreview.boss.hp<hp); assert.ok(G.Game.player.dmgDealt>0);
+  assert.ok(G.Game.player.hp<G.Game.player.maxHp,'A stationary player takes damage from Groudon');
   assert.equal(G.EnemyMgr.all().length,1); assert.equal(f.rankings(),0);
   assert.deepEqual(f.storage,f.before); assert.equal(G.World.arena.th.pools,0);
-  assert.equal(G.Camera.x,16); assert.equal(G.Camera.y,16);
+  assert.equal(G.Camera.x,16); assert.equal(G.Camera.y,16-(G.Camera.rushOffsetY||0));
 });
 test('Engine integration: pause stops combat; abandon and retry reset the fight', async () => {
   const f=fixture(),{G}=f; await G.DB.ready(); G.BossRushPreview.play(); f.prepare(); f.tick(180);
@@ -80,7 +81,7 @@ test('Engine integration: pause stops combat; abandon and retry reset the fight'
   G.Game.quit(); assert.equal(f.result().coins,0); assert.equal(f.result().record,false);
   f.back(); assert.equal(G.Game.state,'ui'); assert.equal(G.BossRushPreview.running,false);
   G.BossRushPreview.play(); f.prepare(); assert.equal(G.BossRushPreview.encounter.phase,1);
-  assert.equal(G.BossRushPreview.boss.hp,10000); assert.equal(G.Game.player.hp,G.Game.player.maxHp);
+  assert.equal(G.BossRushPreview.boss.hp,22000); assert.equal(G.Game.player.hp,G.Game.player.maxHp);
   assert.deepEqual(f.storage,f.before);
 });
 test('Engine integration: phases, victory and no drops/rewards', async () => {
@@ -172,4 +173,23 @@ test('Mega Blaziken is unlocked and equipped in the temporary save and works in 
   f.prepare(); p.x=G.BossRushPreview.boss.x; p.y=G.BossRushPreview.boss.y+30; f.tick(180);
   assert.ok(p.megaElapsed>0); assert.ok(p.dmgDealt>0);
   assert.deepEqual(f.storage,f.before);
+});
+
+test('Rush arena fits landscape and portrait, contains actors, and restores normal camera after exit',async()=>{
+  const f=fixture(),{G}=f;await G.DB.ready();G.BossRushPreview.play();f.prepare();
+  const r=G.Groudon.ARENA;
+  for(const [w,h] of [[1280,560],[360,720],[960,540]]) {
+    G.Camera.resize(w,h,2);
+    assert.ok((16+r.left-G.Camera.left())*G.Camera.scale>=24-1e-9);
+    assert.ok((16+r.top-G.Camera.top())*G.Camera.scale>=112-1e-9);
+    assert.ok((16+r.bottom-G.Camera.top())*G.Camera.scale<=h-64+1e-9);
+    assert.ok(Math.abs(G.Camera.w*G.Camera.scale-w)<1e-9);
+    assert.ok(Math.abs(G.Camera.h*G.Camera.scale-h)<1e-9);
+  }
+  const p=G.Game.player,b=G.BossRushPreview.boss,initialY=b.y;
+  f.tick(30); assert.ok(b.y>initialY);
+  p.x=10000;p.y=-10000;G.Spawner.update(.01,[],0);
+  assert.ok(p.x<=16+r.right-p.r-6);assert.ok(p.y>=16+r.top+p.r+6);
+  G.Game.quit();f.back();
+  assert.ok(Math.abs(G.Camera.scale-1.25)<1e-9);assert.equal(G.Camera.w,768);assert.ok(Math.abs(G.Camera.h-432)<1e-9);
 });
