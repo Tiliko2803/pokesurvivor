@@ -201,7 +201,7 @@ G.UI = (() => {
    */
   function sprite(cv, dex, opts = {}) {
     for (const s of live) if (s.cv === cv) live.delete(s);
-    const a = opts.mega && (dex === 260 || dex === 257) ? new G.MegaArt.Animator(dex,1,!!opts.shiny) : new G.Sprites.Animator(dex, 1, !!opts.shiny);
+    const a = opts.mega && G.Mega.definition(dex) ? new G.MegaArt.Animator(dex,1,!!opts.shiny) : new G.Sprites.Animator(dex, 1, !!opts.shiny);
     a.dir = opts.dir || 0;
     a.loop(opts.anim || 'Idle');
     const s = { cv, ctx: cv.getContext('2d'), a, dex, opts, t: Math.random() * 3, spinT: 0, sparkT: 0 };

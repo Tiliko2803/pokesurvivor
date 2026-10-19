@@ -26,8 +26,10 @@ G.Combat = (() => {
 
   function effectiveMove(pl, m) {
     const area = pl.areaMul || 1, duration = pl.durationMul || 1;
-    if (area === 1 && duration === 1) return m;
+    const power = G.Mega && G.Mega.damageMultiplier ? G.Mega.damageMultiplier(pl, m) : 1;
+    if (area === 1 && duration === 1 && power === 1) return m;
     const out = Object.assign({}, m);
+    if (m.dmg != null) out.dmg = m.dmg * power;
     for (const key of ['radius', 'width', 'size']) if (m[key] != null) out[key] = m[key] * area;
     // No alarga recargas, demoras de meteoros ni viajes de proyectiles.
     if (['buff', 'mine', 'turret', 'trail'].includes(m.kind)) {
@@ -145,6 +147,10 @@ G.Combat = (() => {
     const half = Math.min(m.arc, 6.2832) / 2;
     G.FX.slash(pl.x, pl.y - G.LIFT * 0.5, pl.aim, m.radius, m.arc, col, G.VFX.forMove(m));
     if (ghost) return;
+    if (m.hammer) {
+      const x=pl.x+Math.cos(pl.aim)*m.radius*.6, y=pl.y+Math.sin(pl.aim)*m.radius*.6;
+      G.FX.burst(x,y-G.LIFT*.5,'#b9b2d9',7,85);G.Camera.kick(.10);
+    }
 
     for (const e of G.EnemyMgr.queryCircle(pl.x, pl.y, m.radius)) {
       if (!inArc(pl.x, pl.y, e.x, e.y, pl.aim, half)) continue;

@@ -140,3 +140,9 @@ licencia en `assets/fonts/OFL.txt`). El juego usa una versión modificada,
 
 Pokémon es propiedad de Nintendo, Creatures Inc. y GAME FREAK.
 Este es un proyecto de fan sin ánimo de lucro.
+
+## Mega Tinkaton (custom fan form)
+
+Original visual concept by **ivi.etz**: <https://www.instagram.com/reel/DepaAfDsy1a/>.
+Pixel-art animation adaptation generated for this fork with the image-generation tool.
+Gameplay stats and Potencia adaptation follow Tiliko's design. This is an unofficial custom mega.

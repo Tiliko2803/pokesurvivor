@@ -277,6 +277,8 @@ G.DB = (() => {
     r.megaProgress=r.megaProgress||{};
     r.megaProgress.swampertBosses=Math.max(r.megaProgress.swampertBosses||0,(older.megaProgress||{}).swampertBosses||0);
     r.megaProgress.blazikenBosses=Math.max(r.megaProgress.blazikenBosses||0,(older.megaProgress||{}).blazikenBosses||0);
+    for(const d of Object.values(G.Mega.DEFINITIONS||{}))
+      r.megaProgress[d.progress]=Math.max(r.megaProgress[d.progress]||0,(older.megaProgress||{})[d.progress]||0);
     r.megaEquipped=Object.assign({},newer.megaEquipped||{});
     G.Mega.sanitize(r);
     r.challenges = G.Challenges.mergeProgress(a.challenges, b.challenges);

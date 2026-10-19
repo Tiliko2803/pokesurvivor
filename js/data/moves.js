@@ -331,6 +331,10 @@
       cd: 0.5, dmg: 9, radius: 72 },
 
     // ---------------- ACERO ----------------
+    { id: 'gigaton-hammer', name: 'Martillo Colosal', type: 'steel', kind: 'melee', category: 'physical', exclusiveDex: 959, hammer: true,
+      desc: 'Martillazo pesado en arco. Exclusivo de Tinkaton; Potencia duplica su daño físico en la mega.',
+      cd: 1.05, dmg: 28, radius: 72, arc: 2.1, knock: 120 },
+
     { id: 'metal-claw', name: 'Garra Metal', type: 'steel', kind: 'melee',
       desc: 'Zarpazo de acero en arco.',
       cd: 0.5, dmg: 15, radius: 50, arc: 1.6, knock: 60 },
@@ -412,6 +416,13 @@
     if (m.arc) m.arc = Math.min(3, +(m.arc * 1.25).toFixed(2));
   }
 
+  // Explicit damage categories: an attack's shape/type does not decide Potencia.
+  const PHYSICAL = new Set(['tackle','quick-attack','vine-whip','razor-leaf','wing-attack',
+    'body-slam','poison-sting','bulldoze','bug-bite','rock-throw','rock-slide','karate-chop',
+    'lick','metal-claw','bite','bonemerang','psycho-cut','spikes','meteor-mash',
+    'aerial-ace','flame-wheel','gigaton-hammer']);
+  for (const m of RAW) m.category = m.kind === 'buff' ? 'status' : PHYSICAL.has(m.id) ? 'physical' : 'special';
+
   // Pool de movimientos por tipo. El pool `normal` lo tienen todos.
   const POOL = {};
   for (const m of RAW) (POOL[m.type] = POOL[m.type] || []).push(m.id);
@@ -427,7 +438,7 @@
   function poolFor(mon) {
     const ids = new Set(POOL.normal);
     for (const t of mon.types) for (const id of (POOL[t] || [])) ids.add(id);
-    return [...ids];
+    return [...ids].filter(id => !BY_ID[id].exclusiveDex || BY_ID[id].exclusiveDex === mon.dex);
   }
 
   /**
@@ -512,6 +523,7 @@
     'aura-sphere': ['Onda Certera', 'cd'],   'lick': ['Puño Sombra', 'atk'],
     'shadow-ball': ['Golpe Fantasma', 'cd'], 'dragon-rage': ['Cometa Draco', 'atk'],
     'fairy-wind': ['Fuerza Lunar', 'atk'],   'dazzling-gleam': ['Campo de Niebla', 'rgn'],
+    'gigaton-hammer': ['Martillo Devastador', 'atk'],
     'metal-claw': ['Cabeza de Hierro', 'atk'], 'flash-cannon': ['Rayo Metálico', 'def'],
     'bite': ['Triturar', 'atk'],             'dark-pulse': ['Alarido', 'spd'],
     'night-shade': ['Pesadilla', 'rgn'],

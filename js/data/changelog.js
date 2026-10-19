@@ -6,6 +6,14 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Mega Tinkaton y su Martillo Colosal', 'Mega Tinkaton and Gigaton Hammer'], new: [
+    ['Mega Tinkaton llega con el diseño personalizado de ivi.etz: armadura de plumas oscuras, cabello crema y un enorme martillo inspirado en Corviknight. Cuatro hojas propias animan movimiento, martillazos, lanzamiento, concentración, daño y caída en ocho direcciones.',
+     'Mega Tinkaton arrives with ivi.etz’s custom design: dark feather armor, cream hair and an enormous Corviknight-inspired hammer. Four dedicated sheets animate movement, hammer swings, casting, focus, hurt and fainting in eight directions.'],
+    ['Tinkatonita: vence tres jefes en una sola partida individual con Tinkaton normal y equípala desde el menú. La mega empieza con Martillo Colosal Nv. 2, exclusivo de Tinkaton, que puede evolucionar a Martillo Devastador.',
+     'Tinkatonite: defeat three bosses in one solo run with normal Tinkaton and equip it from the menu. The mega starts with its exclusive Gigaton Hammer at level 2, which can evolve into Devastating Hammer.'],
+    ['Estadísticas base: 85 PS, 140 Ataque, 97 Defensa, 70 Ataque Especial, 120 Defensa Especial y 94 Velocidad. Potencia duplica el daño físico final después de cartas y mejoras; los movimientos especiales usan su Ataque Especial sin recibir ese multiplicador.',
+     'Base stats: 85 HP, 140 Attack, 97 Defense, 70 Sp. Atk, 120 Sp. Def and 94 Speed. Huge Power doubles final physical damage after cards and upgrades; special moves use Sp. Atk without that multiplier.']
+  ] },
   { d: '2026-10-18', title: ['Hoenn Normal llega al juego', 'Hoenn Normal is live'], new: [
     ['Boss Rush · Hoenn ya está disponible desde Jugar. Supera a los tres Regis, Groudon, Latios y Latias, Kyogre, Jirachi y Rayquaza con tu Pokémon equipado, sus movimientos y sus mejoras compradas. Empiezas en nivel 8 con siete elecciones iniciales.',
      'Boss Rush · Hoenn is now available under Play. Face the three Regis, Groudon, Latios and Latias, Kyogre, Jirachi and Rayquaza using your equipped Pokémon, its moves and purchased upgrades. Start at level 8 with seven preparation choices.']

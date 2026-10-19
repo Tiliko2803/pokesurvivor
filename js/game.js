@@ -150,7 +150,7 @@ G.Game = (() => {
     // antes de aprender nada: addMove ya los coloca.
     (save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
     // Cada mega conserva su ataque inicial Nv. 2; Repertorio elige el segundo.
-    const megaStart = (mon.dex===260&&mon.megaStone==='swampertite')||(mon.dex===257&&mon.megaStone==='blazikenite');
+    const megaStart = !!(mon.megaStone && G.Mega.definition(mon.dex)?.start);
     pl.addMove(G.Repertoire.initialMove(mon));
     if (megaStart) {
       const first = pl.moves.find(m => m.id === G.Repertoire.initialMove(mon));

@@ -22,7 +22,10 @@ G.Mega=(()=>{
   260:{id:ID,dex:DEX,name:'Swampertita',form:'Mega Swampert',progress:'swampertBosses',start:'bulldoze',hp:1.08,atk:1.23,spd:1.06,
     help:'Mega Swampert comienza con Terratemblor Nv. 2.'},
   257:{id:'blazikenite',dex:257,name:'Blazikenita',form:'Mega Blaziken',progress:'blazikenBosses',start:'karate-chop',hp:1.05,atk:1.23,spd:1.08,shiny:false,
-    help:'Golpe Kárate Nv. 2 · Impulso: hasta +25% de movimiento y +30% de velocidad de ataque.'}
+    help:'Golpe Kárate Nv. 2 · Impulso: hasta +25% de movimiento y +30% de velocidad de ataque.'},
+  959:{id:'tinkatonite',dex:959,name:'Tinkatonita',form:'Mega Tinkaton',progress:'tinkatonBosses',start:'gigaton-hammer',hp:1,atk:1,spd:1,shiny:false,
+    stats:{hp:85,atk:140,def:97,spa:70,spd:120,spe:94},
+    help:'Martillo Colosal Nv. 2 · Ataque base 140 · Potencia: ×2 al daño físico final. Diseño: ivi.etz.'}
  };
  const DEF=DEFINITIONS[DEX];
  const definition=dex=>DEFINITIONS[+dex]||null;
@@ -47,8 +50,23 @@ G.Mega=(()=>{
   return true;
  }
  function transform(mon,d){
-  return {...mon,megaStone:d.id,name:d.form,hp:Math.round(mon.hp*d.hp),
+  const form={...mon,megaStone:d.id,name:d.form,hp:Math.round(mon.hp*d.hp),
     atk:+(mon.atk*d.atk).toFixed(3),spd:Math.round(mon.spd*d.spd),megaNoShiny:d.shiny===false};
+  if(d.stats){
+   form.baseStats={...d.stats};form.bst=Object.values(d.stats).reduce((a,b)=>a+b,0);
+   // Same conversion as tools/fetch_pokedex.py; Potencia is applied separately.
+   form.hp=Math.round(70+d.stats.hp*.45);form.spd=Math.round(78+d.stats.spe*.42);
+   form.atk=+(.70+d.stats.atk*.0055).toFixed(2);
+   form.specialAtk=+(.70+d.stats.spa*.0055).toFixed(2);
+  }
+  return form;
+ }
+ function damageMultiplier(pl,m){
+  if(!pl||pl.mega!=='tinkatonite'||!m||!(m.dmg>0))return 1;
+  const category=m.category||(m.def&&m.def.category);
+  if(category==='physical')return 2;
+  // A special move uses Sp. Atk 70, retaining the same cards and buffs.
+  return category==='special'?(pl.mon.specialAtk||1.08)/(pl.mon.atk||1.47):1;
  }
  function form(mon,s){
   return !mon||!equipped(s,mon.dex)?mon:transform(mon,definition(mon.dex));
@@ -74,5 +92,5 @@ G.Mega=(()=>{
   pl.bodyH=on?Math.max(100,G.Sprites.bodyHeight(d.dex)):G.Sprites.bodyHeight(d.dex);
   pl.anim=on?new G.MegaArt.Animator(d.dex,1,pl.shiny):new G.Sprites.Animator(d.dex,1,pl.shiny);
  }
- return {DEF,DEFINITIONS,definition,NEED_BOSSES:GOAL,RAIN_DURATION,RAIN_COOLDOWN,sanitize,has,equipped,equip,form,finishRun,applyRemote,resetRain,tickRain};
+ return {DEF,DEFINITIONS,definition,damageMultiplier,NEED_BOSSES:GOAL,RAIN_DURATION,RAIN_COOLDOWN,sanitize,has,equipped,equip,form,finishRun,applyRemote,resetRain,tickRain};
 })();

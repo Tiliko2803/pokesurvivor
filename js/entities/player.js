@@ -237,7 +237,7 @@ G.Player = class Player {
     // No reinicies una animación que va por la mitad: se vería a tirones.
     if (this.anim.busy() && this.anim.progress() < 0.65) return;
     const meta = G.Sprites.animMeta(this.dex, anim);
-    const len = this.mega==='blazikenite' ? G.Blaziken.duration[anim] : meta ? meta.d.reduce((a, b) => a + b, 0) / 60 : 0.4;
+    const len = this.mega==='tinkatonite' ? G.Tinkaton.duration[anim] : this.mega==='blazikenite' ? G.Blaziken.duration[anim] : meta ? meta.d.reduce((a, b) => a + b, 0) / 60 : 0.4;
     const cd = this.cooldownFor(m,0.12);
     this.anim.play(anim, { speed: Math.max(1, len / (cd * 0.9)) });
     this.attackFace = 0.35;
@@ -267,7 +267,7 @@ G.Player = class Player {
     this.invuln = 0.45;
     this.flash = 0.14;
     G.Audio.sfx('hurt');
-    if(this.mega==='blazikenite'&&this.hp>0)this.anim.play('Hurt');
+    if((this.mega==='blazikenite'||this.mega==='tinkatonite')&&this.hp>0)this.anim.play('Hurt');
     G.Camera.kick(0.28);
     G.FX.dmgText(this.x, this.y - this.bodyH - 4, '-' + Math.round(d), eff === 'super' ? '#ff3048' : eff === 'weak' ? '#c9a0a8' : '#ff6b7a', eff === 'super');
     G.FX.burst(this.x, this.y - this.bodyH * 0.5, '#ff5f6d', 6, 90);
