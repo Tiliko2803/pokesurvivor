@@ -301,6 +301,25 @@ G.Player = class Player {
     if (got >= 1) G.FX.dmgText(this.x, this.y - this.bodyH - 6, '+' + got, '#5fe08a');
   }
 
+  /** Beso Drenaje: immediate recovery on a real hit, at most twice per rolling second.
+   * Simulation time freezes during pauses; no recovery is banked at full HP.
+   */
+  healFromMove(move, now) {
+    if (!move.drainKiss || this.dead || this.remote || this.hp <= 0 || this.hp >= this.maxHp ||
+        !Number.isFinite(now) || !(this.maxHp > 0)) return 0;
+    const recent = (this.kissHeals || []).filter(t => now >= t && now-t < 1);
+    this.kissHeals = recent;
+    if (recent.length >= 2) return 0;
+    const before = this.hp;
+    this.heal(this.maxHp * Math.min(.02, move.drainKiss));
+    const healed = this.hp-before;
+    if (healed > 0) {
+      recent.push(now);
+      G.FX.ring(this.x,this.y,6,this.r*2.2,'#ff9ed2',.28,2);
+    }
+    return healed;
+  }
+
   addMaxHp(amount) { this.maxHp += amount; this.hp += amount; }
 
   /** Devuelve cuántos niveles ha subido (pueden ser varios de golpe). */

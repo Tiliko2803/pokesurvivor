@@ -4,6 +4,10 @@
  * son los oficiales en inglés.
  */
 G.I18n.add({
+  "Juego Rudo": "Play Rough",
+  "Beso Drenaje": "Draining Kiss",
+  "×1,9 daño, +30% de alcance y cura 2% de vida máxima por ataque conectado (máx. 4%/s). Sigue siendo físico.": "×1.9 damage, +30% reach and heal 2% max HP per connecting attack (max 4%/s). Remains physical.",
+  "Golpe físico de Hada en arco que hace retroceder a los enemigos.": "A physical Fairy strike in an arc that knocks enemies back.",
   // Evoluciones de Hielo.
   "Rayo Polar": "Polar Beam",
   "Nieve en área a tu alrededor que ralentiza; evoluciona a Ventisca.": "Slowing snow around you; evolves into Blizzard.",

@@ -356,6 +356,7 @@ G.VFX = (() => {
     'wing-attack':   { melee: 'feather' },
     'tackle':        { melee: 'impact' },
     'body-slam':     { melee: 'impact' },
+    'play-rough':    { melee: 'impact' },
     'hyper-voice':   { proj: 'note' },
     'bug-bite':      { melee: 'jaws' },
     'string-shot':   { proj: 'web' },

@@ -322,6 +322,10 @@
       cd: 0.7, stat: 'atk', amount: 0.25 / (1.40 * 1.40), attackSpeedRatio: 0.25 / 1.75, dur: 7, stacks: 5 },
 
     // ---------------- HADA ----------------
+    { id: 'play-rough', name: 'Juego Rudo', type: 'fairy', kind: 'melee',
+      desc: 'Golpe físico de Hada en arco que hace retroceder a los enemigos.',
+      cd: 0.60, dmg: 18, radius: 54, arc: 2.0, knock: 85 },
+
     { id: 'fairy-wind', name: 'Viento Feérico', type: 'fairy', kind: 'nova',
       desc: 'Brisa mágica en todas direcciones.',
       cd: 1.0, dmg: 11, speed: 230, count: 10, pierce: 0, life: 1.2, size: 7 },
@@ -420,7 +424,7 @@
   const PHYSICAL = new Set(['tackle','quick-attack','vine-whip','razor-leaf','wing-attack',
     'body-slam','poison-sting','bulldoze','bug-bite','rock-throw','rock-slide','karate-chop',
     'lick','metal-claw','bite','bonemerang','psycho-cut','spikes','meteor-mash',
-    'aerial-ace','flame-wheel','gigaton-hammer']);
+    'aerial-ace','flame-wheel','gigaton-hammer','play-rough']);
   for (const m of RAW) m.category = m.kind === 'buff' ? 'status' : PHYSICAL.has(m.id) ? 'physical' : 'special';
 
   // Pool de movimientos por tipo. El pool `normal` lo tienen todos.
@@ -522,6 +526,7 @@
     'powder-snow': ['Ventisca', 'spd'],  'karate-chop': ['A Bocajarro', 'atk'],
     'aura-sphere': ['Onda Certera', 'cd'],   'lick': ['Puño Sombra', 'atk'],
     'shadow-ball': ['Golpe Fantasma', 'cd'], 'dragon-rage': ['Cometa Draco', 'atk'],
+    'play-rough': ['Beso Drenaje', 'rgn'],
     'fairy-wind': ['Fuerza Lunar', 'atk'],   'dazzling-gleam': ['Campo de Niebla', 'rgn'],
     'gigaton-hammer': ['Martillo Devastador', 'atk'],
     'metal-claw': ['Cabeza de Hierro', 'atk'], 'flash-cannon': ['Rayo Metálico', 'def'],
@@ -536,6 +541,10 @@
   };
   // Evoluciones específicas; los buffs no registrados siguen sin evolucionar.
   const EVO_BY_ID = {
+    'play-rough': {
+      t: '×1,9 daño, +30% de alcance y cura 2% de vida máxima por ataque conectado (máx. 4%/s). Sigue siendo físico.',
+      m: { dmg: 1.9, radius: 1.3, arc: 9, drainKiss: 0.02 }
+    },
     'powder-snow': {
       t: '×1,8 daño, +50% de radio y ralentiza un 65% en 360°',
       m: { dmg: 1.8, radius: 1.5, slow: 0.65 }

@@ -56,13 +56,13 @@ G.Combat = (() => {
     // enemigo, como Ascuas tras Ataque Rápido, casi no se ve).
     m.castAt = performance.now();
 
-    run(pl, effectiveMove(pl, m));
+    run(pl, effectiveMove(pl, m), now);
   }
 
-  function run(pl, m) {
+  function run(pl, m, now = 0) {
     switch (m.kind) {
       case 'projectile': fireProjectiles(pl, m); break;
-      case 'melee':      melee(pl, m); break;
+      case 'melee':      melee(pl, m, now); break;
       case 'beam':       beam(pl, m); break;
       case 'nova':       nova(pl, m); break;
       case 'aura':       aura(pl, m); break;
@@ -142,7 +142,7 @@ G.Combat = (() => {
     return Math.abs(((a - aim + Math.PI * 3) % 6.2832) - Math.PI) <= half;
   }
 
-  function melee(pl, m) {
+  function melee(pl, m, now) {
     const col = G.U.TYPE_COLOR[m.type];
     const half = Math.min(m.arc, 6.2832) / 2;
     G.FX.slash(pl.x, pl.y - G.LIFT * 0.5, pl.aim, m.radius, m.arc, col, G.VFX.forMove(m));
@@ -152,10 +152,14 @@ G.Combat = (() => {
       G.FX.burst(x,y-G.LIFT*.5,'#b9b2d9',7,85);G.Camera.kick(.10);
     }
 
+    let connected = false;
     for (const e of G.EnemyMgr.queryCircle(pl.x, pl.y, m.radius)) {
       if (!inArc(pl.x, pl.y, e.x, e.y, pl.aim, half)) continue;
-      hit(pl, e, m.dmg * pl.atk, col, e.x - pl.x, e.y - pl.y, m.knock || 0, m);
+      const damaged = hit(pl, e, m.dmg * pl.atk, col, e.x - pl.x, e.y - pl.y, m.knock || 0, m);
+      connected = damaged || connected;
     }
+    // One recovery per cast, even in a crowd or with multiple bound moves.
+    if (connected && m.drainKiss && typeof pl.healFromMove === 'function') pl.healFromMove(m, now);
     for (const p of G.World.propsInCircle(pl.x, pl.y, m.radius)) {
       if (inArc(pl.x, pl.y, p.x, p.y, pl.aim, half)) G.World.damageProp(p, m.dmg * pl.atk, col);
     }
@@ -552,12 +556,14 @@ G.Combat = (() => {
     const k = typeK(m.type, e);
     const crit = isCrit(pl);
     dmg *= k * (crit ? pl.critMul || 1.5 : 1);
+    const before = e.hp;
     e.hurt(dmg, col, dx, dy, knock, crit ? 'crit' : G.Types.label(G.Types.mult(m.type, e.types)));
     if (!ghost) pl.onDealt(dmg);
     pl.dmgDealt += dmg;
     if (m.burn) e.applyBurn(m.burn);
     if (m.poison) e.applyPoison(m.poison);
     if (m.slow) e.applySlow(m.slow);
+    return Number.isFinite(before) && before > 0 && e.hp < before;
   }
 
   // ---------------- colisiones ----------------

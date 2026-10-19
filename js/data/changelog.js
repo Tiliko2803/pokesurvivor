@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Juego Rudo: cuerpo a cuerpo de Hada', 'Play Rough: physical Fairy combat'], new: [
+    ['Juego Rudo añade un ataque físico de Hada en arco, con empuje y mejoras hasta nivel 5. Los Pokémon Hada pueden aprenderlo y Mega Tinkaton aprovecha Potencia. Se usa el nombre de Latinoamérica.',
+     'Play Rough adds a physical Fairy attack in an arc, with knockback and upgrades through level 5. Fairy Pokémon can learn it and Mega Tinkaton benefits from Huge Power. The Latin American Spanish move name is used.'],
+    ['Juego Rudo Nv. 5 evoluciona con Síntesis a Beso Drenaje: conserva el tipo Hada y la categoría física, gana daño y alcance, y cura un 2% de vida máxima al conectar. La curación ocurre una vez por ataque, con un máximo de dos activaciones por segundo; los golpes al aire, objetos y copias visuales de compañeros no curan.',
+     'Level 5 Play Rough evolves with Synthesis into Draining Kiss: it retains its Fairy type and physical category, gains damage and reach, and heals 2% max HP on a hit. Recovery occurs once per attack, capped at two activations per second; misses, props and teammates’ visual copies do not heal.']
+  ] },
   { d: '2026-10-18', title: ['Mega Tinkaton y su Martillo Colosal', 'Mega Tinkaton and Gigaton Hammer'], new: [
     ['Mega Tinkaton llega con el diseño personalizado de ivi.etz: armadura de plumas oscuras, cabello crema y un enorme martillo inspirado en Corviknight. Cuatro hojas propias animan movimiento, martillazos, lanzamiento, concentración, daño y caída en ocho direcciones.',
      'Mega Tinkaton arrives with ivi.etz’s custom design: dark feather armor, cream hair and an enormous Corviknight-inspired hammer. Four dedicated sheets animate movement, hammer swings, casting, focus, hurt and fainting in eight directions.'],
