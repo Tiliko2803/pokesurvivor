@@ -116,6 +116,7 @@ G.Game = (() => {
     runMode = mode;
     G.Challenges.begin(challengeId);
     holdBy = []; awayBy = null;
+    G.MegaEvolution?.reset();
     const save = G.DB.save;
     const mon = previewId ? G.MaomaoPreview.mon : G.Mega.form(G.DEX_BY[save.partner],save);
     const perks = G.Upgrades.perks(previewId ? {} : G.DB.upgradesOf(mon.dex));
@@ -180,6 +181,7 @@ G.Game = (() => {
     deathT = 0;
 
     state = 'playing';
+    if (!coop && pl.mega) G.MegaEvolution?.begin(pl);
     if (previewId) G.UI.toast('Maomao: prueba visual. Las diagonales usan poses aproximadas.', 5000);
   }
 
@@ -314,6 +316,7 @@ G.Game = (() => {
 
   function endRun(dead = true, challengeWon = false) {
     if (state === 'over' || !pl) return;
+    G.MegaEvolution?.cancel();
     const challenge = G.Challenges.active ? G.Challenges.finish(challengeWon && !pl.dead && clean()) : null;
     const coop = !!pl.uid;                    // sólo las partidas en grupo le ponen uid
     const wasHost = !!pl.coopHost;
@@ -558,7 +561,7 @@ G.Game = (() => {
       return;
     }
     if (G.Input.tap('escape') || G.Input.tap('keyp')) { togglePause(); return; }
-    if (state !== 'playing' || !pl) return;
+    if (state !== 'playing' || !pl || G.MegaEvolution?.active) return;
     for (let i = 0; i < 4; i++) {
       if (G.Input.tap('digit' + (i + 1)) || G.Input.tap('numpad' + (i + 1))) pl.setActive(i);
     }
@@ -602,14 +605,14 @@ G.Game = (() => {
     if (state === 'playing') G.Settings.sample(real);
     fpsAcc += real; fpsN++;
     if (fpsAcc >= 0.5) { fpsShown = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0; }
-    frameDt = state === 'playing' ? dt : 0;
+    frameDt = state === 'playing' && !G.MegaEvolution?.active ? dt : 0;
 
     const wasPlaying = state === 'playing';
     handleKeys();
-    G.Challenges.tick(ts, wasPlaying && state === 'playing' && !document.hidden && navigator.onLine !== false);
+    G.Challenges.tick(ts, wasPlaying && state === 'playing' && !G.MegaEvolution?.active && !document.hidden && navigator.onLine !== false);
 
     if (state === 'playing') update(dt);
-    else if (pl && state !== 'ui') { G.FX.update(dt * 0.25); pl.anim.update(dt * 0.25); }
+    else if (pl && state !== 'ui' && !G.MegaEvolution?.active) { G.FX.update(dt * 0.25); pl.anim.update(dt * 0.25); }
     // La red se atiende siempre (también con las cartas de nivel abiertas).
     if (G.Coop.active && pl && state !== 'ui' && state !== 'over') G.Coop.tick(dt);
 
@@ -625,6 +628,8 @@ G.Game = (() => {
   }
 
   function update(dt) {
+    // No gameplay clock, projectiles, enemies, buffs or weather tick during the intro.
+    if (G.MegaEvolution?.active) { G.MegaEvolution.tick(dt); return; }
     const coop = G.Coop.active;
     if (G.Challenges.active && pl.dead) { endRun(true); return; }
     if (flashT > 0) flashT -= dt;
@@ -738,7 +743,7 @@ G.Game = (() => {
     items.sort((a, b) => a.y - b.y);
     for (const it of items) {
       if (it.prop) G.World.drawProp(ctx, it.prop, t);
-      else it.ent.draw(ctx);
+      else if (!G.MegaEvolution?.owns(it.ent)) it.ent.draw(ctx);
     }
   }
 
@@ -748,6 +753,7 @@ G.Game = (() => {
     ctx.imageSmoothingEnabled = false;
 
     ctx.save();
+    G.MegaEvolution?.camera(ctx, w, h, G.Camera);
     ctx.scale(G.Camera.scale, G.Camera.scale);
     G.Camera.apply(ctx);
     drawScene(G.Camera, G.Coop.active ? [pl, ...G.Coop.puppets()] : [pl]);
@@ -768,9 +774,10 @@ G.Game = (() => {
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, w, h);
     }
-    if (!G.Judgment.cinematic) G.HUD.draw(ctx, w, h, pl, st);
+    G.MegaEvolution?.draw(ctx, w, h, G.Camera);
+    if (!G.Judgment.cinematic && !G.MegaEvolution?.active) G.HUD.draw(ctx, w, h, pl, st);
     G.Judgment.drawOverlay(ctx, w, h);
-    G.Touch.draw(ctx);
+    if (!G.MegaEvolution?.active) G.Touch.draw(ctx);
     if (G.Settings.get('fps')) {
       ctx.save();
       ctx.font = '700 11px Pixelify, monospace';
@@ -893,7 +900,7 @@ G.Game = (() => {
     quit() { if (state !== 'ui' && state !== 'over') quitRun(); },
     /** Para grabar vídeos: abre las cartas de subir de nivel. */
     debugLevelUp() { tampered = true; pl.level++; pendingLevels++; },
-    toUI() { state = 'ui'; runMode = null; Backdrop.restore(); },
+    toUI() { G.MegaEvolution?.cancel(); state = 'ui'; runMode = null; Backdrop.restore(); },
     get state() { return state; }, get mode() { return runMode; }, get player() { return pl; }, st
   };
 })();

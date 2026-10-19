@@ -4,6 +4,7 @@
  * son los oficiales en inglés.
  */
 G.I18n.add({
+  "¡Megaevolución!": "Mega Evolution!",
   "Juego Rudo": "Play Rough",
   "Beso Drenaje": "Draining Kiss",
   "×1,9 daño, +30% de alcance y cura 2% de vida máxima por ataque conectado (máx. 4%/s). Sigue siendo físico.": "×1.9 damage, +30% reach and heal 2% max HP per connecting attack (max 4%/s). Remains physical.",

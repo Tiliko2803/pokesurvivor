@@ -250,7 +250,7 @@ G.Player = class Player {
    * @param hostile  impacto enemigo; excluye lava y trampas del escenario
    */
   hurt(amount, type = null, pure = false, hostile = false) {
-    if (this.invuln > 0 || this.dead) return;
+    if (this.invuln > 0 || this.dead || G.MegaEvolution?.owns(this)) return;
     let eff = null;
     if (type) {
       const k = G.Types.mult(type, this.mon.types);

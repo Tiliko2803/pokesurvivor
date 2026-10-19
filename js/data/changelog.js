@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-18', title: ['Una entrada para las megas', 'A Mega entrance'], chg: [
+    ['Símbolo de megaevolución ajustado a la referencia: silueta curva en S, aberturas diagonales, extremos triangulares y degradado arcoíris.',
+     'Mega Evolution symbol matched to the reference: curved S silhouette, diagonal openings, triangular ends and a rainbow gradient.'],
+    ['Las megas jugables presentan una transformación de 2,4 s al comenzar en solitario: acercamiento, energía arcoíris, capullo de cristal y ruptura. El combate y sus relojes esperan; conserva vida, mejoras y ataques. Compatible con la opción de menos sacudidas y destellos.',
+     'Playable Megas now transform during a 2.4 s solo intro: zoom, rainbow energy, a crystal cocoon and a shattering reveal. Combat and its clocks wait; HP, upgrades and moves remain intact. Supports reduced shake and flashes.']
+  ] },
   { d: '2026-10-18', title: ['Juego Rudo: cuerpo a cuerpo de Hada', 'Play Rough: physical Fairy combat'], new: [
     ['Juego Rudo añade un ataque físico de Hada en arco, con empuje y mejoras hasta nivel 5. Los Pokémon Hada pueden aprenderlo y Mega Tinkaton aprovecha Potencia. Se usa el nombre de Latinoamérica.',
      'Play Rough adds a physical Fairy attack in an arc, with knockback and upgrades through level 5. Fairy Pokémon can learn it and Mega Tinkaton benefits from Huge Power. The Latin American Spanish move name is used.'],

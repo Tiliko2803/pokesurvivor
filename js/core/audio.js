@@ -380,6 +380,9 @@ G.Audio = (() => {
   function arp(type, freqs, gap, dur, vol) { freqs.forEach((f, i) => tone(type, f, f, dur, vol, i * gap)); }
 
   const SFX = {
+    'mega-awaken': () => { tone('sine', 110, 330, .45, .08); arp('triangle', [330,440,659], .07, .25, .04); },
+    'mega-charge': () => { hiss(.74,.07,'bandpass',400,3200); tone('sine',220,880,.76,.07); arp('triangle',[523,659,784,1047],.10,.28,.035); },
+    'mega-break': () => { hiss(.30,.12,'highpass',2800,700); tone('sine',150,55,.28,.13); arp('triangle',[659,831,988,1319],.055,.40,.055); },
     hover:   () => tone('square', 1400, 1400, 0.025, 0.025),
     click:   () => { tone('square', 660, 990, 0.05, 0.06); },
     back:    () => tone('square', 880, 520, 0.07, 0.05),
