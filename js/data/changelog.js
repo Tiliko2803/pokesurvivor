@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-20', title: ['Una frase sorpresa en el menú', 'A surprise line on the menu'], new: [
+    ['32 frases cortas sobre Arceus, los curanderos, las builds y la panadería de Tiliko. Cada visita al juego elige una; conserva la misma al volver al menú y evita repetir la anterior cuando es posible.',
+     '32 short lines about Arceus, healers, builds and Tiliko’s bakery. Each visit chooses one; returning to the menu keeps it, and the previous line is avoided when possible.']
+  ] },
   { d: '2026-10-20', title: ['Estadísticas, nuevos ataques y combates más claros', 'Stats, new moves and clearer battles'], new: [
     ['Ataque físico/especial y ambas defensas para todos los Pokémon. Danza Espada y Danza Dragón refuerzan el daño físico; Maquinación refuerza el especial. Las cartas muestran la categoría y favorecen el lado fuerte de tu compañero. Las danzas personalizadas conservan sus evoluciones y su cadencia.',
      'Physical/special attack and both defenses for every Pokémon. Swords Dance and Dragon Dance boost physical damage; Nasty Plot boosts special damage. Cards show categories and favor your partner’s stronger side. Custom dances retain their evolutions and attack speed.'],

@@ -61,6 +61,7 @@ G.MenuUI = (() => {
   // ---------------- menú principal ----------------
 
   function open() {
+    $('menu-splash').textContent = G.MenuSplashes.text();
     const s = G.DB.save;
     const mon = G.DEX_BY[s.partner];
     const megaDef=G.Mega.definition(mon.dex),megaOn=G.Mega.equipped(s,mon.dex);

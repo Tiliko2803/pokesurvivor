@@ -991,3 +991,12 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
 .cards.guard .card { opacity: .5; filter: saturate(.6); }
 
 #scr-pause > .box { width: min(720px, 100%); max-height: calc(100dvh - 24px); overflow-y: auto; }
+
+/* Frase sorpresa del titulo: ocupa su propia fila y cabe en movil horizontal. */
+#scr-menu .menu-splash { max-width: min(340px, 92%); margin: 8px auto 5px; color: #ffe37a;
+  font-size: clamp(11px, 1.5vw, 15px); line-height: 1.25; font-weight: 700;
+  letter-spacing: 0; text-wrap: balance; overflow-wrap: anywhere; transform: rotate(-3deg);
+  text-shadow: 1px 2px 0 #442500; pointer-events: none; }
+@media (max-height: 460px) and (orientation: landscape) {
+  #scr-menu .menu-splash { max-width: 290px; margin: 5px auto 3px; font-size: 11px; }
+}
