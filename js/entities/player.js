@@ -269,6 +269,7 @@ G.Player = class Player {
     G.Audio.sfx('hurt');
     if((this.mega==='blazikenite'||this.mega==='tinkatonite')&&this.hp>0)this.anim.play('Hurt');
     G.Camera.kick(0.28);
+    if (!this.remote) G.Pad.rumble(0.25 + Math.min(0.75, d / this.maxHp * 3), 140);
     G.FX.dmgText(this.x, this.y - this.bodyH - 4, '-' + Math.round(d), eff === 'super' ? '#ff3048' : eff === 'weak' ? '#c9a0a8' : '#ff6b7a', eff === 'super');
     G.FX.burst(this.x, this.y - this.bodyH * 0.5, '#ff5f6d', 6, 90);
     // Banda Focus: aguanta el golpe con 1 de vida (una vez cada 60 s).
@@ -444,14 +445,55 @@ G.Player = class Player {
     const tg = (ranged ? boss || threat : threat || boss)
             || G.Projectiles.nearest(all, this.x, this.y, 520)
             || G.World.nearestBreakable(this.x, this.y, 200);
-    this.target = tg;
-    if (tg) this.aim = Math.atan2(tg.y - this.y, tg.x - this.x);
-    else if (this.walking) this.aim = this.moveAngle;
+    // Apuntar a mano (Ajustes > Accesibilidad): hacia el ratón o el stick derecho.
+    // El blanco (para la cadena) es el enemigo que hay en esa dirección; si no
+    // hay ninguno, el de siempre.
+    const hand = this.handAim();
+    this.manualAim = hand != null;
+    if (hand != null) {
+      this.aim = hand;
+      this.target = this.enemyAlong(all, hand) || tg;
+    } else {
+      this.target = tg;
+      if (tg) this.aim = Math.atan2(tg.y - this.y, tg.x - this.x);
+      else if (this.walking) this.aim = this.moveAngle;
+    }
 
     // --- animación: mira al objetivo al atacar, si no a donde camina ---
     const face = this.attackFace > 0 || !this.walking ? this.aim : this.moveAngle;
     this.anim.dir = G.Sprites.dirFromAngle(face);
     this.anim.loop(this.walking ? 'Walk' : 'Idle', this.walking ? s / 110 : 1);
+  }
+
+  /**
+   * Ángulo de "Apuntar a mano", o null si toca apuntar solo. Manda lo último
+   * que se haya usado: el stick derecho mientras se empuja; si no, el ratón si
+   * se ha movido después (en PC). Soltar el stick sin tocar el ratón = solo.
+   */
+  handAim() {
+    if (this.remote || !G.Settings.get('aimManual')) return null;
+    const touch = G.Touch.aim?.();
+    if (touch) return Math.atan2(touch[1], touch[0]);
+    const st = G.Pad.aim();
+    if (st) return Math.atan2(st[1], st[0]);
+    if (G.Settings.touch || G.Touch.active || !G.Input.mouseMovedAt || G.Input.mouseMovedAt < G.Pad.aimAt) return null;
+    const w = G.Input.mouseWorld();
+    const dx = w.x - this.x, dy = w.y - (this.y - G.LIFT * 0.5);
+    return Math.hypot(dx, dy) < 4 ? null : Math.atan2(dy, dx);
+  }
+
+  /** El enemigo más cercano dentro de ±25° de la dirección a (a menos de 520). */
+  enemyAlong(all, a) {
+    let best = null, bd = 520 * 520;
+    const ca = Math.cos(a), sa = Math.sin(a), cosMax = Math.cos(0.44);
+    for (const e of all) {
+      if (e.dead) continue;
+      const dx = e.x - this.x, dy = e.y - this.y, d2 = dx * dx + dy * dy;
+      if (d2 >= bd || d2 < 1) continue;
+      if ((dx * ca + dy * sa) / Math.sqrt(d2) < cosMax) continue;
+      bd = d2; best = e;
+    }
+    return best;
   }
 
   /** Vuelve a levantarse (lo revive un compañero en cooperativo). */

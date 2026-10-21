@@ -607,6 +607,8 @@ G.Game = (() => {
     if (fpsAcc >= 0.5) { fpsShown = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0; }
     frameDt = state === 'playing' && !G.MegaEvolution?.active ? dt : 0;
 
+    if (state !== 'playing') G.Touch?.reset();
+    G.Pad.poll(real);
     const wasPlaying = state === 'playing';
     handleKeys();
     G.Challenges.tick(ts, wasPlaying && state === 'playing' && !G.MegaEvolution?.active && !document.hidden && navigator.onLine !== false);
@@ -747,6 +749,34 @@ G.Game = (() => {
     }
   }
 
+  /*
+   * Apuntar a mano: una mira donde está el ratón (y el cursor en cruz), o
+   * delante de tu Pokémon si apuntas con el stick derecho.
+   */
+  function drawAimMark() {
+    const on = state === 'playing' && pl && pl.manualAim && !G.Judgment.cinematic && !G.MegaEvolution?.active;
+    const stickAim = G.Touch.aim?.() || G.Pad.aim();
+    const cur = on && !stickAim ? 'crosshair' : '';
+    if (cv.style.cursor !== cur) cv.style.cursor = cur;
+    if (!on) return;
+    let x, y;
+    if (stickAim) {
+      const k = G.Camera.scale;
+      x = (pl.x - G.Camera.left() + Math.cos(pl.aim) * 90) * k;
+      y = (pl.y - G.LIFT * 0.5 - G.Camera.top() + Math.sin(pl.aim) * 90) * k;
+    } else ({ x, y } = G.Input.mouse());
+    ctx.save();
+    ctx.lineCap = 'round';
+    for (const [col, lw] of [['rgba(0,0,0,.65)', 4], ['#ffe9a8', 1.6]]) {
+      ctx.strokeStyle = col; ctx.lineWidth = lw;
+      ctx.beginPath(); ctx.arc(x, y, 9, 0, 6.2832); ctx.stroke();
+      ctx.beginPath();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { ctx.moveTo(x + dx * 5, y + dy * 5); ctx.lineTo(x + dx * 14, y + dy * 14); }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
@@ -778,6 +808,7 @@ G.Game = (() => {
     if (!G.Judgment.cinematic && !G.MegaEvolution?.active) G.HUD.draw(ctx, w, h, pl, st);
     G.Judgment.drawOverlay(ctx, w, h);
     if (!G.MegaEvolution?.active) G.Touch.draw(ctx);
+    drawAimMark();
     if (G.Settings.get('fps')) {
       ctx.save();
       ctx.font = '700 11px Pixelify, monospace';
@@ -900,7 +931,7 @@ G.Game = (() => {
     quit() { if (state !== 'ui' && state !== 'over') quitRun(); },
     /** Para grabar vídeos: abre las cartas de subir de nivel. */
     debugLevelUp() { tampered = true; pl.level++; pendingLevels++; },
-    toUI() { G.MegaEvolution?.cancel(); state = 'ui'; runMode = null; Backdrop.restore(); },
+    toUI() { if (cv) cv.style.cursor = ''; G.MegaEvolution?.cancel(); state = 'ui'; runMode = null; Backdrop.restore(); },
     get state() { return state; }, get mode() { return runMode; }, get player() { return pl; }, st
   };
 })();

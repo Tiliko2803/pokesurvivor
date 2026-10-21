@@ -959,3 +959,7 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
 .coverage-picker .chip:disabled { opacity: .4; cursor: default; }
 .coverage-type { font-size: 11px; opacity: .8; }
 .coverage-empty { padding: 0 8px; }
+
+.padkey { display: inline-block; padding: 0 7px; border: 2px solid rgba(244,248,255,.4); border-radius: 9px; font-size: 13px; color: var(--text, #f4f8ff) !important; text-shadow: none; }
+/* Lo seleccionado con el mando (gamepad.js). */
+.pad-focus { outline: 3px solid #ffd23f !important; outline-offset: 3px; box-shadow: 0 0 0 6px rgba(255,210,63,.25) !important; }

@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-20', title: ['Apuntado manual y mando', 'Manual aiming and gamepad'], new: [
+    ['Activa Apuntar a mano en Ajustes > Accesibilidad: apunta con el ratón o el stick derecho. Al soltar el stick vuelve el apuntado automático; cadena y meteoros conservan sus blancos. En móvil aparece un segundo joystick para apuntar mientras te mueves; puedes recolocarlo desde Controles.',
+     'Enable manual aiming in Settings > Accessibility: aim with the mouse or right stick. Releasing the stick restores automatic aim; chains and meteors keep their targets. Mobile adds a second aim stick while moving; reposition it under Controls.'],
+    ['Soporte de mando: stick izquierdo o cruceta para moverte, LB/RB para cambiar de ataque y Start para pausar. También puedes navegar los menús. Ajustes de mando y vibración en Controles.',
+     'Gamepad support: move with the left stick or D-pad, switch attacks with LB/RB and pause with Start. Menus support gamepad navigation. Controller and rumble settings are under Controls.']
+  ] },
   { d: '2026-10-18', title: ['Una entrada para las megas', 'A Mega entrance'], chg: [
     ['Símbolo de megaevolución ajustado a la referencia: silueta curva en S, aberturas diagonales, extremos triangulares y degradado arcoíris.',
      'Mega Evolution symbol matched to the reference: curved S silhouette, diagonal openings, triangular ends and a rainbow gradient.'],

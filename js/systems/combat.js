@@ -45,7 +45,7 @@ G.Combat = (() => {
     m.t -= dt;
     if (m.t > 0) return;
     // Los ataques que necesitan blanco esperan a tenerlo (no gastes animación al aire).
-    if (needsTarget(m) && !(pl.target && G.U.dist(pl.x, pl.y, pl.target.x, pl.target.y) <= reach(effectiveMove(pl, m)))) {
+    if (needsTarget(m, pl) && !(pl.target && G.U.dist(pl.x, pl.y, pl.target.x, pl.target.y) <= reach(effectiveMove(pl, m)))) {
       m.t = 0.05;
       return;
     }
@@ -79,7 +79,8 @@ G.Combat = (() => {
   }
 
   const TARGETED = ['melee', 'beam', 'projectile', 'boomerang', 'chain', 'meteor', 'dash', 'cone'];
-  function needsTarget(m) { return TARGETED.includes(m.kind); }
+  const FREE_AIM = ['melee', 'beam', 'projectile', 'boomerang', 'dash', 'cone'];
+  function needsTarget(m, pl) { return TARGETED.includes(m.kind) && !(pl && pl.manualAim && FREE_AIM.includes(m.kind)); }
   function reach(m) {
     if (m.kind === 'melee') return m.radius + 30;
     if (m.kind === 'beam') return m.radius + 20;

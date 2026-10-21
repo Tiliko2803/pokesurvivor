@@ -18,6 +18,7 @@ G.LayoutUI = (() => {
   /** Dónde está cada cosa ahora mismo (centro en px), con lo guardado o lo de siempre. */
   function current(k, w, h) {
     const p = G.Touch.spot(k);
+    if (k === 'aim') { const b = G.Touch.aimBase(w, h); return [b.x, b.y]; }
     if (k === 'stick') { const b = G.Touch.stickBase(w, h); return [b.x, b.y]; }
     const sa = G.Touch.safeArea();
     if (k === 'bar') {
@@ -47,6 +48,7 @@ G.LayoutUI = (() => {
       <div class="lay-thing lay-bar" data-k="bar"><div class="lay-slot item"></div>${slots}<span class="lay-tag">Ataques</span></div>
       <div class="lay-thing lay-pause" data-k="pause"><b></b><b></b></div>
       <div class="lay-thing lay-stick" data-k="stick"><div class="knob"></div><span class="lay-tag">Joystick</span></div>
+      <div class="lay-thing lay-stick" data-k="aim"><div class="knob"></div><span class="lay-tag">Apuntar</span></div>
       <div class="box lay-panel">
         <h3>Arrastra los botones a donde quieras</h3>
         <p class="lay-turn">Gira el móvil: se juega en horizontal.</p>
@@ -70,7 +72,8 @@ G.LayoutUI = (() => {
       const totalW = N * S + (N - 1) * GAP;
       pos = { bar: [(w - totalW) / 2 - S - ITEM_GAP + BAR_W / 2, h - S - 18 - Math.min(28, sa.bottom) + S / 2],
               pause: [w - 52 - Math.min(44, sa.right) + 20, 12 + Math.min(20, sa.top) + 20],
-              stick: [G.Touch.STICK_DEF[0] * w, G.Touch.STICK_DEF[1] * h] };
+              stick: [G.Touch.STICK_DEF[0] * w, G.Touch.STICK_DEF[1] * h],
+              aim: [G.Touch.AIM_DEF[0] * w, G.Touch.AIM_DEF[1] * h] };
       for (const k in pos) pos[k] = fit(k, pos[k][0], pos[k][1], w, h);
       paint();
     };
@@ -101,7 +104,7 @@ G.LayoutUI = (() => {
   function load() {
     const w = innerWidth, h = innerHeight;
     pos = {}; moved = {};
-    for (const k of ['bar', 'pause', 'stick']) {
+    for (const k of ['bar', 'pause', 'stick', 'aim']) {
       const c = current(k, w, h);
       pos[k] = fit(k, c[0], c[1], w, h);
       moved[k] = !!G.Touch.spot(k);
@@ -118,6 +121,7 @@ G.LayoutUI = (() => {
     };
     place('bar', BAR_W, S);
     place('pause', 40, 40);
+    place('aim', r * 2, r * 2).classList.toggle('hidden', !G.Settings.get('aimManual'));
     place('stick', r * 2, r * 2).classList.toggle('hidden', mode !== 'fixed');
     el.querySelectorAll('#lay-mode .chip').forEach(b => b.classList.toggle('on', b.dataset.m === mode));
     el.querySelector('.lay-turn').classList.toggle('hidden', innerWidth >= innerHeight);

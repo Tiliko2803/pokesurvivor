@@ -8,7 +8,7 @@
  * pulsa en vez de abrir el joystick. Varios dedos a la vez funcionan.
  */
 G.Touch = (() => {
-  let cv = null, stick = null;
+  let cv = null, stick = null, aimStick = null;
   let active = G.Settings.touch;      // ¿se está usando táctil?
   let buttons = [];
 
@@ -21,6 +21,13 @@ G.Touch = (() => {
     return Array.isArray(v) && v.length === 2 && v.every(n => typeof n === 'number' && Number.isFinite(n)) ? v : null;
   }
   const STICK_DEF = [0.14, 0.72];
+  const AIM_DEF = [0.86, 0.70];
+  const manual = () => G.Settings.get('aimManual') === true;
+  function aimBase(w = cv.clientWidth, h = cv.clientHeight) {
+    const p = spot('aim') || AIM_DEF, rad = R();
+    return { x: clamp(p[0] * w, rad + 4, Math.max(rad + 4, w - rad - 4)),
+             y: clamp(p[1] * h, rad + 4, Math.max(rad + 4, h - rad - 4)) };
+  }
   const fixed = () => G.Settings.get('stickMode') === 'fixed';
   /** Centro del joystick fijo, medido en píxeles CSS del canvas. */
   function stickBase(w = cv.clientWidth, h = cv.clientHeight) {
@@ -95,6 +102,20 @@ G.Touch = (() => {
     return true;
   }
 
+  // Cada dedo conserva su joystick hasta soltarlo; el HUD tiene prioridad.
+  function startControl(id, source, x, y) {
+    if (manual() && G.Game?.state === 'playing') {
+      const b = aimBase();
+      if (Math.hypot(x - b.x, y - b.y) <= R() * 1.6) {
+        if (aimStick) return false;
+        aimStick = { id, source, ox: b.x, oy: b.y, x, y };
+        return true;
+      }
+      if (x > cv.clientWidth * 0.5) return false;
+    }
+    return startStick(id, source, x, y);
+  }
+
   function moveStick(x, y) {
     if (!stick) return;
     stick.x = x; stick.y = y;
@@ -111,26 +132,24 @@ G.Touch = (() => {
       const p = point(t.clientX, t.clientY);
       const b = hit(p.x, p.y);
       if (b) { press(b); continue; }
-      startStick(t.identifier, 'touch', p.x, p.y);
+      startControl(t.identifier, 'touch', p.x, p.y);
     }
   }
 
   function touchMove(e) {
     if (e.cancelable) e.preventDefault();
-    if (!stick || stick.source !== 'touch') return;
     for (const t of e.changedTouches) {
-      if (t.identifier !== stick.id) continue;
       const p = point(t.clientX, t.clientY);
-      moveStick(p.x, p.y);
-      break;
+      if (stick?.source === 'touch' && t.identifier === stick.id) moveStick(p.x, p.y);
+      if (aimStick?.source === 'touch' && t.identifier === aimStick.id) { aimStick.x = p.x; aimStick.y = p.y; }
     }
   }
 
   function touchEnd(e) {
     if (e.cancelable) e.preventDefault();
-    if (!stick || stick.source !== 'touch') return;
     for (const t of e.changedTouches) {
-      if (t.identifier === stick.id) { stick = null; break; }
+      if (stick?.source === 'touch' && t.identifier === stick.id) stick = null;
+      if (aimStick?.source === 'touch' && t.identifier === aimStick.id) aimStick = null;
     }
   }
 
@@ -143,21 +162,32 @@ G.Touch = (() => {
     const p = point(e.clientX, e.clientY);
     const b = hit(p.x, p.y);
     if (b) { e.preventDefault(); press(b); return; }
-    if (!touchy || !startStick(e.pointerId, 'pointer', p.x, p.y)) return;
+    if (!touchy || !startControl(e.pointerId, 'pointer', p.x, p.y)) return;
     e.preventDefault();
     try { cv.setPointerCapture(e.pointerId); } catch (err) { /* nada */ }
   }
 
   function move(e) {
-    if (!stick || stick.source !== 'pointer' || e.pointerId !== stick.id) return;
     const p = point(e.clientX, e.clientY);
-    moveStick(p.x, p.y);
+    if (stick?.source === 'pointer' && e.pointerId === stick.id) moveStick(p.x, p.y);
+    if (aimStick?.source === 'pointer' && e.pointerId === aimStick.id) { aimStick.x = p.x; aimStick.y = p.y; }
   }
 
   function up(e) {
     if (stick && stick.source === 'pointer' && e.pointerId === stick.id) stick = null;
+    if (aimStick?.source === 'pointer' && e.pointerId === aimStick.id) aimStick = null;
   }
-  function reset() { stick = null; }
+  function reset() { stick = null; aimStick = null; }
+  addEventListener('resize', reset);
+  addEventListener('orientationchange', reset);
+  if (G.Settings.on) G.Settings.on(k => { if (['aimManual', 'pad', 'stick', 'stickMode'].includes(k)) reset(); });
+
+  /** Stick derecho: zona muerta pequeña y apuntado automático al soltar. */
+  function aim() {
+    if (!manual() || G.Game?.state !== 'playing' || !aimStick) return null;
+    const dx = aimStick.x - aimStick.ox, dy = aimStick.y - aimStick.oy, d = Math.hypot(dx, dy);
+    return d < 7 ? null : [dx / d, dy / d];
+  }
 
   /** Dirección del joystick (con fuerza 0..1), o null si no se usa. */
   function vector() {
@@ -193,9 +223,17 @@ G.Touch = (() => {
   /** Dibuja el joystick (coordenadas de pantalla, CSS px). */
   function draw(ctx) {
     const base = !stick && fixed() && active && G.Game && G.Game.state === 'playing' ? stickBase() : null;
-    if (!stick && !base) return;
-    const s = stick || { ox: base.x, oy: base.y, x: base.x, y: base.y };
-    drawStick(ctx, s, R(), base ? 0.55 : 1);
+    if (stick || base) {
+      const s = stick || { ox: base.x, oy: base.y, x: base.x, y: base.y };
+      drawStick(ctx, s, R(), base ? 0.55 : 1);
+    }
+    if (active && manual() && G.Game?.state === 'playing') {
+      const b = aimBase(), a = aimStick || { ox: b.x, oy: b.y, x: b.x, y: b.y };
+      drawStick(ctx, a, R(), aimStick ? 1 : 0.55);
+      ctx.save(); ctx.globalAlpha = 0.85; ctx.fillStyle = '#f4f8ff';
+      ctx.font = '700 12px Pixelify, monospace'; ctx.textAlign = 'center';
+      ctx.fillText('APUNTAR', b.x, b.y - R() - 9); ctx.restore();
+    }
   }
 
   function drawStick(ctx, stick, r, opacity = 1) {
@@ -214,6 +252,6 @@ G.Touch = (() => {
     ctx.restore();
   }
 
-  return { init, vector, draw, drawStick, clearButtons, addButton, reset, safeArea, spot, stickBase, R, STICK_DEF,
-           get active() { return active; }, get stick() { return stick; } };
+  return { init, vector, aim, aimBase, AIM_DEF, draw, drawStick, clearButtons, addButton, reset, safeArea, spot, stickBase, R, STICK_DEF,
+           get active() { return active; }, get stick() { return stick; }, get aimStick() { return aimStick; } };
 })();
