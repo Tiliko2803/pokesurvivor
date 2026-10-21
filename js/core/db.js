@@ -84,6 +84,7 @@ G.DB = (() => {
       upgrades: {},           // (antiguo) mejoras de la cuenta; ahora van por Pokémon
       prepertoire: {},        // dex -> ataque extra elegido (null = aleatorio)
       pcoverage: {},          // dex -> { moves: [id], at }: coberturas y fecha de elección
+      pstart: {},              // dex -> selected starting move
       pupg: {},               // dex -> { id -> nivel }: mejoras de cada Pokémon
       tickets: { t1: 0, t10: 0 },   // tickets del gacha (x1 y x10)
       pity: {},               // generación del banner -> tiradas sin ★5
@@ -135,6 +136,10 @@ G.DB = (() => {
     s.tickets.t10 = n(s.tickets.t10);
     if (G.DEX_BY) for (const coll of ['owned', 'shiny']) {
       for (const d of Object.keys(s[coll] || {})) if (!G.DEX_BY[d]) delete s[coll][d];
+    }
+    if (!isObj(s.pstart)) s.pstart = {};
+    for (const d of Object.keys(s.pstart)) {
+      if (typeof s.pstart[d] !== 'string' || (G.DEX_BY && !G.DEX_BY[d]) || (G.Moves && !G.Moves.BY_ID[s.pstart[d]])) delete s.pstart[d];
     }
     // Atajos: 4 huecos con un movimiento que exista (o null), sin repetir.
     if (s.pbind && typeof s.pbind === 'object') {
@@ -265,6 +270,8 @@ G.DB = (() => {
     r.prepertoire = Object.assign({}, older.prepertoire || {}, newer.prepertoire || {});
     r.pcoverage = G.Coverage ? G.Coverage.mergeChoices(a.pcoverage, b.pcoverage)
       : Object.assign({}, older.pcoverage || {}, newer.pcoverage || {});
+    r.pstart = r.pstart || {};
+    for (const d in older.pstart || {}) if (!(d in r.pstart)) r.pstart[d] = older.pstart[d];
     // Lo conseguido nunca se pierde: unión de legendarios, arenas, objetos, logros...
     for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach']) {
       r[coll] = r[coll] || {};

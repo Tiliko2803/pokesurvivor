@@ -58,8 +58,8 @@ G.HUD = (() => {
     ctx.fillText(Math.ceil(pl.hp) + ' / ' + Math.round(pl.maxHp), px + 48 + 84, py + 26);
 
     // buffs activos
-    const COL = { atk: '#ff6b4d', spd: '#7fe0ff', def: '#b0b8c8', regen: '#5fe08a' };
-    const LBL = { atk: 'ATK', spd: 'VEL', def: 'DEF', regen: 'REG' };
+    const COL = { patk: '#ff6b4d', satk: '#c47bff', atk: '#ff6b4d', spd: '#7fe0ff', def: '#b0b8c8', regen: '#5fe08a' };
+    const LBL = { patk: 'ATK', satk: 'AT.E', atk: 'ATK', spd: 'VEL', def: 'DEF', regen: 'REG' };
     let bx = px;
     ctx.textAlign = 'left';
     for (const k in pl.buffs) {

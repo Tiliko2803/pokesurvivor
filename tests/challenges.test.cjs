@@ -14,7 +14,7 @@ function fixture() {
     localStorage: { getItem: k => storage.get(k) || null, setItem: (k,v) => storage.set(k,v), removeItem: k => storage.delete(k) },
     setTimeout: noop, clearTimeout: noop, addEventListener: noop, Uint8Array, TextEncoder, window: {} });
   const load = f => vm.runInContext(source(f), ctx, { filename: f });
-  load('js/systems/challenges.js'); load('js/core/db.js'); load('js/entities/player.js');
+  load('js/systems/challenges.js'); load('js/systems/stats.js'); load('js/core/db.js'); load('js/entities/player.js');
   return { ctx, G: ctx.G, storage, load };
 }
 function elapsed(G, seconds) {

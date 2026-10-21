@@ -7,13 +7,14 @@ const vm = require('node:vm');
 function fixture() {
   const G = {}, noop = () => {};
   const ctx = vm.createContext({ G, performance: { now: () => 0 } });
-  for (const file of ['js/data/moves.js', 'js/entities/player.js', 'js/systems/combat.js', 'js/systems/levelup.js'])
+  for (const file of ['js/data/moves.js', 'js/systems/stats.js', 'js/entities/player.js', 'js/systems/combat.js', 'js/systems/levelup.js'])
     vm.runInContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), ctx);
   G.U = { TYPE_COLOR: { normal: '#fff' }, TYPE_NAME: { normal: 'Normal' }, rand: () => 0, pickN: a => a.slice(0, 6) };
   G.VFX = { forMove: () => ({}) }; G.FX = { ring: noop, sp: noop, burst: noop };
   G.Coop = { active: false }; G.Audio = { sfx: noop }; G.Progress = { event: noop };
+  G.Settings={get:()=>false};G.Input={axis:()=>[0,0]};G.Touch={active:false,aim:()=>null};G.Pad={aim:()=>null,rumble:()=>{}};
   const p = Object.create(G.Player.prototype);
-  Object.assign(p, { baseAtk: 2, atkMul: 3, cdMul: 1, buffs: { atk: { n: 0, t: 0, amount: 0 } },
+  Object.assign(p, { baseAtk: 2, atkMul: 3, cdMul: 1, buffs: { atk: { n: 0, t: 0, amount: 0 }, patk: { n: 0, t: 0, amount: 0 }, satk: { n: 0, t: 0, amount: 0 } },
     x: 0, y: 0, r: 10, bodyH: 30, dead: false, cast: noop, statsTaken: {}, maxMoves: 4,
     moves: [G.Moves.instance('swords-dance', 5)], active: 0, mon: { types: ['normal'] } });
   p.slots = [p.moves];
@@ -37,23 +38,23 @@ test('Ocho cargas dan exactamente +240% sobre el ataque mejorado y renuevan 12 s
   assert.equal(m.stacks, 8); assert.ok(Math.abs(m.amount - 0.30) < 1e-12);
   assert.equal(m.dur, 12); assert.equal(m.cd, 0.85);
   for (let i = 0; i < 20; i++) { m.t = 0; G.Combat.tick(0, p, 0); }
-  assert.equal(p.buffs.atk.n, 8); assert.ok(Math.abs(p.atk - 6 * 3.4) < 1e-12);
-  assert.equal(p.buffs.atk.t, 12); assert.equal(p.buffs.atk.milEspadas, true);
-  p.buffs.atk.t = 1; m.t = 0; G.Combat.tick(0, p, 0);
-  assert.equal(p.buffs.atk.t, 12); assert.equal(p.buffs.atk.n, 8);
+  assert.equal(p.buffs.patk.n, 8); assert.ok(Math.abs(p.atkFor({cat:'physical'}) - 6 * 3.4) < 1e-12);
+  assert.equal(p.buffs.patk.t, 12); assert.equal(p.buffs.patk.milEspadas, true);
+  p.buffs.patk.t = 1; m.t = 0; G.Combat.tick(0, p, 0);
+  assert.equal(p.buffs.patk.t, 12); assert.equal(p.buffs.patk.n, 8);
   p.slots.push([]); p.active = 1; G.Combat.tick(1, p, 1);
-  assert.equal(p.buffs.atk.n, 8); // cambiar de ataque conserva las cargas
+  assert.equal(p.buffs.patk.n, 8); // cambiar de ataque conserva las cargas
   Object.assign(p, { anim: { update() {}, loop() {} }, frozen: true, baseSpd: 100, spdMul: 1,
     buffs: { ...p.buffs, spd: { n: 0, amount: 0 }, regen: { n: 0, amount: 0 } } });
   G.Weather = { speedFor: () => 1 }; G.World = { collide() {}, isLiquid: () => false, nearestBreakable: () => null };
   G.EnemyMgr = { all: () => [] }; G.Projectiles = { nearest: () => null }; G.Sprites = { dirFromAngle: () => 0 };
-  p.update(11.9); assert.equal(p.buffs.atk.n, 8);
-  p.update(0.2); assert.equal(p.buffs.atk.n, 0); assert.equal(p.atk, 6);
+  p.update(11.9); assert.equal(p.buffs.patk.n, 8);
+  p.update(0.2); assert.equal(p.buffs.patk.n, 0); assert.equal(p.atkFor({cat:'physical'}), 6);
 });
 test('Danza Espada conserva su progresión y los demás buffs no obtienen evolución', () => {
   const { G, p, m } = fixture();
   assert.equal(m.stacks, 7); assert.ok(Math.abs(m.amount - 0.2548) < 1e-12); assert.equal(m.dur, 10.5);
-  G.Combat.tick(0, p, 0); assert.equal(p.buffs.atk.milEspadas, false);
+  G.Combat.tick(0, p, 0); assert.equal(p.buffs.patk.milEspadas, false);
   for (const d of G.Moves.ALL.filter(d => d.kind === 'buff' && !['swords-dance', 'dragon-dance'].includes(d.id))) {
     const other = G.Moves.instance(d.id, d.maxLvl);
     assert.equal(G.Moves.evoInfo(other, { atk: 1, hp: 1, spd: 1, rgn: 1 }), null);

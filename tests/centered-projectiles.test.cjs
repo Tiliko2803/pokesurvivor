@@ -7,7 +7,7 @@ const path=require('node:path');
 const root=path.join(__dirname,'..');
 function fixture({combat='js/systems/combat.js',jitter=0}={}){
   const G={},noop=()=>{},context=vm.createContext({G,window:{G},performance:{now:()=>0}});
-  for(const file of ['js/core/util.js','js/data/moves.js','js/entities/projectile.js',combat])
+  for(const file of ['js/core/util.js','js/data/moves.js', 'js/systems/stats.js','js/entities/projectile.js',combat])
     vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
   G.U.rand=(a,b)=>(a+b)/2+jitter*(b-a)/2;
   G.VFX={forMove:()=>({}),forType:()=>({})};
@@ -18,7 +18,7 @@ function fixture({combat='js/systems/combat.js',jitter=0}={}){
   G.Coop={active:false,cast:noop};
   G.EnemyMgr={queryCircle:()=>[]};
   function player(m,aim=0){
-    return {x:20,y:40,r:12,atk:1,cdMul:1,aim,dmgDealt:0,critChance:0,
+    return {x:20,y:40,r:12,atk:1,atkFor(){return this.atk;},cdMul:1,aim,dmgDealt:0,critChance:0,
       target:{x:20+430*Math.cos(aim),y:40+430*Math.sin(aim)},
       activeGroup:()=>[m],cast:noop,onDealt:noop,hasItem:()=>false};
   }

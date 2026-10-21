@@ -3,12 +3,12 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const root=path.join(__dirname,'..'),noop=()=>{},near=(a,b)=>assert.ok(Math.abs(a-b)<1e-9,`${a} != ${b}`);
 function fixture(){
  const G={},ctx=vm.createContext({G,window:{G},performance:{now:()=>0}});
- for(const f of ['js/core/util.js','js/data/pokedex.js','js/data/starters.js','js/data/moves.js','js/data/upgrades.js','js/data/coverage-data.js','js/systems/coverage.js','js/systems/repertoire.js','js/systems/levelup.js','js/systems/combat.js','js/entities/player.js'])
+ for(const f of ['js/core/util.js','js/data/pokedex.js','js/data/starters.js','js/data/moves.js', 'js/systems/stats.js','js/data/upgrades.js','js/data/coverage-data.js','js/systems/coverage.js','js/systems/repertoire.js','js/systems/levelup.js','js/systems/combat.js','js/entities/player.js'])
   vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),ctx,{filename:f});
  const particles=[];G.VFX={forMove:()=>({aura:'snowflake',pal:'ice'}),spins:()=>true};
  G.FX={ring:noop,sp:(...args)=>particles.push(args),burst:noop};G.Audio={sfx:noop};G.Progress={event:noop};G.Coop={active:false};
  G.Types={mult:()=>1,label:()=>null};G.Weather={mult:()=>1};G.World={propsInCircle:()=>[]};
- const p={mon:G.DEX_BY[260],x:0,y:0,aim:0,atk:2,cdMul:1,moves:[],slots:[],maxMoves:4,statsTaken:{},banned:new Set(),cast:noop,
+ const p={mon:G.DEX_BY[260],x:0,y:0,aim:0,atk:2,atkFor(){return this.atk;},cdMul:1,moves:[],slots:[],maxMoves:4,statsTaken:{},banned:new Set(),cast:noop,
   activeGroup(){return this.moves;},onDealt:noop,dmgDealt:0,critChance:0};
  return {G,ctx,p,particles};
 }
@@ -58,12 +58,12 @@ test('El copo nativo tiene dos fotogramas de píxeles definidos y conserva trans
  assert.notDeepEqual(frames[0],frames[1]);assert.equal(G.VFX.forMove(G.Moves.instance('powder-snow')).aura,'snowflake');
 });
 test('Ventisca y Terremoto vinculados se ejecutan juntos sin ocupar más huecos',()=>{
- const {G}=fixture();G.Sprites={Animator:class{},bodyRadius:()=>10,bodyHeight:()=>30};G.Projectiles={clearOrbs:noop};
+ const {G}=fixture();G.Sprites={Animator:class{},playerScale: () => 1, playerRadius(dex) { return Math.min(18, this.bodyRadius(dex)); }, bodyRadius:()=>10,bodyHeight:()=>30};G.Projectiles={clearOrbs:noop};
  const p=new G.Player(G.DEX_BY[260]);p.cast=noop;p.addMove('bulldoze');p.addMove('powder-snow');
  for(const m of p.moves){while(m.lvl<m.def.maxLvl)G.Moves.levelUp(m);G.Moves.evolve(m);m.t=0;}
  p.bonds=1;p.fuse(p.moves.slice());assert.equal(p.slots.length,1);assert.equal(p.slots[0].length,2);assert.equal(p.maxMoves,4);
  const hits=[],slow=[];const enemy={x:20,y:0,types:['normal'],hurt:d=>hits.push(d),applySlow:n=>slow.push(n)};
  G.EnemyMgr={queryCircle:()=>[enemy]};G.Combat.tick(0,p,0);
- assert.equal(hits.length,2);near(hits.reduce((a,b)=>a+b,0),p.moves.reduce((a,m)=>a+m.dmg*p.atk,0));
+ assert.equal(hits.length,2);near(hits.reduce((a,b)=>a+b,0),p.moves.reduce((a,m)=>a+m.dmg*p.atkFor(m),0));
  assert.ok(slow.includes(0.65));assert.ok(p.moves.every(m=>m.t>0));
 });

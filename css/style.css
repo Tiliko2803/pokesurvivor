@@ -963,3 +963,31 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
 .padkey { display: inline-block; padding: 0 7px; border: 2px solid rgba(244,248,255,.4); border-radius: 9px; font-size: 13px; color: var(--text, #f4f8ff) !important; text-shadow: none; }
 /* Lo seleccionado con el mando (gamepad.js). */
 .pad-focus { outline: 3px solid #ffd23f !important; outline-offset: 3px; box-shadow: 0 0 0 6px rgba(255,210,63,.25) !important; }
+
+.fit-low { display: block; color: #ffb37a; font-size: 12px; margin-top: 2px; }
+
+.pause-sum { text-align: left; margin: 4px 0 10px; }
+
+.pause-sum h3 { color: var(--gold); font-size: 16px; margin: 10px 0 6px; }
+
+.sum-moves { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+.sum-moves td, .sum-moves th { padding: 3px 4px; border-bottom: 1px solid rgba(255,255,255,.08); }
+
+.sum-moves th { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+.sum-moves .num { text-align: right; white-space: nowrap; }
+
+.sum-moves img { vertical-align: -4px; }
+
+.sum-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px 14px; font-size: 14px; }
+
+.sum-stats div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid rgba(255,255,255,.08); padding: 2px 0; }
+
+.sum-stats span { color: var(--muted); }
+
+.sum-stats small { color: var(--muted); font-weight: 400; }
+
+.cards.guard .card { opacity: .5; filter: saturate(.6); }
+
+#scr-pause > .box { width: min(720px, 100%); max-height: calc(100dvh - 24px); overflow-y: auto; }

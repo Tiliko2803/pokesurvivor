@@ -575,11 +575,12 @@
 </section>
 
 <section id="scr-pause" class="scr dim hidden">
-  <div class="box center" style="width:min(460px,100%)">
+  <div class="box center pause-box">
     <h2>Pausa</h2>
     <p class="sub kbd-hint"><kbd>WASD</kbd> moverse · <kbd>1</kbd>–<kbd>4</kbd> movimiento · <kbd>Q</kbd>/<kbd>E</kbd> ciclar · <kbd>Esc</kbd> pausa</p>
     <p class="sub touch-hint">Arrastra el dedo para moverte · toca un ataque para cambiarlo</p>
     <p id="pause-coop" class="note hidden">Partida en grupo: el juego sigue mientras estás aquí.</p>
+    <div id="pause-sum" class="pause-sum"></div>
     <div id="pause-sound" class="sound-inline"></div>
     <div class="row" style="justify-content:center">
       <button id="btn-resume" class="btn gold">Continuar</button>
@@ -627,7 +628,8 @@
 <script defer src="js/systems/mega-evolution.js?v=mega-cinematic-1"></script>
 <script defer src="js/core/camera.js"></script>
 <!-- datos de juego -->
-<script defer src="js/data/moves.js?v=dragon-celestial-20261016-cb183f2fe0"></script>
+<script defer src="js/data/moves.js"></script>
+<script defer src="js/systems/stats.js"></script>
 <script defer src="js/data/types.js"></script>
 <script defer src="js/data/starters.js"></script>
 <script defer src="js/data/enemies.js"></script>

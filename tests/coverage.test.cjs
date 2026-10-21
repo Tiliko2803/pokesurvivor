@@ -7,7 +7,7 @@ function fixture() {
   const ctx=vm.createContext({G,window:{G},console,performance:{now:()=>0},setTimeout:noop,clearTimeout:noop,
     TextEncoder,Uint8Array,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}});
   const load=file=>vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx,{filename:file});
-  for(const f of ['js/core/util.js','js/data/pokedex.js','js/data/moves.js','js/data/starters.js','js/data/upgrades.js',
+  for(const f of ['js/core/util.js','js/data/pokedex.js','js/data/moves.js', 'js/systems/stats.js','js/data/starters.js','js/data/upgrades.js',
     'js/data/coverage-data.js','js/systems/coverage.js','js/systems/mega.js','js/systems/repertoire.js','js/core/db.js','js/systems/levelup.js','js/entities/player.js'])load(f);
   G.DEX_BY[10001]={dex:10001,types:['poison','grass']};G.DEX_BY[10002]={dex:10002,types:['steel','fighting']};
   return {G,ctx,load};
@@ -66,7 +66,7 @@ test('Repertoire uses selected coverage and respects Veto; unselected compatible
 });
 test('Selected coverage is offered as a real card, then upgrades, evolves and bonds within four slots',()=>{
   const {G}=fixture(),mon=G.DEX_BY[260];
-  G.Sprites={Animator:class{},bodyRadius:()=>10,bodyHeight:()=>30};G.Projectiles={clearOrbs:noop};G.Audio={sfx:noop};
+  G.Sprites={Animator:class{},playerScale: () => 1, playerRadius(dex) { return Math.min(18, this.bodyRadius(dex)); }, bodyRadius:()=>10,bodyHeight:()=>30};G.Projectiles={clearOrbs:noop};G.Audio={sfx:noop};
   G.FX={ring:noop,burst:noop};G.Progress={event:noop};
   const p=new G.Player(mon);p.coverage=['ice-beam'];p.addMove('water-gun');
   let card;
@@ -116,7 +116,7 @@ for(const mode of ['solo','coop','challenge','veto','no-upgrade'])test(`Real run
  for(const [name,method]of Object.entries({FX:'clear',Projectiles:'clear',Combat:'clearFields',EnemyMgr:'clear',Pickups:'clear',Spawner:'reset',Rift:'reset',Judgment:'reset',Events:'reset',Weather:'reset',Path:'clear',Hazards:'clear'}))G[name]={[method]:noop};
  G.FX.ring=noop;G.Projectiles.clearOrbs=noop;G.Audio={sfx:noop,music:noop};
  G.World={reset:noop,setBiome:noop};G.Camera={};G.BIOME_MUSIC=[];
- G.Sprites={Animator:class{},hasShiny:()=>false,bodyRadius:()=>16,bodyHeight:()=>30,preload:noop};G.MegaArt={Animator:class{}};
+ G.Sprites={Animator:class{},hasShiny:()=>false,playerScale: () => 1, playerRadius(dex) { return Math.min(18, this.bodyRadius(dex)); }, bodyRadius:()=>16,bodyHeight:()=>30,preload:noop};G.MegaArt={Animator:class{}};
  G.U.TYPE_COLOR={};G.Social={setPlaying:noop,room:null};
  G.Coop={active:false,begin:noop,isHost:true};
  G.Challenges={active:null,begin:id=>{G.Challenges.active=id;},bindPlayer:noop};G.Ranking={runStarted:noop};

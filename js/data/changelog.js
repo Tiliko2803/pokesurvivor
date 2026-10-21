@@ -6,6 +6,26 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-20', title: ['Estadísticas, nuevos ataques y combates más claros', 'Stats, new moves and clearer battles'], new: [
+    ['Ataque físico/especial y ambas defensas para todos los Pokémon. Danza Espada y Danza Dragón refuerzan el daño físico; Maquinación refuerza el especial. Las cartas muestran la categoría y favorecen el lado fuerte de tu compañero. Las danzas personalizadas conservan sus evoluciones y su cadencia.',
+     'Physical/special attack and both defenses for every Pokémon. Swords Dance and Dragon Dance boost physical damage; Nasty Plot boosts special damage. Cards show categories and favor your partner’s stronger side. Custom dances retain their evolutions and attack speed.'],
+    ['Nuevas familias de ataques del original: disparos que persiguen o rebotan, rayos cargados, giros, ondas de tierra, remolinos y aturdimientos. Juego Rudo conserva nuestra evolución física a Beso Drenaje y Mega Tinkaton conserva Potencia.',
+     'New move families from the original: homing and bouncing shots, charged beams, spins, ground waves, vortexes and stuns. Play Rough retains our physical Draining Kiss evolution and Mega Tinkaton retains Huge Power.'],
+    ['Movimiento inicial: mejora de 400 monedas por Pokémon para escoger su ataque de inicio, incluido su ataque original. Repertorio sigue eligiendo el segundo; las megas conservan su ataque exclusivo Nv. 2.',
+     'Starting move: a 400-coin upgrade per Pokémon to choose its first move, including its default. Repertoire still chooses the second; Megas retain their exclusive level-2 move.'],
+    ['La pausa muestra daño y DPS por movimiento, estadísticas, objeto y cartas. Las cartas nuevas de nivel, vínculo y objeto tienen una protección de 0,6 segundos contra selecciones accidentales.',
+     'Pause shows damage and DPS per move, stats, held item and cards. New level, bond and item cards have a 0.6-second guard against accidental picks.']
+  ], chg: [
+    ['Como máximo aparecen tres curanderos, tres escuderos y tres invocadores a la vez. Las curas y escudos de los jefes dependen del daño reciente que reciben; no pueden renovar escudo más de una vez cada seis segundos.',
+     'At most three healers, three shielders and three summoners spawn at once. Boss healing and shields depend on recently received damage; shields cannot refresh more than once every six seconds.'],
+    ['Los monotipos hacen un 20% más de daño con su propio tipo. Aprender un ataque conserva el movimiento activo. Los Pokémon grandes normales tienen tamaño ajustado y colisión limitada; el arte de megas y personajes especiales conserva su tamaño.',
+     'Single-type Pokémon deal 20% more damage with their own type. Learning a move keeps the current move active. Large normal Pokémon have adjusted size and capped collisions; Mega and special-character artwork keeps its size.'],
+    ['Sentencia de Arceus: límite suave de velocidad, legendarios más rápidos y contacto creciente hacia el minuto 40. El veneno sigue escalando con la vida, pero crece más despacio por encima de 60.000 PV.',
+     'Judgment of Arceus: a soft speed cap, faster legendaries and increasing contact damage towards minute 40. Poison still scales with HP but grows more slowly above 60,000 HP.']
+  ], fix: [
+    ['En cooperativo los jefes vuelven cerca si quedan perdidos lejos del grupo; no aparecen junto a un compañero que todavía está regresando de una grieta. Los remolinos y aturdimientos nuevos también funcionan para invitados.',
+     'In co-op, lost bosses return near the group and do not spawn next to a teammate still returning from a rift. New vortexes and stuns also work for guests.']
+  ] },
   { d: '2026-10-20', title: ['Apuntado manual y mando', 'Manual aiming and gamepad'], new: [
     ['Activa Apuntar a mano en Ajustes > Accesibilidad: apunta con el ratón o el stick derecho. Al soltar el stick vuelve el apuntado automático; cadena y meteoros conservan sus blancos. En móvil aparece un segundo joystick para apuntar mientras te mueves; puedes recolocarlo desde Controles.',
      'Enable manual aiming in Settings > Accessibility: aim with the mouse or right stick. Releasing the stick restores automatic aim; chains and meteors keep their targets. Mobile adds a second aim stick while moving; reposition it under Controls.'],

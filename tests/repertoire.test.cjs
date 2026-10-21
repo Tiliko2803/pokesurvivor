@@ -10,7 +10,7 @@ function fixture(){
   const G={Challenges:{mergeProgress:(a,b)=>({...a,...b})}};
   const storage=new Map();
   const ctx=vm.createContext({G,console,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}});
-  for(const file of ['js/data/pokedex.js','js/data/moves.js','js/data/starters.js','js/data/upgrades.js',prefix+'js/systems/mega.js',prefix+'js/systems/repertoire.js',prefix+'js/core/db.js'])
+  for(const file of ['js/data/pokedex.js','js/data/moves.js', 'js/systems/stats.js','js/data/starters.js','js/data/upgrades.js',prefix+'js/systems/mega.js',prefix+'js/systems/repertoire.js',prefix+'js/core/db.js'])
     vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),ctx);
   contexts.set(G,ctx);
   return G;
@@ -88,7 +88,7 @@ for(const mode of ['solo','coop','challenge','no-upgrade','veto','random']){
     for(const [name,method] of Object.entries({FX:'clear',Projectiles:'clear',Combat:'clearFields',EnemyMgr:'clear',Pickups:'clear',Spawner:'reset',Rift:'reset',Judgment:'reset',Events:'reset',Weather:'reset',Path:'clear',Hazards:'clear'}))G[name]={[method]:noop};
     G.FX.ring=noop;G.Projectiles.clearOrbs=noop;G.Audio={sfx:noop,music:noop};
     G.World={reset:noop,setBiome:noop};G.Camera={};G.BIOME_MUSIC=[];
-    G.Sprites={Animator:class{},hasShiny:()=>false,bodyRadius:()=>16,bodyHeight:()=>30,preload:noop};G.MegaArt={Animator:class{}};
+    G.Sprites={Animator:class{},hasShiny:()=>false,playerScale: () => 1, playerRadius(dex) { return Math.min(18, this.bodyRadius(dex)); }, bodyRadius:()=>16,bodyHeight:()=>30,preload:noop};G.MegaArt={Animator:class{}};
     G.U={TYPE_COLOR:{},pick:a=>a[a.length-1]};G.Social={setPlaying:noop,room:null};
     let coopPlayer=null;
     G.Coop={active:false,begin:(_cfg,p)=>{coopPlayer=p;},isHost:true};

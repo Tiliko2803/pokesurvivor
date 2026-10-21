@@ -4,7 +4,7 @@ const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const noop=()=>{},near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 function fixture({evolved=true,maxHp=100}={}){
  const G={},ctx=vm.createContext({G,window:{G},console,performance:{now:()=>0}});
- for(const f of ['js/core/util.js','js/data/moves.js','js/data/types.js','js/systems/mega.js','js/entities/player.js','js/systems/combat.js'])
+ for(const f of ['js/core/util.js','js/data/moves.js', 'js/systems/stats.js','js/data/types.js','js/systems/mega.js','js/entities/player.js','js/systems/combat.js'])
   vm.runInContext(fs.readFileSync(path.join(__dirname,'..',f),'utf8'),ctx,{filename:f});
  G.Coop={active:false};G.Audio={sfx:noop};G.Camera={kick:noop,sees:()=>true};
  G.FX=new Proxy({},{get:()=>noop});G.VFX={forMove:()=>({})};G.Weather={mult:()=>1};
@@ -13,7 +13,7 @@ function fixture({evolved=true,maxHp=100}={}){
  const m=G.Moves.instance('play-rough',5);if(evolved)G.Moves.evolve(m);
  const pl=Object.create(G.Player.prototype);
  Object.assign(pl,{mon:{types:['fairy','steel'],atk:1.47,specialAtk:1.08},mega:'tinkatonite',
-  x:0,y:0,r:10,bodyH:30,aim:0,baseAtk:1.47,atkMul:1,cdMul:1,buffs:{atk:{n:0,amount:0}},
+  x:0,y:0,r:10,bodyH:30,aim:0,baseAtk:1.47,atkMul:1,cdMul:1,buffs:{atk:{n:0,amount:0},patk:{n:0,amount:0},satk:{n:0,amount:0}},
   hp:maxHp/2,maxHp,dead:false,remote:false,dmgDealt:0,critChance:0,critMul:2,
   target:{x:10,y:0},activeGroup:()=>[m],cast:noop,onDealt:noop});
  const enemy=(opts={})=>({x:10,y:0,r:8,types:['normal'],hp:1e6,dead:false,

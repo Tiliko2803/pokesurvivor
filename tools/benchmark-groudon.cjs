@@ -48,7 +48,7 @@ async function simulate({ build = 'melee', uptime = 0.85, seed = 123 } = {}) {
     p.x=boss.x; p.y=boss.y+40;
     if (build === 'dance') {
       const dance = p.moves.find(m=>m.id==='swords-dance');
-      p.setActive(p.buffs.atk.n<dance.stacks || p.buffs.atk.t<1 ? 1 : 0);
+      p.setActive(p.buffs.patk.n<dance.stacks || p.buffs.patk.t<1 ? 1 : 0);
     }
     casting = (frames/60%10) < uptime*10;
     f.tick(1); frames++;

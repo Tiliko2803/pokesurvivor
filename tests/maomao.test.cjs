@@ -5,7 +5,7 @@ const root=path.join(__dirname,'..');
 function fixture(search='?maomao=1'){
  const G={FIREBASE_CONFIG:null,DB:{guest:true},Coop:{active:false},Social:{room:null},Game:{state:'ui'}};
  const ctx=vm.createContext({G,URLSearchParams,location:{search}});
- for(const file of ['js/data/pokedex.js','js/data/sprites-meta.js','js/data/moves.js','js/data/maomao-preview.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
+ for(const file of ['js/data/pokedex.js','js/data/sprites-meta.js','js/data/moves.js', 'js/systems/stats.js','js/data/maomao-preview.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
  return {G,ctx};
 }
 test('Maomao queda registrada para regalos sin entrar al catálogo público ni al gacha',()=>{

@@ -259,7 +259,11 @@ G.MenuUI = (() => {
       </div>
       ${own ? `
         ${bar('Vida', p.hp, max.hp, p.hp)}
-        ${bar('Ataque', p.atk, max.atk, '×' + p.atk.toFixed(2))}
+        ${bar('Ataque', p.pa ?? p.atk, max.atk, '×' + (p.pa ?? p.atk).toFixed(2))}
+        ${bar('At. Esp.', p.sa ?? p.atk, max.atk, '×' + (p.sa ?? p.atk).toFixed(2))}
+        ${bar('Defensa', p.df ?? 75, 230, p.df ?? 75)}
+        ${bar('Def. Esp.', p.sd ?? 75, 230, p.sd ?? 75)}
+        <p class="sub center">Pega mejor con ataques <b>${G.Stats.sideOf(p) === 'special' ? 'especiales' : 'físicos'}</b>${p.types.length === 1 ? ' · Monotipo: +20 % con su tipo' : ''}</p>
         ${bar('Velocidad', p.spd, max.spd, p.spd)}
         <p style="font-size:14px;margin:10px 0 4px">Empieza con <b class="gold">${G.Moves.BY_ID[G.startMoveOf(dex)].name}</b></p>
         <p class="move-icons" title="Movimientos que puede aprender">
@@ -330,11 +334,13 @@ G.MenuUI = (() => {
         <div class="upg-btns">
           ${u.id === 'coverage' && lvl > 0 ? `<button class="btn small" data-coverage>Elegir coberturas (${G.Coverage.selected(mon, s).length}/${G.Coverage.slots(mon, s)})</button>` : ''}
           ${u.id === 'moves' && lvl > 0 ? '<button class="btn small" data-repertoire>Elegir ataque</button>' : ''}
+          ${u.id === 'start' && lvl > 0 ? `<button class="btn small" data-start>Elegir: ${G.Moves.BY_ID[G.startMoveOf(upgDex)].name}</button>` : ''}
           ${u.id === 'ban' && lvl > 0 ? `<button class="btn small" data-ban>Elegir (${banList().length}/${lvl})</button>` : ''}
           <button class="btn small ${maxed ? '' : 'gold'}" data-buy data-sfx="none" ${maxed || s.coins < cost ? 'disabled' : ''}>
           ${available === 0 ? 'Sin compatibles' : maxed ? 'Máx.' : `<span class="coin"></span> ${cost}`}</button></div>`;
       if (u.id === 'coverage' && lvl > 0) el.querySelector('[data-coverage]').onclick = () => { coverageOpen = !coverageOpen; renderUpgrades(); };
       if (u.id === 'moves' && lvl > 0) el.querySelector('[data-repertoire]').onclick = () => { repertoireOpen = !repertoireOpen; renderUpgrades(); };
+      if (u.id === 'start' && lvl > 0) el.querySelector('[data-start]').onclick = () => { startOpen = !startOpen; renderUpgrades(); };
       if (u.id === 'ban' && lvl > 0) el.querySelector('[data-ban]').onclick = () => { banOpen = !banOpen; renderUpgrades(); };
       el.querySelector('[data-buy]').onclick = () => {
         // Se vuelve a leer todo al pulsar (la partida puede haber cambiado desde que se dibujó).
@@ -360,6 +366,7 @@ G.MenuUI = (() => {
       }
       if (u.id === 'coverage' && lvl > 0 && coverageOpen) box.appendChild(coveragePicker());
       if (u.id === 'moves' && lvl > 0 && repertoireOpen) box.appendChild(repertoirePicker());
+      if (u.id === 'start' && lvl > 0 && startOpen) box.appendChild(startPicker());
       if (u.id === 'ban' && lvl > 0 && banOpen) box.appendChild(banPicker(lvl));
     }
     box.appendChild(bindPanel());
@@ -444,6 +451,33 @@ G.MenuUI = (() => {
         s.pbind[upgDex] = l;
         G.DB.commit();
         G.Audio.sfx('select');
+        renderUpgrades();
+      };
+    });
+    return el;
+  }
+
+  // ---------------- movimiento inicial (Mejoras → Movimiento inicial) ----------------
+  let startOpen = false;
+  function startPicker() {
+    const s = G.DB.save, cur = G.startMoveOf(upgDex), base = G.baseStartOf(upgDex);
+    const ids = G.startChoices(upgDex).sort((a, b) => G.Moves.BY_ID[a].name.localeCompare(G.Moves.BY_ID[b].name, 'es'));
+    const el = document.createElement('div');
+    el.className = 'panel ban-picker';
+    el.innerHTML = `<p class="sub" style="margin:0 0 8px">Elige con qué ataque empieza. Lo puedes cambiar cuando quieras, gratis.</p>
+      <div class="ban-moves">${ids.map(id => { const d = G.Moves.BY_ID[id];
+        return `<button class="chip ${id === cur ? 'on' : ''}" data-id="${id}">${G.Icons.html('move:' + id, 16)} ${d.name}${id === base ? ' <small>(de serie)</small>' : ''}</button>`; }).join('')}</div>`;
+    el.querySelectorAll('[data-id]').forEach(b => {
+      b.onclick = () => {
+        const id = b.dataset.id;
+        s.pstart = s.pstart || {};
+        if (id === base) delete s.pstart[upgDex]; else s.pstart[upgDex] = id;
+        // El inicial no puede estar vetado.
+        const l = banList(), i = l.indexOf(id);
+        if (i >= 0) l.splice(i, 1);
+        G.DB.commit();
+        G.Audio.sfx('select');
+        G.UI.toast(G.DEX_BY[upgDex].name + ' empezará con ' + G.Moves.BY_ID[id].name);
         renderUpgrades();
       };
     });

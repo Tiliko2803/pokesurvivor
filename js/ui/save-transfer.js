@@ -10,7 +10,7 @@ G.SaveTransfer = (() => {
   const FIELDS = ['v', 'name', 'created', 'updated', 'coins', 'owned', 'shiny', 'partner',
     'partnerShiny', 'starter', 'personality', 'upgrades', 'pupg', 'pupgDone', 'tickets',
     'pity', 'legends', 'arenas', 'itemsFound', 'evoMoves', 'ach', 'missions', 'profile',
-    'stats', 'pbind', 'pban'];
+    'stats', 'pbind', 'pban', 'pstart'];
   const map = x => !!x && typeof x === 'object' && !Array.isArray(x);
   const num = x => Number.isFinite(x) && x >= 0 && Number.isInteger(x);
   function eligible() {

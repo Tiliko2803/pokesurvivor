@@ -59,6 +59,14 @@ G.Mega=(()=>{
    form.atk=+(.70+d.stats.atk*.0055).toFixed(2);
    form.specialAtk=+(.70+d.stats.spa*.0055).toFixed(2);
   }
+  form.pa = (mon.pa ?? mon.atk) * d.atk;
+  form.sa = (mon.sa ?? mon.specialAtk ?? mon.atk) * d.atk;
+  form.df = mon.df ?? 75; form.sd = mon.sd ?? 75;
+  if (d.stats) {
+    form.pa = +(.70 + d.stats.atk * .0055).toFixed(2);
+    form.sa = +(.70 + d.stats.spa * .0055).toFixed(2);
+    form.df = d.stats.def; form.sd = d.stats.spd;
+  }
   return form;
  }
  function damageMultiplier(pl,m){
@@ -66,7 +74,7 @@ G.Mega=(()=>{
   const category=m.category||(m.def&&m.def.category);
   if(category==='physical')return 2;
   // A special move uses Sp. Atk 70, retaining the same cards and buffs.
-  return category==='special'?(pl.mon.specialAtk||1.08)/(pl.mon.atk||1.47):1;
+  return category==='special' && !G.Stats ? (pl.mon.specialAtk||1.08)/(pl.mon.atk||1.47) : 1;
  }
  function form(mon,s){
   return !mon||!equipped(s,mon.dex)?mon:transform(mon,definition(mon.dex));

@@ -5,7 +5,7 @@ const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 function fixture(){
  const G={Challenges:{mergeProgress:(a,b)=>({...a,...b})}};
  const ctx=vm.createContext({G,console,localStorage:{getItem:()=>null,setItem(){},removeItem(){}}});
- for(const f of ['js/data/pokedex.js','js/data/moves.js','js/data/starters.js','js/data/upgrades.js','js/systems/mega.js','js/systems/repertoire.js','js/core/db.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'..',f),'utf8'),ctx);
+ for(const f of ['js/data/pokedex.js','js/data/moves.js', 'js/systems/stats.js','js/data/starters.js','js/data/upgrades.js','js/systems/mega.js','js/systems/repertoire.js','js/core/db.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'..',f),'utf8'),ctx);
  return G;
 }
 const save=()=>({owned:{257:{at:1},260:{at:1}},upgrades:{},stats:{},pity:{},coins:0,tickets:{t1:0,t10:0}});

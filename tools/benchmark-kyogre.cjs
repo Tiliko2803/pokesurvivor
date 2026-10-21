@@ -50,7 +50,7 @@ async function simulate({seed=123,uptime=.85,hp,build='power',distance=100,stage
   while(targets.some(b=>!b.dead)&&frames<900*60){
     const target=targets.find(b=>!b.dead);p.x=target.x;p.y=target.y+distance;
     const dance=p.moves.find(m=>m.id==='swords-dance');
-    if(p.slots.length>1)p.setActive(p.buffs.atk.n<dance.stacks||p.buffs.atk.t<1?1:0);
+    if(p.slots.length>1)p.setActive(p.buffs.patk.n<dance.stacks||p.buffs.patk.t<1?1:0);
     casting=(frames/60%10)<uptime*10;f.tick(1);frames++;
   }
   return {build,seed,uptime,distance,dex:boss.dex,hp:boss.maxHp,totalHp:targets.reduce((n,b)=>n+b.maxHp,0),seconds:+(frames/60).toFixed(2),defeated:targets.every(b=>b.dead),

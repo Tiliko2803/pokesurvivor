@@ -7,8 +7,8 @@ function fixture(){
  const ctx=vm.createContext({G,window:{G},console,performance:{now:()=>0},Image:class{},
   localStorage:{getItem:()=>null,setItem:noop,removeItem:noop}});
  const load=f=>vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),ctx,{filename:f});
- for(const f of ['js/core/util.js','js/data/pokedex.js','js/data/moves.js','js/data/types.js','js/data/starters.js','js/data/upgrades.js','js/systems/mega.js','js/systems/repertoire.js','js/core/db.js'])load(f);
- G.Sprites={hasShiny:()=>true,bodyHeight:()=>60,bodyRadius:()=>12,animMeta:()=>({d:[6,6]}),Animator:class{
+ for(const f of ['js/core/util.js','js/data/pokedex.js','js/data/moves.js', 'js/systems/stats.js','js/data/types.js','js/data/starters.js','js/data/upgrades.js','js/systems/mega.js','js/systems/repertoire.js','js/core/db.js'])load(f);
+ G.Sprites={hasShiny:()=>true,bodyHeight:()=>60,playerScale: () => 1, playerRadius(dex) { return Math.min(18, this.bodyRadius(dex)); }, bodyRadius:()=>12,animMeta:()=>({d:[6,6]}),Animator:class{
   update(){}loop(){}play(){}draw(){}busy(){return false;}progress(){return 1;}
  }};
  G.MegaArt={Animator:G.Sprites.Animator};load('js/systems/tinkaton.js');load('js/entities/player.js');

@@ -6,16 +6,17 @@ const near = (a,b) => assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 function fixture(levels={}) {
   const G={}, noop=()=>{};
   const ctx=vm.createContext({G,window:{G},performance:{now:()=>100000}});
-  for(const f of ['js/core/util.js','js/data/moves.js','js/data/upgrades.js','js/entities/player.js','js/entities/projectile.js','js/systems/combat.js','js/systems/levelup.js'])
+  for(const f of ['js/core/util.js','js/data/moves.js', 'js/systems/stats.js','js/data/upgrades.js','js/entities/player.js','js/entities/projectile.js','js/systems/combat.js','js/systems/levelup.js'])
     vm.runInContext(fs.readFileSync(path.join(__dirname,'..',f),'utf8'),ctx,{filename:f});
-  G.Sprites={Animator:class{update(){} loop(){} play(){}},bodyRadius:()=>10,bodyHeight:()=>30,dirFromAngle:()=>0};
+  G.Sprites={Animator:class{update(){} loop(){} play(){}},playerScale: () => 1, playerRadius(dex) { return Math.min(18, this.bodyRadius(dex)); }, bodyRadius:()=>10,bodyHeight:()=>30,dirFromAngle:()=>0};
   G.FX=Object.fromEntries(['ring','spark','slash','sp','burst','dmgText'].map(k=>[k,noop]));
   G.Audio={sfx:noop};G.Camera={kick:noop,sees:()=>true};
   G.World={collide:noop,isLiquid:()=>false,nearestBreakable:()=>null,propsInCircle:()=>[],projectileBlock:()=>null};
   G.EnemyMgr={all:()=>[],queryCircle:()=>[]};G.Weather={speedFor:()=>1,mult:()=>1};
   G.Types={mult:()=>1,label:()=>null};G.VFX={forMove:()=>({}),forType:()=>({})};
   G.Coop={active:false};G.Challenges={damageMultiplier:()=>1};G.Progress={event:noop};
-  const p=new G.Player({dex:1,hp:100,atk:1,spd:100,types:['normal']},G.Upgrades.perks(levels));
+  G.Settings={get:()=>false};G.Input={axis:()=>[0,0]};G.Touch={active:false,aim:()=>null};G.Pad={aim:()=>null,rumble:()=>{}};
+  const p=new G.Player({dex:1,hp:100,atk:1,spd:100,types:['normal','steel']},G.Upgrades.perks(levels));
   p.frozen=true;p.cast=noop;p.target={x:100,y:0};p.aim=0;
   function cast(id,level=1) {const m=G.Moves.instance(id,level);p.moves=[m];p.slots=[[m]];p.active=0;G.Combat.tick(0,p,0);return m;}
   return {G,p,cast,ctx};
@@ -54,15 +55,15 @@ test('Expansión amplía el disparo y el alcance cuerpo a cuerpo sin acumularse 
 });
 test('Persistencia alarga las danzas y su evolución una sola vez, conserva recarga y daño',()=>{
   const {G,p,cast}=fixture({duration:5});
-  const m=cast('swords-dance',5);near(p.buffs.atk.t,m.dur*1.25);
+  const m=cast('swords-dance',5);near(p.buffs.patk.t,m.dur*1.25);
   const cd=m.t,base=m.dur;G.Moves.evolve(m);m.t=0;G.Combat.tick(0,p,1);
-  near(p.buffs.atk.t,15);near(m.dur,12);assert.equal(m.cd,cd);
-  m.t=0;G.Combat.tick(0,p,2);near(p.buffs.atk.t,15);assert.ok(base<12);
+  near(p.buffs.patk.t,15);near(m.dur,12);assert.equal(m.cd,cd);
+  m.t=0;G.Combat.tick(0,p,2);near(p.buffs.patk.t,15);assert.ok(base<12);
 });
 test('Golpe Devastador aplica x2 tanto a ataques directos como proyectiles',()=>{
   for(const move of ['tackle','ember'])for(const level of [0,5]) {
     const {G,p,cast}=fixture({critDamage:level});p.critChance=1;p.target={x:10,y:0};
-    const damage=[];const e={id:1,x:10,y:0,r:10,bodyH:30,types:['normal'],hurt:d=>damage.push(d),applyBurn(){},applySlow(){},applyPoison(){},strike(){}};
+    const damage=[];const e={id:1,x:10,y:0,r:10,bodyH:30,types:['normal','steel'],hurt:d=>damage.push(d),applyBurn(){},applySlow(){},applyPoison(){},strike(){}};
     G.EnemyMgr.queryCircle=()=>[e];
     const m=cast(move);if(move==='ember')G.Combat.resolve(0,p,0);
     assert.equal(damage.length,1);near(damage[0],m.dmg*(level?2:1.5));

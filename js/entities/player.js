@@ -13,10 +13,12 @@ G.Player = class Player {
     this.mega = mon.megaStone || null;
     this.dex = mon.dex;
     this.shiny = shiny && !mon.megaNoShiny && G.Sprites.hasShiny(mon.dex);
-    this.anim = this.mega ? new G.MegaArt.Animator(mon.dex, 1, this.shiny) : new G.Sprites.Animator(mon.dex, 1, this.shiny);
+    // Preserve custom Mega artwork sizes; normalize normal large Pokémon.
+    this.scale = this.mega || mon.dex >= 10000 ? 1 : G.Sprites.playerScale(mon.dex);
+    this.anim = this.mega ? new G.MegaArt.Animator(mon.dex, this.scale, this.shiny) : new G.Sprites.Animator(mon.dex, this.scale, this.shiny);
     this.x = 0; this.y = 0;
-    this.r = G.Sprites.bodyRadius(mon.dex);
-    this.bodyH = this.mega ? Math.max(100, G.Sprites.bodyHeight(mon.dex)) : G.Sprites.bodyHeight(mon.dex);
+    this.r = this.mega || mon.dex >= 10000 ? Math.min(18, G.Sprites.bodyRadius(mon.dex)) : G.Sprites.playerRadius(mon.dex);
+    this.bodyH = this.mega ? Math.max(100, G.Sprites.bodyHeight(mon.dex)) : G.Sprites.bodyHeight(mon.dex, this.scale);
 
     this.atkMul = perks.atkMul || 1;
     this.spdMul = perks.spdMul || 1;
@@ -47,8 +49,11 @@ G.Player = class Player {
     this.maxMoves = 4;         // huecos
     this.bonds = 0;            // vínculos por usar (premio de los legendarios)
 
+    // patk / satk: Danza Espada y Danza Dragón (físico) y Maquinación (especial).
     this.buffs = {
       atk: { n: 0, t: 0, amount: 0 },
+      patk: { n: 0, t: 0, amount: 0 },
+      satk: { n: 0, t: 0, amount: 0 },
       spd: { n: 0, t: 0, amount: 0 },
       def: { n: 0, t: 0, amount: 0 },
       regen: { n: 0, t: 0, amount: 0 }
@@ -97,18 +102,30 @@ G.Player = class Player {
 
   // ---------------- stats efectivos ----------------
   get atk() { return this.baseAtk * this.atkMul * (1 + this.buffs.atk.n * this.buffs.atk.amount); }
+  /**
+   * Ataque con un movimiento: el físico o el especial de tu Pokémon (ver
+   * G.Stats), con las danzas que sean de su lado (las de mejora, sin ninguna).
+   */
+  atkFor(m) {
+    const cat = m && m.cat, b = cat === 'physical' ? this.buffs.patk : cat === 'special' ? this.buffs.satk : null;
+    return this.atk * G.Stats.fit(this.mon, cat) * (b ? 1 + b.n * b.amount : 1) * (m && this.monoType(m.type) ? Player.MONO_K : 1);
+  }
+  /** Monotipo (19-10-2026): los de un solo tipo pegan un +20 % con los ataques de su tipo (tienen menos variedad). */
+  static get MONO_K() { return 1.2; }
+  monoType(type) { return this.mon.types.length === 1 && type === this.mon.types[0]; }
   get spd() {
     const s = this.baseSpd * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? 0.5 : 1);
     const w = G.Weather.speedFor(this.mon.types);
     const slow = this.inLiquid ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
     const swift=this.mega==='swampertite'&&G.Weather.current&&G.Weather.current.kind==='rain'?1.3:1;
     const impulse=this.mega==='blazikenite'?G.Blaziken.impulse(this.megaElapsed):1;
-    return s * slow * w * swift * impulse;
+    const speed = s * slow * w * swift * impulse;
+    return G.Judgment?.active ? G.Judgment.capSpd(speed) : speed;
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.buffs.def.n * this.buffs.def.amount); }
   get regen() { return this.regenFlat + this.buffs.regen.n * this.buffs.regen.amount; }
   get attackSpeed() {
-    const b = this.buffs.atk;
+    const b = this.buffs.patk;
     const dance = 1 + b.n * (b.attackSpeedAmount || 0);
     const impulse = this.mega === 'blazikenite' ? G.Blaziken.attackImpulse(this.megaElapsed) : 1;
     return dance * impulse;
@@ -123,12 +140,14 @@ G.Player = class Player {
   addMove(id) {
     if (this.slots.length >= this.maxMoves || this.hasMove(id)) return false;
     const m = G.Moves.instance(id, 1);
+    m.since = G.Game?.st?.time || 0;          // desde cuándo lo tienes (daño por segundo en el resumen)
     this.moves.push(m);
     const group = [m];
     this.slots.push(group);
     this.arrange();
-    // Se cambia al nuevo, salvo si estás usando un vínculo (no te quita el grupo).
-    if (!(this.slots[this.active] && this.slots[this.active].length > 1)) this.setActive(this.slots.indexOf(group));
+    // Te quedas con el que llevabas (18-10-2026: antes se cambiaba solo al nuevo
+    // y te quitaba el ataque que estabas usando). Sólo si no tenías ninguno, el nuevo.
+    if (!this.slots[this.active]) this.active = this.slots.indexOf(group);
     return true;
   }
 
@@ -249,8 +268,9 @@ G.Player = class Player {
    * @param pure  daño que no baja con la defensa ni el cuerpo a cuerpo (Arceus)
    * @param hostile  impacto enemigo; excluye lava y trampas del escenario
    */
-  hurt(amount, type = null, pure = false, hostile = false) {
+  hurt(amount, type = null, pure = false, hostile = false, cat = null) {
     if (this.invuln > 0 || this.dead || G.MegaEvolution?.owns(this)) return;
+    if (!pure) amount *= G.Stats.taken(this.mon, cat);
     let eff = null;
     if (type) {
       const k = G.Types.mult(type, this.mon.types);
@@ -558,7 +578,7 @@ G.Player = class Player {
       ctx.beginPath(); ctx.ellipse(this.x, this.y, this.r * 1.5, this.r * 0.6, 0, 0, 6.2832); ctx.stroke();
       ctx.restore();
     }
-    G.Sprites.drawShadow(ctx, this.dex, this.x, this.y);
+    G.Sprites.drawShadow(ctx, this.dex, this.x, this.y, this.scale);
     // Poder de altar: aro de su color latiendo bajo los pies.
     if (this.power && !this.dead) {
       ctx.save();
@@ -572,7 +592,7 @@ G.Player = class Player {
     this.anim.draw(ctx, this.x, this.y, { flash: this.flash > 0, softFlash: true, alpha, color: '#ffcb3d' });
 
     // Arcos de buff alrededor de los pies.
-    const COL = { atk: '#ff6b4d', spd: '#7fe0ff', def: '#b0b8c8', regen: '#5fe08a' };
+    const COL = { atk: '#ff6b4d', patk: '#ff6b4d', satk: '#c47bff', spd: '#7fe0ff', def: '#b0b8c8', regen: '#5fe08a' };
     let i = 0;
     for (const k in this.buffs) {
       const b = this.buffs[k];
@@ -589,7 +609,7 @@ G.Player = class Player {
     }
 
     // Ocho espadas doradas al alcanzar la carga máxima: sólo visual, sin proyectiles.
-    const blades = this.buffs.atk;
+    const blades = this.buffs.patk;
     if (blades.milEspadas && blades.n > 0 && blades.n === blades.maxStacks) {
       const turn = performance.now() / 1400;
       for (let j = 0; j < 8; j++) {

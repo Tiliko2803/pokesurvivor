@@ -25,7 +25,7 @@ function fixture(session = 'real-account', {live=false}={}) {
   const G = ctx.G;
   // util.js deliberately owns the browser's global G.
   ctx.window.G = G;
-  for (const f of ['js/core/util.js', 'js/data/pokedex.js', 'js/data/sprites-meta.js', 'js/data/moves.js', 'js/data/types.js', 'js/data/starters.js', 'js/data/upgrades.js',
+  for (const f of ['js/core/util.js', 'js/data/pokedex.js', 'js/data/sprites-meta.js', 'js/data/moves.js', 'js/systems/stats.js', 'js/data/types.js', 'js/data/starters.js', 'js/data/upgrades.js',
     'js/data/coverage-data.js', 'js/systems/coverage.js', 'js/systems/mega.js', 'js/systems/repertoire.js', 'js/systems/challenges.js', 'js/core/db.js']) load(f);
   const stub = () => new Proxy({}, { get: (o,k) => k in o ? o[k] : noop });
   for (const name of ['UI','FX','Pickups','Spawner','Rift','Judgment','Events','Weather','Path','Hazards','World','Interact','Audio','Progress','Social','Coop','Input','Pad','RunUI','Settings','MenuUI','Updater','HUD']) G[name] = stub();
@@ -43,9 +43,9 @@ function fixture(session = 'real-account', {live=false}={}) {
   G.MenuUI.openPlayMode = () => G.UI.show('scr-play-mode');
   load('js/core/camera.js'); G.Camera.resize(960,540,1);
   G.Sprites = { PX: 2, hasShiny: () => false, hovers: () => false, preload: noop, dirFromAngle: () => 0,
-    bodyRadius: dex => dex === 383 ? 28 : 12, bodyHeight: () => 80, animMeta: () => ({ ay: 40, d: [10] }),
+    playerScale: () => 1, playerRadius: () => 18, bodyRadius: dex => dex === 383 ? 28 : 12, bodyHeight: () => 80, animMeta: () => ({ ay: 40, d: [10] }),
     Animator: class { constructor() {this.cur='Idle'; this.dir=0;} update(){} play(a){this.cur=a;} loop(){} busy(){return false;} progress(){return 1;} } };
-  G.VFX = { forMove: () => ({ pal: 'water', proj: 'orb' }), forType: () => ({pal:'ground'}) };
+  G.VFX = { spins: () => false, forMove: () => ({ pal: 'water', proj: 'orb' }), forType: () => ({pal:'ground'}) };
   G.MegaArt = { Animator: G.Sprites.Animator }; load('js/systems/blaziken.js');
   let rankings = 0; G.Ranking = { runStarted: () => rankings++, submitSolo: () => rankings++, submitGroup: () => rankings++ };
   for (const f of ['js/entities/projectile.js', 'js/entities/enemy.js', 'js/entities/player.js', 'js/systems/combat.js', 'js/systems/levelup.js', 'js/entities/pickup.js']) load(f);

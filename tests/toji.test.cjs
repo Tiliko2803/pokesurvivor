@@ -17,7 +17,7 @@ function fixture(){
   };
   const load=(f,code=source(f))=>vm.runInContext(code,ctx,{filename:f});
   for(const f of ['js/core/util.js','js/data/pokedex.js','js/data/sprites-meta.js','js/data/maomao-preview.js',
-    'js/data/toji.js','js/data/gift-codes.js','js/data/moves.js','js/data/starters.js','js/data/upgrades.js',
+    'js/data/toji.js','js/data/gift-codes.js','js/data/moves.js', 'js/systems/stats.js','js/data/starters.js','js/data/upgrades.js',
     'js/systems/mega.js','js/systems/challenges.js','js/systems/repertoire.js','js/core/db.js','js/core/sprites.js','js/entities/player.js'])load(f);
   G.UI={refreshCoins:noop,hideAll:noop,chrome:noop,toast:noop};
   G.Game={state:'ui'};
