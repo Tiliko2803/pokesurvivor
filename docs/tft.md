@@ -88,3 +88,13 @@ checks occupancy and board limits. Spell, movement and selection rules are local
 TFT rules; the Survivor enemy entity, its world, projectiles, summoning and boss
 state are not instantiated or changed. Additional beam/zone/summon mechanics
 remain future work.
+
+
+Hosted desktop smoke check: verified the existing /dev/ URL loads the TFT + Hoenn
+preview, enters the isolated guest menu, purchases Squirtle/Bulbasaur/Charmander,
+deploys all three, starts automatic combat, renders damage/healing and pauses.
+36 automated engine/packaging/regression checks passed, including AI target
+selection, retreat, guardian shields and preservation of melee roles. The local
+Playwright suite still awaits a local Chromium installation; mobile visual
+validation and full hosted match playthrough remain pending. The published
+preview commit changes exactly seven dev/ paths; official root files are intact.
