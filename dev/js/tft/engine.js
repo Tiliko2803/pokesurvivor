@@ -467,7 +467,7 @@ G.TFT = (() => {
   function tick(s,dt) {
     if(!Number.isFinite(dt)||dt<=0)return;
     s.effects=s.effects.filter(e=>(e.ttl-=Math.min(dt,.25))>0);
-    if(s.phase!=='combat')return;
+    if(s.phase!=='combat'){if(s.battle)s.battle.events=s.battle.events.filter(e=>(e.ttl-=Math.min(dt,.25))>0);return;}
     s.battle.acc+=Math.min(dt,.25);
     while(s.battle.acc>=.05&&s.phase==='combat'){s.battle.acc-=.05;step(s,.05);}
   }

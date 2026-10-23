@@ -75,7 +75,7 @@ G.TFTUI = (() => {
     const s=state,planning=s.phase==='planning',deployed=s.units.filter(u=>u.pos!==null),u=s.units.find(u=>u.id===selected);
     $('tft-stats').textContent=`Ronda ${s.round}/${E.LAST_ROUND} · ${s.life} PV · ${s.gold} oro · Equipo ${deployed.length}/${s.level}`;
     $('tft-phase').textContent=paused?'En pausa':{planning:'Preparación',combat:'Combate automático',result:'Fin de ronda',victory:'¡Desafío superado!',defeat:'Equipo derrotado'}[s.phase];
-    $('tft-help').textContent=u?`${G.DEX_BY[u.dex].name} ${'★'.repeat(u.star)} · ${E.moveFor(u)} · ${aiNames[E.aiFor(u.dex)]}. Toca una casilla azul para colocarlo o intercambiarlo.`:'Compra Pokémon, toca uno del banquillo y después una casilla azul. Tres copias del mismo nivel se fusionan y evolucionan.';
+    $('tft-help').textContent=u?`${G.DEX_BY[u.dex].name} ${'★'.repeat(u.star)} · ${E.moveFor(u)} · ${aiNames[E.aiFor(u.dex)]}. ${planning?'Toca una casilla azul para colocarlo o intercambiarlo.':'Toca otra unidad para consultar su ficha.'}`:planning?'Compra Pokémon, toca uno del banquillo y después una casilla azul. Tres copias del mismo nivel se fusionan y evolucionan.':'Toca una unidad del tablero para consultar sus estadísticas y habilidad.';
     $('tft-shop').innerHTML=s.shop.map((dex,i)=>dex?unitCard({dex,star:1},'shop',i):'<div class="tft-card tft-empty">Comprado</div>').join('');
     const bench=s.units.filter(u=>u.pos===null);
     $('tft-bench').innerHTML=bench.map(v=>unitCard(v,'bench')).join('')+
@@ -107,7 +107,7 @@ G.TFTUI = (() => {
   function renderReport() {
     const panel=$('tft-report');panel.classList.toggle('hidden',!state?.result);if(!state?.result)return;
     if(lastReport!==state.result){lastReport=state.result;reportScope='ally';panel.open=true;}
-    $('tft-report-title').textContent=reportScope==='match'?'Informe acumulado · '+state.history.length+' rondas':'Informe de combate · ronda '+state.result.round;
+    $('tft-report-title').textContent=reportScope==='match'?'Informe acumulado · '+state.history.length+(state.history.length===1?' ronda':' rondas'):'Informe de combate · ronda '+state.result.round;
     panel.querySelectorAll('[data-report]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.report===reportScope)));
     const rows=E.report(state,reportScope),fmt=n=>Math.round(n).toLocaleString('es');
     $('tft-report-rows').innerHTML=rows.map(u=>`<tr><td title="Bajas: ${u.kills} · Daño recibido: ${fmt(u.taken)}">${G.DEX_BY[u.dex].name} ${'★'.repeat(u.star)}</td><td>${fmt(u.damage)}</td><td>${fmt(u.healing)}</td><td>${fmt(u.shielding)}</td><td>${fmt(u.blocked)}</td></tr>`).join('');
@@ -190,7 +190,7 @@ G.TFTUI = (() => {
       const target=combat&&u.hp>0?E.selectTarget(state.battle,u):null;
       const facing=target?G.Sprites.dirFromAngle(Math.atan2(target.y-u.y,target.x-u.x)):null;
       const age=combat?state.battle.time-(state.battle.beatStarted||0):1;
-      const hop=!calm&&u.hp!==0&&combat&&(state.battle.beat===1||state.battle.beat===3&&moving)?Math.sin(Math.PI*Math.min(1,age/.26))*11:0;
+      const hop=!calm&&u.hp!==0&&state.phase==='combat'&&(state.battle.beat===1||state.battle.beat===3&&moving)?Math.sin(Math.PI*Math.min(1,age/.26))*11:0;
       const x=v.x*cell+50,y=v.y*cell+76-hop;
       ctx.globalAlpha=alpha;
       ctx.fillStyle=u.side===0?'#69e5b580':'#ff718b80';ctx.beginPath();ctx.ellipse(x,y-3,25,9,0,0,Math.PI*2);ctx.fill();
@@ -228,7 +228,7 @@ G.TFTUI = (() => {
         ctx.globalAlpha=Math.min(.7,e.ttl);ctx.beginPath();ctx.moveTo(e.sx*100+50,e.sy*100+48);ctx.lineTo(e.tx*100+50,e.ty*100+48);ctx.stroke();ctx.globalAlpha=1;
       }
     }
-    infoClock+=dt;if(infoClock>=.15){infoClock=0;syncCells();renderInfo();}
+    infoClock+=dt;if(state.phase==='combat'&&infoClock>=.15){infoClock=0;syncCells();renderInfo();}
     paintCards(dt);
     const beat=combat?state.battle.beat||0:0;
     if($('tft-beats').dataset.beat!==String(beat))$('tft-beats').dataset.beat=String(beat);

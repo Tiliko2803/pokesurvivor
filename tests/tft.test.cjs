@@ -264,3 +264,9 @@ test('complete rhythmic matches with signature/AOE units stay finite and collisi
   assert.ok(E.report(s,'match').every(r=>Number.isFinite(r.damage)&&r.damage>=0));
  }
 });
+test('residual visual effects expire after a round while reports and payments remain unchanged',()=>{
+ const {E,s}=fixture();s.gold=10;purchase(E,s,4);E.place(s,s.units[0].id,20);E.start(s);
+ for(const foe of s.battle.units.filter(u=>u.side===1))foe.hp=0;
+ s.battle.events.push({kind:'cast',ttl:.6});E.tick(s,.05);const report=JSON.stringify(s.result),gold=s.gold;
+ for(let i=0;i<20;i++)E.tick(s,.1);assert.equal(s.battle.events.length,0);assert.equal(JSON.stringify(s.result),report);assert.equal(s.gold,gold);
+});

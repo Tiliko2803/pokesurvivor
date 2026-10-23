@@ -134,3 +134,13 @@ any matching area move, rather than receiving a full bespoke three-stage kit.
 Engine tests include all 34 families' local sprites, interest at 5-gold thresholds,
 pulse timing, AoE targets, snapshot reports and complete collision-free matches.
 Balance remains provisional; the report provides evidence for later adjustments.
+
+
+Hosted verification of this iteration: the existing /dev/ page displayed all 34
+families, saved an edited ten-line deck and restored it after slot switching.
+A three-unit team launched correctly, inspection displayed the real Ralts
+ability and current HP/mana, shared beat controls appeared, and a full first
+round resolved. Its report correctly displayed both teams and match totals,
+including actual healing and absorbed shields. With six saved gold, the win
+paid seven total (base five + win one + interest one). Native Android visual
+validation remains pending; the hosted desktop flow was verified.
