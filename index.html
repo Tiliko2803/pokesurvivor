@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="ps-version" content="3aafb36267">
+<meta name="ps-version" content="9b6dafafa3">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>PokéSurvivor Tiliko — Mao Mao y regalos</title>
 <meta name="description" content="Sobrevive a hordas de Pokémon con tu compañero en este fan game gratis para navegador y móvil: 966 Pokémon, shinies, legendarios y cooperativo con amigos. Sin descargas ni anuncios.">
@@ -78,8 +78,8 @@
 }
 </script>
 <!-- seo:end -->
-<link rel="stylesheet" href="css/style.css?v=3aafb36267">
-<link rel="stylesheet" href="dev/boss-rush.css?v=3aafb36267">
+<link rel="stylesheet" href="css/style.css?v=9b6dafafa3">
+<link rel="stylesheet" href="dev/boss-rush.css?v=9b6dafafa3">
 </head>
 <body>
 
@@ -437,9 +437,39 @@
     <div class="mode-buttons">
       <button id="btn-normal-run" class="btn gold" data-sfx="confirm">Partida normal</button>
       <button id="btn-boss-rush" class="btn gold" data-sfx="confirm">Boss Rush · Hoenn</button>
+      <button id="btn-tft" class="btn" data-sfx="confirm">TFT · Evoluciones (Alpha)</button>
       <button id="btn-challenges" class="btn" data-sfx="click">Desafíos</button>
     </div>
   </div>
+</section>
+<!-- TFT: independent local alpha; no survivor economy or ranking writes. -->
+<section id="scr-tft" class="scr hidden" aria-label="TFT Evoluciones">
+ <div class="tft-shell">
+  <header class="tft-header"><div><h2>TFT · Evoluciones <small>ALPHA</small></h2><p id="tft-stats"></p></div><button id="tft-exit" class="btn small ghost">Salir</button></header>
+  <div id="tft-quit" class="tft-notice hidden" role="alert">¿Salir de TFT? Esta partida no se guarda.<div class="tft-actions"><button id="tft-confirm-quit" class="btn small">Salir de la partida</button><button id="tft-cancel-quit" class="btn small gold">Seguir jugando</button></div></div>
+  <div class="tft-layout">
+   <main class="tft-arena"><div class="tft-actions"><b id="tft-phase"></b><span id="tft-clock"></span><button id="tft-pause" class="btn small">Pausar</button><button id="tft-speed" class="btn small ghost">Velocidad ×1</button></div>
+    <div class="tft-board-wrap"><canvas id="tft-board" width="600" height="600" aria-hidden="true"></canvas><div id="tft-cells" role="group" aria-label="Tablero de seis por seis"></div></div>
+    <p id="tft-help" class="tft-hint"></p>
+    <div class="tft-actions"><button id="tft-fight" class="btn gold">¡Combatir!</button><button id="tft-next" class="btn gold hidden">Siguiente ronda</button><button id="tft-restart" class="btn gold hidden">Nueva partida</button><button id="tft-return" class="btn small">Al banquillo</button><button id="tft-sell" class="btn small">Vender seleccionado</button></div>
+    <p id="tft-result" role="status" aria-live="polite"></p>
+   </main>
+   <aside class="tft-management"><h3 id="tft-bench-count">Banquillo</h3><div id="tft-bench" role="group" aria-label="Banquillo"></div>
+    <h3>Tienda</h3><div id="tft-shop" role="group" aria-label="Tienda de Pokémon"></div>
+    <div class="tft-actions"><button id="tft-reroll" class="btn small">Renovar · 2 oro</button><button id="tft-lock" class="btn small" aria-pressed="false">Bloquear tienda</button><button id="tft-xp" class="btn small">Comprar EXP</button></div>
+    <h3>Sinergias del equipo</h3><div id="tft-traits"></div>
+    <details class="tft-rules"><summary>Cómo jugar y evolucionar</summary>
+     <p>Combate individual contra IA durante 12 rondas. Empiezas con 50 PV, 10 de oro y 3 plazas. Despliega en las tres filas azules; la fila cercana al rival es la primera línea.</p>
+     <p>3 copias ★ → una ★★ y evolución. 3 copias ★★ → una ★★★ y evolución final. Ejemplo: Charmander → Charmeleon → Charizard. Las familias de dos etapas potencian su forma final en ★★★. Eevee evoluciona a Vaporeon en esta alpha.</p>
+     <p>Los tipos, el sprite y el movimiento cambian al evolucionar. Las habilidades usan el comportamiento de su rol: apoyo cura, defensor se protege y golpea alrededor, luchador da un golpe potente, atacante a distancia daña una zona.</p>
+     <p>Sinergias: 2/4 familias distintas de un tipo activan los bonos indicados para los miembros de ese tipo. Las copias de una familia no suman más. Se conservan las afinidades de tipos del Survivor.</p>
+     <p>Tras cada ronda: 5 de oro, +1 por victoria, +1 por cada 10 ahorrados (máximo 5) y bonos de racha cada 2 rondas (máximo 3). Recibes 2 EXP gratis; comprar 4 EXP cuesta 4 de oro. Nivel máximo 6. Renovar cuesta 2; bloquear conserva la tienda.</p>
+     <p>Los equipos se curan entre rondas. Perder resta PV; agotar los 45 segundos cuenta como derrota. Supera la ronda 12 con vida para completar el desafío. Pausa o usa ×2 durante el combate.</p>
+     <p>Alpha local: la partida dura esta sesión. La IA adapta comportamientos del Survivor: distancia retrocede, asaltante busca la retaguardia y guardián escuda al aliado más vulnerable. El oro y las unidades de TFT son independientes de tu cuenta y colección. Multijugador, objetos y recompensas de cuenta pendientes.</p>
+    </details>
+   </aside>
+  </div>
+ </div>
 </section>
 <section id="scr-challenges" class="scr dim hidden">
   <div class="box challenge-box">
@@ -602,120 +632,122 @@
 
 <!-- datos generados -->
 <!-- scripts:begin -->
-<script defer src="js/core/util.js?v=3aafb36267"></script>
-<script defer src="js/core/i18n.js?v=3aafb36267"></script>
-<script defer src="js/data/lang-en.js?v=3aafb36267"></script>
-<script defer src="js/core/settings.js?v=3aafb36267"></script>
-<script defer src="js/data/music.js?v=3aafb36267"></script>
-<script defer src="js/data/pokedex.js?v=3aafb36267"></script>
-<script defer src="js/data/sprites-meta.js?v=3aafb36267"></script>
-<script defer src="js/data/maomao-preview.js?v=3aafb36267"></script>
-<script defer src="js/data/maomao-animation.js?v=3aafb36267"></script>
-<script defer src="js/data/toji.js?v=3aafb36267"></script>
-<script defer src="js/data/gift-codes.js?v=3aafb36267"></script>
-<script defer src="js/systems/mega.js?v=3aafb36267"></script>
+<script defer src="js/core/util.js?v=9b6dafafa3"></script>
+<script defer src="js/core/i18n.js?v=9b6dafafa3"></script>
+<script defer src="js/data/lang-en.js?v=9b6dafafa3"></script>
+<script defer src="js/core/settings.js?v=9b6dafafa3"></script>
+<script defer src="js/data/music.js?v=9b6dafafa3"></script>
+<script defer src="js/data/pokedex.js?v=9b6dafafa3"></script>
+<script defer src="js/data/sprites-meta.js?v=9b6dafafa3"></script>
+<script defer src="js/data/maomao-preview.js?v=9b6dafafa3"></script>
+<script defer src="js/data/maomao-animation.js?v=9b6dafafa3"></script>
+<script defer src="js/data/toji.js?v=9b6dafafa3"></script>
+<script defer src="js/data/gift-codes.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/mega.js?v=9b6dafafa3"></script>
 <!-- núcleo -->
-<script defer src="js/core/firebase-config.js?v=3aafb36267"></script>
-<script defer src="js/systems/challenges.js?v=3aafb36267"></script>
-<script defer src="js/core/db.js?v=3aafb36267"></script>
-<script defer src="js/core/audio.js?v=3aafb36267"></script>
-<script defer src="js/core/input.js?v=3aafb36267"></script>
-<script defer src="js/core/touch.js?v=3aafb36267"></script>
-<script defer src="js/core/gamepad.js?v=3aafb36267"></script>
-<script defer src="js/core/sprites.js?v=3aafb36267"></script>
-<script defer src="js/systems/mega-art.js?v=3aafb36267"></script>
-<script defer src="js/systems/mega-sheet.js?v=3aafb36267"></script>
-<script defer src="js/systems/blaziken.js?v=3aafb36267"></script>
-<script defer src="js/systems/tinkaton.js?v=3aafb36267"></script>
-<script defer src="js/systems/mega-evolution.js?v=3aafb36267"></script>
-<script defer src="js/core/camera.js?v=3aafb36267"></script>
+<script defer src="js/core/firebase-config.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/challenges.js?v=9b6dafafa3"></script>
+<script defer src="js/core/db.js?v=9b6dafafa3"></script>
+<script defer src="js/core/audio.js?v=9b6dafafa3"></script>
+<script defer src="js/core/input.js?v=9b6dafafa3"></script>
+<script defer src="js/core/touch.js?v=9b6dafafa3"></script>
+<script defer src="js/core/gamepad.js?v=9b6dafafa3"></script>
+<script defer src="js/core/sprites.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/mega-art.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/mega-sheet.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/blaziken.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/tinkaton.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/mega-evolution.js?v=9b6dafafa3"></script>
+<script defer src="js/core/camera.js?v=9b6dafafa3"></script>
 <!-- datos de juego -->
-<script defer src="js/data/moves.js?v=3aafb36267"></script>
-<script defer src="js/systems/stats.js?v=3aafb36267"></script>
-<script defer src="js/data/types.js?v=3aafb36267"></script>
-<script defer src="js/data/starters.js?v=3aafb36267"></script>
-<script defer src="js/data/enemies.js?v=3aafb36267"></script>
-<script defer src="js/data/upgrades.js?v=3aafb36267"></script>
-<script defer src="js/data/coverage-data.js?v=3aafb36267"></script>
-<script defer src="js/systems/coverage.js?v=3aafb36267"></script>
-<script defer src="js/systems/repertoire.js?v=3aafb36267"></script>
-<script defer src="js/data/items.js?v=3aafb36267"></script>
-<script defer src="js/data/missions.js?v=3aafb36267"></script>
-<script defer src="js/data/achievements.js?v=3aafb36267"></script>
-<script defer src="js/data/funding.js?v=3aafb36267"></script>
-<script defer src="js/data/changelog.js?v=3aafb36267"></script>
-<script defer src="js/data/menu-splashes.js?v=3aafb36267"></script>
+<script defer src="js/data/moves.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/stats.js?v=9b6dafafa3"></script>
+<script defer src="js/data/types.js?v=9b6dafafa3"></script>
+<script defer src="js/data/starters.js?v=9b6dafafa3"></script>
+<script defer src="js/data/enemies.js?v=9b6dafafa3"></script>
+<script defer src="js/data/upgrades.js?v=9b6dafafa3"></script>
+<script defer src="js/data/coverage-data.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/coverage.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/repertoire.js?v=9b6dafafa3"></script>
+<script defer src="js/data/items.js?v=9b6dafafa3"></script>
+<script defer src="js/data/missions.js?v=9b6dafafa3"></script>
+<script defer src="js/data/achievements.js?v=9b6dafafa3"></script>
+<script defer src="js/data/funding.js?v=9b6dafafa3"></script>
+<script defer src="js/data/changelog.js?v=9b6dafafa3"></script>
+<script defer src="js/data/menu-splashes.js?v=9b6dafafa3"></script>
 <!-- mundo -->
-<script defer src="js/world/tiles.js?v=3aafb36267"></script>
-<script defer src="js/world/world.js?v=3aafb36267"></script>
+<script defer src="js/world/tiles.js?v=9b6dafafa3"></script>
+<script defer src="js/world/world.js?v=9b6dafafa3"></script>
 <!-- entidades -->
-<script defer src="js/entities/vfx.js?v=3aafb36267"></script>
-<script defer src="js/entities/fx.js?v=3aafb36267"></script>
-<script defer src="js/entities/projectile.js?v=3aafb36267"></script>
-<script defer src="js/entities/enemy.js?v=3aafb36267"></script>
-<script defer src="js/entities/pickup.js?v=3aafb36267"></script>
-<script defer src="js/entities/player.js?v=3aafb36267"></script>
+<script defer src="js/entities/vfx.js?v=9b6dafafa3"></script>
+<script defer src="js/entities/fx.js?v=9b6dafafa3"></script>
+<script defer src="js/entities/projectile.js?v=9b6dafafa3"></script>
+<script defer src="js/entities/enemy.js?v=9b6dafafa3"></script>
+<script defer src="js/entities/pickup.js?v=9b6dafafa3"></script>
+<script defer src="js/entities/player.js?v=9b6dafafa3"></script>
 <!-- sistemas -->
-<script defer src="js/systems/combat.js?v=3aafb36267"></script>
-<script defer src="js/systems/spawner.js?v=3aafb36267"></script>
-<script defer src="js/systems/levelup.js?v=3aafb36267"></script>
-<script defer src="js/systems/gacha.js?v=3aafb36267"></script>
-<script defer src="js/systems/interact.js?v=3aafb36267"></script>
-<script defer src="js/systems/rift.js?v=3aafb36267"></script>
-<script defer src="js/systems/judgment.js?v=3aafb36267"></script>
-<script defer src="js/systems/events.js?v=3aafb36267"></script>
-<script defer src="js/systems/weather.js?v=3aafb36267"></script>
-<script defer src="js/systems/pathing.js?v=3aafb36267"></script>
-<script defer src="js/systems/progress.js?v=3aafb36267"></script>
-<script defer src="js/systems/hazards.js?v=3aafb36267"></script>
+<script defer src="js/systems/combat.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/spawner.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/levelup.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/gacha.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/interact.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/rift.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/judgment.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/events.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/weather.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/pathing.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/progress.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/hazards.js?v=9b6dafafa3"></script>
 <!-- red: amigos, salas, cooperativo y ranking -->
-<script defer src="js/net/social.js?v=3aafb36267"></script>
-<script defer src="js/net/signups.js?v=3aafb36267"></script>
-<script defer src="js/net/net.js?v=3aafb36267"></script>
-<script defer src="js/net/coop.js?v=3aafb36267"></script>
-<script defer src="js/net/ranking.js?v=3aafb36267"></script>
+<script defer src="js/net/social.js?v=9b6dafafa3"></script>
+<script defer src="js/net/signups.js?v=9b6dafafa3"></script>
+<script defer src="js/net/net.js?v=9b6dafafa3"></script>
+<script defer src="js/net/coop.js?v=9b6dafafa3"></script>
+<script defer src="js/net/ranking.js?v=9b6dafafa3"></script>
 <!-- interfaz -->
-<script defer src="js/ui/icons.js?v=3aafb36267"></script>
-<script defer src="js/ui/ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/hud.js?v=3aafb36267"></script>
-<script defer src="js/ui/login.js?v=3aafb36267"></script>
-<script defer src="js/ui/test.js?v=3aafb36267"></script>
-<script defer src="js/ui/menu.js?v=3aafb36267"></script>
-<script defer src="js/ui/gifts-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/slots.js?v=3aafb36267"></script>
-<script defer src="js/ui/gacha-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/run-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/social-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/ranking-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/mod-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/goals-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/save-transfer.js?v=3aafb36267"></script>
-<script defer src="js/ui/settings-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/layout-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/support-ui.js?v=3aafb36267"></script>
-<script defer src="js/ui/news-ui.js?v=3aafb36267"></script>
-<script defer src="js/core/updater.js?v=3aafb36267"></script>
+<script defer src="js/ui/icons.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/hud.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/login.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/test.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/menu.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/gifts-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/slots.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/gacha-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/run-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/social-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/ranking-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/mod-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/goals-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/save-transfer.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/settings-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/layout-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/support-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/ui/news-ui.js?v=9b6dafafa3"></script>
+<script defer src="js/core/updater.js?v=9b6dafafa3"></script>
 <!-- juego -->
-<script defer src="js/game.js?v=3aafb36267"></script>
-<script defer src="dev/boss-rush-rules.js?v=3aafb36267"></script>
-<script defer src="dev/groudon.js?v=3aafb36267"></script>
-<script defer src="dev/regis.js?v=3aafb36267"></script>
-<script defer src="dev/eon.js?v=3aafb36267"></script>
-<script defer src="dev/boss-rush-bars.js?v=3aafb36267"></script>
-<script defer src="dev/kyogre.js?v=3aafb36267"></script>
-<script defer src="dev/rayquaza.js?v=3aafb36267"></script>
-<script defer src="dev/major-cadence.js?v=3aafb36267"></script>
-<script defer src="dev/jirachi.js?v=3aafb36267"></script>
-<script defer src="dev/boss-rush-arena.js?v=3aafb36267"></script>
-<script defer src="dev/boss-rush-sprites.js?v=3aafb36267"></script>
-<script defer src="dev/groudon-fx.js?v=3aafb36267"></script>
-<script defer src="dev/regis-fx.js?v=3aafb36267"></script>
-<script defer src="dev/eon-fx.js?v=3aafb36267"></script>
-<script defer src="dev/kyogre-fx.js?v=3aafb36267"></script>
-<script defer src="dev/rayquaza-fx.js?v=3aafb36267"></script>
-<script defer src="dev/jirachi-fx.js?v=3aafb36267"></script>
-<script defer src="js/systems/boss-rush.js?v=3aafb36267"></script>
-<script defer src="js/main.js?v=3aafb36267"></script>
+<script defer src="js/game.js?v=9b6dafafa3"></script>
+<script defer src="dev/boss-rush-rules.js?v=9b6dafafa3"></script>
+<script defer src="dev/groudon.js?v=9b6dafafa3"></script>
+<script defer src="dev/regis.js?v=9b6dafafa3"></script>
+<script defer src="dev/eon.js?v=9b6dafafa3"></script>
+<script defer src="dev/boss-rush-bars.js?v=9b6dafafa3"></script>
+<script defer src="dev/kyogre.js?v=9b6dafafa3"></script>
+<script defer src="dev/rayquaza.js?v=9b6dafafa3"></script>
+<script defer src="dev/major-cadence.js?v=9b6dafafa3"></script>
+<script defer src="dev/jirachi.js?v=9b6dafafa3"></script>
+<script defer src="dev/boss-rush-arena.js?v=9b6dafafa3"></script>
+<script defer src="dev/boss-rush-sprites.js?v=9b6dafafa3"></script>
+<script defer src="dev/groudon-fx.js?v=9b6dafafa3"></script>
+<script defer src="dev/regis-fx.js?v=9b6dafafa3"></script>
+<script defer src="dev/eon-fx.js?v=9b6dafafa3"></script>
+<script defer src="dev/kyogre-fx.js?v=9b6dafafa3"></script>
+<script defer src="dev/rayquaza-fx.js?v=9b6dafafa3"></script>
+<script defer src="dev/jirachi-fx.js?v=9b6dafafa3"></script>
+<script defer src="js/systems/boss-rush.js?v=9b6dafafa3"></script>
+<script defer src="js/tft/engine.js?v=9b6dafafa3"></script>
+<script defer src="js/tft/ui.js?v=9b6dafafa3"></script>
+<script defer src="js/main.js?v=9b6dafafa3"></script>
 <!-- scripts:end -->
 </body>
 </html>

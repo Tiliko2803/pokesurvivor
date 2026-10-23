@@ -250,8 +250,10 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 8px 0 4px;
 .partner-card .lv { color: var(--muted); font-size: 14px; text-shadow: 2px 2px 0 var(--shadow); }
 .mega-menu{margin:8px auto 0;padding:6px 10px;max-width:295px;background:rgba(24,58,85,.7);border:1px solid rgba(94,215,255,.45);border-radius:9px;font-size:12px;text-align:center}
 .mega-menu.hidden{display:none}.mega-title{color:#a9ebff;font-weight:800;font-size:14px}
-.mega-help{color:#bed5e4;margin:3px 0 6px;line-height:1.2}
+.mega-help{color:#bed5e4;margin:3px 0 6px;line-height:1.25}
 .mega-menu button{max-width:100%;font-size:12px;padding:5px 10px}
+.mega-gem-icon{display:inline-block;vertical-align:-4px;max-width:none;image-rendering:auto}
+
 .menu-right {
   width: min(380px, 100%); display: flex; flex-direction: column;
   /* Arriba deja sitio a la barra superior; si no cabe todo, se desplaza
@@ -306,6 +308,10 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 8px 0 4px;
 .pips i.on { background: var(--gold); }
 
 /* ---------- gacha ---------- */
+#scr-gacha .split > div { min-width: 0; }
+#scr-gacha .rates div { gap: 8px; }
+#scr-gacha .rates div > span:last-child { flex-shrink: 0; }
+
 .banner {
   position: relative; border-radius: 12px; overflow: hidden;
   background:
@@ -902,7 +908,7 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
   #scr-gifts #gift-status { margin: 2px 0; }
 }
 
-/* Megapiedra visible y alcanzable en pantallas horizontales bajas. */
+/* Panel de megapiedras accesible en móvil horizontal, sin tapar los botones. */
 .mega-menu{width:min(94%,320px);margin:6px auto 0;box-sizing:border-box}
 .mega-menu button{display:block;width:100%;max-width:100%;white-space:normal;line-height:1.18;min-height:34px;box-sizing:border-box}
 @media (max-height: 740px) and (min-width: 761px) {
@@ -919,7 +925,6 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
  #scr-menu .mega-help{font-size:11px;line-height:1.13;margin:3px 0 5px}
  #scr-menu .mega-title{font-size:13px}
  #scr-menu .mega-menu button{font-size:12px;padding:6px 8px}
- #scr-menu .preview-flag{font-size:11px;margin:0 0 5px;padding:4px 8px;line-height:1.12}
 }
 @media (max-height: 460px) and (orientation: landscape) {
  #scr-menu .menu-left{padding-top:57px}
@@ -928,10 +933,131 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
  #scr-menu .mega-menu{max-width:260px}
 }
 
-/* Un mismo símbolo de Megapiedra para las megas, sin iconos externos. */
-.mega-gem-icon{display:inline-block;vertical-align:-4px;max-width:none;image-rendering:auto}
-
 /* Repertorio: objetivos cómodos al tocar desde el teléfono. */
 .repertoire-picker .chip, [data-repertoire] { min-height: 44px; }
 .repertoire-picker .chip { white-space: normal; text-align: left; }
 .repertoire-upgrade { grid-column: 1 / -1; }
+
+/* Más Opciones: cuatro cartas legibles también en móvil horizontal. */
+#scr-levelup .box { max-height: calc(100dvh - 12px); overflow-y: auto; }
+#cards.more-options { width: min(900px, 100%); }
+@media (min-width: 640px) {
+  #cards.more-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #scr-levelup:has(.more-options) .box { width: min(960px, 100%); }
+}
+@media (max-height: 520px) {
+  #cards.more-options { gap: 6px; }
+  #cards.more-options .card { padding: 7px 9px; gap: 8px; }
+  #cards.more-options .ico { flex-basis: 30px; height: 30px; }
+  #cards.more-options .nm { font-size: 15px; }
+  #cards.more-options .ds { font-size: 12px; }
+}
+
+/* Coberturas: selector reutilizable de ataques compatibles por Pokémon. */
+.coverage-picker .ban-moves { margin-bottom: 10px; }
+.coverage-picker .chip { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.coverage-picker .chip:disabled { opacity: .4; cursor: default; }
+.coverage-type { font-size: 11px; opacity: .8; }
+.coverage-empty { padding: 0 8px; }
+
+.padkey { display: inline-block; padding: 0 7px; border: 2px solid rgba(244,248,255,.4); border-radius: 9px; font-size: 13px; color: var(--text, #f4f8ff) !important; text-shadow: none; }
+/* Lo seleccionado con el mando (gamepad.js). */
+.pad-focus { outline: 3px solid #ffd23f !important; outline-offset: 3px; box-shadow: 0 0 0 6px rgba(255,210,63,.25) !important; }
+
+.fit-low { display: block; color: #ffb37a; font-size: 12px; margin-top: 2px; }
+
+.pause-sum { text-align: left; margin: 4px 0 10px; }
+
+.pause-sum h3 { color: var(--gold); font-size: 16px; margin: 10px 0 6px; }
+
+.sum-moves { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+.sum-moves td, .sum-moves th { padding: 3px 4px; border-bottom: 1px solid rgba(255,255,255,.08); }
+
+.sum-moves th { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+.sum-moves .num { text-align: right; white-space: nowrap; }
+
+.sum-moves img { vertical-align: -4px; }
+
+.sum-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px 14px; font-size: 14px; }
+
+.sum-stats div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid rgba(255,255,255,.08); padding: 2px 0; }
+
+.sum-stats span { color: var(--muted); }
+
+.sum-stats small { color: var(--muted); font-weight: 400; }
+
+.cards.guard .card { opacity: .5; filter: saturate(.6); }
+
+#scr-pause > .box { width: min(720px, 100%); max-height: calc(100dvh - 24px); overflow-y: auto; }
+
+/* Frase sorpresa del titulo: ocupa su propia fila y cabe en movil horizontal. */
+#scr-menu .menu-splash { max-width: min(340px, 92%); margin: 8px auto 5px; color: #ffe37a;
+  font-size: clamp(11px, 1.5vw, 15px); line-height: 1.25; font-weight: 700;
+  letter-spacing: 0; text-wrap: balance; overflow-wrap: anywhere; transform: rotate(-3deg);
+  text-shadow: 1px 2px 0 #442500; pointer-events: none; }
+@media (max-height: 460px) and (orientation: landscape) {
+  #scr-menu .menu-splash { max-width: 290px; margin: 5px auto 3px; font-size: 11px; }
+}
+
+/* Resumen final: el mismo detalle que la pausa, con desplazamiento en movil. */
+#scr-over .run-over-box { width: min(720px, 100%); max-height: calc(100dvh - 24px);
+  overflow-y: auto; overscroll-behavior: contain; }
+#over-summary .sum-moves { table-layout: auto; }
+#over-summary td:first-child { overflow-wrap: anywhere; }
+#scr-over #btn-again { position: sticky; bottom: 0; margin-top: 12px; }
+@media (max-height: 460px) {
+  #scr-over .run-over-box { max-height: calc(100dvh - 12px); }
+}
+
+/* TFT alpha — scrollable touch-first mode, including portrait Android. */
+body.tft-active #rotate { display:none!important; }
+#scr-tft { display:block; overflow:auto; z-index:45; padding:12px; background:#0b1425; }
+.tft-shell { max-width:1120px; margin:0 auto; padding-bottom:24px; }
+.tft-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.tft-header h2 { margin:0; color:#ffe08a; font-size:26px; }
+.tft-header h2 small { font:11px sans-serif; color:#a8c8ed; }
+.tft-header p { margin:7px 0 13px; }
+.tft-layout { display:grid; grid-template-columns:minmax(280px,1.1fr) minmax(300px,1fr); gap:20px; align-items:start; }
+.tft-board-wrap { width:100%; max-width:580px; aspect-ratio:1; position:relative; margin:10px auto; border:2px solid #587091; border-radius:10px; overflow:hidden; }
+#tft-board { display:block; width:100%; height:100%; }
+#tft-cells { position:absolute; inset:0; display:grid; grid-template-columns:repeat(6,1fr); grid-template-rows:repeat(6,1fr); }
+#tft-cells button { background:transparent; border:0; padding:0; min-width:0; cursor:pointer; border-radius:3px; }
+#tft-cells button.tft-selected-cell { box-shadow:inset 0 0 0 3px #ffe08a; }
+#tft-cells button:focus-visible { outline:3px solid #ffe08a; outline-offset:-4px; }
+#tft-cells button:not(:disabled):hover { background:#ffffff12; }
+.tft-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.tft-actions .btn { min-height:42px; white-space:normal; }
+.tft-hint { font-size:15px; line-height:1.35; min-height:40px; color:#c4d4e9; }
+.tft-management h3 { margin:12px 0 8px; font-size:19px; }
+#tft-bench { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+#tft-shop { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:5px; margin-bottom:10px; }
+.tft-card { color:#edf6ff; background:#1b2d49; border:1px solid #4b678d; border-radius:8px; min-width:0; padding:3px 2px 7px; font:inherit; display:flex; flex-direction:column; align-items:center; cursor:pointer; }
+.tft-card:disabled { opacity:.55; cursor:default; }
+.tft-card b { font-size:13px; overflow-wrap:anywhere; }
+.tft-card span { color:#ffe08a; font-size:14px; }
+.tft-card small { font-size:10px; line-height:1.25; }
+.tft-card canvas { display:block; width:100%; max-width:110px; height:auto; image-rendering:pixelated; }
+.tft-card.tft-selected { border:2px solid #ffe08a; background:#31475c; }
+.tft-empty { justify-content:center; font-size:12px; opacity:.55; cursor:default; }
+.tft-bench-empty { min-height:35px; border:1px dashed #3d5575; border-radius:7px; text-align:center; color:#587091; }
+#tft-traits { display:flex; gap:6px; flex-wrap:wrap; }
+.tft-trait { display:block; border:1px solid #3a506b; border-radius:6px; padding:5px 8px; font-size:14px; color:#9cacc4; }
+.tft-trait.on { color:#b6ffdf; border-color:#5caa8c; background:#123b36; }
+.tft-trait small { display:block; font-size:11px; }
+.tft-rules { margin-top:16px; color:#bfcee3; font-size:14px; line-height:1.4; }
+.tft-rules summary { cursor:pointer; color:#ffe08a; padding:10px 0; }
+.tft-notice { background:#523545; border:1px solid #eead8f; border-radius:8px; padding:12px; margin-bottom:12px; }
+.tft-notice .tft-actions { margin-top:8px; }
+#tft-result { color:#ffe08a; line-height:1.4; }
+@media(max-width:700px) {
+ #scr-tft { padding:8px; }
+ .tft-layout { grid-template-columns:minmax(0,1fr); gap:6px; }
+ .tft-header h2 { font-size:22px; }
+ .tft-header p { font-size:14px; }
+ .tft-actions .btn { font-size:14px; padding:7px 10px; }
+ .tft-hint { font-size:14px; min-height:0; }
+ #tft-shop .tft-card b { font-size:12px; }
+ #tft-bench { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}

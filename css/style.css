@@ -1010,3 +1010,54 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
 @media (max-height: 460px) {
   #scr-over .run-over-box { max-height: calc(100dvh - 12px); }
 }
+
+/* TFT alpha — scrollable touch-first mode, including portrait Android. */
+body.tft-active #rotate { display:none!important; }
+#scr-tft { display:block; overflow:auto; z-index:45; padding:12px; background:#0b1425; }
+.tft-shell { max-width:1120px; margin:0 auto; padding-bottom:24px; }
+.tft-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.tft-header h2 { margin:0; color:#ffe08a; font-size:26px; }
+.tft-header h2 small { font:11px sans-serif; color:#a8c8ed; }
+.tft-header p { margin:7px 0 13px; }
+.tft-layout { display:grid; grid-template-columns:minmax(280px,1.1fr) minmax(300px,1fr); gap:20px; align-items:start; }
+.tft-board-wrap { width:100%; max-width:580px; aspect-ratio:1; position:relative; margin:10px auto; border:2px solid #587091; border-radius:10px; overflow:hidden; }
+#tft-board { display:block; width:100%; height:100%; }
+#tft-cells { position:absolute; inset:0; display:grid; grid-template-columns:repeat(6,1fr); grid-template-rows:repeat(6,1fr); }
+#tft-cells button { background:transparent; border:0; padding:0; min-width:0; cursor:pointer; border-radius:3px; }
+#tft-cells button.tft-selected-cell { box-shadow:inset 0 0 0 3px #ffe08a; }
+#tft-cells button:focus-visible { outline:3px solid #ffe08a; outline-offset:-4px; }
+#tft-cells button:not(:disabled):hover { background:#ffffff12; }
+.tft-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.tft-actions .btn { min-height:42px; white-space:normal; }
+.tft-hint { font-size:15px; line-height:1.35; min-height:40px; color:#c4d4e9; }
+.tft-management h3 { margin:12px 0 8px; font-size:19px; }
+#tft-bench { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+#tft-shop { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:5px; margin-bottom:10px; }
+.tft-card { color:#edf6ff; background:#1b2d49; border:1px solid #4b678d; border-radius:8px; min-width:0; padding:3px 2px 7px; font:inherit; display:flex; flex-direction:column; align-items:center; cursor:pointer; }
+.tft-card:disabled { opacity:.55; cursor:default; }
+.tft-card b { font-size:13px; overflow-wrap:anywhere; }
+.tft-card span { color:#ffe08a; font-size:14px; }
+.tft-card small { font-size:10px; line-height:1.25; }
+.tft-card canvas { display:block; width:100%; max-width:110px; height:auto; image-rendering:pixelated; }
+.tft-card.tft-selected { border:2px solid #ffe08a; background:#31475c; }
+.tft-empty { justify-content:center; font-size:12px; opacity:.55; cursor:default; }
+.tft-bench-empty { min-height:35px; border:1px dashed #3d5575; border-radius:7px; text-align:center; color:#587091; }
+#tft-traits { display:flex; gap:6px; flex-wrap:wrap; }
+.tft-trait { display:block; border:1px solid #3a506b; border-radius:6px; padding:5px 8px; font-size:14px; color:#9cacc4; }
+.tft-trait.on { color:#b6ffdf; border-color:#5caa8c; background:#123b36; }
+.tft-trait small { display:block; font-size:11px; }
+.tft-rules { margin-top:16px; color:#bfcee3; font-size:14px; line-height:1.4; }
+.tft-rules summary { cursor:pointer; color:#ffe08a; padding:10px 0; }
+.tft-notice { background:#523545; border:1px solid #eead8f; border-radius:8px; padding:12px; margin-bottom:12px; }
+.tft-notice .tft-actions { margin-top:8px; }
+#tft-result { color:#ffe08a; line-height:1.4; }
+@media(max-width:700px) {
+ #scr-tft { padding:8px; }
+ .tft-layout { grid-template-columns:minmax(0,1fr); gap:6px; }
+ .tft-header h2 { font-size:22px; }
+ .tft-header p { font-size:14px; }
+ .tft-actions .btn { font-size:14px; padding:7px 10px; }
+ .tft-hint { font-size:14px; min-height:0; }
+ #tft-shop .tft-card b { font-size:12px; }
+ #tft-bench { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}

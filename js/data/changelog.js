@@ -10,6 +10,10 @@ G.CHANGELOG = [
     ['Al terminar una partida también puedes ver el daño y DPS de cada movimiento, estadísticas finales, objeto y cartas. El resumen guarda los valores justo al terminar y se puede desplazar en móvil.',
      'At the end of a run you can also see damage and DPS per move, final stats, held item and cards. The summary captures values at the moment the run ends and scrolls on mobile.']
   ] },
+  { d: '2026-10-22', title: ['TFT · Evoluciones (alpha)', 'TFT · Evolutions (alpha)'], new: [
+    ['Modo individual de 12 rondas con tienda, oro propio, banquillo, posiciones tácticas y combates automáticos. 24 familias de Pokémon; tres copias se fusionan y evolucionan con nuevo sprite, tipos y movimiento. Sinergias de 2/4 familias por tipo, experiencia y límite de equipo. Interfaz táctil, pausa y velocidad doble. Partida local de sesión, sin recompensas ni cambios al progreso del Survivor.',
+     'A 12-round solo mode with a shop, separate gold, bench, tactical positioning and automatic battles. 24 Pokémon families; three copies merge and evolve with new sprites, types and moves. Type synergies at 2/4 families, experience and team limits. Touch interface, pause and double speed. Local session matches, with no rewards or changes to Survivor progression.']
+  ] },
   { d: '2026-10-20', title: ['Una frase sorpresa en el menú', 'A surprise line on the menu'], new: [
     ['32 frases cortas sobre Arceus, los curanderos, las builds y la panadería de Tiliko. Cada visita al juego elige una; conserva la misma al volver al menú y evita repetir la anterior cuando es posible.',
      '32 short lines about Arceus, healers, builds and Tiliko’s bakery. Each visit chooses one; returning to the menu keeps it, and the previous line is avoided when possible.']
