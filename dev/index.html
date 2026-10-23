@@ -4,7 +4,7 @@
 <head>
 <base href="../">
 <meta charset="utf-8">
-<meta name="ps-preview-version" content="0bfce11ef3">
+<meta name="ps-preview-version" content="8cdaade473">
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>PokéSurvivor · Pruebas · TFT y Hoenn</title>
@@ -25,8 +25,8 @@
 <link rel="preload" href="assets/fonts/PixelifyPS-400.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="assets/fonts/PixelifyPS-700.ttf" as="font" type="font/ttf" crossorigin>
 
-<link rel="stylesheet" href="dev/style.css?v=tft-0bfce11ef3">
-<link rel="stylesheet" href="dev/boss-rush.css?v=tft-0bfce11ef3">
+<link rel="stylesheet" href="dev/style.css?v=tft-8cdaade473">
+<link rel="stylesheet" href="dev/boss-rush.css?v=tft-8cdaade473">
 </head>
 <body>
 
@@ -413,11 +413,11 @@
 
 
 <p class="tft-hint" id="tft-help"></p>
-<div class="tft-actions tft-primary"><button class="btn gold" id="tft-fight">¡Combatir!</button><button class="btn gold hidden" id="tft-next">Siguiente ronda</button></div>
+<div class="tft-actions tft-primary"><button class="btn gold" id="tft-fight">¡Combatir!</button><button class="btn gold hidden" id="tft-next">Siguiente ronda</button><button class="btn gold hidden" id="tft-restart">Nueva partida</button></div>
 
 
 </main>
-<aside class="tft-management"><nav aria-label="Paneles de TFT" class="tft-tabs" role="tablist"><button aria-controls="tft-pane-shop" aria-selected="true" class="tft-tab" data-panel="shop" id="tft-tab-shop" role="tab" tabindex="0" type="button">Tienda</button><button aria-controls="tft-pane-team" aria-selected="false" class="tft-tab" data-panel="team" id="tft-tab-team" role="tab" tabindex="-1" type="button">Equipo</button><button aria-controls="tft-pane-info" aria-selected="false" class="tft-tab" data-panel="info" id="tft-tab-info" role="tab" tabindex="-1" type="button">Ficha</button><button aria-controls="tft-pane-scout" aria-selected="false" class="tft-tab" data-panel="scout" id="tft-tab-scout" role="tab" tabindex="-1" type="button">Rival</button><button aria-controls="tft-pane-report" aria-selected="false" class="tft-tab" data-panel="report" id="tft-tab-report" role="tab" tabindex="-1" type="button">Informe</button></nav><button aria-controls="tft-panel-body" aria-expanded="true" class="btn small ghost tft-panel-toggle" id="tft-panel-toggle" type="button">Ocultar panel</button><div class="tft-panel-body" id="tft-panel-body"><section aria-labelledby="tft-tab-shop" class="tft-pane" id="tft-pane-shop" role="tabpanel"><h3>Recluta tu equipo</h3><div aria-label="Tienda de Pokémon" id="tft-shop" role="group"></div><div class="tft-actions"><button class="btn small" id="tft-reroll">Renovar · 2 oro</button><button aria-pressed="false" class="btn small" id="tft-lock">Bloquear tienda</button><button class="btn small" id="tft-xp">Comprar EXP</button></div></section><section aria-labelledby="tft-tab-team" class="tft-pane hidden" id="tft-pane-team" role="tabpanel"><h3 id="tft-bench-count">Banquillo</h3><div aria-label="Banquillo" id="tft-bench" role="group"></div><div class="tft-actions tft-unit-actions"><button class="btn small" id="tft-return">Al banquillo</button><button class="btn small" id="tft-sell">Vender seleccionado</button></div><h3>Sinergias</h3><div id="tft-traits"></div><details class="tft-rules"><summary id="tft-current-deck">Mi mazo</summary><p id="tft-deck-summary"></p></details><p class="sub" id="tft-save-status" role="status">Guardado automático en este dispositivo.</p><details class="tft-rules"><summary>Opciones y reglas</summary><button class="btn gold hidden" id="tft-restart">Nueva partida</button><details class="tft-rules"><summary>Cómo jugar y evolucionar</summary>
+<aside class="tft-management"><nav aria-label="Paneles de TFT" class="tft-tabs" role="tablist"><button aria-controls="tft-pane-shop" aria-selected="true" class="tft-tab" data-panel="shop" id="tft-tab-shop" role="tab" tabindex="0" type="button">Tienda</button><button aria-controls="tft-pane-team" aria-selected="false" class="tft-tab" data-panel="team" id="tft-tab-team" role="tab" tabindex="-1" type="button">Equipo</button><button aria-controls="tft-pane-info" aria-selected="false" class="tft-tab" data-panel="info" id="tft-tab-info" role="tab" tabindex="-1" type="button">Ficha</button><button aria-controls="tft-pane-scout" aria-selected="false" class="tft-tab" data-panel="scout" id="tft-tab-scout" role="tab" tabindex="-1" type="button">Rival</button><button aria-controls="tft-pane-report" aria-selected="false" class="tft-tab" data-panel="report" id="tft-tab-report" role="tab" tabindex="-1" type="button">Informe</button></nav><button aria-controls="tft-panel-body" aria-expanded="true" class="btn small ghost tft-panel-toggle" id="tft-panel-toggle" type="button">Ocultar panel</button><div class="tft-panel-body" id="tft-panel-body"><section aria-labelledby="tft-tab-shop" class="tft-pane" id="tft-pane-shop" role="tabpanel"><h3>Recluta tu equipo</h3><div aria-label="Tienda de Pokémon" id="tft-shop" role="group"></div><div class="tft-actions"><button class="btn small" id="tft-reroll">Renovar · 2 oro</button><button aria-pressed="false" class="btn small" id="tft-lock">Bloquear tienda</button><button class="btn small" id="tft-xp">Comprar EXP</button></div></section><section aria-labelledby="tft-tab-team" class="tft-pane hidden" id="tft-pane-team" role="tabpanel"><h3 id="tft-bench-count">Banquillo</h3><div aria-label="Banquillo" id="tft-bench" role="group"></div><div class="tft-actions tft-unit-actions"><button class="btn small" id="tft-return">Al banquillo</button><button class="btn small" id="tft-sell">Vender seleccionado</button></div><h3>Sinergias</h3><div id="tft-traits"></div><details class="tft-rules"><summary id="tft-current-deck">Mi mazo</summary><p id="tft-deck-summary"></p></details><p class="sub" id="tft-save-status" role="status">Guardado automático en este dispositivo.</p><details class="tft-rules"><summary>Opciones y reglas</summary><details class="tft-rules"><summary>Cómo jugar y evolucionar</summary>
 <p>Combate individual contra IA durante 12 rondas. Empiezas con 50 PV, 10 de oro y 3 plazas. Despliega en las tres filas azules; la fila cercana al rival es la primera línea.</p>
 <p>3 copias ★ → una ★★ y evolución. 3 copias ★★ → una ★★★ y evolución final. Ejemplo: Charmander → Charmeleon → Charizard. Las familias de dos etapas potencian su forma final en ★★★. Eevee evoluciona a Vaporeon en esta alpha.</p>
 <p>Los tipos, el sprite y el movimiento cambian al evolucionar. Las 34 familias tienen una habilidad de entrada propia y movimientos definidos para sus tres niveles. Los Pokémon icónicos tienen efectos especiales como rayos perforantes, curación con limpieza, protección de equipo, remates y mejoras temporales. Toca cualquier aliado o rival para consultar su habilidad y su momento de activación.</p>
@@ -595,124 +595,124 @@
 
 <!-- datos generados -->
 <!-- scripts:begin -->
-<script defer src="js/core/util.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/i18n.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/lang-en.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/settings.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/music.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/pokedex.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/sprites-meta.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/maomao-preview.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/maomao-animation.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/toji.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/gift-codes.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/mega.js?v=tft-0bfce11ef3"></script>
+<script defer src="js/core/util.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/i18n.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/lang-en.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/settings.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/music.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/pokedex.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/sprites-meta.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/maomao-preview.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/maomao-animation.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/toji.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/gift-codes.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/mega.js?v=tft-8cdaade473"></script>
 <!-- núcleo -->
 <script>window.G = window.G || {}; G.FIREBASE_CONFIG = null;</script>
-<script defer src="js/systems/challenges.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/db.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/audio.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/input.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/touch.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/gamepad.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/sprites.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/mega-art.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/mega-sheet.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/blaziken.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/tinkaton.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/mega-evolution.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/camera.js?v=tft-0bfce11ef3"></script>
+<script defer src="js/systems/challenges.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/db.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/audio.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/input.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/touch.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/gamepad.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/sprites.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/mega-art.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/mega-sheet.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/blaziken.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/tinkaton.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/mega-evolution.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/camera.js?v=tft-8cdaade473"></script>
 <!-- datos de juego -->
-<script defer src="js/data/moves.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/stats.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/types.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/starters.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/js/tft/enemies.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/upgrades.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/coverage-data.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/coverage.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/repertoire.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/items.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/missions.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/achievements.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/funding.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/js/tft/changelog.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/data/menu-splashes.js?v=tft-0bfce11ef3"></script>
+<script defer src="js/data/moves.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/stats.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/types.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/starters.js?v=tft-8cdaade473"></script>
+<script defer src="dev/js/tft/enemies.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/upgrades.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/coverage-data.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/coverage.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/repertoire.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/items.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/missions.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/achievements.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/funding.js?v=tft-8cdaade473"></script>
+<script defer src="dev/js/tft/changelog.js?v=tft-8cdaade473"></script>
+<script defer src="js/data/menu-splashes.js?v=tft-8cdaade473"></script>
 <!-- mundo -->
-<script defer src="js/world/tiles.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/world/world.js?v=tft-0bfce11ef3"></script>
+<script defer src="js/world/tiles.js?v=tft-8cdaade473"></script>
+<script defer src="js/world/world.js?v=tft-8cdaade473"></script>
 <!-- entidades -->
-<script defer src="js/entities/vfx.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/entities/fx.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/entities/projectile.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/entities/enemy.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/entities/pickup.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/entities/player.js?v=tft-0bfce11ef3"></script>
+<script defer src="js/entities/vfx.js?v=tft-8cdaade473"></script>
+<script defer src="js/entities/fx.js?v=tft-8cdaade473"></script>
+<script defer src="js/entities/projectile.js?v=tft-8cdaade473"></script>
+<script defer src="js/entities/enemy.js?v=tft-8cdaade473"></script>
+<script defer src="js/entities/pickup.js?v=tft-8cdaade473"></script>
+<script defer src="js/entities/player.js?v=tft-8cdaade473"></script>
 <!-- sistemas -->
-<script defer src="js/systems/combat.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/spawner.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/levelup.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/gacha.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/interact.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/rift.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/judgment.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/events.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/weather.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/pathing.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/progress.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/systems/hazards.js?v=tft-0bfce11ef3"></script>
+<script defer src="js/systems/combat.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/spawner.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/levelup.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/gacha.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/interact.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/rift.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/judgment.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/events.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/weather.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/pathing.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/progress.js?v=tft-8cdaade473"></script>
+<script defer src="js/systems/hazards.js?v=tft-8cdaade473"></script>
 <!-- red: amigos, salas, cooperativo y ranking -->
-<script defer src="js/net/social.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/net/signups.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/net/net.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/net/coop.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/net/ranking.js?v=tft-0bfce11ef3"></script>
+<script defer src="js/net/social.js?v=tft-8cdaade473"></script>
+<script defer src="js/net/signups.js?v=tft-8cdaade473"></script>
+<script defer src="js/net/net.js?v=tft-8cdaade473"></script>
+<script defer src="js/net/coop.js?v=tft-8cdaade473"></script>
+<script defer src="js/net/ranking.js?v=tft-8cdaade473"></script>
 <!-- interfaz -->
-<script defer src="js/ui/icons.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/js/tft/shared-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/hud.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/login.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/test.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/menu.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/gifts-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/slots.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/gacha-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/run-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/social-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/ranking-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/mod-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/goals-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/save-transfer.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/settings-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/layout-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/support-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/ui/news-ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="js/core/updater.js?v=tft-0bfce11ef3"></script>
+<script defer src="js/ui/icons.js?v=tft-8cdaade473"></script>
+<script defer src="dev/js/tft/shared-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/hud.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/login.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/test.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/menu.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/gifts-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/slots.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/gacha-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/run-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/social-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/ranking-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/mod-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/goals-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/save-transfer.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/settings-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/layout-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/support-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/ui/news-ui.js?v=tft-8cdaade473"></script>
+<script defer src="js/core/updater.js?v=tft-8cdaade473"></script>
 <!-- juego -->
-<script defer src="js/game.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/boss-rush-rules.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/groudon.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/regis.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/eon.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/boss-rush-bars.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/kyogre.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/rayquaza.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/major-cadence.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/jirachi.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/boss-rush-arena.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/boss-rush-sprites.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/groudon-fx.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/regis-fx.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/eon-fx.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/kyogre-fx.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/rayquaza-fx.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/jirachi-fx.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/tyranitar.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/boss-rush-preview.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/js/tft/engine.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/js/tft/visuals.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/js/tft/ui.js?v=tft-0bfce11ef3"></script>
-<script defer src="dev/boss-rush-boot.js?v=tft-0bfce11ef3"></script>
+<script defer src="js/game.js?v=tft-8cdaade473"></script>
+<script defer src="dev/boss-rush-rules.js?v=tft-8cdaade473"></script>
+<script defer src="dev/groudon.js?v=tft-8cdaade473"></script>
+<script defer src="dev/regis.js?v=tft-8cdaade473"></script>
+<script defer src="dev/eon.js?v=tft-8cdaade473"></script>
+<script defer src="dev/boss-rush-bars.js?v=tft-8cdaade473"></script>
+<script defer src="dev/kyogre.js?v=tft-8cdaade473"></script>
+<script defer src="dev/rayquaza.js?v=tft-8cdaade473"></script>
+<script defer src="dev/major-cadence.js?v=tft-8cdaade473"></script>
+<script defer src="dev/jirachi.js?v=tft-8cdaade473"></script>
+<script defer src="dev/boss-rush-arena.js?v=tft-8cdaade473"></script>
+<script defer src="dev/boss-rush-sprites.js?v=tft-8cdaade473"></script>
+<script defer src="dev/groudon-fx.js?v=tft-8cdaade473"></script>
+<script defer src="dev/regis-fx.js?v=tft-8cdaade473"></script>
+<script defer src="dev/eon-fx.js?v=tft-8cdaade473"></script>
+<script defer src="dev/kyogre-fx.js?v=tft-8cdaade473"></script>
+<script defer src="dev/rayquaza-fx.js?v=tft-8cdaade473"></script>
+<script defer src="dev/jirachi-fx.js?v=tft-8cdaade473"></script>
+<script defer src="dev/tyranitar.js?v=tft-8cdaade473"></script>
+<script defer src="dev/boss-rush-preview.js?v=tft-8cdaade473"></script>
+<script defer src="dev/js/tft/engine.js?v=tft-8cdaade473"></script>
+<script defer src="dev/js/tft/visuals.js?v=tft-8cdaade473"></script>
+<script defer src="dev/js/tft/ui.js?v=tft-8cdaade473"></script>
+<script defer src="dev/boss-rush-boot.js?v=tft-8cdaade473"></script>
 <!-- scripts:end -->
 </body>
 </html>

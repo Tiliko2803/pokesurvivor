@@ -87,6 +87,34 @@ async function checkBoard(page,viewport){
    assert.match(await page.locator('#tft-report-title').innerText(),/acumulado/);
    await page.locator('#tft-next').click();
    assert.equal(await page.evaluate(()=>G.TFTUI.state.round),2);await checkBoard(page,viewport);
+   // Reproduce a saved final result: the recovery action must stay outside tabs/details.
+   for(const terminal of ['victory','defeat']){
+    await page.evaluate(terminal=>{
+     const s=G.TFTUI.state;s.round=terminal==='victory'?12:1;s.life=terminal==='defeat'?1:50;s.opponentRound=0;
+     G.TFT.start(s);
+     for(const u of s.battle.units)if(u.side===(terminal==='victory'?1:0))u.hp=0;
+    },terminal);
+    await page.waitForFunction(terminal=>G.TFTUI.state.phase===terminal,terminal);
+    await page.setViewportSize(bootViewport);await page.locator('#tft-exit').click();
+    await page.evaluate(()=>document.querySelector('#scr-menu [data-go="play"]').click());await page.locator('#btn-tft').click();await page.setViewportSize(viewport);
+    assert.equal(await page.evaluate(()=>G.TFTUI.state.phase),terminal);
+    assert.equal(await page.locator('#tft-report').isVisible(),true);
+    assert.equal(await page.locator('#tft-restart').isVisible(),true);await checkBoard(page,viewport);
+    for(const tab of ['shop','team','info','scout','report']){
+     await page.locator('#tft-tab-'+tab).click();assert.equal(await page.locator('#tft-restart').isVisible(),true);
+    }
+    await page.locator('#tft-panel-toggle').click();assert.equal(await page.locator('#tft-restart').isVisible(),true);
+    await page.locator('#tft-restart').click();await page.locator('#tft-deck-panel').waitFor({state:'visible'});
+    assert.equal(await page.evaluate(()=>localStorage.getItem('ps.tft.match.v1')),null);
+    assert.equal(await page.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('ps.tft.decks.v1')))),JSON.stringify(savedDecks));
+    await page.locator('#tft-deck-start').click();
+    assert.equal(await page.evaluate(()=>G.TFTUI.state.phase),'planning');assert.equal(await page.evaluate(()=>G.TFTUI.state.round),1);
+    assert.equal(await page.evaluate(()=>G.TFTUI.state.life),50);assert.equal(await page.evaluate(()=>G.TFTUI.state.gold),10);
+    assert.equal(await page.evaluate(()=>G.TFTUI.state.units.length),0);
+    // Recruit and deploy for the next terminal scenario.
+    await page.evaluate(()=>{G.TFTUI.state.shop=[4];});await page.locator('#tft-shop [data-buy="0"]').click();
+    await page.locator('#tft-tab-team').click();await page.locator('#tft-bench [data-unit]').click();await page.locator('#tft-cells button').nth(20).click();
+   }
    assert.equal(await page.evaluate(()=>JSON.stringify(G.DB.save)),before);
    assert.equal(await page.evaluate(()=>localStorage.getItem('tft-account-sentinel')),'{"coins":54321}');
    await page.locator('#scr-tft').screenshot({path:`/workspace/scratch/tft-layout-${viewport.width}x${viewport.height}.png`});

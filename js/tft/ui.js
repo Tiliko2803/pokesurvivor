@@ -335,7 +335,7 @@ G.TFTUI = (() => {
   $('tft-return').onclick=()=>act(()=>E.place(state,selected,null));
   $('tft-fight').onclick=()=>{selected=null;act(()=>E.start(state));if(state.phase==='combat')selectPanel('info',true);};
   $('tft-next').onclick=()=>{act(()=>E.next(state));selectPanel('shop');};
-  $('tft-restart').onclick=()=>{if(!['victory','defeat'].includes(state.phase)&&!window.confirm('¿Empezar de nuevo? Se reemplazará la partida TFT guardada.'))return;state=null;try{localStorage.removeItem(MATCH_KEY);}catch(_){}editDeck();};
+  $('tft-restart').onclick=()=>{if(!['victory','defeat'].includes(state.phase)&&!window.confirm('¿Empezar de nuevo? Se reemplazará la partida TFT guardada.'))return;state=null;paused=false;quitPending=false;saveClock=0;try{localStorage.removeItem(MATCH_KEY);}catch(_){}editDeck();$('tft-deck-start').focus();};
   $('tft-pause').onclick=()=>{paused=!paused;render();};
   $('tft-speed').onclick=()=>{speed=speed===1?2:1;render();};
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&state){paused=state.phase==='combat';persist();if(active)render();}});
