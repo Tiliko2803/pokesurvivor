@@ -1,7 +1,7 @@
 /* Touch-first TFT screen. The survivor remains in its menu state. */
 G.TFTUI = (() => {
   'use strict';
-  const $=id=>document.getElementById(id),E=G.TFT;
+  const $=id=>document.getElementById(id),E=G.TFT,V=G.TFTVisuals;
   let state=null,selected=null,active=false,frame=0,last=0,paused=false,speed=1,quitPending=false;
   const DECK_KEY='ps.tft.decks.v1',MATCH_KEY='ps.tft.match.v1';
   let saveClock=0;
@@ -115,6 +115,7 @@ G.TFTUI = (() => {
     $('tft-traits').innerHTML=Object.entries(tr).sort((a,b)=>b[1].count-a[1].count).map(([t,v])=>
       `<span class="tft-trait ${v.tier?'on':''}">${TYPE()[t]} ${v.count} · ${v.tier?'Nv. '+v.tier:'requiere 2'}<small>${effects[E.EFFECTS[t]]}</small></span>`).join('')||'<span class="sub">Despliega 2 o 4 familias distintas del mismo tipo para activar sus bonos.</span>';
     syncCells();renderInfo();renderReport();renderScout();
+    V.warm(currentUnits());
     paint(0);
   }
   function renderScout() {
@@ -194,22 +195,35 @@ G.TFTUI = (() => {
     }
     const units=currentUnits(),calm=G.Settings?.get('calm');
     showEvolution();
-    if(combat)for(const e of state.battle.events) {
-      if(seenEvents.has(e))continue;seenEvents.add(e);
-      const u=units.find(u=>u.id===e.from);if(!u)continue;
-      const a=animator(`board:${u.id}`,u.dex);
-      if(e.kind==='cast')a.play('Shoot');else if(e.kind==='hit')a.play('Attack');
+    if(combat){
+      // Pick a single action per unit/pulse: a spell must not restart once for
+      // every enemy hit. Periodic burns never make the caster attack again.
+      const fresh=state.battle.events.filter(e=>{if(seenEvents.has(e))return false;seenEvents.add(e);return true;});
+      const {actions,hurt}=V.actions(fresh);
+      for(const [id,{e}] of actions){
+        const u=units.find(u=>u.id===id);if(!u||u.hp<=0)continue;
+        const key=`board:${id}`;let v=views.get(key);if(!v){v={x:e.sx??u.x,y:e.sy??u.y,dex:u.dex,deadAge:0};views.set(key,v);}
+        v.plan=V.animation(u,e);v.actionLeft=0;
+        v.actionFacing=Number.isFinite(e.tx)?G.Sprites.dirFromAngle(Math.atan2(e.ty-(e.sy??u.y),e.tx-(e.sx??u.x))):null;
+      }
+      for(const id of hurt){
+        const u=units.find(u=>u.id===id);if(!u||u.hp<=0||actions.has(id))continue;
+        const a=animator(`board:${id}`,u.dex);
+        if(!a.busy()&&G.Sprites.meta(u.dex)?.a.Hurt)a.play('Hurt',{speed:V.animationSpeed(u.dex,'Hurt',.18)});
+      }
     }
     for(const u of units) {
       const key=`board:${u.id}`,a=animator(key,u.dex);
       let v=views.get(key);if(!v||v.dex!==u.dex){v={x:u.x,y:u.y,dex:u.dex,deadAge:0};views.set(key,v);}
       const moving=Math.abs(v.x-u.x)+Math.abs(v.y-u.y)>.03;
       if(!combat||calm){v.x=u.x;v.y=u.y;}else {const k=Math.min(1,dt*14);v.x+=(u.x-v.x)*k;v.y+=(u.y-v.y)*k;}
-      if(combat&&u.hp<=0){if(v.deadAge===0)a.play('Faint');v.deadAge+=dt;if(v.deadAge>=.5)continue;}
-      if(['Idle','Walk'].includes(a.cur))a.loop(moving?'Walk':'Idle');
+      if(v.plan?.length&&v.actionLeft<=0){const step=v.plan.shift();a.play(step.name,{speed:V.animationSpeed(u.dex,step.name,step.duration)});v.actionLeft=step.duration;}
+      if(v.actionLeft>0)v.actionLeft=Math.max(0,v.actionLeft-dt);
+      if(combat&&u.hp<=0){if(v.deadAge===0)a.play('Faint',{hold:true});v.deadAge+=dt;if(v.deadAge>=.5)continue;}
+      a.loop(moving?'Walk':'Idle');
       const alpha=combat&&u.hp<=0?1-v.deadAge/.5:1;
       const target=combat&&u.hp>0?E.selectTarget(state.battle,u):null;
-      const facing=target?G.Sprites.dirFromAngle(Math.atan2(target.y-u.y,target.x-u.x)):null;
+      const facing=v.actionLeft>0&&v.actionFacing!==null?v.actionFacing:target?G.Sprites.dirFromAngle(Math.atan2(target.y-u.y,target.x-u.x)):null;
       const age=combat?state.battle.time-(state.battle.beatStarted||0):1;
       const hop=!calm&&u.hp!==0&&state.phase==='combat'&&!(u.stunUntil>state.battle.time)&&(state.battle.beat===1||state.battle.beat===3&&moving)?Math.sin(Math.PI*Math.min(1,age/.26))*11:0;
       const x=v.x*cell+50,y=v.y*cell+76-hop;
@@ -234,19 +248,15 @@ G.TFTUI = (() => {
 
     if(combat)for(const e of state.battle.events) {
       const from=units.find(u=>u.id===e.from),to=units.find(u=>u.id===e.to);if(!from)continue;
-      if(to){
-        const sx=(e.sx??from.x)*100+50,sy=(e.sy??from.y)*100+48,tx=(e.tx??to.x)*100+50,ty=(e.ty??to.y)*100+48;
-        const p=Math.max(0,Math.min(1,1-e.ttl/.45)),col=e.kind==='shield'?'#a4dcff':e.kind==='heal'?'#83ff9e':G.U.TYPE_COLOR[e.type]||'#ffde75';
-        ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=e.kind==='spell'?4:2;
-        if(['heal','shield'].includes(e.kind)){ctx.beginPath();ctx.arc(tx,ty,15+p*22,0,Math.PI*2);ctx.stroke();}
-        else {ctx.beginPath();ctx.arc(sx+(tx-sx)*p,sy+(ty-sy)*p,e.kind==='spell'?7:4,0,Math.PI*2);ctx.fill();}
-        ctx.font='bold 17px sans-serif';ctx.fillText((['heal','shield'].includes(e.kind)?'+':'−')+e.amount,tx,ty-10-p*20);
-        if(e.absorbed){ctx.font='11px sans-serif';ctx.fillStyle='#b7eaff';ctx.fillText('Escudo −'+e.absorbed,tx,ty+4);}
+      const beamCovered=state.battle.events.some(v=>v.from===e.from&&(v.kind==='beam'||v.kind==='drill'));
+      V.draw(ctx,e,units,{calm,quality:G.Settings?.fx??1,beamCovered});
+      if(to&&['hit','spell','heal','shield'].includes(e.kind)){
+        const p=V.progress(e),tx=(e.tx??to.x)*100+50,ty=(e.ty??to.y)*100+48;
+        ctx.fillStyle=e.kind==='shield'?'#a4dcff':e.kind==='heal'?'#83ff9e':'#ffde75';ctx.font='bold 17px sans-serif';ctx.textAlign='center';
+        if(G.Settings?.get('dmgNumbers')!==false)ctx.fillText((['heal','shield'].includes(e.kind)?'+':'−')+Math.round(e.amount),tx,ty-10-(calm?0:p*20));
+        if(e.absorbed){ctx.font='11px sans-serif';ctx.fillStyle='#b7eaff';ctx.fillText('Escudo −'+Math.round(e.absorbed),tx,ty+4);}
       } else if(e.kind==='cast'||e.kind==='entrance'&&state.battle.opening>0){
-        ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffdf78';ctx.fillText(e.move,from.x*100+50,from.y*100+43);
-      } else if(e.kind==='beam'||e.kind==='drill'){
-        ctx.strokeStyle=G.U.TYPE_COLOR[e.type]||'#ffe08a';ctx.lineWidth=e.kind==='beam'?14:8;
-        ctx.globalAlpha=Math.min(.7,e.ttl);ctx.beginPath();ctx.moveTo(e.sx*100+50,e.sy*100+48);ctx.lineTo(e.tx*100+50,e.ty*100+48);ctx.stroke();ctx.globalAlpha=1;
+        ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffdf78';ctx.textAlign='center';ctx.fillText(e.move,from.x*100+50,from.y*100+43);
       }
     }
     infoClock+=dt;if(state.phase==='combat'&&infoClock>=.15){infoClock=0;syncCells();renderInfo();}
@@ -275,7 +285,7 @@ G.TFTUI = (() => {
     const before=state.phase;
     if(!paused&&!quitPending&&!document.hidden)E.tick(state,dt*speed);
     saveClock+=dt;if(state.phase!==before){persist();render();}else if(saveClock>=1){saveClock=0;persist();}
-    paint(paused||quitPending?0:dt);frame=requestAnimationFrame(loop);
+    paint(paused||quitPending?0:dt*speed);frame=requestAnimationFrame(loop);
   }
   // Markup exists before these deferred scripts execute.
   const grid=$('tft-cells');

@@ -8,6 +8,7 @@ execFileSync(process.execPath,[path.join(__dirname,'build-boss-rush-preview.cjs'
 const copies={
  'js/tft/engine.js':'dev/js/tft/engine.js',
  'js/tft/ui.js':'dev/js/tft/ui.js',
+ 'js/tft/visuals.js':'dev/js/tft/visuals.js',
  'js/ui/ui.js':'dev/js/tft/shared-ui.js',
  'js/data/enemies.js':'dev/js/tft/enemies.js',
  'js/data/changelog.js':'dev/js/tft/changelog.js',

@@ -394,3 +394,10 @@ test('Excadrill mana move stuns the landing area and overlapping stuns never add
   t.stunUntil=5;ally.x=2;ally.y=2;E.cast(b,a,t);assert.equal(t.stunUntil,5,'a shorter CC cannot extend an existing longer stun');
  }
 });
+
+test('burn events identify periodic damage for animation without recasting the source',()=>{
+ const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[4,1,0,2,3],[133,1,1,2,2]]);
+ E.cast(b,a,t);for(let i=0;i<21;i++)E.tick(s,.05);
+ const dot=b.events.find(e=>e.periodic);assert.ok(dot);assert.equal(dot.from,a.id);assert.equal(dot.to,t.id);assert.equal(dot.type,'fire');assert.equal(dot.move,'Ascuas');
+ assert.equal(b.events.filter(e=>e.kind==='cast').length,0,'burn has no extra cast event');
+});
