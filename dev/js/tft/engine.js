@@ -1,7 +1,7 @@
 /* PokéSurvivor TFT alpha — isolated rules; no survivor save, coins or rankings. */
 G.TFT = (() => {
   'use strict';
-  const COLS = 6, ROWS = 6, BENCH = 8, LAST_ROUND = 12, BEAT_SECONDS = .5;
+  const COLS = 6, ROWS = 6, BENCH = 8, MAX_WAVE = 1000000, HISTORY_LIMIT = 20, BEAT_SECONDS = .5;
   // cost, role, signature move; stats/types/art come from the existing Pokédex.
   const DEFINITIONS = [
     [[1,2,3],1,'healer',['Absorber','Drenadoras','Rayo Solar']],
@@ -645,27 +645,43 @@ G.TFT = (() => {
   });
   DEFINITIONS.push(...EXPANSION.map(f=>[f.line,f.cost,f.role,f.moves]));
   const ROSTER = DEFINITIONS.map(([line,cost,role,moves]) => ({dex:line[0],line,cost,role,moves,move:moves[0]}));
+  for(const f of ROSTER)f.bossOnly=f.dex===384;
+  const PLAYABLE_ROSTER=ROSTER.filter(f=>!f.bossOnly);
+  const BOSS_DEFINITIONS=[
+    {dex:144,line:[144],cost:5,role:'mage',moves:['Rayo Hielo','Ventisca','Ventisca'],source:131,name:'Presión Glacial'},
+    {dex:145,line:[145],cost:5,role:'mage',moves:['Impactrueno','Chispazo','Trueno'],source:179,name:'Presión Eléctrica'},
+    {dex:146,line:[146],cost:5,role:'mage',moves:['Ascuas','Lanzallamas','Llamarada'],source:37,name:'Fuego Legendario'},
+    {dex:382,line:[382],cost:5,role:'tank',moves:['Pistola Agua','Hidropulso','Hidrobomba'],source:54,name:'Llovizna Ancestral'},
+    {dex:383,line:[383],cost:5,role:'tank',moves:['Lanzarrocas','Terratemblor','Terremoto'],source:74,name:'Sequía Ancestral'}
+  ];
   const BY = {};
   for(const family of ROSTER) for(const [stage,dex] of family.line.entries())
     BY[dex]={...family,dex,stage,move:family.moves[stage]};
+  for(const f of BOSS_DEFINITIONS)BY[f.dex]={...f,stage:0,move:f.moves[0],bossOnly:true};
   const evolvedDex=(dex,star)=>BY[dex].line[Math.min(star-1,BY[dex].line.length-1)];
   const moveFor=u=>BY[u.dex].moves[u.star-1];
-  const DEFAULT_DECK=[1,4,7,172,92,280,529,246,374,384];
-  function validDeck(deck) {
+  const DEFAULT_DECK=[1,4,7,172,92,280,529,246,374,661];
+  function validDeck(deck,legacy=false) {
     return Array.isArray(deck)&&deck.length===10&&new Set(deck).size===10&&
-      deck.every(d=>Number.isInteger(d)&&BY[d]?.line[0]===d);
+      deck.every(d=>Number.isInteger(d)&&ROSTER.some(f=>f.dex===d)&&(legacy||!BY[d].bossOnly));
+  }
+  function migrateDeck(deck) {
+    if(!validDeck(deck,true))return null;
+    const next=deck.filter(d=>!BY[d].bossOnly);
+    for(const d of [...DEFAULT_DECK,...PLAYABLE_ROSTER.map(f=>f.dex)])if(next.length<10&&!next.includes(d))next.push(d);
+    return next;
   }
   const XP = [0,0,0,0,6,12,20]; // cost to reach levels 4, 5, 6
   const ODDS = {3:[75,25,0,0,0],4:[50,35,15,0,0],5:[30,35,25,10,0],6:[20,25,30,20,5]};
   function create(seed = Date.now(),deck) {
     if(deck!==undefined&&!validDeck(deck))throw new Error('Elige exactamente 10 líneas distintas.');
     const s = {seed:seed>>>0,nextId:1,round:1,life:50,gold:10,level:3,xp:0,
-      deck:deck?deck.slice():ROSTER.map(p=>p.dex),history:[],effects:[],units:[],shop:[],locked:false,phase:'planning',battle:null,result:null,wins:0,streak:0};
+      deck:deck?deck.slice():PLAYABLE_ROSTER.map(p=>p.dex),recordId:String(seed>>>0),completed:0,totals:[],history:[],effects:[],units:[],shop:[],locked:false,phase:'planning',battle:null,result:null,wins:0,streak:0};
     reroll(s,true);prepareEnemy(s); return s;
   }
   function random(s) { s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0; return s.seed/4294967296; }
   function roll(s) {
-    const available=ROSTER.filter(p=>s.deck.includes(p.dex));
+    const available=PLAYABLE_ROSTER.filter(p=>s.deck.includes(p.dex));
     const weights=ODDS[s.level].map((w,i)=>available.some(p=>p.cost===i+1)?w:0);
     const sum=weights.reduce((a,b)=>a+b,0);
     let cost;
@@ -700,7 +716,7 @@ G.TFT = (() => {
   }
   function buy(s,index) {
     if(!planning(s))return false;
-    const dex=s.shop[index], def=BY[dex]; if(!def||!s.deck.includes(def.line[0])||s.gold<def.cost)return false;
+    const dex=s.shop[index], def=BY[dex]; if(!def||def.bossOnly||!s.deck.includes(def.line[0])||s.gold<def.cost)return false;
     const merges=s.units.filter(u=>u.dex===dex&&u.star===1).length>=2;
     if(s.units.filter(u=>u.pos===null).length>=BENCH&&!merges)return false;
     s.gold-=def.cost;s.shop[index]=null;addUnit(s,dex);combine(s);return true;
@@ -737,18 +753,35 @@ G.TFT = (() => {
     electric:'speed',flying:'speed',bug:'speed',water:'mana',psychic:'mana',
     grass:'regen',fairy:'regen',normal:'hp',rock:'hp',ground:'hp',steel:'armor',
     poison:'pierce',ghost:'pierce',ice:'slow'};
+  const THEMES=[
+    {name:'Enjambre',pool:[13,27,285,123,650,810]},
+    {name:'Vanguardia',pool:[32,58,60,66,298,529,443,661]},
+    {name:'Artillería',pool:[4,172,179,37,653,816,479,607]},
+    {name:'Bastión',pool:[7,194,74,821,304,597,679,884]},
+    {name:'Expedición',pool:[1,4,7,32,58,66,172,173,280,529,258,661]}
+  ];
+  const BOSS_ROTATION=[144,145,146,382,383,384];
+  function waveInfo(round) {
+    const boss=round%10===0,elite=!boss&&round%5===0,theme=THEMES[(round-1)%THEMES.length];
+    const dex=boss?BOSS_ROTATION[(Math.floor(round/10)-1)%BOSS_ROTATION.length]:null;
+    return {kind:boss?'boss':elite?'elite':'normal',name:boss?'Jefe · '+G.DEX_BY[dex].name:elite?'Oleada especial · '+theme.name:theme.name,bossDex:dex};
+  }
   function enemyTeam(s) {
-    const n=Math.min(6,2+Math.floor(s.round/2)), cap=Math.min(5,1+Math.floor(s.round/3));
-    const pool=ROSTER.filter(p=>p.cost<=cap);const units=[];
+    const info=waveInfo(s.round),boss=info.kind==='boss',elite=info.kind==='elite';
+    const n=boss?3:Math.min(6,2+Math.floor((s.round-1)/3)+(elite?1:0)),cap=Math.min(4,1+Math.floor((s.round-1)/3));
+    const theme=THEMES[(s.round-1)%THEMES.length],pool=PLAYABLE_ROSTER.filter(p=>p.cost<=cap&&theme.pool.includes(p.dex));
+    const units=[],positions=[7,9,6,10,1,3];let healers=0;
     for(let i=0;i<n;i++) {
-      const dex=s.round===LAST_ROUND&&i===0?384:pool[Math.floor(random(s)*pool.length)].dex;
-      const star=s.round>=10&&i===0?3:s.round>=5&&i<Math.floor(s.round/3)?2:1;
-      units.push({id:-(i+1),dex:evolvedDex(dex,star),star,pos:6+i});
+      const options=pool.filter(p=>healers<1||p.role!=='healer'),f=options[Math.floor(random(s)*options.length)];
+      const isBoss=boss&&i===0,dex=isBoss?info.bossDex:f.dex;
+      if(!isBoss&&f.role==='healer')healers++;
+      const star=isBoss?(s.round>=30?3:2):s.round>=9?(i<Math.floor((s.round-9)/4)?3:2):s.round>=4&&i<Math.floor((s.round-2)/2)?2:1;
+      units.push({id:-(i+1),dex:evolvedDex(dex,star),star,pos:positions[i],boss:isBoss,elite});
     }
     return units;
   }
-  // Cache once: scouting never rerolls the encounter or consumes additional RNG.
-  function prepareEnemy(s) {s.opponent=enemyTeam(s);s.opponentRound=s.round;}
+  // Cache once: scouting, shopping and formation never consume encounter RNG.
+  function prepareEnemy(s) {s.opponent=enemyTeam(s);s.opponentRound=s.round;s.encounter=waveInfo(s.round);}
   function scout(s) {return (s.opponent||[]).map(u=>({...u}));}
   const ENTRANCES={
     1:['Espesura','regen',.008,'Regenera un 0,8% de vida por segundo.'],
@@ -802,6 +835,11 @@ G.TFT = (() => {
   for(const f of EXPANSION){
     ENTRANCES[f.line[0]]=[f.entry,...f.passive];
     ACTIVE_ENTRANCES[f.line[0]]={name:f.entry,mode:'tactic',type:f.openers[0].type,range:[3,3,4],ranks:f.openers};
+  }
+  for(const f of BOSS_DEFINITIONS){
+    ENTRANCES[f.dex]=[f.name,'shield',.12,'Empieza con un escudo del 12% de su vida.'];
+    const source={144:131,145:172,146:4,382:7,383:258}[f.dex];
+    ACTIVE_ENTRANCES[f.dex]={...ACTIVE_ENTRANCES[source],name:f.name};
   }
   function entranceFor(u) {
     if(BY[u.dex].line[0]===129&&u.star===1)return {name:'Salpicadura Prudente',effect:'shield',value:.2,description:'Magikarp empieza con un escudo del 20% de su vida. Al evolucionar a Gyarados gana Mirada Intimidante y una oleada que empuja enemigos.'};
@@ -944,7 +982,7 @@ G.TFT = (() => {
         case 'slow':f.slow=Math.max(f.slow,.15*tier);break;
       }
     }
-    if(side===1) {const k=1+(round-1)*.035;f.maxHp*=k;f.attack*=k;}
+    if(side===1) {const k=1+(round-1)*.035;f.maxHp*=k*(u.boss?3:u.elite?1.18:1);f.attack*=k*(u.boss?1.15:u.elite?1.1:1);}
     if(def.line[0]===661)f.basicType='flying';
     f.hp=f.maxHp;return f;
   }
@@ -1097,6 +1135,7 @@ G.TFT = (() => {
     ]
   };
   for(const f of EXPANSION)FAMILY_MOVES[f.line[0]]=f.skills;
+  for(const f of BOSS_DEFINITIONS)FAMILY_MOVES[f.dex]=FAMILY_MOVES[f.source].map(m=>({...m}));
   const AREA_MOVES={
     'Terremoto':{type:'ground',radius:2,power:2.4,center:'self'},
     'Terratemblor':{type:'ground',radius:1,power:1.7,center:'self',slow:.2},
@@ -1186,6 +1225,7 @@ G.TFT = (() => {
   function stun(b,a,t,duration) {
     // One shared boundary: no CC can be applied to the caster or its allies.
     if(a.side===t.side||t.hp<=0||!Number.isFinite(duration)||duration<=0)return false;
+    if(t.boss)duration*=.5;
     const until=b.time+duration;
     if(until>(t.stunUntil||0)){t.stunUntil=until;t.stunSource=a.id;}
     b.events.push({kind:'stun',from:a.id,to:t.id,type:'electric',sx:a.x,sy:a.y,tx:t.x,ty:t.y,ttl:duration,life:duration});
@@ -1368,14 +1408,16 @@ G.TFT = (() => {
     const b=s.battle,won=winner===0;
     if(won) {s.wins++;s.streak=Math.max(0,s.streak)+1;} else {
       s.streak=Math.min(0,s.streak)-1;
-      s.life=Math.max(0,s.life-4-Math.floor(s.round/2)-b.units.filter(u=>u.side===1&&u.hp>0).length);
+      s.life=Math.max(0,s.life-Math.min(12,3+Math.floor(s.round/10)+b.units.filter(u=>u.side===1&&u.hp>0).length));
     }
     const interest=Math.min(5,Math.floor(s.gold/5)),bonus=Math.min(3,Math.floor(Math.abs(s.streak)/2));
-    const income=5+interest+bonus+(won?1:0);s.gold+=income;gainXP(s,2);
+    const encounterBonus=won?(waveInfo(s.round).kind==='boss'?4:waveInfo(s.round).kind==='elite'?2:0):0;
+    const income=5+interest+bonus+(won?1:0)+encounterBonus;s.gold+=income;gainXP(s,2);
     const report=b.units.map(u=>({id:u.id,dex:u.dex,star:u.star,side:u.side,damage:u.damageDone,healing:u.healingDone,shielding:u.shieldingDone,taken:u.damageTaken,blocked:u.blocked,kills:u.kills}));
-    s.result={won,draw:winner===-1,income,interest,bonus,round:s.round,report};
-    s.history.push({round:s.round,won,report});
-    s.phase=s.life<=0?'defeat':s.round>=LAST_ROUND?'victory':'result';
+    s.result={won,draw:winner===-1,income,interest,bonus,encounterBonus,round:s.round,report};
+    s.completed=(s.completed||0)+1;s.totals=aggregateReports([...(s.totals||[]),...report.filter(u=>u.side===0)]);
+    s.history.push({round:s.round,won,report});if(s.history.length>HISTORY_LIMIT)s.history.shift();
+    s.phase=s.life<=0?'defeat':'result';
   }
   function moveToward(b,a,target) {
     if(a.moveCD>0||retreat(b,a)||distance(a,target)<=a.range)return;
@@ -1438,16 +1480,17 @@ G.TFT = (() => {
     if(!alive[0]||!alive[1])finish(s,alive[0]?0:alive[1]?1:-1);
     else if(b.time>=45)finish(s,-1);
   }
-  function report(s,scope='ally') {
-    if(scope!=='match')return (s.result?.report||[]).filter(u=>u.side===(scope==='enemy'?1:0)).map(u=>({...u})).sort((a,b)=>b.damage-a.damage);
-    const rows=new Map();
-    for(const round of s.history)for(const u of round.report.filter(u=>u.side===0)){
-      const family=BY[u.dex].line[0];let row=rows.get(family);
-      if(!row){row={id:family,dex:u.dex,star:u.star,side:0,damage:0,healing:0,shielding:0,taken:0,blocked:0,kills:0};rows.set(family,row);}
+  function aggregateReports(rows) {
+    const totals=new Map();
+    for(const u of rows){const family=BY[u.dex].line[0];let row=totals.get(family);
+      if(!row){row={id:family,dex:u.dex,star:u.star,side:0,damage:0,healing:0,shielding:0,taken:0,blocked:0,kills:0};totals.set(family,row);}
       if(u.star>=row.star){row.dex=u.dex;row.star=u.star;}
       for(const field of ['damage','healing','shielding','taken','blocked','kills'])row[field]+=u[field];
-    }
-    return [...rows.values()].sort((a,b)=>b.damage-a.damage);
+    }return [...totals.values()].sort((a,b)=>b.damage-a.damage);
+  }
+  function report(s,scope='ally') {
+    if(scope!=='match')return (s.result?.report||[]).filter(u=>u.side===(scope==='enemy'?1:0)).map(u=>({...u})).sort((a,b)=>b.damage-a.damage);
+    return (s.totals?.length?s.totals:aggregateReports(s.history.flatMap(h=>h.report.filter(u=>u.side===0)))).map(u=>({...u})).sort((a,b)=>b.damage-a.damage);
   }
   function tick(s,dt) {
     if(!Number.isFinite(dt)||dt<=0)return;
@@ -1461,7 +1504,7 @@ G.TFT = (() => {
     s.round++;s.phase='planning';s.battle=null;prepareEnemy(s);
     if(!s.locked)reroll(s,true);return true;
   }
-  const SAVE_VERSION=1;
+  const SAVE_VERSION=2;
   function serialize(s) {return JSON.stringify({version:SAVE_VERSION,state:s});}
   function restore(raw) {
     try {
@@ -1471,18 +1514,18 @@ G.TFT = (() => {
       const unit=u=>u&&int(u.id,-6,100000)&&u.id!==0&&BY[u.dex]&&int(u.star,1,3)&&evolvedDex(u.dex,u.star)===u.dex&&
         (u.pos===null||int(u.pos,0,35));
       const numbers=o=>Object.values(o).every(v=>typeof v!=='number'||Number.isFinite(v)&&Math.abs(v)<1e12);
-      if(data.version!==SAVE_VERSION||!s||!numbers(s)||!validDeck(s.deck)||!int(s.round,1,LAST_ROUND)||!int(s.level,3,6)||
+      if(![1,SAVE_VERSION].includes(data.version)||!s||!numbers(s)||!validDeck(s.deck,data.version===1)||!int(s.round,1,MAX_WAVE)||!int(s.level,3,6)||
         !int(s.seed,0,4294967295)||!int(s.nextId,1,100001)||!int(s.life,0,50)||!int(s.gold,0,1000000)||!int(s.xp,0,20)||
-        s.opponentRound!==s.round||!int(s.wins,0,12)||!int(s.streak,-12,12)||typeof s.locked!=='boolean'||
-        !['planning','combat','result','victory','defeat'].includes(s.phase))return null;
+        s.opponentRound!==s.round||!int(s.wins,0,MAX_WAVE)||!int(s.streak,-MAX_WAVE,MAX_WAVE)||typeof s.locked!=='boolean'||
+        !['planning','combat','result','defeat',...(data.version===1?['victory']:[])].includes(s.phase))return null;
       if(!Array.isArray(s.units)||s.units.length>14||!s.units.every(u=>unit(u)&&u.id>0&&u.id<s.nextId&&s.deck.includes(BY[u.dex].line[0])&&(u.pos===null||u.pos>=18))||
         new Set(s.units.map(u=>u.id)).size!==s.units.length||new Set(s.units.filter(u=>u.pos!==null).map(u=>u.pos)).size!==s.units.filter(u=>u.pos!==null).length||
         s.units.filter(u=>u.pos===null).length>BENCH||s.units.filter(u=>u.pos!==null).length>s.level)return null;
       if(!Array.isArray(s.shop)||s.shop.length>5||!s.shop.every(d=>d===null||s.deck.includes(d)))return null;
       if(!Array.isArray(s.opponent)||!s.opponent.length||s.opponent.length>6||!s.opponent.every(u=>unit(u)&&u.id<0&&u.pos<18))return null;
-      const report=rows=>Array.isArray(rows)&&rows.length<=12&&rows.every(u=>BY[u.dex]&&int(u.star,1,3)&&[0,1].includes(u.side)&&['damage','healing','shielding','taken','blocked','kills'].every(k=>Number.isFinite(u[k])&&u[k]>=0&&u[k]<1e10));
-      if(!Array.isArray(s.history)||s.history.length>12||!s.history.every(h=>int(h.round,1,12)&&report(h.report)))return null;
-      if(s.result&&(!int(s.result.round,1,12)||!report(s.result.report)||!numbers(s.result)))return null;
+      const report=(rows,limit=12)=>Array.isArray(rows)&&rows.length<=limit&&rows.every(u=>BY[u.dex]&&int(u.star,1,3)&&[0,1].includes(u.side)&&['damage','healing','shielding','taken','blocked','kills'].every(k=>Number.isFinite(u[k])&&u[k]>=0&&u[k]<1e12));
+      if(!Array.isArray(s.history)||s.history.length>HISTORY_LIMIT||!s.history.every(h=>int(h.round,1,MAX_WAVE)&&report(h.report)))return null;
+      if(s.result&&(!int(s.result.round,1,MAX_WAVE)||!report(s.result.report)||!numbers(s.result)))return null;
       if(['result','victory','defeat'].includes(s.phase)&&!s.result)return null;
       if(s.battle) {
         const b=s.battle;
@@ -1498,8 +1541,16 @@ G.TFT = (() => {
         // Transient particles are expendable; never trust persisted display strings.
         b.events=[];for(const u of b.units)delete u.entrance;
       } else if(s.phase==='combat')return null;
-      s.effects=[];return s;
+      if(data.version===1){
+        s.deck=migrateDeck(s.deck);s.completed=s.history.length;s.totals=aggregateReports(s.history.flatMap(h=>h.report.filter(u=>u.side===0)));s.recordId=String(s.seed);
+        for(const u of s.units.filter(u=>BY[u.dex].bossOnly))s.gold=Math.min(1000000,s.gold+BY[u.dex].cost*3**(u.star-1));
+        s.units=s.units.filter(u=>!BY[u.dex].bossOnly);s.shop=s.shop.map(d=>d&&BY[d].bossOnly?null:d);
+        if(s.phase==='victory')s.phase='result';
+        if(s.phase==='combat'){s.phase='planning';s.battle=null;s.result=null;}
+        if(s.phase==='planning')prepareEnemy(s);
+      } else if(!int(s.completed,0,MAX_WAVE)||!report(s.totals,ROSTER.length)||typeof s.recordId!=='string'||s.recordId.length>40)return null;
+      s.encounter=waveInfo(s.round);s.effects=[];return s;
     } catch(_){return null;}
   }
-  return {hasAttackPriority,isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,LAST_ROUND,BEAT_SECONDS,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
+  return {hasAttackPriority,isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,BEAT_SECONDS,ROSTER,PLAYABLE_ROSTER,BOSS_DEFINITIONS,BY,DEFAULT_DECK,validDeck,migrateDeck,waveInfo,HISTORY_LIMIT,MAX_WAVE,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
 })();
