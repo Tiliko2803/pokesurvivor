@@ -7,8 +7,8 @@ function fixture(seed=123) {
   const E=ctx.G.TFT,s=E.create(seed);return {G:ctx.G,E,s};
 }
 function purchase(E,s,dex,n=1) {for(let i=0;i<n;i++){s.shop=[dex];assert.ok(E.buy(s,0));}}
-test('79 complete evolution families use local Pokédex and sprite assets',()=>{
-  const {G,E}=fixture();assert.equal(E.ROSTER.length,79);
+test('80 complete evolution families use local Pokédex and sprite assets',()=>{
+  const {G,E}=fixture();assert.equal(E.ROSTER.length,80);
   for(const family of E.ROSTER)for(const dex of family.line){
     assert.ok(G.DEX_BY[dex]);assert.ok(fs.existsSync(path.join(root,`assets/pokemon/${dex}/Idle.png`)));
   }
@@ -317,7 +317,7 @@ test('invalid, incompatible and incomplete snapshots are rejected safely',()=>{
  }
 });
 
-test('all 79 families have explicit entrances and executable moves at all 237 ranks',()=>{
+test('all 80 families have explicit entrances and executable moves at all 240 ranks',()=>{
  const {E}=fixture(),names=new Set();
  for(const family of E.ROSTER){
   const entry=E.entranceFor({dex:family.dex,star:1});names.add(entry.name);
@@ -333,7 +333,7 @@ test('all 79 families have explicit entrances and executable moves at all 237 ra
    assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
   }
  }
- assert.equal(names.size,79,'each family has its own named entrance');
+ assert.equal(names.size,80,'each family has its own named entrance');
 });
 test('iconic moves protect the correct allies, ignore armor and strengthen against wounded targets',()=>{
  const {E}=fixture();
@@ -461,14 +461,14 @@ test('active entry effects and CC resume without repeating damage, shields or co
 });
 
 const SECOND_WAVE=[32,173,58,60,298,285,498,650,810,821,653,728,813,816,906,909,912,215,446,304,479,597,607,679,884];
-const EXPANSION_LINES=[129,147,155,158,252,349,387,390,393,443,495,501,633,656,704,722,725,782,885,996,...SECOND_WAVE];
-test('forty-five expansion families evolve, execute friendly-safe entrances and resume all ranks',()=>{
+const EXPANSION_LINES=[129,147,155,158,252,349,387,390,393,443,495,501,633,656,704,722,725,782,885,996,661,...SECOND_WAVE];
+test('forty-six expansion families evolve, execute friendly-safe entrances and resume all ranks',()=>{
  const {E}=fixture();
  for(const family of EXPANSION_LINES)for(let star=1;star<=3;star++){
   const s=entryMatch(E,family,star),b=s.battle,a=b.units.find(u=>E.BY[u.dex].line[0]===family),ally=b.units.find(u=>u.side===a.side&&u!==a);
   assert.equal(a.dex,E.evolvedDex(family,star));assert.equal(a.star,star);
   assert.equal(ally.hp,ally.maxHp);assert.equal(ally.stunUntil,undefined);assert.equal(ally.slowUntil,undefined);assert.equal(ally.burn,undefined);
-  assert.ok(a.damageDone+a.shieldingDone>0,`${family}/${star}: actual opener effect`);
+  assert.ok(a.damageDone+a.shieldingDone>0||family===661&&ally.boostUntil>0,`${family}/${star}: actual opener effect`);
   assert.ok(b.units.every(u=>Number.isFinite(u.hp)&&Number.isFinite(u.interval)));
   if(family!==129||star!==1){assert.ok(E.entranceFor(a).active);assert.equal(b.events.filter(e=>e.kind==='entryCast'&&e.from===a.id).length,1);}
   const restored=E.restore(E.serialize(s));assert.ok(restored,`${family}/${star}: valid saved fight`);
@@ -537,4 +537,35 @@ test('Snorlax Rest heals and cleanses itself even when another ally is more inju
  const {E}=fixture(),{b,units:[a,t,ally]}=battleFor(E,[[143,3,0,2,3],[133,1,1,2,2],[1,1,0,3,3]]);
  a.hp=a.maxHp*.3;ally.hp=1;for(const u of [a,ally]){u.burn={remaining:2};u.stunUntil=2;u.slowUntil=2;}
  const hp=a.hp;E.cast(b,a,t);assert.ok(a.hp>hp);assert.equal(a.burn,null);assert.equal(a.stunUntil,0);assert.equal(a.slowUntil,0);assert.equal(ally.hp,1);assert.ok(ally.burn);assert.equal(ally.stunUntil,2);
+});
+
+test('Talonflame full-health priority wins attack order for either side, disables when hurt and returns after healing',()=>{
+ const {E}=fixture();
+ for(const side of [0,1])for(const healthy of [true,false]){
+  const {s,b,units:[foe,bird]}=battleFor(E,[[66,1,1-side,2,2],[663,3,side,2,3]]);
+  bird.galeWings=true;bird.hp=bird.maxHp-(healthy?0:1);bird.cooldown=foe.cooldown=0;b.beatCount=1;b.nextBeat=.05;
+  assert.equal(E.hasAttackPriority(bird),healthy);E.tick(s,.05);
+  const hits=b.events.filter(e=>e.kind==='hit');assert.equal(hits[0].from,healthy?bird.id:foe.id);assert.equal(hits.find(e=>e.from===bird.id).type,'flying');
+  bird.hp=bird.maxHp;assert.equal(E.hasAttackPriority(bird),true);bird.hp=0;assert.equal(E.hasAttackPriority(bird),false);
+ }
+});
+test('Alas Vendaval does not bypass range, stun or the shared attack beats',()=>{
+ const {E}=fixture();
+ for(const mode of ['move','range','stun']){
+  const {s,b,units:[foe,bird]}=battleFor(E,[[66,1,1,2,mode==='range'?0:2],[663,3,0,2,3]]);
+  bird.galeWings=true;bird.cooldown=0;bird.range=1;bird.moveCD=0;b.beatCount=mode==='move'?0:1;b.nextBeat=.05;if(mode==='stun')bird.stunUntil=1;
+  E.tick(s,.05);assert.equal(b.events.filter(e=>e.from===bird.id&&(e.kind==='hit'||e.kind==='cast')).length,0,mode);
+ }
+});
+test('Viento Afin boosts allies only, does not stack and expires; every family rank uses Flying basic damage',()=>{
+ const {E}=fixture();
+ for(let star=1;star<=3;star++){
+  const s=entryMatch(E,661,star),b=s.battle,bird=b.units.find(u=>E.BY[u.dex].line[0]===661),ally=b.units.find(u=>u.side===0&&u!==bird),foe=b.units.find(u=>u.side===1);
+  assert.equal(bird.galeWings,true);assert.equal(bird.basicType,'flying');assert.ok(E.hasAttackPriority(bird));
+  assert.equal(ally.boostPower,[.08,.12,.16][star-1]);assert.equal(foe.boostPower,undefined);assert.equal(bird.mana,0);assert.equal(bird.damageDone,0);
+  const base=E.preview(s,s.units.find(u=>u.id===ally.id)).interval;assert.ok(Math.abs(ally.interval-base/(1+ally.boostPower))<1e-9);
+  for(const u of b.units)u.cooldown=u.moveCD=99;for(let i=0;i<42;i++)E.tick(s,.05);assert.ok(Math.abs(ally.interval-base)<1e-9);
+ }
+ const s=E.create(10);s.units=[{id:1,dex:661,star:1,pos:20},{id:2,dex:663,star:3,pos:21},{id:3,dex:1,star:1,pos:22}];s.opponent=[{id:-1,dex:133,star:1,pos:0}];s.opponentRound=1;E.start(s);
+ const ally=s.battle.units.find(u=>u.id===3);assert.equal(ally.boostPower,.16);const base=E.preview(s,s.units[2]).interval;assert.ok(Math.abs(ally.interval-base/1.16)<1e-9);
 });

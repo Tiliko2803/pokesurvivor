@@ -261,3 +261,14 @@ Validación de interfaz: pasa la regresión completa en 1280×800, 390×844, 320
 El editor ordena una copia filtrada de las familias por `dex` (número de la primera etapa de la línea). El orden es numérico ascendente tanto con Todos como al filtrar por coste. No se reordena el catálogo del motor, para conservar la secuencia de RNG y el orden de los mazos guardados. Validación: dos pruebas de empaquetado y la regresión de navegador en cinco tamaños, con comprobaciones de orden en las 79 líneas y en las 21 de coste 1.
 
 Recuento por rol declarado del catálogo: 9 sanadores, 24 tanques, 20 magos y 26 luchadores. En la segunda expansión de 25: 3 sanadores (Clefable, Rillaboom, Primarina), 10 tanques (Poliwrath, Emboar, Chesnaught, Corviknight, Skeledirge, Snorlax, Aggron, Ferrothorn, Aegislash, Archaludon), 4 magos y 8 luchadores. Algunas familias de otros roles también aportan curación o escudos.
+
+
+### Talonflame: Alas Vendaval · 23 de octubre de 2026
+
+Se añade Fletchling (#661) → Fletchinder (#662) → Talonflame (#663) por 2 oro, rol luchador. El roster llega a 80 familias y 240 rangos de movimientos definidos. La familia aparece en el lugar numérico correspondiente del editor de mazos.
+
+Alas Vendaval se inspira en la prioridad Voladora con vida completa de los juegos principales, adaptada a la unidad de acción del TFT: mientras tenga toda su vida, su turno se resuelve antes que el de unidades sin prioridad dentro del mismo pulso de ataque. No adelanta el reloj, no genera ataques extra y no evita alcance, enfriamiento, muerte o aturdimiento. A igualdad de prioridad se conserva la iniciativa alternada del compás. Recibir daño a la vida desactiva la prioridad; volver al máximo la reactiva. Los escudos no alteran la condición de vida completa. La ficha distingue entrada y pasiva condicional, y muestra Prioridad activa/inactiva durante el combate.
+
+La entrada Viento Afín aumenta la cadencia de todos los aliados un 8/12/16% durante 2 segundos según estrellas. Usa los temporizadores existentes; varias fuentes conservan el mayor bono activo y renuevan la duración, sin multiplicar bonos repetidos. Los básicos de toda la familia son Voladores; Picotazo aumenta temporalmente su cadencia, Nitrocarga quema y aumenta su cadencia, Pájaro Osado daña en radio 1 alrededor del objetivo, ignora el 30% de defensa y mejora hasta un 25% contra rivales heridos. No hay salto a través de aliados ni teletransporte.
+
+Validación: 96 pruebas pasan y la regresión de interfaz completa pasa en cinco tamaños de pantalla. Casos nuevos comprueban prioridad con ambos bandos, pérdida y recuperación al curar, daño Volador de básicos, respeto de compás/alcance/CC, Viento Afín sin buff a enemigos y sin acumulación, expiración de bonos, evolución en los tres niveles, guardado determinista y final de combate.

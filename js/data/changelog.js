@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: Talonflame y Alas Vendaval', 'TFT: Talonflame and Gale Wings'], new: [
+    ['La línea Fletchling → Fletchinder → Talonflame llega por 2 oro. Alas Vendaval da prioridad dentro de los pulsos de ataque mientras conserve toda la vida; perder vida la desactiva y curarse al máximo la recupera. La ficha muestra si está activa. Es una adaptación para TFT y respeta alcance y aturdimientos.',
+     'The Fletchling → Fletchinder → Talonflame line joins for 2 gold. Gale Wings grants priority within attack beats while at full HP; losing HP disables it and healing to full restores it. The unit card shows whether it is active. This TFT adaptation respects range and stuns.'],
+    ['Al entrar, Viento Afín aumenta la cadencia aliada un 8/12/16% durante 2 segundos según las estrellas, sin acumular multiplicadores. Básicos Voladores, Picotazo, Nitrocarga con quemadura y Pájaro Osado en área completan la familia. El roster alcanza 80 familias.',
+     'On entry, Tailwind increases allied cadence by 8/12/16% for 2 seconds based on stars, without stacking multipliers. Flying basics, Peck, burning Flame Charge and area Brave Bird complete the family. The roster reaches 80 families.']
+  ] },
   { d: '2026-10-23', title: ['TFT: familias por orden de Pokédex', 'TFT: families in Pokédex order'], chg: [
     ['El editor de mazos ordena las familias por el número de Pokédex de su Pokémon inicial, también al filtrar por precio.',
      'The deck editor sorts families by the Pokédex number of their starting Pokémon, including when filtering by price.']
