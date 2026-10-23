@@ -443,56 +443,49 @@
   </div>
 </section>
 <!-- TFT: independent local alpha; no survivor economy or ranking writes. -->
-<section id="scr-tft" class="scr hidden" aria-label="TFT Evoluciones">
- <div class="tft-shell">
-  <header class="tft-header"><div><h2>TFT · Evoluciones <small>ALPHA</small></h2><p id="tft-stats"></p></div><button id="tft-exit" class="btn small ghost">Salir</button></header>
-  <div id="tft-quit" class="tft-notice hidden" role="alert">No se pudo guardar la partida. Si sales, podrías perder el progreso al cerrar la pestaña.<div class="tft-actions"><button id="tft-confirm-quit" class="btn small">Salir igualmente</button><button id="tft-cancel-quit" class="btn small gold">Seguir jugando</button></div></div>
-  <section id="tft-deck-panel" aria-label="Editor de mazos">
-   <h3>Tu mazo · 10 líneas evolutivas</h3>
-   <p class="tft-hint">Cada espacio incluye la línea completa. Tu tienda sólo ofrecerá las diez familias elegidas. Los mazos se guardan en este dispositivo.</p>
-   <div id="tft-deck-slots" class="tft-actions" aria-label="Mazos guardados"></div>
-   <div class="tft-actions"><label for="tft-deck-filter">Coste</label><select id="tft-deck-filter" class="field"><option value="0">Todos</option><option value="1">1 oro</option><option value="2">2 oro</option><option value="3">3 oro</option><option value="4">4 oro</option><option value="5">5 oro</option></select><b id="tft-deck-count" role="status" aria-live="polite"></b></div>
-   <div id="tft-deck-list" role="group" aria-label="Líneas disponibles"></div>
-   <p id="tft-deck-status" role="status"></p>
-   <div class="tft-actions"><button id="tft-deck-save" class="btn">Guardar mazo</button><button id="tft-deck-start" class="btn gold">Jugar con este mazo</button></div>
-  </section>
-  <div id="tft-match" class="hidden">
-   <p id="tft-save-status" class="sub" role="status">Guardado automático en este dispositivo.</p>
-   <details class="tft-rules"><summary id="tft-current-deck">Mi mazo</summary><p id="tft-deck-summary"></p></details>
-  <div class="tft-layout">
-   <main class="tft-arena"><div class="tft-actions"><b id="tft-phase"></b><span id="tft-clock"></span><button id="tft-pause" class="btn small">Pausar</button><button id="tft-speed" class="btn small ghost">Velocidad ×1</button></div>
-    <div id="tft-beats" class="tft-beats" aria-label="Compás: salto, ataque, movimiento, ataque" data-beat="0"><span data-pulse="1"><b>1</b> Salto</span><span data-pulse="2"><b>2</b> Ataque</span><span data-pulse="3"><b>3</b> Paso</span><span data-pulse="4"><b>4</b> Ataque</span></div>
-    <div class="tft-board-wrap"><canvas id="tft-board" width="600" height="600" aria-hidden="true"></canvas><div id="tft-cells" role="group" aria-label="Tablero de seis por seis"></div></div>
-    <div id="tft-entrances" class="tft-entrances hidden" role="status" aria-live="polite"></div>
-    <div id="tft-evolution" role="status" aria-live="polite" class="hidden"></div>
-    <p id="tft-help" class="tft-hint"></p>
-    <div class="tft-actions"><button id="tft-fight" class="btn gold">¡Combatir!</button><button id="tft-next" class="btn gold hidden">Siguiente ronda</button><button id="tft-restart" class="btn gold hidden">Nueva partida</button><button id="tft-return" class="btn small">Al banquillo</button><button id="tft-sell" class="btn small">Vender seleccionado</button></div>
-    <p id="tft-result" role="status" aria-live="polite"></p>
-    <details id="tft-report" class="tft-report hidden"><summary id="tft-report-title">Informe de combate</summary>
-     <div class="tft-actions" aria-label="Equipo del informe"><button class="btn small" data-report="ally" aria-pressed="true">Tu equipo</button><button class="btn small" data-report="enemy" aria-pressed="false">Rival</button><button class="btn small" data-report="match" aria-pressed="false">Acumulado</button></div>
-     <p id="tft-report-notes"></p><div class="tft-report-scroll"><table><thead><tr><th>Unidad</th><th>Daño</th><th>Curación</th><th>Escudo dado</th><th>Bloqueado</th></tr></thead><tbody id="tft-report-rows"></tbody></table></div>
-     <p class="sub">Daño y curación efectivos, sin contar excesos. Escudo dado es protección concedida; Bloqueado es daño que absorbió. El acumulado agrupa tu equipo por línea evolutiva.</p>
-    </details>
-   </main>
-   <aside class="tft-management"><h3 id="tft-bench-count">Banquillo</h3><div id="tft-bench" role="group" aria-label="Banquillo"></div>
-    <section id="tft-scout" class="tft-unit-info"><h3>Próximo rival</h3><div id="tft-scout-list" class="tft-actions"></div><p id="tft-scout-notes"></p></section>
-    <h3>Tienda</h3><div id="tft-shop" role="group" aria-label="Tienda de Pokémon"></div>
-    <div class="tft-actions"><button id="tft-reroll" class="btn small">Renovar · 2 oro</button><button id="tft-lock" class="btn small" aria-pressed="false">Bloquear tienda</button><button id="tft-xp" class="btn small">Comprar EXP</button></div>
-    <section id="tft-unit-info" class="tft-unit-info" aria-label="Ficha de unidad"><p>Toca una unidad para ver su ficha.</p></section>
-    <h3>Sinergias del equipo</h3><div id="tft-traits"></div>
-    <details class="tft-rules"><summary>Cómo jugar y evolucionar</summary>
-     <p>Combate individual contra IA durante 12 rondas. Empiezas con 50 PV, 10 de oro y 3 plazas. Despliega en las tres filas azules; la fila cercana al rival es la primera línea.</p>
-     <p>3 copias ★ → una ★★ y evolución. 3 copias ★★ → una ★★★ y evolución final. Ejemplo: Charmander → Charmeleon → Charizard. Las familias de dos etapas potencian su forma final en ★★★. Eevee evoluciona a Vaporeon en esta alpha.</p>
-     <p>Los tipos, el sprite y el movimiento cambian al evolucionar. Las 34 familias tienen una habilidad de entrada propia y movimientos definidos para sus tres niveles. Los Pokémon icónicos tienen efectos especiales como rayos perforantes, curación con limpieza, protección de equipo, remates y mejoras temporales. Toca cualquier aliado o rival para consultar su habilidad y su momento de activación.</p>
-     <p>Sinergias: 2/4 familias distintas de un tipo activan los bonos indicados para los miembros de ese tipo. Las copias de una familia no suman más. Se conservan las afinidades de tipos del Survivor.</p>
-     <p>Tras cada ronda: 5 de oro, +1 por victoria, +1 por cada 5 ahorrados (máximo 5; se alcanza con 25 de oro) y bonos de racha cada 2 rondas (máximo 3). Recibes 2 EXP gratis; comprar 4 EXP cuesta 4 de oro. Nivel máximo 6. Renovar cuesta 2; bloquear conserva la tienda.</p>
-     <p>Los equipos se curan entre rondas. Perder resta PV; agotar los 45 segundos cuenta como derrota. Supera la ronda 12 con vida para completar el desafío. Terremoto y otros ataques de área golpean a los enemigos de las casillas indicadas; no dañan a aliados. Al terminar cada ronda puedes comparar daño, curación y escudos de ambos equipos. El combate sigue un compás común: 1 salto y avance, 2 ataque, 3 movimiento, 4 ataque. Cada pulso dura medio segundo. La velocidad de ataque aumenta potencia y maná por golpe; no añade golpes fuera de compás. Pausa o usa ×2 durante el combate.</p>
-     <p>Alpha local: la partida y los tres mazos se guardan automáticamente en este dispositivo. Al regresar, un combate se reanuda en pausa. Si el navegador bloquea el guardado se muestra un aviso. Las habilidades de entrada se activan una vez antes del primer pulso; sus efectos son adaptaciones para TFT. Los movimientos se activan con 100 de maná. Consulta la formación rival antes de combatir; no cambia al comprar o recolocar unidades. La IA adapta comportamientos del Survivor: distancia retrocede, asaltante busca la retaguardia y guardián escuda al aliado más vulnerable. El oro y las unidades de TFT son independientes de tu cuenta y colección. Multijugador, objetos y recompensas de cuenta pendientes.</p>
-    </details>
-   </aside>
-  </div>
-  </div><!-- tft-match -->
- </div>
+<section aria-label="TFT Evoluciones" class="scr hidden" id="scr-tft">
+<div class="tft-shell">
+<header class="tft-header"><div><h2>TFT · Evoluciones <small>ALPHA</small></h2><p id="tft-stats"></p></div><button class="btn small ghost" id="tft-exit">Salir</button></header>
+<div class="tft-notice hidden" id="tft-quit" role="alert">No se pudo guardar la partida. Si sales, podrías perder el progreso al cerrar la pestaña.<div class="tft-actions"><button class="btn small" id="tft-confirm-quit">Salir igualmente</button><button class="btn small gold" id="tft-cancel-quit">Seguir jugando</button></div></div>
+<section aria-label="Editor de mazos" id="tft-deck-panel">
+<h3>Tu mazo · 10 líneas evolutivas</h3>
+<p class="tft-hint">Cada espacio incluye la línea completa. Tu tienda sólo ofrecerá las diez familias elegidas. Los mazos se guardan en este dispositivo.</p>
+<div aria-label="Mazos guardados" class="tft-actions" id="tft-deck-slots"></div>
+<div class="tft-actions"><label for="tft-deck-filter">Coste</label><select class="field" id="tft-deck-filter"><option value="0">Todos</option><option value="1">1 oro</option><option value="2">2 oro</option><option value="3">3 oro</option><option value="4">4 oro</option><option value="5">5 oro</option></select><b aria-live="polite" id="tft-deck-count" role="status"></b></div>
+<div aria-label="Líneas disponibles" id="tft-deck-list" role="group"></div>
+<p id="tft-deck-status" role="status"></p>
+<div class="tft-actions"><button class="btn" id="tft-deck-save">Guardar mazo</button><button class="btn gold" id="tft-deck-start">Jugar con este mazo</button></div>
+</section>
+<div class="hidden" id="tft-match">
+
+
+<div class="tft-layout">
+<main class="tft-arena"><div class="tft-actions tft-toolbar"><b id="tft-phase"></b><span id="tft-clock"></span><button class="btn small" id="tft-pause">Pausar</button><button class="btn small ghost" id="tft-speed">Velocidad ×1</button></div>
+<div aria-label="Compás: salto, ataque, movimiento, ataque" class="tft-beats" data-beat="0" id="tft-beats"><span data-pulse="1"><b>1</b> Salto</span><span data-pulse="2"><b>2</b> Ataque</span><span data-pulse="3"><b>3</b> Paso</span><span data-pulse="4"><b>4</b> Ataque</span></div>
+<div class="tft-board-wrap"><canvas aria-hidden="true" height="600" id="tft-board" width="600"></canvas><div aria-label="Tablero de seis por seis" id="tft-cells" role="group"></div><div class="tft-board-overlay"><div aria-live="polite" class="tft-entrances hidden" id="tft-entrances" role="status"></div><div aria-live="polite" class="hidden" id="tft-evolution" role="status"></div></div></div>
+
+
+<p class="tft-hint" id="tft-help"></p>
+<div class="tft-actions tft-primary"><button class="btn gold" id="tft-fight">¡Combatir!</button><button class="btn gold hidden" id="tft-next">Siguiente ronda</button></div>
+
+
+</main>
+<aside class="tft-management"><nav aria-label="Paneles de TFT" class="tft-tabs" role="tablist"><button aria-controls="tft-pane-shop" aria-selected="true" class="tft-tab" data-panel="shop" id="tft-tab-shop" role="tab" tabindex="0" type="button">Tienda</button><button aria-controls="tft-pane-team" aria-selected="false" class="tft-tab" data-panel="team" id="tft-tab-team" role="tab" tabindex="-1" type="button">Equipo</button><button aria-controls="tft-pane-info" aria-selected="false" class="tft-tab" data-panel="info" id="tft-tab-info" role="tab" tabindex="-1" type="button">Ficha</button><button aria-controls="tft-pane-scout" aria-selected="false" class="tft-tab" data-panel="scout" id="tft-tab-scout" role="tab" tabindex="-1" type="button">Rival</button><button aria-controls="tft-pane-report" aria-selected="false" class="tft-tab" data-panel="report" id="tft-tab-report" role="tab" tabindex="-1" type="button">Informe</button></nav><button aria-controls="tft-panel-body" aria-expanded="true" class="btn small ghost tft-panel-toggle" id="tft-panel-toggle" type="button">Ocultar panel</button><div class="tft-panel-body" id="tft-panel-body"><section aria-labelledby="tft-tab-shop" class="tft-pane" id="tft-pane-shop" role="tabpanel"><h3>Recluta tu equipo</h3><div aria-label="Tienda de Pokémon" id="tft-shop" role="group"></div><div class="tft-actions"><button class="btn small" id="tft-reroll">Renovar · 2 oro</button><button aria-pressed="false" class="btn small" id="tft-lock">Bloquear tienda</button><button class="btn small" id="tft-xp">Comprar EXP</button></div></section><section aria-labelledby="tft-tab-team" class="tft-pane hidden" id="tft-pane-team" role="tabpanel"><h3 id="tft-bench-count">Banquillo</h3><div aria-label="Banquillo" id="tft-bench" role="group"></div><div class="tft-actions tft-unit-actions"><button class="btn small" id="tft-return">Al banquillo</button><button class="btn small" id="tft-sell">Vender seleccionado</button></div><h3>Sinergias</h3><div id="tft-traits"></div><details class="tft-rules"><summary id="tft-current-deck">Mi mazo</summary><p id="tft-deck-summary"></p></details><p class="sub" id="tft-save-status" role="status">Guardado automático en este dispositivo.</p><details class="tft-rules"><summary>Opciones y reglas</summary><button class="btn gold hidden" id="tft-restart">Nueva partida</button><details class="tft-rules"><summary>Cómo jugar y evolucionar</summary>
+<p>Combate individual contra IA durante 12 rondas. Empiezas con 50 PV, 10 de oro y 3 plazas. Despliega en las tres filas azules; la fila cercana al rival es la primera línea.</p>
+<p>3 copias ★ → una ★★ y evolución. 3 copias ★★ → una ★★★ y evolución final. Ejemplo: Charmander → Charmeleon → Charizard. Las familias de dos etapas potencian su forma final en ★★★. Eevee evoluciona a Vaporeon en esta alpha.</p>
+<p>Los tipos, el sprite y el movimiento cambian al evolucionar. Las 34 familias tienen una habilidad de entrada propia y movimientos definidos para sus tres niveles. Los Pokémon icónicos tienen efectos especiales como rayos perforantes, curación con limpieza, protección de equipo, remates y mejoras temporales. Toca cualquier aliado o rival para consultar su habilidad y su momento de activación.</p>
+<p>Sinergias: 2/4 familias distintas de un tipo activan los bonos indicados para los miembros de ese tipo. Las copias de una familia no suman más. Se conservan las afinidades de tipos del Survivor.</p>
+<p>Tras cada ronda: 5 de oro, +1 por victoria, +1 por cada 5 ahorrados (máximo 5; se alcanza con 25 de oro) y bonos de racha cada 2 rondas (máximo 3). Recibes 2 EXP gratis; comprar 4 EXP cuesta 4 de oro. Nivel máximo 6. Renovar cuesta 2; bloquear conserva la tienda.</p>
+<p>Los equipos se curan entre rondas. Perder resta PV; agotar los 45 segundos cuenta como derrota. Supera la ronda 12 con vida para completar el desafío. Terremoto y otros ataques de área golpean a los enemigos de las casillas indicadas; no dañan a aliados. Al terminar cada ronda puedes comparar daño, curación y escudos de ambos equipos. El combate sigue un compás común: 1 salto y avance, 2 ataque, 3 movimiento, 4 ataque. Cada pulso dura medio segundo. La velocidad de ataque aumenta potencia y maná por golpe; no añade golpes fuera de compás. Pausa o usa ×2 durante el combate.</p>
+<p>Alpha local: la partida y los tres mazos se guardan automáticamente en este dispositivo. Al regresar, un combate se reanuda en pausa. Si el navegador bloquea el guardado se muestra un aviso. Las habilidades de entrada se activan una vez antes del primer pulso; sus efectos son adaptaciones para TFT. Los movimientos se activan con 100 de maná. Consulta la formación rival antes de combatir; no cambia al comprar o recolocar unidades. La IA adapta comportamientos del Survivor: distancia retrocede, asaltante busca la retaguardia y guardián escuda al aliado más vulnerable. El oro y las unidades de TFT son independientes de tu cuenta y colección. Multijugador, objetos y recompensas de cuenta pendientes.</p>
+</details></details></section><section aria-labelledby="tft-tab-info" class="tft-pane hidden" id="tft-pane-info" role="tabpanel"><section aria-label="Ficha de unidad" class="tft-unit-info" id="tft-unit-info"><p>Toca una unidad para ver su ficha.</p></section><p class="sub">Para colocar, vender o devolver una unidad, abre Equipo.</p></section><section aria-labelledby="tft-tab-scout" class="tft-pane hidden" id="tft-pane-scout" role="tabpanel"><section class="tft-unit-info" id="tft-scout"><h3>Próximo rival</h3><div class="tft-actions" id="tft-scout-list"></div><p id="tft-scout-notes"></p></section><p class="sub hidden" id="tft-scout-unavailable">Durante el combate, toca un rival del tablero para consultar su ficha.</p></section><section aria-labelledby="tft-tab-report" class="tft-pane hidden" id="tft-pane-report" role="tabpanel"><p aria-live="polite" id="tft-result" role="status"></p><details class="tft-report hidden" id="tft-report"><summary id="tft-report-title">Informe de combate</summary>
+<div aria-label="Equipo del informe" class="tft-actions"><button aria-pressed="true" class="btn small" data-report="ally">Tu equipo</button><button aria-pressed="false" class="btn small" data-report="enemy">Rival</button><button aria-pressed="false" class="btn small" data-report="match">Acumulado</button></div>
+<p id="tft-report-notes"></p><div class="tft-report-scroll"><table><thead><tr><th>Unidad</th><th>Daño</th><th>Curación</th><th>Escudo dado</th><th>Bloqueado</th></tr></thead><tbody id="tft-report-rows"></tbody></table></div>
+<p class="sub">Daño y curación efectivos, sin contar excesos. Escudo dado es protección concedida; Bloqueado es daño que absorbió. El acumulado agrupa tu equipo por línea evolutiva.</p>
+</details><p class="sub" id="tft-report-empty">El informe aparecerá al terminar la primera ronda.</p></section></div></aside>
+</div>
+</div><!-- tft-match -->
+</div>
 </section>
 <section id="scr-challenges" class="scr dim hidden">
   <div class="box challenge-box">

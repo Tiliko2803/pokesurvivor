@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: tablero siempre visible', 'TFT: keep the board in view'], chg: [
+    ['Nueva disposición de TFT: tablero fijo y paneles de Tienda, Equipo, Ficha, Rival e Informe con desplazamiento independiente. En vertical los paneles van debajo y en horizontal al lado. Puedes ocultarlos para despejar el tablero.',
+     'New TFT layout: a fixed board with independently scrolling Shop, Team, Unit, Opponent and Report panels. Panels sit below in portrait and beside the board in landscape. Hide them for a clearer arena.'],
+    ['Durante el combate los paneles se recogen; tocar una unidad abre su ficha. El informe aparece al acabar la ronda. Avisos de evolución y habilidades de entrada quedan sobre el tablero sin mover los controles.',
+     'Panels collapse during combat; tapping a unit opens its card. The report appears at round end. Evolution and entrance notices overlay the board without shifting the controls.']
+  ] },
   { d: '2026-10-23', title: ['TFT: animaciones del Survivor', 'TFT: Survivor attack animations'], chg: [
     ['TFT reutiliza los sprites pixel art de ataque del Survivor: llamas, burbujas, electricidad, hielo, garras, impactos, curaciones y meteoros. Rayos y perforaciones tienen estelas; las áreas conservan las casillas afectadas.',
      'TFT reuses Survivor pixel-art attack sprites: flames, bubbles, electricity, ice, claws, impacts, healing and meteors. Beams and drills have trails; areas retain their affected-cell highlights.'],
