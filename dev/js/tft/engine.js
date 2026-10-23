@@ -630,6 +630,19 @@ G.TFT = (() => {
       ]
     }
   );
+  EXPANSION.push({line:[661,662,663],cost:2,role:'fighter',moves:['Picotazo','Nitrocarga','Pájaro Osado'],
+    entry:'Alas Vendaval',passive:['gale',0,'Con la vida completa actúa antes que las unidades sin prioridad dentro de cada pulso de ataque. Perder vida desactiva la prioridad; curarse al máximo la recupera. Sus básicos son de tipo Volador.'],
+    skills:[
+      {type:'flying',power:2.1,text:'Picotazo golpea a un enemigo con daño Volador y aumenta un 10% su cadencia durante 2 segundos.',boost:.1},
+      {type:'fire',power:2.4,text:'Nitrocarga golpea y quema al objetivo durante 3 segundos con un 15% del ataque por segundo; aumenta un 15% su cadencia durante 2 segundos.',burn:.15,boost:.15},
+      {type:'flying',power:2.8,text:'Pájaro Osado golpea al objetivo y a los enemigos a 1 casilla de él, ignora un 30% de defensa y aumenta el daño hasta un 25% según la vida perdida de cada enemigo.',shape:'area',radius:1,center:'target',pierce:.3,execute:.25}
+    ],
+    openers:[
+      {type:'flying',power:0,text:'Viento Afín aumenta un 8% la cadencia de todos los aliados durante 2 segundos, sin acumular multiplicadores.',allyBoost:.08,friends:6},
+      {type:'flying',power:0,text:'Viento Afín aumenta un 12% la cadencia de todos los aliados durante 2 segundos, sin acumular multiplicadores.',allyBoost:.12,friends:6},
+      {type:'flying',power:0,text:'Viento Afín aumenta un 16% la cadencia de todos los aliados durante 2 segundos, sin acumular multiplicadores.',allyBoost:.16,friends:6}
+    ]
+  });
   DEFINITIONS.push(...EXPANSION.map(f=>[f.line,f.cost,f.role,f.moves]));
   const ROSTER = DEFINITIONS.map(([line,cost,role,moves]) => ({dex:line[0],line,cost,role,moves,move:moves[0]}));
   const BY = {};
@@ -814,6 +827,7 @@ G.TFT = (() => {
       else if(e.effect==='regen')a.regen+=e.value;
       else if(e.effect==='pierce')a.pierce+=e.value;
       else if(e.effect==='thorns')a.thorns=e.value;
+      else if(e.effect==='gale')a.galeWings=true;
       else if(e.effect==='intimidate'&&!intimidated.has(a.side)) {
         intimidated.add(a.side);for(const foe of b.units.filter(u=>u.side!==a.side))foe.attack*=1-e.value;
       }
@@ -931,6 +945,7 @@ G.TFT = (() => {
       }
     }
     if(side===1) {const k=1+(round-1)*.035;f.maxHp*=k;f.attack*=k;}
+    if(def.line[0]===661)f.basicType='flying';
     f.hp=f.maxHp;return f;
   }
   const SIGNATURES={
@@ -1283,6 +1298,12 @@ G.TFT = (() => {
     }
     return true;
   }
+  function boostCadence(b,a,power) {
+    const active=a.boostUntil>b.time;
+    if(active)a.interval*=1+a.boostPower;
+    a.boostPower=Math.max(active?a.boostPower:0,power);
+    a.interval/=1+a.boostPower;a.boostUntil=Math.max(active?a.boostUntil:0,b.time+2);
+  }
   function familyCast(b,a,target,override) {
     const m=override||FAMILY_MOVES[BY[a.dex].line[0]]?.[a.star-1];if(!m)return false;
     const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0);
@@ -1321,9 +1342,10 @@ G.TFT = (() => {
       if(m.drain)heal(b,a,ally,total*m.drain/friends.length);
       if(m.friendShield)shield(b,a,ally,ally.maxHp*m.friendShield);
       if(m.allyMana)ally.mana=Math.min(100,ally.mana+m.allyMana);
+      if(m.allyBoost)boostCadence(b,ally,m.allyBoost);
       if(m.cleanse){ally.burn=null;ally.slowUntil=0;ally.stunUntil=0;}
     }
-    if(m.boost){if(a.boostUntil>b.time)a.interval*=1+a.boostPower;a.boostPower=m.boost;a.interval/=1+a.boostPower;a.boostUntil=b.time+2;}
+    if(m.boost)boostCadence(b,a,m.boost);
     return true;
   }
   function cast(b,a,target) {
@@ -1369,6 +1391,7 @@ G.TFT = (() => {
     }
     if(next){a.x=next.x;a.y=next.y;}a.moveCD=.3;
   }
+  function hasAttackPriority(a) {return !!a.galeWings&&a.hp>0&&a.hp>=a.maxHp;}
   function pulse(b) {
     b.beatCount=(b.beatCount||0)+1;b.beat=(b.beatCount-1)%4+1;b.beatStarted=b.time;
     // Both teams share one clock. Alternate cell/attack initiative each bar.
@@ -1379,14 +1402,15 @@ G.TFT = (() => {
     }
     // Choose attacks from the same pulse's initial formation, then resolve in order.
     const attacks=order.filter(a=>a.hp>0&&!isStunned(b,a)&&a.cooldown<=0)
-      .map(a=>({a,target:selectTarget(b,a)})).filter(p=>p.target&&distance(p.a,p.target)<=p.a.range);
+      .map(a=>({a,target:selectTarget(b,a)})).filter(p=>p.target&&distance(p.a,p.target)<=p.a.range)
+      .sort((p,q)=>Number(hasAttackPriority(q.a))-Number(hasAttackPriority(p.a)));
     for(const {a,target:chosen} of attacks) {
       if(a.hp<=0||isStunned(b,a))continue;
       const target=chosen.hp>0?chosen:selectTarget(b,a);if(!target||distance(a,target)>a.range)continue;
       // One basic strike per attack beat; speed changes strike power/mana instead
       // of creating off-beat attacks. Slow affects those same values temporarily.
       const rate=(2*BEAT_SECONDS)/a.interval*(a.slowUntil>b.time?1-a.slowPower:1);
-      hit(b,a,target,a.attack*rate);a.mana=Math.min(100,a.mana+(25+a.manaGain)*rate);
+      hit(b,a,target,a.attack*rate,false,a.basicType||a.types[0]);a.mana=Math.min(100,a.mana+(25+a.manaGain)*rate);
       a.cooldown=.25;
       if(a.hp>0&&a.mana>=100) {
         const alive=target.hp>0?target:selectTarget(b,a);
@@ -1477,5 +1501,5 @@ G.TFT = (() => {
       s.effects=[];return s;
     } catch(_){return null;}
   }
-  return {isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,LAST_ROUND,BEAT_SECONDS,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
+  return {hasAttackPriority,isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,LAST_ROUND,BEAT_SECONDS,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
 })();
