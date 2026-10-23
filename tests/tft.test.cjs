@@ -315,3 +315,48 @@ test('invalid, incompatible and incomplete snapshots are rejected safely',()=>{
  const copy=JSON.parse(JSON.stringify(data));change(copy.state);assert.equal(E.restore(JSON.stringify(copy)),null);
  }
 });
+
+test('all 34 families have explicit entrances and executable moves at all 102 ranks',()=>{
+ const {E}=fixture(),names=new Set();
+ for(const family of E.ROSTER){
+  const entry=E.entranceFor({dex:family.dex,star:1});names.add(entry.name);
+  assert.ok(!['Guardia Inicial','Aura de Apoyo','Concentración','Determinación'].includes(entry.name));
+  for(let star=1;star<=3;star++){
+   const dex=E.evolvedDex(family.dex,star),ability=E.abilityFor({dex,star});assert.equal(ability.signature,true);assert.ok(ability.description.length>20);
+   const {b,units:[a,t,other,ally]}=battleFor(E,[[dex,star,0,2,3],[133,1,1,2,2],[133,1,1,3,2],[7,1,0,3,3]]);
+   a.hp=a.maxHp/2;ally.hp=ally.maxHp/3;const allyHP=ally.hp;a.mana=100;
+   E.cast(b,a,t);
+   assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0,`${family.dex} rank ${star} has a real effect`);
+   assert.ok(ally.hp>=allyHP,'never damages its ally');assert.ok(b.units.every(u=>Number.isFinite(u.hp)&&u.hp>=0&&u.hp<=u.maxHp&&Number.isFinite(u.mana)));
+   assert.ok(a.mana>=0&&a.mana<=100);assert.ok(a.shield<=a.maxHp*.5);
+   assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
+  }
+ }
+ assert.equal(names.size,34,'each family has its own named entrance');
+});
+test('iconic moves protect the correct allies, ignore armor and strengthen against wounded targets',()=>{
+ const {E}=fixture();
+ {const {b,units:[a,t,ally]}=battleFor(E,[[384,3,0,2,3],[133,1,1,2,2],[7,1,0,3,3]]);E.cast(b,a,t);assert.ok(ally.shield>0);assert.ok(t.stunUntil>0);assert.equal(t.shield,0);}
+ {const {b,units:[a,t,ally]}=battleFor(E,[[260,3,0,2,3],[133,1,1,2,2],[7,1,0,3,3]]);E.cast(b,a,t);assert.ok(t.slowUntil>0);assert.ok(ally.shield>0);assert.equal(ally.slowUntil,undefined);}
+ {const {b,units:[a,t,ally]}=battleFor(E,[[131,3,0,2,3],[133,1,1,2,2],[7,1,0,3,3]]);E.cast(b,a,t);assert.ok(ally.shield>0);assert.ok(t.slowPower===.25);}
+ {const damage=hp=>{const {b,units:[a,t]}=battleFor(E,[[448,3,0,2,3],[133,1,1,2,2]]);t.hp=hp;t.armor=100;E.cast(b,a,t);assert.equal(a.pierce,0);assert.ok(a.shield>0);return a.damageDone;};assert.ok(damage(4000)>damage(10000));}
+ {const {b,units:[a,t]}=battleFor(E,[[958,2,0,2,3],[133,1,1,2,2]]);t.shield=1000;E.cast(b,a,t);assert.ok(t.shield<=500);assert.ok(t.shield>=0);}
+ {const {s,b,units:[a,t]}=battleFor(E,[[373,3,0,2,3],[133,1,1,2,2]]);const initial=a.interval;E.cast(b,a,t);const boosted=a.interval;E.cast(b,a,t);assert.equal(a.interval,boosted,'refresh cannot stack permanent speed');for(let i=0;i<42;i++)E.tick(s,.05);assert.ok(Math.abs(a.interval-initial)<1e-9);}
+});
+test('new support moves cleanse, share mana, drain actual HP and never spend a heal as an attack',()=>{
+ const {E}=fixture();
+ {const {b,units:[a,t,ally]}=battleFor(E,[[242,3,0,2,3],[133,1,1,2,2],[7,1,0,3,3]]);ally.hp/=2;ally.burn={};ally.stunUntil=10;const hp=t.hp;E.cast(b,a,t);assert.equal(t.hp,hp);assert.equal(ally.burn,null);assert.equal(ally.stunUntil,0);assert.ok(ally.hp>ally.maxHp/2);}
+ {const {b,units:[a,t,ally]}=battleFor(E,[[134,3,0,2,3],[133,1,1,2,2],[7,1,0,3,3]]);ally.hp/=2;ally.mana=95;E.cast(b,a,t);assert.equal(ally.mana,100);}
+ {const {b,units:[a,t,ally]}=battleFor(E,[[272,3,0,2,3],[133,1,1,2,2],[7,1,0,3,3]]);a.hp/=2;ally.hp/=2;t.hp=10;E.cast(b,a,t);assert.equal(a.damageDone,10);assert.ok(a.healingDone<=a.damageDone*.6+2);}
+ {const {b,units:[a,t]}=battleFor(E,[[14,2,0,2,3],[133,1,1,2,2]]);const hp=t.hp;E.cast(b,a,t);assert.equal(t.hp,hp);assert.equal(a.mana,15);assert.ok(a.shield>0);}
+});
+test('new buffs and statuses survive a save and keep the same combat outcome',()=>{
+ const {E}=fixture(),deck=[133,447,131,246,258,384,371,957,270,440],s=E.create(222,deck);s.gold=1000;s.level=6;
+ for(const [i,d] of [133,447,131,258,371,957].entries()){
+  for(let n=0;n<9;n++){s.shop=[d];E.buy(s,0);}E.place(s,s.units.find(u=>E.BY[u.dex].line[0]===d).id,18+i);
+ }
+ E.start(s);s.battle.opening=0;for(const a of s.battle.units.filter(u=>u.side===0))E.cast(s.battle,a,s.battle.units.find(u=>u.side===1));
+ const restored=E.restore(E.serialize(s));assert.ok(restored);
+ while(s.phase==='combat')E.tick(s,.1);while(restored.phase==='combat')E.tick(restored,.1);
+ assert.equal(JSON.stringify(restored.result),JSON.stringify(s.result));
+});

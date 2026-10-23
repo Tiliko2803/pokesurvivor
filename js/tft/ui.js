@@ -158,7 +158,7 @@ G.TFTUI = (() => {
     const tr=E.traits(state.units.filter(v=>v.pos!==null));
     box.innerHTML=`<h3>${p.name} ${'★'.repeat(unit.star)}${rival?' · Rival':''}</h3><p>${p.types.map(t=>TYPE()[t]).join(' · ')} · ${aiNames[E.aiFor(unit.dex)]}</p>
       <dl><div><dt>Vida</dt><dd>${Math.ceil(f.hp)}/${Math.ceil(f.maxHp)}</dd></div><div><dt>Daño/pulso</dt><dd>${Math.round(f.attack*(2*E.BEAT_SECONDS)/f.interval)}</dd></div><div><dt>Defensa</dt><dd>${f.armor}</dd></div><div><dt>Potencia de cadencia</dt><dd>×${((2*E.BEAT_SECONDS)/f.interval).toFixed(2)}</dd></div><div><dt>Maná</dt><dd>${Math.floor(f.mana)}/100</dd></div><div><dt>Escudo</dt><dd>${Math.ceil(f.shield)}</dd></div></dl>
-      <div class="tft-ability tft-entry"><small>AL INICIO · una vez por combate</small><h4>${entry.name}</h4><p>${entry.description}</p></div><div class="tft-ability"><small>MOVIMIENTO · al llegar a 100 de maná</small><h4>${ability.name} · ${TYPE()[ability.type]}</h4><p>${ability.description}</p></div>
+      <div class="tft-ability tft-entry"><small>AL INICIO · una vez por combate</small><h4>${entry.name}</h4><p>${entry.description}</p></div><div class="tft-ability"><small>${ability.special?'MOVIMIENTO ESPECIAL':'MOVIMIENTO PROPIO'} · 100 de maná</small><h4>${ability.name} · ${TYPE()[ability.type]}</h4><p>${ability.description}</p></div>
       ${rival?'':`<p class="sub">${p.types.map(t=>TYPE()[t]+': '+(tr[t]?.tier?'bono Nv. '+tr[t].tier:'sin bono')).join(' · ')}</p>`}`;
   }
   function showEvolution() {

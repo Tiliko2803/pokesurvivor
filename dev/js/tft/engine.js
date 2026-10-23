@@ -159,11 +159,32 @@ G.TFT = (() => {
     258:['Torrente','shield',.15,'Empieza con un escudo del 15% de su vida.'],
     255:['Impulso','speed',.1,'Aumenta un 10% su potencia de cadencia.']
   };
+  Object.assign(ENTRANCES,{
+    "133":["Adaptabilidad","mana",25,"Empieza con 25 de maná adicional."],
+    "66":["Agallas","attack",0.08,"Aumenta su daño un 8%."],
+    "152":["Defensa Hoja","armor",12,"Obtiene 12 de defensa."],
+    "194":["Absorbe Agua","regen",0.008,"Regenera un 0,8% de vida por segundo."],
+    "37":["Absorbe Fuego","pierce",0.1,"Sus ataques ignoran un 10% adicional de defensa."],
+    "54":["Aclimatación","mana",25,"Empieza con 25 de maná adicional."],
+    "81":["Imán","armor",15,"Obtiene 15 de defensa."],
+    "447":["Foco Interno","pierce",0.12,"Sus ataques ignoran un 12% adicional de defensa."],
+    "123":["Experto","speed",0.1,"Aumenta un 10% su potencia de cadencia."],
+    "131":["Cura Lluvia","teamShield",0.04,"Concede a cada aliado un escudo del 4% de la vida de ese aliado."],
+    "63":["Muro Mágico","shield",0.12,"Empieza con un escudo del 12% de su vida."],
+    "328":["Levitación","speed",0.1,"Aumenta un 10% su potencia de cadencia."],
+    "384":["Bucle Aire","teamShield",0.06,"Concede a cada aliado un escudo del 6% de la vida de ese aliado."],
+    "27":["Velo Arena","shield",0.12,"Empieza con un escudo del 12% de su vida."],
+    "13":["Enjambre","attack",0.07,"Aumenta su daño un 7%."],
+    "179":["Lana Protectora","shield",0.12,"Empieza con un escudo del 12% de su vida."],
+    "74":["Robustez","shield",0.16,"Empieza con un escudo del 16% de su vida."],
+    "270":["Nado Rápido","mana",25,"Empieza con 25 de maná adicional."],
+    "363":["Sebo","armor",15,"Obtiene 15 de defensa."],
+    "440":["Dicha","mana",30,"Empieza con 30 de maná adicional."],
+    "95":["Coraza","armor",18,"Obtiene 18 de defensa."],
+    "957":["Rompemoldes","pierce",0.12,"Sus ataques ignoran un 12% adicional de defensa."]
+  });
   function entranceFor(u) {
-    const entry=ENTRANCES[BY[u.dex].line[0]]||({tank:['Guardia Inicial','shield',.1,'Empieza con un escudo del 10% de su vida.'],
-      healer:['Aura de Apoyo','mana',20,'Empieza con 20 de maná adicional.'],
-      mage:['Concentración','mana',20,'Empieza con 20 de maná adicional.'],
-      fighter:['Determinación','attack',.05,'Aumenta su daño un 5%.']})[BY[u.dex].role];
+    const entry=ENTRANCES[BY[u.dex].line[0]];
     return {name:entry[0],effect:entry[1],value:entry[2],description:entry[3]};
   }
   function entrances(b) {
@@ -278,6 +299,120 @@ G.TFT = (() => {
     255:{types:['fire','fighting','fire'],text:['Ascuas quema al objetivo durante 3 segundos.','Doble Patada golpea dos veces y gana 10% de cadencia durante 2 segundos.','Patada Ígnea daña, quema y gana 20% de cadencia durante 2 segundos.']},
     63:{types:['psychic','psychic','psychic'],text:['Confusión golpea y reduce la cadencia del objetivo durante 2 segundos.','Psicorrayo atraviesa una línea de 4 casillas.','Psíquico golpea una zona y aturde 0,8 segundos.']}
   });
+  // Per-stage move definitions for every family that does not use the bespoke resolver.
+  const SPECIAL_FAMILIES=new Set([133,447,131,246,258,384,371,957]);
+  const FAMILY_MOVES={
+    "133":[
+      {"type":"normal","power":2,"text":"Estrellas que golpean al objetivo y recuperan 10 de maná.","selfMana":10},
+      {"type":"water","power":1.8,"text":"Explota alrededor del objetivo y da 10 de maná a los 2 aliados más heridos.","shape":"area","radius":1,"center":"target","allyMana":10,"friends":2},
+      {"type":"water","power":2.5,"text":"Un chorro atraviesa 4 casillas y da 15 de maná a los 2 aliados más heridos.","shape":"line","length":4,"allyMana":15,"friends":2}
+    ],
+    "194":[
+      {"type":"ground","power":1.8,"text":"Lanza lodo que reduce un 20% la cadencia del objetivo durante 2 segundos.","slow":0.2},
+      {"type":"water","power":1.8,"text":"Agua Lodosa daña alrededor del usuario y reduce un 20% la cadencia durante 2 segundos.","shape":"area","radius":2,"center":"self","slow":0.2},
+      {"type":"ground","power":2.4,"text":"Terremoto daña en un radio de 2 casillas y concede un escudo del 15% de su vida.","shape":"area","radius":2,"center":"self","selfShield":0.15}
+    ],
+    "37":[
+      {"type":"fire","power":1.9,"text":"Una llama daña y quema al objetivo durante 3 segundos.","burn":0.18},
+      {"type":"fire","power":2.3,"text":"Lanzallamas atraviesa 4 casillas y quema durante 3 segundos.","shape":"line","length":4,"burn":0.18},
+      {"type":"fire","power":2.4,"text":"Llamarada daña una zona y quema a los enemigos durante 3 segundos.","shape":"area","radius":1,"center":"target","burn":0.22}
+    ],
+    "54":[
+      {"type":"water","power":2.2,"text":"Un chorro golpea y empuja al objetivo una casilla libre.","push":1},
+      {"type":"water","power":2,"text":"Hidropulso daña una zona y reduce un 20% la cadencia durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+      {"type":"water","power":2.7,"text":"Hidrobomba atraviesa 4 casillas y empuja a los enemigos una casilla libre.","shape":"line","length":4,"push":1}
+    ],
+    "81":[
+      {"type":"electric","power":1.8,"text":"Descarga contra un objetivo y obtiene un escudo del 12% de su vida.","selfShield":0.12},
+      {"type":"electric","power":1.7,"text":"Chispazo daña en un radio de 3 casillas y le concede un escudo del 15% de su vida.","shape":"area","radius":3,"center":"self","selfShield":0.15},
+      {"type":"electric","power":3,"text":"Electrocañón golpea y aturde al objetivo durante 0,8 segundos; protege al aliado más herido con un escudo del 20% de la vida de ese aliado.","stun":0.8,"friendShield":0.2,"friends":1}
+    ],
+    "447":[
+      {"type":"fighting","power":2.2,"text":"Palmeo golpea y aturde al objetivo durante 0,4 segundos.","stun":0.4},
+      {"type":"fighting","power":2.8,"text":"Esfera Aural ignora el 50% de defensa y obtiene un escudo del 15% de su vida.","pierce":0.5,"selfShield":0.15},
+      {"type":"fighting","power":3.2,"text":"A Bocajarro ignora el 60% de defensa; su daño aumenta hasta un 50% según la vida perdida del objetivo y obtiene un escudo del 20% de su vida.","pierce":0.6,"execute":0.5,"selfShield":0.2}
+    ],
+    "123":[
+      {"type":"bug","power":2.4,"text":"Corte golpea ignorando el 30% de defensa.","pierce":0.3},
+      {"type":"steel","power":2.3,"text":"Puño Bala golpea y aumenta un 15% su cadencia durante 2 segundos.","boost":0.15},
+      {"type":"bug","power":1.9,"text":"Tijera X golpea una zona ignorando el 40% de defensa.","shape":"area","radius":1,"center":"target","pierce":0.4}
+    ],
+    "131":[
+      {"type":"ice","power":2,"text":"Rayo Hielo golpea y reduce un 25% la cadencia durante 2 segundos; escuda al aliado más herido con el 10% de su vida.","slow":0.25,"friendShield":0.1,"friends":1},
+      {"type":"ice","power":2.1,"text":"Ventisca golpea una zona de 2 casillas y reduce un 25% la cadencia durante 2 segundos; escuda a los 2 aliados más heridos con el 12% de su vida.","shape":"area","radius":2,"center":"target","slow":0.25,"friendShield":0.12,"friends":2},
+      {"type":"ice","power":2.1,"text":"Ventisca protege a todos los aliados con un escudo del 12% de su vida y ralentiza un 25% a los enemigos de la zona durante 2 segundos.","shape":"area","radius":2,"center":"target","slow":0.25,"friendShield":0.12,"friends":6}
+    ],
+    "328":[
+      {"type":"ground","power":1.7,"text":"Bucle Arena golpea alrededor del objetivo y reduce un 20% su cadencia durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+      {"type":"dragon","power":2.2,"text":"Dragoaliento atraviesa 4 casillas y reduce un 20% la cadencia durante 2 segundos.","shape":"line","length":4,"slow":0.2},
+      {"type":"dragon","power":2.3,"text":"Pulso Dragón golpea una zona y aturde durante 0,5 segundos.","shape":"area","radius":1,"center":"target","stun":0.5}
+    ],
+    "246":[
+      {"type":"rock","power":2,"text":"Lanzarrocas golpea y obtiene un escudo del 15% de su vida.","selfShield":0.15},
+      {"type":"rock","power":2,"text":"Avalancha golpea una zona, aturde durante 0,35 segundos y obtiene un escudo del 18% de su vida.","shape":"area","radius":1,"center":"target","stun":0.35,"selfShield":0.18},
+      {"type":"rock","power":2.2,"text":"Roca Afilada golpea una zona de 2 casillas ignorando el 40% de defensa y obtiene un escudo del 20% de su vida.","shape":"area","radius":2,"center":"target","pierce":0.4,"selfShield":0.2}
+    ],
+    "258":[
+      {"type":"water","power":2,"text":"Pistola Agua golpea y escuda al aliado más herido con el 12% de su vida.","friendShield":0.12,"friends":1},
+      {"type":"water","power":1.8,"text":"Agua Lodosa golpea alrededor del usuario, ralentiza un 20% durante 2 segundos y obtiene un escudo del 15% de su vida.","shape":"area","radius":2,"center":"self","slow":0.2,"selfShield":0.15},
+      {"type":"ground","power":2.4,"text":"Terremoto golpea alrededor de Swampert, reduce un 25% la cadencia rival durante 2 segundos y escuda a los 2 aliados más heridos con el 15% de su vida.","shape":"area","radius":2,"center":"self","slow":0.25,"friendShield":0.15,"friends":2}
+    ],
+    "384":[
+      {"type":"dragon","power":2.5,"text":"Pulso Dragón atraviesa 5 casillas y protege a los 2 aliados más heridos con un escudo del 8% de su vida.","shape":"line","length":5,"friendShield":0.08,"friends":2},
+      {"type":"dragon","power":2.4,"text":"Cometa Draco golpea una zona de 2 casillas y escuda a todos los aliados con el 8% de su vida.","shape":"area","radius":2,"center":"target","friendShield":0.08,"friends":6},
+      {"type":"dragon","power":2.6,"text":"Cometa Draco golpea una zona de 2 casillas, aturde durante 0,5 segundos y escuda a todos los aliados con el 10% de su vida.","shape":"area","radius":2,"center":"target","stun":0.5,"friendShield":0.1,"friends":6}
+    ],
+    "27":[
+      {"type":"normal","power":2.3,"text":"Arañazo golpea ignorando el 25% de defensa.","pierce":0.25},
+      {"type":"ground","power":1.7,"text":"Terratemblor golpea alrededor del usuario y ralentiza un 20% durante 2 segundos.","shape":"area","radius":1,"center":"self","slow":0.2},
+      {"type":"ground","power":2.4,"text":"Terremoto daña en un radio de 2 casillas y obtiene un escudo del 12% de su vida.","shape":"area","radius":2,"center":"self","selfShield":0.12}
+    ],
+    "13":[
+      {"type":"poison","power":2,"text":"Picotazo Veneno golpea ignorando el 35% de defensa.","pierce":0.35},
+      {"type":"normal","power":0,"text":"Fortaleza concede un escudo del 30% de su vida y recupera 15 de maná.","selfShield":0.3,"selfMana":15},
+      {"type":"bug","power":1.9,"text":"Tijera X golpea una zona ignorando el 35% de defensa.","shape":"area","radius":1,"center":"target","pierce":0.35}
+    ],
+    "179":[
+      {"type":"electric","power":1.9,"text":"Impactrueno golpea y reduce un 20% la cadencia durante 2 segundos.","slow":0.2},
+      {"type":"electric","power":1.7,"text":"Chispazo daña en un radio de 3 casillas y reduce un 20% la cadencia durante 2 segundos.","shape":"area","radius":3,"center":"self","slow":0.2},
+      {"type":"electric","power":2.6,"text":"Trueno golpea una zona y aturde durante 0,5 segundos.","shape":"area","radius":1,"center":"target","stun":0.5}
+    ],
+    "74":[
+      {"type":"rock","power":2,"text":"Lanzarrocas golpea y obtiene un escudo del 12% de su vida.","selfShield":0.12},
+      {"type":"ground","power":1.7,"text":"Terratemblor golpea alrededor del usuario y ralentiza un 20% durante 2 segundos.","shape":"area","radius":1,"center":"self","slow":0.2},
+      {"type":"ground","power":2.4,"text":"Terremoto golpea en un radio de 2 casillas y obtiene un escudo del 18% de su vida.","shape":"area","radius":2,"center":"self","selfShield":0.18}
+    ],
+    "270":[
+      {"type":"grass","power":1.6,"text":"Absorbe vida del objetivo y cura al aliado más herido por el 80% del daño efectivo.","drain":0.8,"friends":1},
+      {"type":"grass","power":0,"text":"Síntesis cura a los 2 aliados más heridos por el 220% del ataque.","healing":2.2,"friends":2},
+      {"type":"grass","power":1.6,"text":"Gigadrenado absorbe vida de una zona y reparte el 60% del daño efectivo como curación entre los 2 aliados más heridos.","shape":"area","radius":1,"center":"target","drain":0.6,"friends":2}
+    ],
+    "363":[
+      {"type":"ice","power":1.6,"text":"Nieve Polvo daña una zona y ralentiza un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+      {"type":"ice","power":2.2,"text":"Rayo Hielo daña y aturde al objetivo durante 0,5 segundos.","stun":0.5},
+      {"type":"ice","power":2.1,"text":"Ventisca golpea una zona de 2 casillas, ralentiza un 25% durante 2 segundos y obtiene un escudo del 15% de su vida.","shape":"area","radius":2,"center":"target","slow":0.25,"selfShield":0.15}
+    ],
+    "440":[
+      {"type":"fairy","power":1.2,"text":"Encanto daña, reduce un 25% la cadencia del objetivo durante 2 segundos y cura al aliado más herido por el 160% del ataque.","slow":0.25,"healing":1.6,"friends":1},
+      {"type":"normal","power":0,"text":"Pulso Cura restaura al aliado más herido por el 350% del ataque y lo escuda con el 10% de su vida.","healing":3.5,"friendShield":0.1,"friends":1},
+      {"type":"normal","power":0,"text":"Amortiguador cura a los 2 aliados más heridos por el 250% del ataque y elimina sus quemaduras, ralentizaciones y aturdimientos.","healing":2.5,"cleanse":true,"friends":2}
+    ],
+    "95":[
+      {"type":"rock","power":1.8,"text":"Tumba Rocas daña una zona, ralentiza un 20% durante 2 segundos y obtiene un escudo del 15% de su vida.","shape":"area","radius":1,"center":"target","slow":0.2,"selfShield":0.15},
+      {"type":"ground","power":2.4,"text":"Terremoto golpea alrededor del usuario y obtiene un escudo del 20% de su vida.","shape":"area","radius":2,"center":"self","selfShield":0.2},
+      {"type":"ground","power":2.6,"text":"Fuerza Telúrica golpea alrededor del usuario y escuda a los 2 aliados más heridos con el 15% de su vida.","shape":"area","radius":2,"center":"self","friendShield":0.15,"friends":2}
+    ],
+    "371":[
+      {"type":"dark","power":2,"text":"Mordisco daña y aturde al objetivo durante 0,3 segundos.","stun":0.3},
+      {"type":"dragon","power":2.2,"text":"Dragoaliento atraviesa 4 casillas y aumenta un 10% su cadencia durante 2 segundos.","shape":"line","length":4,"boost":0.1},
+      {"type":"dragon","power":2.4,"text":"Cometa Draco daña una zona de 2 casillas y aumenta un 20% su cadencia durante 2 segundos.","shape":"area","radius":2,"center":"target","boost":0.2}
+    ],
+    "957":[
+      {"type":"fighting","power":2.2,"text":"Golpe Roca ignora el 40% de defensa.","pierce":0.4},
+      {"type":"steel","power":2.8,"text":"Martillazo destruye la mitad del escudo antes de golpear.","breakShield":0.5},
+      {"type":"steel","power":2.7,"text":"Martillo Colosal golpea una zona ignorando el 50% de defensa, aturde durante 0,5 segundos y obtiene un escudo del 12% de su vida.","shape":"area","radius":1,"center":"target","pierce":0.5,"stun":0.5,"selfShield":0.12}
+    ]
+  };
   const AREA_MOVES={
     'Terremoto':{type:'ground',radius:2,power:2.4,center:'self'},
     'Terratemblor':{type:'ground',radius:1,power:1.7,center:'self',slow:.2},
@@ -295,8 +430,9 @@ G.TFT = (() => {
     'Martillo Colosal':{type:'steel',radius:1,power:2.7,center:'target'}
   };
   function abilityFor(u) {
-    const signature=SIGNATURES[BY[u.dex].line[0]],i=u.star-1;
-    if(signature)return {name:moveFor(u),type:signature.types[i],description:signature.text[i],signature:true};
+    const family=BY[u.dex].line[0],signature=SIGNATURES[family],i=u.star-1,move=FAMILY_MOVES[family]?.[i];
+    if(move)return {name:moveFor(u),type:move.type,description:move.text,signature:true,special:SPECIAL_FAMILIES.has(family),area:move.shape==='area'};
+    if(signature)return {name:moveFor(u),type:signature.types[i],description:signature.text[i],signature:true,special:true};
     const area=AREA_MOVES[moveFor(u)];
     if(area)return {name:moveFor(u),type:area.type,description:`Golpea a los enemigos en un área de ${area.radius} casillas alrededor ${area.center==='self'?'del usuario':'del objetivo'}.${area.slow?' Ralentiza sus ataques durante 2 segundos.':''}${area.stun?' Aturde brevemente.':''}`,area:true};
     if(moveFor(u)==='Fortaleza')return {name:'Fortaleza',type:'normal',description:'Obtiene un escudo del 30% de su vida máxima.'};
@@ -453,9 +589,50 @@ G.TFT = (() => {
     }
     return true;
   }
+  function familyCast(b,a,target) {
+    const m=FAMILY_MOVES[BY[a.dex].line[0]]?.[a.star-1];if(!m)return false;
+    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0);
+    const friends=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id).slice(0,m.friends||1);
+    let victims=[target];
+    if(m.shape==='area') {
+      const center=m.center==='self'?a:{x:target.x,y:target.y};
+      victims=foes.filter(t=>distance(center,t)<=m.radius);
+      b.events.push({kind:'area',from:a.id,x:center.x,y:center.y,radius:m.radius,type:m.type,ttl:.6});
+    } else if(m.shape==='line') {
+      const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1;
+      victims=foes.filter(t=>{const x=t.x-a.x,y=t.y-a.y,d=(x*dx+y*dy)/len;return d>=0&&d<=m.length&&Math.abs(x*dy-y*dx)/len<=.7;});
+      b.events.push({kind:'beam',from:a.id,sx:a.x,sy:a.y,tx:Math.max(0,Math.min(5,a.x+dx/len*m.length)),ty:Math.max(0,Math.min(5,a.y+dy/len*m.length)),type:m.type,ttl:.6});
+    }
+    // Resolve furthest first so knockbacks cannot accidentally move another victim
+    // into/out of the snapshotted area. Temporary pierce never changes basic attacks.
+    victims.sort((x,y)=>distance(a,y)-distance(a,x)||x.id-y.id);
+    let total=0;const oldPierce=a.pierce;a.pierce=Math.max(a.pierce,m.pierce||0);
+    for(const t of victims) {
+      if(!m.power)continue;
+      if(m.breakShield)t.shield*=1-m.breakShield;
+      total+=hit(b,a,t,a.attack*m.power*(1+(m.execute||0)*(1-t.hp/t.maxHp)),true,m.type);
+      if(t.hp<=0)continue;
+      if(m.slow){t.slowPower=Math.max(t.slowUntil>b.time?t.slowPower||0:0,m.slow);t.slowUntil=b.time+2;}
+      if(m.stun)t.stunUntil=Math.max(t.stunUntil||0,b.time+m.stun);
+      if(m.burn)burn(b,a,t,3,a.attack*m.burn);
+      if(m.push)push(b,a,t,m.push);
+    }
+    a.pierce=oldPierce;
+    if(m.selfShield)shield(b,a,a,a.maxHp*m.selfShield);
+    if(m.selfMana)a.mana=Math.min(100,a.mana+m.selfMana);
+    for(const ally of friends){
+      if(m.healing)heal(b,a,ally,a.attack*m.healing);
+      if(m.drain)heal(b,a,ally,total*m.drain/friends.length);
+      if(m.friendShield)shield(b,a,ally,ally.maxHp*m.friendShield);
+      if(m.allyMana)ally.mana=Math.min(100,ally.mana+m.allyMana);
+      if(m.cleanse){ally.burn=null;ally.slowUntil=0;ally.stunUntil=0;}
+    }
+    if(m.boost){if(a.boostUntil>b.time)a.interval*=1+a.boostPower;a.boostPower=m.boost;a.interval/=1+a.boostPower;a.boostUntil=b.time+2;}
+    return true;
+  }
   function cast(b,a,target) {
     a.mana=0;b.events.push({kind:'cast',from:a.id,move:moveFor(a),beat:b.beat,ttl:.8});
-    if(signature(b,a,target)||areaCast(b,a,target))return;
+    if(signature(b,a,target)||familyCast(b,a,target)||areaCast(b,a,target))return;
     if(moveFor(a)==='Fortaleza'){shield(b,a,a,a.maxHp*.3);return;}
     if(a.ai==='guardian') {
       const ally=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id)[0];

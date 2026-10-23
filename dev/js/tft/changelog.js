@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: habilidades para todas las familias', 'TFT: abilities for every family'], new: [
+    ['Las 34 familias tienen habilidades de entrada propias y movimientos definidos en sus tres niveles, sin depender del movimiento genérico de su rol. Las fichas muestran el tipo y efecto de cada movimiento.',
+     'All 34 families have named entrance abilities and moves defined at all three ranks, without relying on generic role moves. Cards show the actual move type and effect.'],
+    ['Efectos especiales para Eevee/Vaporeon, Lucario, Lapras, Tyranitar, Swampert, Salamence, Tinkaton y Rayquaza, además de las doce familias ya personalizadas: protección de aliados, maná compartido, remates, perforación, aturdimientos y cadencia temporal.',
+     'Special effects for Eevee/Vaporeon, Lucario, Lapras, Tyranitar, Swampert, Salamence, Tinkaton and Rayquaza, alongside the twelve previously customized families: ally protection, shared mana, finishers, piercing, stuns and temporary speed.']
+  ] },
   { d: '2026-10-23', title: ['TFT: habilidades de entrada, guardado y exploración', 'TFT: entrance abilities, saves and scouting'], new: [
     ['Habilidades de entrada visibles antes del primer pulso: escudos, maná y bonos propios para cada familia. Los movimientos cargados conservan su activación con 100 de maná. Fichas separadas con el efecto y momento de activación.',
      'Visible entrance abilities before the first beat: shields, mana and family bonuses. Charged moves still activate at 100 mana. Separate cards explain each effect and its trigger.'],
