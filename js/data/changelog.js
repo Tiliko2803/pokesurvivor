@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: familias por orden de Pokédex', 'TFT: families in Pokédex order'], chg: [
+    ['El editor de mazos ordena las familias por el número de Pokédex de su Pokémon inicial, también al filtrar por precio.',
+     'The deck editor sorts families by the Pokédex number of their starting Pokémon, including when filtering by price.']
+  ] },
   { d: '2026-10-23', title: ['TFT: 25 familias y más opciones de un oro', 'TFT: 25 families and more one-gold options'], new: [
     ['El roster crece de 54 a 79 familias. Diez nuevas cuestan 1 oro: Nidoking, Clefable, Arcanine, Poliwrath, Azumarill, Breloom, Emboar, Chesnaught, Rillaboom y Corviknight con sus preevoluciones. Otras ocho cuestan 2, cinco cuestan 3 y dos cuestan 4.',
      'The roster grows from 54 to 79 families. Ten new families cost 1 gold: Nidoking, Clefable, Arcanine, Poliwrath, Azumarill, Breloom, Emboar, Chesnaught, Rillaboom and Corviknight with their pre-evolutions. Eight more cost 2, five cost 3 and two cost 4.'],

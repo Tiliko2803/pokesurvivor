@@ -49,7 +49,7 @@ G.TFTUI = (() => {
     $('tft-deck-slots').innerHTML=decks.map((_,i)=>`<button class="btn small ${i===slot?'gold':''}" data-slot="${i}" aria-pressed="${i===slot}">Mazo ${i+1}</button>`).join('');
     $('tft-deck-slots').querySelectorAll('button').forEach(b=>b.onclick=()=>{slot=Number(b.dataset.slot);picks=new Set(decks[slot]);$('tft-deck-status').textContent='';renderDeck();});
     const cost=Number($('tft-deck-filter').value);
-    $('tft-deck-list').innerHTML=E.ROSTER.filter(f=>!cost||f.cost===cost).map(f=>`<button class="tft-card ${picks.has(f.dex)?'tft-selected':''}" data-family="${f.dex}" aria-label="Línea ${G.DEX_BY[f.dex].name}" aria-pressed="${picks.has(f.dex)}"><canvas width="110" height="70" data-tft-dex="${f.dex}" aria-hidden="true"></canvas><b>${G.DEX_BY[f.dex].name}</b><span>${f.cost} oro ${picks.has(f.dex)?'✓':''}</span><small>${f.line.map(d=>G.DEX_BY[d].name).join(' → ')}</small></button>`).join('');
+    $('tft-deck-list').innerHTML=E.ROSTER.filter(f=>!cost||f.cost===cost).sort((a,b)=>a.dex-b.dex).map(f=>`<button class="tft-card ${picks.has(f.dex)?'tft-selected':''}" data-family="${f.dex}" aria-label="Línea ${G.DEX_BY[f.dex].name}" aria-pressed="${picks.has(f.dex)}"><canvas width="110" height="70" data-tft-dex="${f.dex}" aria-hidden="true"></canvas><b>${G.DEX_BY[f.dex].name}</b><span>${f.cost} oro ${picks.has(f.dex)?'✓':''}</span><small>${f.line.map(d=>G.DEX_BY[d].name).join(' → ')}</small></button>`).join('');
     $('tft-deck-list').querySelectorAll('button').forEach(b=>b.onclick=()=>{
       const d=Number(b.dataset.family);
       if(picks.has(d))picks.delete(d);else if(picks.size<10)picks.add(d);else {G.UI.toast('Quita una línea antes de elegir otra: el mazo tiene 10 espacios.');return;}

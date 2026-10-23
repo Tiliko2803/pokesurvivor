@@ -254,3 +254,10 @@ Ferrothorn usa el nuevo efecto pasivo `thorns`: devuelve el 20% de la vida efect
 Validación de reglas: 93 pruebas automatizadas pasan. La cobertura de familias recorre ahora las 45 añadidas entre ambas expansiones en los tres niveles: evolución, habilidad de entrada real, alcance, separación de bandos, guardado determinista, combate sin solapamientos ni pagos duplicados. Se comprueba el reparto de precios 10/8/5/2 y la disponibilidad de los 27 iniciales, así como reflejo de contacto sin cadenas y Descanso aplicado al usuario.
 
 Validación de interfaz: pasa la regresión completa en 1280×800, 390×844, 320×568, 844×390 y 568×320. Incluye filtro de 1 oro (21 líneas), selección y persistencia de Tepig, mazo de diez familias, despliegue, combate, pausa, reanudación y reinicio tras victoria/derrota guardada sin tocar la cuenta Survivor.
+
+
+### Orden de Pokédex en el editor · 23 de octubre de 2026
+
+El editor ordena una copia filtrada de las familias por `dex` (número de la primera etapa de la línea). El orden es numérico ascendente tanto con Todos como al filtrar por coste. No se reordena el catálogo del motor, para conservar la secuencia de RNG y el orden de los mazos guardados. Validación: dos pruebas de empaquetado y la regresión de navegador en cinco tamaños, con comprobaciones de orden en las 79 líneas y en las 21 de coste 1.
+
+Recuento por rol declarado del catálogo: 9 sanadores, 24 tanques, 20 magos y 26 luchadores. En la segunda expansión de 25: 3 sanadores (Clefable, Rillaboom, Primarina), 10 tanques (Poliwrath, Emboar, Chesnaught, Corviknight, Skeledirge, Snorlax, Aggron, Ferrothorn, Aegislash, Archaludon), 4 magos y 8 luchadores. Algunas familias de otros roles también aportan curación o escudos.

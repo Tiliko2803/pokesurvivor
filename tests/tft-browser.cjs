@@ -34,8 +34,12 @@ async function checkBoard(page,viewport){
    await page.setViewportSize(viewport);
    await page.locator('#tft-deck-panel').waitFor({state:'visible'});
    assert.equal(await page.locator('#tft-deck-list [data-family]').count(),79);
+   const familyOrder=await page.locator('#tft-deck-list [data-family]').evaluateAll(nodes=>nodes.map(e=>Number(e.dataset.family)));
+   assert.deepEqual(familyOrder,[...familyOrder].sort((a,b)=>a-b));
    await page.locator('#tft-deck-filter').selectOption('1');
    assert.equal(await page.locator('#tft-deck-list [data-family]').count(),21);
+   const cheapOrder=await page.locator('#tft-deck-list [data-family]').evaluateAll(nodes=>nodes.map(e=>Number(e.dataset.family)));
+   assert.deepEqual(cheapOrder,[...cheapOrder].sort((a,b)=>a-b));
    assert.equal(await page.getByRole('button',{name:'Línea Tepig',exact:true}).count(),1);
    await page.locator('#tft-deck-filter').selectOption('0');
    await page.getByRole('button',{name:'Línea Bulbasaur',exact:true}).click();
