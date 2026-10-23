@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: volver a jugar al terminar', 'TFT: start again after a finished match'], fix: [
+    ['Nueva partida queda junto al tablero, accesible al terminar y al recuperar una victoria o derrota guardada. Ya no está escondida dentro de Equipo y Opciones. Reinicia la partida TFT y conserva tus mazos.',
+     'New match sits beside the board, accessible after finishing and when restoring a saved victory or defeat. It is no longer hidden inside Team and Options. It resets the TFT match while keeping your decks.']
+  ] },
   { d: '2026-10-23', title: ['TFT: veinte familias nuevas', 'TFT: twenty new evolution families'], new: [
     ['El roster crece de 34 a 54 familias, repartidas entre las nueve generaciones. Se suman Gyarados, Dragonite, Typhlosion, Feraligatr, Sceptile, Milotic, Torterra, Infernape, Empoleon, Garchomp, Serperior, Samurott, Hydreigon, Greninja, Goodra, Decidueye, Incineroar, Kommo-o, Dragapult y Baxcalibur con sus preevoluciones.',
      'The roster grows from 34 to 54 families across all nine generations. Gyarados, Dragonite, Typhlosion, Feraligatr, Sceptile, Milotic, Torterra, Infernape, Empoleon, Garchomp, Serperior, Samurott, Hydreigon, Greninja, Goodra, Decidueye, Incineroar, Kommo-o, Dragapult and Baxcalibur join with their pre-evolutions.'],
