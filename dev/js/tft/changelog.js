@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: animaciones del Survivor', 'TFT: Survivor attack animations'], chg: [
+    ['TFT reutiliza los sprites pixel art de ataque del Survivor: llamas, burbujas, electricidad, hielo, garras, impactos, curaciones y meteoros. Rayos y perforaciones tienen estelas; las áreas conservan las casillas afectadas.',
+     'TFT reuses Survivor pixel-art attack sprites: flames, bubbles, electricity, ice, claws, impacts, healing and meteors. Beams and drills have trails; areas retain their affected-cell highlights.'],
+    ['Los Pokémon usan sus poses disponibles de carga, ataque, disparo y daño, precargadas antes de combatir. Una habilidad de área reproduce una sola acción; las quemaduras no hacen repetir la animación del lanzador. Pausa, velocidad doble, gráficos bajos y modo tranquilo se respetan.',
+     'Pokémon use their available charge, attack, shoot and hurt poses, preloaded before combat. An area ability plays one action; burns do not restart caster animations. Pause, double speed, low graphics and calm mode are respected.']
+  ] },
   { d: '2026-10-23', title: ['TFT: entrada sísmica y sprites de frente', 'TFT: seismic entrance and front-facing sprites'], chg: [
     ['Drilbur y Excadrill son iniciadores de control: Entrada Sísmica se activa al comenzar cada combate. Excadrill perfora hasta 3 casillas y aturde alrededor del aterrizaje; radio y duración mejoran con estrellas. Sus movimientos de maná también aturden al aterrizar.',
      'Drilbur and Excadrill initiate crowd control: Seismic Entrance activates at the beginning of each battle. Excadrill drills up to 3 cells and stuns around its landing; radius and duration improve with stars. Its mana moves also stun on landing.'],

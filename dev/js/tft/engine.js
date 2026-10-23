@@ -465,14 +465,14 @@ G.TFT = (() => {
     entrances(s.battle);s.phase='combat';s.result=null;return true;
   }
   const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
-  function hit(b,a,t,power,spell=false,type=a.types[0]) {
+  function hit(b,a,t,power,spell=false,type=a.types[0],periodic=false) {
     if(t.hp<=0)return 0;
     const mult=G.Types?.mult?G.Types.mult(type,t.types):1;
     const damage=Math.max(1,Math.round(power*mult*100/(100+t.armor*(1-Math.min(.8,a.pierce)))));
     const absorbed=Math.min(t.shield,damage),lost=Math.min(t.hp,damage-absorbed);t.shield-=absorbed;t.hp=Math.max(0,t.hp-lost);a.damageDone+=lost;t.damageTaken+=lost;t.blocked+=absorbed;if(t.hp===0&&lost>0)a.kills++;
     t.flash=.16;t.mana=Math.min(100,t.mana+8);
     if(a.slow)t.slowUntil=b.time+2,t.slowPower=a.slow;
-    b.events.push({kind:spell?'spell':'hit',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,type,amount:lost,absorbed,beat:b.beat,ttl:.45});
+    b.events.push({kind:spell?'spell':'hit',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,type,move:spell?moveFor(a):null,periodic,amount:lost,absorbed,beat:b.beat,ttl:.45});
     return lost;
   }
   function heal(b,a,t,amount) {
@@ -656,7 +656,7 @@ G.TFT = (() => {
     return true;
   }
   function cast(b,a,target) {
-    a.mana=0;b.events.push({kind:'cast',from:a.id,move:moveFor(a),beat:b.beat,ttl:.8});
+    a.mana=0;b.events.push({kind:'cast',from:a.id,move:moveFor(a),to:target.id,sx:a.x,sy:a.y,tx:target.x,ty:target.y,beat:b.beat,ttl:.8});
     if(signature(b,a,target)||familyCast(b,a,target)||areaCast(b,a,target))return;
     if(moveFor(a)==='Fortaleza'){shield(b,a,a,a.maxHp*.3);return;}
     if(a.ai==='guardian') {
@@ -730,7 +730,7 @@ G.TFT = (() => {
       const regen=Math.max(0,Math.min(a.maxHp-a.hp,a.maxHp*a.regen*dt));a.hp+=regen;a.healingDone+=regen;
       if(a.burn) {
         const dot=a.burn;dot.remaining-=dt;dot.cd-=dt;
-        if(dot.cd<=.00001){const source=b.units.find(u=>u.id===dot.source);if(source)hit(b,source,a,dot.power,true,'fire');dot.cd+=1;}
+        if(dot.cd<=.00001){const source=b.units.find(u=>u.id===dot.source);if(source)hit(b,source,a,dot.power,true,'fire',true);dot.cd+=1;}
         if(dot.remaining<=.00001)a.burn=null;
       }
       if(a.exposedUntil&&a.exposedUntil<=b.time){a.armor+=10;a.exposedUntil=0;}
