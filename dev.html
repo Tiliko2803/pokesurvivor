@@ -447,9 +447,21 @@
  <div class="tft-shell">
   <header class="tft-header"><div><h2>TFT · Evoluciones <small>ALPHA</small></h2><p id="tft-stats"></p></div><button id="tft-exit" class="btn small ghost">Salir</button></header>
   <div id="tft-quit" class="tft-notice hidden" role="alert">¿Salir de TFT? Esta partida no se guarda.<div class="tft-actions"><button id="tft-confirm-quit" class="btn small">Salir de la partida</button><button id="tft-cancel-quit" class="btn small gold">Seguir jugando</button></div></div>
+  <section id="tft-deck-panel" aria-label="Editor de mazos">
+   <h3>Tu mazo · 10 líneas evolutivas</h3>
+   <p class="tft-hint">Cada espacio incluye la línea completa. Tu tienda sólo ofrecerá las diez familias elegidas. Los mazos se guardan en este dispositivo.</p>
+   <div id="tft-deck-slots" class="tft-actions" aria-label="Mazos guardados"></div>
+   <div class="tft-actions"><label for="tft-deck-filter">Coste</label><select id="tft-deck-filter" class="field"><option value="0">Todos</option><option value="1">1 oro</option><option value="2">2 oro</option><option value="3">3 oro</option><option value="4">4 oro</option><option value="5">5 oro</option></select><b id="tft-deck-count" role="status" aria-live="polite"></b></div>
+   <div id="tft-deck-list" role="group" aria-label="Líneas disponibles"></div>
+   <p id="tft-deck-status" role="status"></p>
+   <div class="tft-actions"><button id="tft-deck-save" class="btn">Guardar mazo</button><button id="tft-deck-start" class="btn gold">Jugar con este mazo</button></div>
+  </section>
+  <div id="tft-match" class="hidden">
+   <details class="tft-rules"><summary id="tft-current-deck">Mi mazo</summary><p id="tft-deck-summary"></p></details>
   <div class="tft-layout">
    <main class="tft-arena"><div class="tft-actions"><b id="tft-phase"></b><span id="tft-clock"></span><button id="tft-pause" class="btn small">Pausar</button><button id="tft-speed" class="btn small ghost">Velocidad ×1</button></div>
     <div class="tft-board-wrap"><canvas id="tft-board" width="600" height="600" aria-hidden="true"></canvas><div id="tft-cells" role="group" aria-label="Tablero de seis por seis"></div></div>
+    <div id="tft-evolution" role="status" aria-live="polite" class="hidden"></div>
     <p id="tft-help" class="tft-hint"></p>
     <div class="tft-actions"><button id="tft-fight" class="btn gold">¡Combatir!</button><button id="tft-next" class="btn gold hidden">Siguiente ronda</button><button id="tft-restart" class="btn gold hidden">Nueva partida</button><button id="tft-return" class="btn small">Al banquillo</button><button id="tft-sell" class="btn small">Vender seleccionado</button></div>
     <p id="tft-result" role="status" aria-live="polite"></p>
@@ -457,18 +469,20 @@
    <aside class="tft-management"><h3 id="tft-bench-count">Banquillo</h3><div id="tft-bench" role="group" aria-label="Banquillo"></div>
     <h3>Tienda</h3><div id="tft-shop" role="group" aria-label="Tienda de Pokémon"></div>
     <div class="tft-actions"><button id="tft-reroll" class="btn small">Renovar · 2 oro</button><button id="tft-lock" class="btn small" aria-pressed="false">Bloquear tienda</button><button id="tft-xp" class="btn small">Comprar EXP</button></div>
+    <section id="tft-unit-info" class="tft-unit-info" aria-label="Ficha de unidad"><p>Toca una unidad para ver su ficha.</p></section>
     <h3>Sinergias del equipo</h3><div id="tft-traits"></div>
     <details class="tft-rules"><summary>Cómo jugar y evolucionar</summary>
      <p>Combate individual contra IA durante 12 rondas. Empiezas con 50 PV, 10 de oro y 3 plazas. Despliega en las tres filas azules; la fila cercana al rival es la primera línea.</p>
      <p>3 copias ★ → una ★★ y evolución. 3 copias ★★ → una ★★★ y evolución final. Ejemplo: Charmander → Charmeleon → Charizard. Las familias de dos etapas potencian su forma final en ★★★. Eevee evoluciona a Vaporeon en esta alpha.</p>
-     <p>Los tipos, el sprite y el movimiento cambian al evolucionar. Las habilidades usan el comportamiento de su rol: apoyo cura, defensor se protege y golpea alrededor, luchador da un golpe potente, atacante a distancia daña una zona.</p>
+     <p>Los tipos, el sprite y el movimiento cambian al evolucionar. Las líneas de Charizard, Blastoise, Excadrill, Gengar, Gardevoir y Metagross tienen habilidades propias que cambian al evolucionar. Las demás usan el comportamiento de su rol: apoyo cura, defensor se protege y golpea alrededor, luchador da un golpe potente, atacante a distancia daña una zona.</p>
      <p>Sinergias: 2/4 familias distintas de un tipo activan los bonos indicados para los miembros de ese tipo. Las copias de una familia no suman más. Se conservan las afinidades de tipos del Survivor.</p>
-     <p>Tras cada ronda: 5 de oro, +1 por victoria, +1 por cada 10 ahorrados (máximo 5) y bonos de racha cada 2 rondas (máximo 3). Recibes 2 EXP gratis; comprar 4 EXP cuesta 4 de oro. Nivel máximo 6. Renovar cuesta 2; bloquear conserva la tienda.</p>
+     <p>Tras cada ronda: 5 de oro, +1 por victoria, +1 por cada 5 ahorrados (máximo 5; se alcanza con 25 de oro) y bonos de racha cada 2 rondas (máximo 3). Recibes 2 EXP gratis; comprar 4 EXP cuesta 4 de oro. Nivel máximo 6. Renovar cuesta 2; bloquear conserva la tienda.</p>
      <p>Los equipos se curan entre rondas. Perder resta PV; agotar los 45 segundos cuenta como derrota. Supera la ronda 12 con vida para completar el desafío. Pausa o usa ×2 durante el combate.</p>
-     <p>Alpha local: la partida dura esta sesión. La IA adapta comportamientos del Survivor: distancia retrocede, asaltante busca la retaguardia y guardián escuda al aliado más vulnerable. El oro y las unidades de TFT son independientes de tu cuenta y colección. Multijugador, objetos y recompensas de cuenta pendientes.</p>
+     <p>Alpha local: la partida dura esta sesión; los tres mazos se guardan en este dispositivo. La IA adapta comportamientos del Survivor: distancia retrocede, asaltante busca la retaguardia y guardián escuda al aliado más vulnerable. El oro y las unidades de TFT son independientes de tu cuenta y colección. Multijugador, objetos y recompensas de cuenta pendientes.</p>
     </details>
    </aside>
   </div>
+  </div><!-- tft-match -->
  </div>
 </section>
 <section id="scr-challenges" class="scr dim hidden">

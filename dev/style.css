@@ -1061,3 +1061,31 @@ body.tft-active #rotate { display:none!important; }
  #tft-shop .tft-card b { font-size:12px; }
  #tft-bench { grid-template-columns:repeat(4,minmax(0,1fr)); }
 }
+
+/* TFT decks: three local slots, ten complete evolution families per deck. */
+#tft-deck-panel { max-width:1000px; margin:15px auto; }
+#tft-deck-panel .tft-actions { margin:12px 0; }
+#tft-deck-filter { width:auto; max-width:160px; }
+#tft-deck-list { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; }
+#tft-deck-list .tft-card { padding:8px; min-height:150px; }
+#tft-deck-list .tft-card small { font-size:12px; color:#c1d3eb; }
+#tft-deck-list .tft-card b { font-size:16px; }
+#tft-deck-status { color:#a9f3cd; }
+@media(max-width:700px) {
+ #tft-deck-list { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+ #tft-deck-list .tft-card { padding:5px; min-height:145px; }
+ #tft-deck-list .tft-card b { font-size:14px; }
+ #tft-deck-list .tft-card small { font-size:10px; }
+}
+
+.tft-unit-info { margin-top:14px; padding:10px 12px; border:1px solid #526d8f; border-radius:10px; background:#14283d; }
+.tft-unit-info h3 { color:#ffe08a; margin:0 0 7px; }
+.tft-unit-info p { font-size:14px; line-height:1.4; margin:8px 0; }
+.tft-unit-info dl { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:10px 0; }
+.tft-unit-info dt { color:#adc4df; font-size:12px; }
+.tft-unit-info dd { margin:2px 0 0; font-size:17px; }
+#tft-evolution { display:flex; align-items:center; justify-content:center; border:2px solid #ffe08a; border-radius:10px; background:#253553; color:#ffe08a; margin:10px 0; padding:5px; animation:tft-evolve .6s ease-out; }
+#tft-evolution canvas { width:65px; height:50px; object-fit:contain; image-rendering:pixelated; }
+#tft-evolution p { margin:4px 0; font-size:14px; }
+@keyframes tft-evolve { from { transform:scale(.92); opacity:.3; } to { transform:scale(1); opacity:1; } }
+@media(prefers-reduced-motion:reduce) { #tft-evolution { animation:none; } }

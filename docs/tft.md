@@ -1,100 +1,89 @@
 # TFT · Evoluciones — alpha
 
-Development branch: `feat/tft-mode`. Entry: Jugar → TFT · Evoluciones (Alpha).
-This is an integrated game mode, reusing the local Pokédex, type chart and PMD
-sprites. It is a solo PvE challenge, not an online eight-player TFT lobby.
+Development branch: `feat/tft-mode`. Test URL:
+https://tiliko2803.github.io/pokesurvivor/dev/
+Entry: Jugar → TFT · Evoluciones. Hoenn preview remains available.
 
-## Implemented rules
+## Decks (requested first)
 
-- 6×6 board; three player deployment rows, up to six active units, eight bench slots.
-- 24 purchasable evolution families; shops offer the first stage only.
-- Three copies of equal star rank merge; 9 base copies produce a three-star unit.
-  Three-stage families change species at each merge. Two-stage families evolve
-  once and empower their final form at three stars. Single-stage species empower.
-- Merges preserve the deployed unit's ID and position where possible. Evolving
-  updates sprite, types, move name, speed and star-scaled combat stats.
-- Eevee → Vaporeon is the sole Eevee branch in this alpha; branching choices remain future work.
-- Moves currently use shared role behavior (healing, shielding + nearby damage,
-  single-target burst or area damage), rather than the Survivor projectile system.
-- Twelve generated enemy encounters, scaling stats and evolved foes. The final
-  encounter includes Rayquaza. Survive all twelve rounds with PV remaining to win.
-- Fixed 50 ms simulation steps, occupied-cell pathfinding, basic attacks, mana,
-  role abilities, type affinities, shields, regeneration and attack slows.
-- 45-second timeout counts as a loss; pause/hidden tab stops progression.
-- 50 player PV; round loss costs 4 + floor(round/2) + surviving enemies.
-- 10 starting gold, five shop offers. Refresh 2 gold; buy 4 XP for 4 gold.
-- Levels 3–6; XP required for next level: 6, 12, 20. Each round grants 2 XP.
-- Round income: 5 + victory (1) + interest (floor(gold/10), max 5) + streak
-  (floor(abs(streak)/2), max 3). Interest uses pre-income gold.
-- 2/4 distinct families of a type activate two synergy tiers. Duplicate species
-  or different stages of the same family count once per type. Only deployed
-  units count. Members of the type receive the displayed bonuses.
-- Shop lock persists until unlocked; starting combat requires a deployed unit.
-- Touch selection and placement, swapping, returning to bench, selling, pause,
-  double speed, quit confirmation and restart after victory/defeat.
+- Three local slots, each exactly ten distinct evolution families out of 24.
+- A family includes its complete line; species are not separate deck slots.
+- Tap to select/remove families; filter by cost; save or start when count is ten.
+- Browser preferences use only `ps.tft.decks.v1`. Invalid data or blocked storage
+  falls back to defaults/in-memory play; it never touches account save keys.
+- Default: Bulbasaur, Charmander, Squirtle, Pichu, Gastly, Ralts, Drilbur,
+  Larvitar, Beldum, Rayquaza. All six signature families are included.
+- A match snapshots the selected deck. Refreshes and new rounds only draw from
+  its ten families. Buying an injected off-deck offer is rejected by the engine.
+- Normal level rarity weights are normalized over costs present in the deck.
+  If no cost has nonzero weight, the cheapest chosen tier is offered instead.
+  This allows any ten valid lines, including decks without cost-1 families.
+- Opposing AI keeps the full roster. Decks are independent of owned collection.
+- Change decks before a new match; no changing the active deck during a run.
 
-## Isolation
+## Presentation (requested second)
 
-The engine never calls DB, localStorage, Firebase, rewards or rankings. The match
-lasts this session; leaving TFT discards it. Account ownership/perks are not used.
-The updater waits while TFT is open. Normal and Boss Rush retain their entry paths.
-The mode is not deployed to Live by this development change. The authorized test
-publication uses the existing https://tiliko2803.github.io/pokesurvivor/dev/ URL.
-`node tools/build-tft-preview.cjs` preserves Hoenn preview adapters and writes
-isolated copies of changed modules/styles under dev/. Only those preview files
-are published on the Pages branch; official root files remain byte-for-byte intact.
+Evolution banners show old and new species/stars, including bench merges.
+Movement interpolates visually; fixed-step combat positions remain authoritative.
+Type-colored projectile effects, damage/healing numbers, shield arcs and bars,
+burn/stun markers, fading defeated units and facing animations clarify battles.
+Touch a friendly or enemy board unit during combat, or a bench unit, to inspect
+HP, attack, defense, attacks/s, mana, shields and its actual ability description.
+Friendly trait activation is shown. Reduced-motion settings avoid combat flashes
+and movement interpolation; OS reduced-motion disables the evolution CSS effect.
 
-## Requested future: decks of 10 evolution lines
+## Signature abilities (requested third)
 
-Tiliko requested on 2026-10-22 a future deck system: select **10 Pokémon evolution
-lines** to use in TFT. Each family occupies one deck slot and contains all its
-stages, e.g. Charmander → Charmeleon → Charizard. The player's shop should draw
-from those ten selected families. This is recorded scope, not an implemented
-feature in this alpha. `ROSTER[].line` and `BY[dex].line` provide stable family
-identity for deck composition and merges.
+Six complete families receive distinct behaviors at each star rank. The rest
+retain role-based abilities; this is not a full 24-family move redesign.
 
-Pending design: deck editing/saving, collection restrictions (if any), branching
-evolution choices, rarity balance within decks, opposing deck rules and PvP.
-No restrictions or monetization are assumed. Also pending: items, bespoke move
-mechanics, richer battle animation, balancing, persistence and account rewards.
+| Family | First rank | Second rank | Third rank |
+|---|---|---|---|
+| Charmander | Single flame + burn | Fire cone + burn | Wider cone + stronger/longer burn |
+| Squirtle | Bubble + push | Nearby water damage + push | 4-cell water beam + up to 2-cell push |
+| Drilbur | Steel strike | Drill through up to 3 cells | Drill + landing ground shockwave |
+| Gastly | Ghost strike + slow | Bonus vs targets below 40% HP | Larger bonus + 25% actual damage life drain |
+| Ralts | Heal + psychic strike | Heal + cleanse burn/slow/stun | Heal and shield two wounded allies |
+| Beldum | Tackle/push + self shield | Shield vulnerable ally + steel strike | Area meteor strike, 1-second stun + self shield |
 
-## Validation
+Pushes stop at occupied cells and board edges. Drill stops at friendly blockers
+and lands only in a free cell. Shields cap at 50% recipient HP. Healing caps at
+missing HP; drain scales from HP actually removed. Burn is finite and refreshes
+rather than stacking unboundedly. Skills use their own damage type. Inspectors
+show stage-specific descriptions and the corresponding move name.
 
-`node --test tests/tft.test.cjs`
+## Core rules and isolation
 
-`node tests/tft-browser.cjs` (Playwright + installed Chromium; honors CHROMIUM_PATH).
+6×6 board, three player rows, eight bench slots, levels 3–6, 12 PvE rounds and a
+final Rayquaza encounter. Three equal-star copies merge; 9 base copies make one
+three-star unit. Two-stage families empower the evolved form at rank three;
+single-stage species empower. Eevee currently uses Vaporeon only.
 
-Source integration: `dev.html`, `js/tft/engine.js`, `js/tft/ui.js`, `css/style.css`.
-For a later authorized Pages release: `node tools/build.js --github-pages`.
+50 initial PV, 10 gold, 5 shop offers. Refresh costs 2, four XP cost 4, two XP
+arrive after a round. Income: 5 + 1 per win + interest (floor(gold/5), capped at 5; maximum at 25 saved gold) +
+streak bonus (one per two consecutive results of the same sign, capped at 3).
+2/4 distinct deployed families activate type synergies. Fixed 50 ms simulation,
+45-second round limit (timeout loses), pause and ×2. Survive 12 rounds to win.
 
-Development verification (2026-10-22): 30 engine/integration/regression checks passed,
-including TFT, manual/touch aim, Pages packaging and live Boss Rush isolation.
-Browser validation remains pending: this environment has no Chromium executable;
-Playwright's browser download failed with an invalid/truncated archive. The
-browser test is prepared, but visual layouts have not been verified here.
-
-
-## Reused Survivor AI (2026-10-22)
-
-The existing `G.Enemies.behaviorOf` personality classifier is exposed as a pure
-function and reused by TFT. Its behavior is adapted to two teams and grid cells:
-healers support, shielders protect the most vulnerable ally (e.g. Metang),
-chargers/jumpers with a melee role dive toward enemy backline (e.g. Lucario),
-ranged units focus wounded enemies in range and retreat from adjacent enemies.
-Tanks and melee identities remain intact: Excadrill and Blaziken stay melee.
-
-BFS pursues targets without occupying another living unit's cell; retreat also
-checks occupancy and board limits. Spell, movement and selection rules are local
-TFT rules; the Survivor enemy entity, its world, projectiles, summoning and boss
-state are not instantiated or changed. Additional beam/zone/summon mechanics
+The Survivor personality classifier is reused for grid AI: ranged retreat,
+divers target backline, guardians protect wounded allies, melee roles persist.
+No Survivor enemy entities, boss state, projectiles, ranking or rewards are used.
+The engine never writes account data. Deck preferences persist; matches do not.
+Items, PvP, full match persistence, account rewards and more signature abilities
 remain future work.
 
+## Packaging and verification
 
-Hosted desktop smoke check: verified the existing /dev/ URL loads the TFT + Hoenn
-preview, enters the isolated guest menu, purchases Squirtle/Bulbasaur/Charmander,
-deploys all three, starts automatic combat, renders damage/healing and pauses.
-36 automated engine/packaging/regression checks passed, including AI target
-selection, retreat, guardian shields and preservation of melee roles. The local
-Playwright suite still awaits a local Chromium installation; mobile visual
-validation and full hosted match playthrough remain pending. The published
-preview commit changes exactly seven dev/ paths; official root files are intact.
+`node --test tests/tft.test.cjs tests/tft-preview.test.cjs`
+
+`node tests/tft-browser.cjs` uses local Playwright and Chromium (CHROMIUM_PATH
+optional); covers desktop, portrait and landscape when a browser is available.
+
+`node tools/build-tft-preview.cjs` generates the existing /dev/ page with isolated
+copies of changed modules/styles. Publish only its seven listed dev/ paths to
+the Pages branch. Official root files and version.json remain intact. Source
+and test changes are retained on feat/tft-mode for a later authorized release.
+
+Hosted smoke checks cover the previous alpha. This iteration requires checking
+saved-deck editing, launching a chosen deck and unit inspection in the hosted UI;
+local automated browser runs require an installed Chromium executable.

@@ -35,18 +35,32 @@ G.TFT = (() => {
     BY[dex]={...family,dex,stage,move:family.moves[stage]};
   const evolvedDex=(dex,star)=>BY[dex].line[Math.min(star-1,BY[dex].line.length-1)];
   const moveFor=u=>BY[u.dex].moves[u.star-1];
+  const DEFAULT_DECK=[1,4,7,172,92,280,529,246,374,384];
+  function validDeck(deck) {
+    return Array.isArray(deck)&&deck.length===10&&new Set(deck).size===10&&
+      deck.every(d=>Number.isInteger(d)&&BY[d]?.line[0]===d);
+  }
   const XP = [0,0,0,0,6,12,20]; // cost to reach levels 4, 5, 6
   const ODDS = {3:[75,25,0,0,0],4:[50,35,15,0,0],5:[30,35,25,10,0],6:[20,25,30,20,5]};
-  function create(seed = Date.now()) {
+  function create(seed = Date.now(),deck) {
+    if(deck!==undefined&&!validDeck(deck))throw new Error('Elige exactamente 10 líneas distintas.');
     const s = {seed:seed>>>0,nextId:1,round:1,life:50,gold:10,level:3,xp:0,
-      units:[],shop:[],locked:false,phase:'planning',battle:null,result:null,wins:0,streak:0};
+      deck:deck?deck.slice():ROSTER.map(p=>p.dex),effects:[],units:[],shop:[],locked:false,phase:'planning',battle:null,result:null,wins:0,streak:0};
     reroll(s,true); return s;
   }
   function random(s) { s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0; return s.seed/4294967296; }
   function roll(s) {
-    let n=random(s)*100, cost=1;
-    for (const chance of ODDS[s.level]) { n-=chance; if(n<0)break; cost++; }
-    const pool=ROSTER.filter(p=>p.cost===cost); return pool[Math.floor(random(s)*pool.length)].dex;
+    const available=ROSTER.filter(p=>s.deck.includes(p.dex));
+    const weights=ODDS[s.level].map((w,i)=>available.some(p=>p.cost===i+1)?w:0);
+    const sum=weights.reduce((a,b)=>a+b,0);
+    let cost;
+    if(!sum)cost=Math.min(...available.map(p=>p.cost));
+    else {
+      let n=random(s)*sum;cost=1;
+      for(const w of weights){n-=w;if(n<0)break;cost++;}
+    }
+    const pool=available.filter(p=>p.cost===cost);
+    return pool[Math.floor(random(s)*pool.length)].dex;
   }
   function planning(s) { return s.phase==='planning'; }
   function reroll(s,free=false) {
@@ -61,7 +75,9 @@ G.TFT = (() => {
       let copies=s.units.filter(u=>BY[u.dex].line[0]===def.dex&&u.star===star);
       while(copies.length>=3) {
         copies.sort((a,b)=>(a.pos===null)-(b.pos===null)||a.id-b.id);
-        const [keep,...consumed]=copies.slice(0,3); keep.star++;keep.dex=evolvedDex(keep.dex,keep.star);
+        const [keep,...consumed]=copies.slice(0,3),fromDex=keep.dex;
+        keep.star++;keep.dex=evolvedDex(keep.dex,keep.star);
+        s.effects.push({kind:'evolve',id:keep.id,fromDex,toDex:keep.dex,star:keep.star,ttl:1.6});
         const ids=new Set(consumed.map(u=>u.id));s.units=s.units.filter(u=>!ids.has(u.id));
         copies=s.units.filter(u=>BY[u.dex].line[0]===def.dex&&u.star===star);
       }
@@ -69,7 +85,7 @@ G.TFT = (() => {
   }
   function buy(s,index) {
     if(!planning(s))return false;
-    const dex=s.shop[index], def=BY[dex]; if(!def||s.gold<def.cost)return false;
+    const dex=s.shop[index], def=BY[dex]; if(!def||!s.deck.includes(def.line[0])||s.gold<def.cost)return false;
     const merges=s.units.filter(u=>u.dex===dex&&u.star===1).length>=2;
     if(s.units.filter(u=>u.pos===null).length>=BENCH&&!merges)return false;
     s.gold-=def.cost;s.shop[index]=null;addUnit(s,dex);combine(s);return true;
@@ -159,7 +175,7 @@ G.TFT = (() => {
       ai,maxHp:(def.role==='tank'?480:330)*(1+def.cost*.1)*power,
       attack:(35+def.cost*9)*power,armor:def.role==='tank'?40:20,
       interval:Math.max(.65,1.35-(p.spd-90)/100),range:['ranged','healer'].includes(ai)?3:1,
-      mana:0,manaGain:0,regen:0,pierce:0,slow:0,shield:0,cooldown:.2,moveCD:0,flash:0};
+      damageDone:0,healingDone:0,shieldingDone:0,mana:0,manaGain:0,regen:0,pierce:0,slow:0,shield:0,cooldown:.2,moveCD:0,flash:0};
     for(const type of p.types) {
       const tier=synergies[type]?.tier||0;if(!tier)continue;
       switch(EFFECTS[type]) {
@@ -176,6 +192,41 @@ G.TFT = (() => {
     if(side===1) {const k=1+(round-1)*.035;f.maxHp*=k;f.attack*=k;}
     f.hp=f.maxHp;return f;
   }
+  const SIGNATURES={
+    4:{types:['fire','fire','fire'],text:[
+      'Una llama golpea al objetivo y lo quema durante 3 segundos.',
+      'Lanza fuego en cono; daña y quema a los enemigos alcanzados.',
+      'Una llamarada amplia daña en cono y aplica una quemadura de 4 segundos.']},
+    7:{types:['water','water','water'],text:[
+      'Golpea con una burbuja y empuja al objetivo una casilla libre.',
+      'Hidropulso golpea al objetivo y sus vecinos; los empuja una casilla.',
+      'Dispara un chorro en línea de 4 casillas que daña y empuja hasta 2 casillas.']},
+    529:{types:['steel','ground','ground'],text:[
+      'Un golpe de Acero potente contra un enemigo.',
+      'Perfora hasta 3 casillas, golpea a los enemigos de la línea y acaba en una casilla libre.',
+      'Perfora la línea y provoca una onda de Tierra alrededor del aterrizaje.']},
+    92:{types:['ghost','ghost','ghost'],text:[
+      'Golpea y ralentiza los ataques del objetivo durante 2 segundos.',
+      'Bola Sombra hace un 50% más de daño a objetivos por debajo del 40% de vida.',
+      'Infortunio hace un 80% más de daño a objetivos por debajo del 40% de vida y roba el 25% de la vida quitada.']},
+    280:{types:['psychic','psychic','fairy'],text:[
+      'Cura al aliado más herido y golpea al enemigo con Confusión.',
+      'Cura al aliado más herido y elimina quemadura, ralentización y aturdimiento.',
+      'Cura y escuda a los 2 aliados con menos vida proporcional.']},
+    374:{types:['normal','steel','steel'],text:[
+      'Embiste al objetivo, lo empuja una casilla y obtiene un pequeño escudo.',
+      'Escuda al aliado más vulnerable y golpea con Garra Metal.',
+      'Puño Meteoro golpea una zona, aturde durante 1 segundo y concede un escudo a Metagross.']}
+  };
+  function abilityFor(u) {
+    const signature=SIGNATURES[BY[u.dex].line[0]],i=u.star-1;
+    if(signature)return {name:moveFor(u),type:signature.types[i],description:signature.text[i],signature:true};
+    const ai=aiFor(u.dex),role=BY[u.dex].role;
+    const description=ai==='healer'?'Cura al aliado con menos vida proporcional.':ai==='guardian'?'Escuda al aliado más vulnerable y golpea al enemigo.':
+      role==='tank'?'Obtiene un escudo y daña a los enemigos cercanos.':role==='mage'?'Daña al objetivo y a los enemigos junto a él.':'Da un golpe potente a un enemigo.';
+    return {name:moveFor(u),type:G.DEX_BY[u.dex].types[0],description};
+  }
+  function preview(s,u) {return fighter(u,0,traits(s.units.filter(v=>v.pos!==null)),1);}
   function start(s) {
     if(!planning(s)||!s.units.some(u=>u.pos!==null))return false;
     const team=s.units.filter(u=>u.pos!==null),foes=enemyTeam(s);
@@ -184,32 +235,111 @@ G.TFT = (() => {
     s.phase='combat';s.result=null;return true;
   }
   const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
-  function hit(b,a,t,power,spell=false) {
-    const type=a.types[0],mult=G.Types?.mult?G.Types.mult(type,t.types):1;
+  function hit(b,a,t,power,spell=false,type=a.types[0]) {
+    if(t.hp<=0)return 0;
+    const mult=G.Types?.mult?G.Types.mult(type,t.types):1;
     const damage=Math.max(1,Math.round(power*mult*100/(100+t.armor*(1-Math.min(.8,a.pierce)))));
-    const absorbed=Math.min(t.shield,damage);t.shield-=absorbed;t.hp=Math.max(0,t.hp-(damage-absorbed));
+    const absorbed=Math.min(t.shield,damage),lost=Math.min(t.hp,damage-absorbed);t.shield-=absorbed;t.hp=Math.max(0,t.hp-lost);a.damageDone+=lost;
     t.flash=.16;t.mana=Math.min(100,t.mana+8);
     if(a.slow)t.slowUntil=b.time+2,t.slowPower=a.slow;
-    b.events.push({kind:spell?'spell':'hit',from:a.id,to:t.id,amount:damage,ttl:.45});
+    b.events.push({kind:spell?'spell':'hit',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,type,amount:lost,absorbed,ttl:.45});
+    return lost;
+  }
+  function heal(b,a,t,amount) {
+    const added=Math.max(0,Math.min(t.maxHp-t.hp,Math.round(amount)));t.hp+=added;a.healingDone+=added;
+    if(added)b.events.push({kind:'heal',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,amount:added,ttl:.6});return added;
+  }
+  function shield(b,a,t,amount) {
+    const added=Math.max(0,Math.min(t.maxHp*.5-t.shield,Math.round(amount)));t.shield+=added;a.shieldingDone+=added;
+    if(added)b.events.push({kind:'shield',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,amount:Math.round(added),ttl:.6});
+  }
+  function push(b,a,t,steps) {
+    const dx=t.x-a.x,dy=t.y-a.y;
+    const vx=Math.abs(dx)>Math.abs(dy)?Math.sign(dx):0,vy=vx?0:Math.sign(dy)||1;
+    for(let i=0;i<steps;i++){
+      const x=t.x+vx,y=t.y+vy;
+      if(x<0||x>=COLS||y<0||y>=ROWS||b.units.some(u=>u!==t&&u.hp>0&&u.x===x&&u.y===y))break;
+      t.x=x;t.y=y;t.moveCD=Math.max(t.moveCD,.25);
+    }
+  }
+  function burn(b,a,t,duration,power) {
+    if(t.hp<=0)return;
+    if(!t.burn||power>=t.burn.power)t.burn={source:a.id,power,remaining:duration,cd:1};
+    else t.burn.remaining=Math.max(t.burn.remaining,duration);
+  }
+  function signature(b,a,target) {
+    const family=BY[a.dex].line[0],rank=a.star,foes=()=>b.units.filter(u=>u.side!==a.side&&u.hp>0);
+    const allies=()=>b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id);
+    if(family===4) {
+      const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1;
+      const victims=rank===1?[target]:foes().filter(t=>{
+        const vx=t.x-a.x,vy=t.y-a.y,d=Math.hypot(vx,vy)||1;
+        return d<= (rank===3?4:3)&&(vx*dx+vy*dy)/(len*d)>=.65;
+      });
+      for(const t of victims){hit(b,a,t,a.attack*(rank===3?2.5:rank===2?2:1.9),true,'fire');burn(b,a,t,rank===3?4:3,a.attack*(rank===3?.25:.18));}
+    } else if(family===7) {
+      if(rank<3) {
+        const victims=rank===1?[target]:foes().filter(t=>distance(target,t)<=1);
+        victims.sort((x,y)=>distance(a,y)-distance(a,x));
+        for(const t of victims){hit(b,a,t,a.attack*(rank===1?2.2:1.9),true,'water');if(t.hp>0)push(b,a,t,1);}
+      } else {
+        const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;
+        const victims=foes().filter(t=>{
+          const x=t.x-a.x,y=t.y-a.y,d=x*ux+y*uy;
+          return d>=0&&d<=4&&Math.abs(x*uy-y*ux)<=.65;
+        }).sort((x,y)=>distance(a,y)-distance(a,x));
+        b.events.push({kind:'beam',from:a.id,sx:a.x,sy:a.y,tx:Math.max(0,Math.min(5,a.x+ux*4)),ty:Math.max(0,Math.min(5,a.y+uy*4)),type:'water',ttl:.6});
+        for(const t of victims){hit(b,a,t,a.attack*2.5,true,'water');if(t.hp>0)push(b,a,t,2);}
+      }
+    } else if(family===529) {
+      if(rank===1)hit(b,a,target,a.attack*2.8,true,'steel');
+      else {
+        const sx=a.x,sy=a.y,dx=target.x-sx,dy=target.y-sy,vx=Math.abs(dx)>Math.abs(dy)?Math.sign(dx):0,vy=vx?0:Math.sign(dy)||1;
+        let landing={x:sx,y:sy},end={...landing};
+        for(let i=1;i<=3;i++) {
+          const x=sx+vx*i,y=sy+vy*i;
+          if(x<0||x>=COLS||y<0||y>=ROWS||b.units.some(u=>u!==a&&u.side===a.side&&u.hp>0&&u.x===x&&u.y===y))break;
+          end={x,y};for(const t of foes().filter(t=>t.x===x&&t.y===y))hit(b,a,t,a.attack*2.6,true,'ground');
+          if(!b.units.some(u=>u!==a&&u.hp>0&&u.x===x&&u.y===y))landing={x,y};
+        }
+        a.x=landing.x;a.y=landing.y;a.moveCD=.35;
+        b.events.push({kind:'drill',from:a.id,sx,sy,tx:end.x,ty:end.y,type:'ground',ttl:.6});
+        if(rank===3)for(const t of foes().filter(t=>distance(a,t)<=2))hit(b,a,t,a.attack*1.5,true,'ground');
+      }
+    } else if(family===92) {
+      const weak=target.hp/target.maxHp<.4;
+      const amount=hit(b,a,target,a.attack*(rank===1?2.2:2.7)*(weak?(rank===3?1.8:rank===2?1.5:1):1),true,'ghost');
+      if(rank===1){target.slowUntil=b.time+2;target.slowPower=.25;}
+      if(rank===3)heal(b,a,a,amount*.25);
+    } else if(family===280) {
+      const friends=allies();
+      if(rank===1){heal(b,a,friends[0],a.attack*1.8);hit(b,a,target,a.attack*1.1,true,'psychic');}
+      else if(rank===2){const ally=friends[0];heal(b,a,ally,a.attack*3.2);ally.burn=null;ally.slowUntil=0;ally.stunUntil=0;}
+      else for(const ally of friends.slice(0,2)){heal(b,a,ally,a.attack*3.5);shield(b,a,ally,a.maxHp*.15);}
+    } else if(family===374) {
+      if(rank===1){hit(b,a,target,a.attack*2,true,'normal');if(target.hp>0)push(b,a,target,1);shield(b,a,a,a.maxHp*.12);}
+      else if(rank===2){shield(b,a,allies()[0],a.maxHp*.25);hit(b,a,target,a.attack*1.8,true,'steel');}
+      else {
+        const center={x:target.x,y:target.y};
+        for(const t of foes().filter(t=>distance(center,t)<=1)){hit(b,a,t,a.attack*(t===target?3:1.5),true,'steel');t.stunUntil=b.time+1;}
+        shield(b,a,a,a.maxHp*.25);
+      }
+    } else return false;
+    return true;
   }
   function cast(b,a,target) {
-    a.mana=0;
-    b.events.push({kind:'cast',from:a.id,move:moveFor(a),ttl:.8});
+    a.mana=0;b.events.push({kind:'cast',from:a.id,move:moveFor(a),ttl:.8});
+    if(signature(b,a,target))return;
     if(a.ai==='guardian') {
       const ally=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id)[0];
-      const amount=Math.round(a.maxHp*.25);ally.shield=Math.min(ally.maxHp*.5,ally.shield+amount);
-      b.events.push({kind:'shield',from:a.id,to:ally.id,amount,ttl:.6});
-      hit(b,a,target,a.attack*1.5,true);
+      shield(b,a,ally,a.maxHp*.25);hit(b,a,target,a.attack*1.5,true);
     } else if(a.ai==='healer') {
-      const ally=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0];
-      const amount=Math.round(a.attack*3.2);ally.hp=Math.min(ally.maxHp,ally.hp+amount);
-      b.events.push({kind:'heal',from:a.id,to:ally.id,amount,ttl:.6});
+      const ally=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0];heal(b,a,ally,a.attack*3.2);
     } else if(a.role==='tank') {
-      a.shield=Math.min(a.maxHp*.5,a.shield+a.maxHp*.25);
+      shield(b,a,a,a.maxHp*.25);
       for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=2))hit(b,a,t,a.attack*1.5,true);
     } else if(a.role==='mage') {
-      const targets=b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(target,u)<=1);
-      for(const t of targets)hit(b,a,t,a.attack*2,true);
+      for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(target,u)<=1))hit(b,a,t,a.attack*2,true);
     } else hit(b,a,target,a.attack*3.5,true);
   }
   function finish(s,winner) {
@@ -218,7 +348,7 @@ G.TFT = (() => {
       s.streak=Math.min(0,s.streak)-1;
       s.life=Math.max(0,s.life-4-Math.floor(s.round/2)-b.units.filter(u=>u.side===1&&u.hp>0).length);
     }
-    const interest=Math.min(5,Math.floor(s.gold/10)),bonus=Math.min(3,Math.floor(Math.abs(s.streak)/2));
+    const interest=Math.min(5,Math.floor(s.gold/5)),bonus=Math.min(3,Math.floor(Math.abs(s.streak)/2));
     const income=5+interest+bonus+(won?1:0);s.gold+=income;gainXP(s,2);
     s.result={won,draw:winner===-1,income,interest,bonus,round:s.round};
     s.phase=s.life<=0?'defeat':s.round>=LAST_ROUND?'victory':'result';
@@ -231,7 +361,14 @@ G.TFT = (() => {
     for(const a of order) {
       a.flash=Math.max(0,a.flash-dt);if(a.hp<=0)continue;
       a.hp=Math.min(a.maxHp,a.hp+a.maxHp*a.regen*dt);
+      if(a.burn) {
+        const dot=a.burn;dot.remaining-=dt;dot.cd-=dt;
+        if(dot.cd<=.00001){const source=b.units.find(u=>u.id===dot.source);if(source)hit(b,source,a,dot.power,true,'fire');dot.cd+=1;}
+        if(dot.remaining<=.00001)a.burn=null;
+        if(a.hp<=0)continue;
+      }
       a.cooldown-=dt;a.moveCD-=dt;
+      if(a.stunUntil>b.time)continue;
       const enemies=b.units.filter(u=>u.side!==a.side&&u.hp>0);
       if(!enemies.length){finish(s,a.side);return;}
       const target=selectTarget(b,a);
@@ -241,7 +378,7 @@ G.TFT = (() => {
           a.cooldown=a.interval/(a.slowUntil>b.time?1-a.slowPower:1);
           hit(b,a,target,a.attack);a.mana=Math.min(100,a.mana+25+a.manaGain);
           if(a.mana>=100) {
-            const alive=target.hp>0?target:enemies.filter(t=>t.hp>0).sort((x,y)=>distance(a,x)-distance(a,y))[0];if(alive)cast(b,a,alive);
+            const alive=target.hp>0?target:enemies.filter(t=>t.hp>0).sort((x,y)=>distance(a,x)-distance(a,y))[0];if(alive&&distance(a,alive)<=a.range)cast(b,a,alive);
           }
         }
       } else if(!retreated&&a.moveCD<=0) {
@@ -264,7 +401,9 @@ G.TFT = (() => {
     else if(b.time>=45)finish(s,-1); // timeout is a loss; healing cannot stall forever
   }
   function tick(s,dt) {
-    if(s.phase!=='combat'||!Number.isFinite(dt)||dt<=0)return;
+    if(!Number.isFinite(dt)||dt<=0)return;
+    s.effects=s.effects.filter(e=>(e.ttl-=Math.min(dt,.25))>0);
+    if(s.phase!=='combat')return;
     s.battle.acc+=Math.min(dt,.25);
     while(s.battle.acc>=.05&&s.phase==='combat'){s.battle.acc-=.05;step(s,.05);}
   }
@@ -273,5 +412,5 @@ G.TFT = (() => {
     s.round++;s.phase='planning';s.battle=null;
     if(!s.locked)reroll(s,true);return true;
   }
-  return {COLS,ROWS,BENCH,LAST_ROUND,ROSTER,BY,evolvedDex,moveFor,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
+  return {COLS,ROWS,BENCH,LAST_ROUND,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
 })();

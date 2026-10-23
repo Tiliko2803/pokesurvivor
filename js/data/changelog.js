@@ -6,6 +6,16 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-22', title: ['TFT: mazos, evoluciones y habilidades propias', 'TFT: decks, evolutions and signature abilities'], new: [
+    ['Intereses de TFT: cada 5 de oro ahorrados dan +1 por ronda, con un máximo de +5 al ahorrar 25.',
+     'TFT interest: every 5 saved gold grants +1 per round, capped at +5 when saving 25.'],
+    ['Tres mazos locales de diez líneas evolutivas. Elige entre las 24 familias; la tienda sólo ofrece las de tu mazo. Puedes consultar las líneas elegidas durante la partida.',
+     'Three local decks of ten evolution families. Choose from the 24 families; the shop only offers your chosen lines. Inspect your deck during a match.'],
+    ['Animación al evolucionar, desplazamiento suave, proyectiles por tipo, escudos visibles y ficha de vida, daño, defensa, maná, habilidad y sinergias al tocar unidades, también durante el combate.',
+     'Evolution animations, smooth movement, type-colored projectiles, visible shields and a unit inspector for HP, damage, armor, mana, ability and synergies, including during combat.'],
+    ['Habilidades propias para las líneas de Charizard, Blastoise, Excadrill, Gengar, Gardevoir y Metagross: quemaduras, empujes, perforación, robo de vida, curación con limpieza y aturdimiento en zona. Cambian al evolucionar.',
+     'Signature abilities for the Charizard, Blastoise, Excadrill, Gengar, Gardevoir and Metagross families: burns, knockback, piercing, life drain, healing with cleansing and area stun. Abilities change on evolution.']
+  ] },
   { d: '2026-10-22', title: ['Estadísticas al terminar la partida', 'End-of-run statistics'], new: [
     ['Al terminar una partida también puedes ver el daño y DPS de cada movimiento, estadísticas finales, objeto y cartas. El resumen guarda los valores justo al terminar y se puede desplazar en móvil.',
      'At the end of a run you can also see damage and DPS per move, final stats, held item and cards. The summary captures values at the moment the run ends and scrolls on mobile.']
