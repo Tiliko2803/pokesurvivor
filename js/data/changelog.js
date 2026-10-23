@@ -6,6 +6,17 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: supervivencia PvE infinita', 'TFT: endless PvE survival'], new: [
+    ['El desafío de 12 rondas se convierte en oleadas infinitas: Enjambre, Vanguardia, Artillería, Bastión y Expedición, especiales cada 5 y jefes cada 10. Articuno, Zapdos, Moltres, Kyogre, Groudon y Rayquaza rotan como jefes. Hasta 6 enemigos y un sanador por encuentro; dificultad creciente.',
+     'The 12-round challenge becomes endless waves: Swarm, Vanguard, Artillery, Bastion and Expedition, specials every 5 waves and bosses every 10. Articuno, Zapdos, Moltres, Kyogre, Groudon and Rayquaza rotate as bosses. Up to 6 enemies and one healer per encounter, with increasing difficulty.'],
+    ['Récords locales por oleada alcanzada y PV restantes, preparación sin límite de tiempo, botín extra en especiales y jefes, y pérdida de hasta 12 PV por derrota. Los equipos se curan entre oleadas y el interés conserva su máximo de 5 oro. Los jefes reciben la mitad de duración de aturdimiento.',
+     'Local records by wave reached and remaining HP, unlimited preparation time, extra loot for specials and bosses, and up to 12 HP lost per defeat. Teams heal between waves and interest remains capped at 5 gold. Bosses take half stun duration.']
+  ], chg: [
+    ['Los legendarios quedan reservados para los enemigos. Rayquaza sale del editor y la tienda; los mazos anteriores se ajustan y sus copias compradas se reembolsan. Las victorias antiguas permiten continuar; los combates antiguos vuelven a preparación al convertirse. El guardado de expediciones largas conserva el informe acumulado con un historial reciente limitado.',
+     'Legendaries are reserved for enemies. Rayquaza leaves the editor and shop; older decks are adjusted and purchased copies are refunded. Old victories can continue; old active battles return to preparation on conversion. Long-run saves keep cumulative reports with a bounded recent history.'],
+    ['Animaciones más cuidadas: impulso de ataque, retroceso al impacto, barras de vida con caída gradual, trazos de lanzamiento, destellos de impacto y distintivos de oleada especial y jefe. Se respetan pausa, velocidad, modo tranquilo y gráficos bajos.',
+     'More polished animations: attack lunges, impact recoil, trailing health bars, casting effects, impact sparks and special-wave and boss badges. Pause, speed, calm mode and low graphics are respected.']
+  ] },
   { d: '2026-10-23', title: ['TFT: Talonflame y Alas Vendaval', 'TFT: Talonflame and Gale Wings'], new: [
     ['La línea Fletchling → Fletchinder → Talonflame llega por 2 oro. Alas Vendaval da prioridad dentro de los pulsos de ataque mientras conserve toda la vida; perder vida la desactiva y curarse al máximo la recupera. La ficha muestra si está activa. Es una adaptación para TFT y respeta alcance y aturdimientos.',
      'The Fletchling → Fletchinder → Talonflame line joins for 2 gold. Gale Wings grants priority within attack beats while at full HP; losing HP disables it and healing to full restores it. The unit card shows whether it is active. This TFT adaptation respects range and stuns.'],

@@ -1,24 +1,24 @@
-# TFT · Evoluciones — alpha
+# TFT · Supervivencia PvE — alpha
 
 Development branch: `feat/tft-mode`. Test URL:
 https://tiliko2803.github.io/pokesurvivor/dev/
-Entry: Jugar → TFT · Evoluciones. Hoenn preview remains available.
+Entry: Jugar → TFT · Oleadas infinitas. Hoenn preview remains available.
 
 ## Decks (requested first)
 
-- Three local slots, each exactly ten distinct evolution families out of 34.
+- Three local slots, each exactly ten distinct evolution families out of 79 playable families.
 - A family includes its complete line; species are not separate deck slots.
 - Tap to select/remove families; filter by cost; save or start when count is ten.
 - Browser preferences use only `ps.tft.decks.v1`. Invalid data or blocked storage
   falls back to defaults/in-memory play; it never touches account save keys.
 - Default: Bulbasaur, Charmander, Squirtle, Pichu, Gastly, Ralts, Drilbur,
-  Larvitar, Beldum, Rayquaza. All six signature families are included.
+  Larvitar, Beldum, Fletchling. Legendaries are reserved for PvE bosses.
 - A match snapshots the selected deck. Refreshes and new rounds only draw from
   its ten families. Buying an injected off-deck offer is rejected by the engine.
 - Normal level rarity weights are normalized over costs present in the deck.
   If no cost has nonzero weight, the cheapest chosen tier is offered instead.
   This allows any ten valid lines, including decks without cost-1 families.
-- Opposing AI keeps the full roster. Decks are independent of owned collection.
+- Opposing AI uses themed compositions and six rotating legendary bosses. Decks are independent of owned collection.
 - Change decks before a new match; no changing the active deck during a run.
 
 ## Presentation (requested second)
@@ -54,8 +54,7 @@ show stage-specific descriptions and the corresponding move name.
 
 ## Core rules and isolation
 
-6×6 board, three player rows, eight bench slots, levels 3–6, 12 PvE rounds and a
-final Rayquaza encounter. Three equal-star copies merge; 9 base copies make one
+6×6 board, three player rows, eight bench slots, levels 3–6 and endless PvE waves. Specials arrive every 5 waves and legendary bosses every 10. Three equal-star copies merge; 9 base copies make one
 three-star unit. Two-stage families empower the evolved form at rank three;
 single-stage species empower. Eevee currently uses Vaporeon only.
 
@@ -63,7 +62,7 @@ single-stage species empower. Eevee currently uses Vaporeon only.
 arrive after a round. Income: 5 + 1 per win + interest (floor(gold/5), capped at 5; maximum at 25 saved gold) +
 streak bonus (one per two consecutive results of the same sign, capped at 3).
 2/4 distinct deployed families activate type synergies. Fixed 50 ms simulation,
-45-second round limit (timeout loses), pause and ×2. Survive 12 rounds to win.
+45-second round limit (timeout loses), pause and ×2. Continue until HP reaches zero; there is no victory cap.
 
 The Survivor personality classifier is reused for grid AI: ranged retreat,
 divers target backline, guardians protect wounded allies, melee roles persist.
@@ -272,3 +271,18 @@ Alas Vendaval se inspira en la prioridad Voladora con vida completa de los juego
 La entrada Viento Afín aumenta la cadencia de todos los aliados un 8/12/16% durante 2 segundos según estrellas. Usa los temporizadores existentes; varias fuentes conservan el mayor bono activo y renuevan la duración, sin multiplicar bonos repetidos. Los básicos de toda la familia son Voladores; Picotazo aumenta temporalmente su cadencia, Nitrocarga quema y aumenta su cadencia, Pájaro Osado daña en radio 1 alrededor del objetivo, ignora el 30% de defensa y mejora hasta un 25% contra rivales heridos. No hay salto a través de aliados ni teletransporte.
 
 Validación: 96 pruebas pasan y la regresión de interfaz completa pasa en cinco tamaños de pantalla. Casos nuevos comprueban prioridad con ambos bandos, pérdida y recuperación al curar, daño Volador de básicos, respeto de compás/alcance/CC, Viento Afín sin buff a enemigos y sin acumulación, expiración de bonos, evolución en los tres niveles, guardado determinista y final de combate.
+
+
+## Estado actual: oleadas infinitas y primera mejora de animación · 23 de octubre de 2026
+
+El modo pasa a supervivencia PvE. Se conserva la economía, mazo de diez familias, evoluciones, formación y compás de cuatro pulsos. Hay cinco plantillas de encuentro (Enjambre, Vanguardia, Artillería, Bastión, Expedición), variantes especiales cada 5 oleadas y un jefe legendario cada 10. Los jefes rotan Articuno → Zapdos → Moltres → Kyogre → Groudon → Rayquaza y repiten con más dificultad. Nunca se supera el límite de seis enemigos; como máximo hay un sanador de rol declarado por encuentro. Estrellas, coste y estadísticas crecen con la oleada; los jefes tienen triple vida y mitad de duración de CC.
+
+Los jugadores disponen de 79 familias. Rayquaza permanece en los datos del motor como enemigo, pero no aparece en mazos, tienda ni compras. Los otros cinco jefes usan definiciones separadas fuera del catálogo del jugador, sprites existentes y movimientos reales del resolvedor de TFT. Los encuentros se generan una vez por oleada; mirar, comprar y recolocar no cambia el rival ni consume más RNG. Preparación sin temporizador, combate de 45 segundos, curación entre oleadas, derrotas de hasta 12 PV y botín extra de 2/4 oro al ganar especiales/jefes. Interés máximo 5 como antes.
+
+Guardado: esquema 2 en la misma clave `ps.tft.match.v1`. La versión 1 se valida y migra: reemplaza la línea de Rayquaza en el mazo sin duplicados, devuelve el coste de las copias compradas, y permite continuar las antiguas victorias. Un combate antiguo vuelve a preparación de su oleada con sus otras unidades y economía conservadas. Reanudar un combate nuevo mantiene la simulación y comienza en pausa. Los informes guardan totales acumulados por familia y sólo 20 oleadas recientes para evitar crecimiento de memoria. Los validadores aceptan oleadas/counters hasta un millón como límite técnico de datos, sin final de juego asociado.
+
+Récords: clave local `ps.tft.records.v1`, diez expediciones ordenadas por oleada resuelta/alcanzada y PV restantes, un registro por expedición que se actualiza sin duplicar. Se conservan al reiniciar partidas. No se escriben rankings online, Firebase ni cuentas Survivor; compartir clasificación entre dispositivos queda pendiente. La cabecera distingue el récord local y el panel Informe muestra la lista.
+
+Animación: lanzamiento con un impulso breve, proyección con trayectoria suavizada, retroceso y destello al contacto, partículas de impacto, anillos de preparación, barras con rastro de daño y presentación distinta de especiales/jefes. El movimiento es visual y no altera posiciones, daño ni RNG. `TFTVisuals.pose` e `impact` son funciones puras, determinadas por el evento; la pausa congela el progreso, ×2 acompasa la reproducción y modo tranquilo elimina el impulso/retroceso/destello. Calidad baja reduce partículas. Se reutilizan sprites y VFX del Survivor sin sus pools globales.
+
+Validación: 103 pruebas pasan (reglas, visuales, empaquetado y regresiones existentes), más navegador en cinco tamaños: 1280×800, 390×844, 320×568, 844×390 y 568×320. Se recorren 120 oleadas para validar generación, límites, seis jefes, recompensas únicas, guardado posterior a la oleada 12 y total acumulado. Se prueban oleadas tardías, migración con reembolso único de Rayquaza, victoria antigua→oleada 13, combate antiguo→preparación, habilidades de todos los jefes en tres rangos, combate activo contra Kyogre con restauración determinista, CC de jefe y visuales puros. El navegador verifica ausencia de Rayquaza en el editor, récord local persistente tras reiniciar, continuación 12→13, inspección de Articuno y conservación de la cuenta Survivor. Sigue siendo emulación táctil en navegador; no una prueba en Android nativo.

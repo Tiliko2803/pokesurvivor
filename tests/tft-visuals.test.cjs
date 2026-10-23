@@ -28,7 +28,7 @@ test('every roster rank has a real available pose and can prewarm its local spri
    for(const step of plan){assert.ok(G.Sprites.meta(dex).a[step.name],dex+' '+step.name);assert.ok(Number.isFinite(V.animationSpeed(dex,step.name,step.duration)));}
   }
  }
- V.warm([...E.ROSTER.flatMap(f=>f.line.map(dex=>({dex}))),{dex:4},{dex:530}]);assert.equal(images.length,new Set(images).size,'each sheet requested once');
+ V.warm([...[...E.ROSTER,...E.BOSS_DEFINITIONS].flatMap(f=>f.line.map(dex=>({dex}))),{dex:4},{dex:530}]);assert.equal(images.length,new Set(images).size,'each sheet requested once');
  assert.ok(images.some(p=>p.endsWith('/Attack.png')));assert.ok(images.some(p=>p.endsWith('/Shoot.png')));
  for(const p of images)assert.ok(fs.existsSync(path.join(root,p)),'local asset '+p);
 });
@@ -60,4 +60,12 @@ test('CC highlights only living affected enemies and never friendly occupied cel
  const {V}=fixture(),units=[{id:1,side:0,hp:100,x:2,y:2},{id:2,side:0,hp:100,x:3,y:2,stunUntil:4},{id:-1,side:1,hp:100,x:2,y:1,stunUntil:.8},{id:-2,side:1,hp:100,x:3,y:1},{id:-3,side:1,hp:0,x:1,y:1,stunUntil:4}];
  const area={kind:'area',from:1,control:true,targets:[2,-1,-2,-3],x:2,y:2,radius:2};
  assert.equal(JSON.stringify(V.areaCells(area,units,.1)),JSON.stringify([8]));assert.equal(V.areaCells(area,units,.9).length,0,'expired CC loses its highlight');
+});
+
+test('attack anticipation and impact recoil are stateless, pause-stable and disabled in calm mode',()=>{
+ const {V}=fixture(),u={dex:4,range:1,x:2,y:3},e={kind:'hit',from:1,to:2,sx:2,sy:3,tx:2,ty:2,ttl:.3},hurt={...e,ttl:.2};
+ const before=JSON.stringify({u,e,hurt}),p=V.pose(u,e,hurt);assert.ok(Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.scale>.8&&p.scale<1.2);assert.notEqual(p.y,0);
+ assert.equal(JSON.stringify(V.pose(u,e,hurt)),JSON.stringify(p));assert.equal(JSON.stringify({u,e,hurt}),before);
+ assert.equal(JSON.stringify(V.pose(u,e,hurt,{calm:true})),JSON.stringify({x:0,y:0,scale:1,flash:0}));
+ const long={...e,tx:5,ty:0,ttl:.3};assert.equal(V.impact(long),0);assert.ok(V.impact({...long,ttl:.1})>0);assert.ok(V.impact({...long,periodic:true})>0);
 });

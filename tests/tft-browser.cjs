@@ -33,7 +33,8 @@ async function checkBoard(page,viewport){
    await page.locator('#btn-tft').click();await page.locator('#scr-tft').waitFor({state:'visible'});
    await page.setViewportSize(viewport);
    await page.locator('#tft-deck-panel').waitFor({state:'visible'});
-   assert.equal(await page.locator('#tft-deck-list [data-family]').count(),80);
+   assert.equal(await page.locator('#tft-deck-list [data-family]').count(),79);
+   assert.equal(await page.getByRole('button',{name:'Línea Rayquaza',exact:true}).count(),0);
    const familyOrder=await page.locator('#tft-deck-list [data-family]').evaluateAll(nodes=>nodes.map(e=>Number(e.dataset.family)));
    assert.deepEqual(familyOrder,[...familyOrder].sort((a,b)=>a-b));
    await page.locator('#tft-deck-filter').selectOption('1');
@@ -96,11 +97,11 @@ async function checkBoard(page,viewport){
    await page.locator('#tft-next').click();
    assert.equal(await page.evaluate(()=>G.TFTUI.state.round),2);await checkBoard(page,viewport);
    // Reproduce a saved final result: the recovery action must stay outside tabs/details.
-   for(const terminal of ['victory','defeat']){
+   for(const terminal of ['result','defeat']){
     await page.evaluate(terminal=>{
-     const s=G.TFTUI.state;s.round=terminal==='victory'?12:1;s.life=terminal==='defeat'?1:50;s.opponentRound=0;
+     const s=G.TFTUI.state;s.round=terminal==='result'?12:1;s.life=terminal==='defeat'?1:50;s.opponentRound=0;
      G.TFT.start(s);
-     for(const u of s.battle.units)if(u.side===(terminal==='victory'?1:0))u.hp=0;
+     for(const u of s.battle.units)if(u.side===(terminal==='result'?1:0))u.hp=0;
     },terminal);
     await page.waitForFunction(terminal=>G.TFTUI.state.phase===terminal,terminal);
     await page.setViewportSize(bootViewport);await page.locator('#tft-exit').click();
@@ -112,6 +113,8 @@ async function checkBoard(page,viewport){
      await page.locator('#tft-tab-'+tab).click();assert.equal(await page.locator('#tft-restart').isVisible(),true);
     }
     await page.locator('#tft-panel-toggle').click();assert.equal(await page.locator('#tft-restart').isVisible(),true);
+    if(terminal==='result'){await page.locator('#tft-next').click();assert.equal(await page.evaluate(()=>G.TFTUI.state.round),13);await checkBoard(page,viewport);}
+    if(terminal==='result')page.once('dialog',dialog=>dialog.accept());
     await page.locator('#tft-restart').click();await page.locator('#tft-deck-panel').waitFor({state:'visible'});
     assert.equal(await page.evaluate(()=>localStorage.getItem('ps.tft.match.v1')),null);
     assert.equal(await page.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('ps.tft.decks.v1')))),JSON.stringify(savedDecks));
@@ -123,8 +126,22 @@ async function checkBoard(page,viewport){
     await page.evaluate(()=>{G.TFTUI.state.shop=[4];});await page.locator('#tft-shop [data-buy="0"]').click();
     await page.locator('#tft-tab-team').click();await page.locator('#tft-bench [data-unit]').click();await page.locator('#tft-cells button').nth(20).click();
    }
+   const records=await page.evaluate(()=>JSON.parse(localStorage.getItem('ps.tft.records.v1')));
+   assert.ok(records.some(r=>r.wave===12&&r.life===50));
+   assert.match(await page.locator('#tft-best').innerText(),/Oleada 12/);
    assert.equal(await page.evaluate(()=>JSON.stringify(G.DB.save)),before);
    assert.equal(await page.evaluate(()=>localStorage.getItem('tft-account-sentinel')),'{"coins":54321}');
+   if(viewport.width===1280){
+    await page.evaluate(()=>{
+     const s=G.TFTUI.state;Object.assign(s,G.TFT.create(198,G.TFT.DEFAULT_DECK));s.gold=1000;s.level=6;s.round=10;s.opponentRound=0;
+     for(const [i,d]of [4,7,529,280,661,374].entries()){for(let n=0;n<9;n++){s.shop=[d];G.TFT.buy(s,0);}G.TFT.place(s,s.units.find(u=>G.TFT.BY[u.dex].line[0]===d).id,18+i);}
+     G.TFT.start(s);G.TFTUI.open();
+    });
+    await page.getByRole('button',{name:/Rival Articuno/}).click();assert.match(await page.locator('#tft-unit-info').innerText(),/JEFE/);
+    assert.match(await page.locator('#tft-wave-banner').innerText(),/Articuno/);await checkBoard(page,viewport);
+    await page.locator('#tft-pause').click();await page.waitForFunction(()=>G.TFTUI.state.battle.time>1.2);
+    await page.locator('#tft-pause').click();await page.locator('#scr-tft').screenshot({path:'/workspace/scratch/tft-pve-jefe-preview.png'});
+   }
    await page.locator('#scr-tft').screenshot({path:`/workspace/scratch/tft-layout-${viewport.width}x${viewport.height}.png`});
    await page.setViewportSize(bootViewport);await page.locator('#tft-exit').click();
    assert.equal(await page.evaluate(()=>G.TFTUI.active),false);

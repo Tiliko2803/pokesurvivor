@@ -62,12 +62,12 @@ test('fixed-seed combat is deterministic across frame rates',()=>{
     return JSON.stringify({result:s.result,life:s.life,units:s.battle.units});};
   assert.equal(play(.05),play(.1));
 });
-test('last round and zero life terminate; no next round or double payment',()=>{
-  for(const life of [1,50]){const {E,s}=fixture();s.gold=100;s.round=12;s.life=life;
-    purchase(E,s,1);E.place(s,s.units[0].id,35);E.start(s);s.battle.opening=0;s.battle.units.filter(u=>u.side===0).forEach(u=>u.hp=0);E.tick(s,.1);
-    assert.equal(s.phase,life===1?'defeat':'victory');assert.equal(E.next(s),false);
-    const gold=s.gold;E.tick(s,.2);assert.equal(s.gold,gold);
-  }
+test('wave twelve continues while only zero life ends the expedition; income pays once',()=>{
+ for(const life of [1,50]){const {E,s}=fixture();s.gold=100;s.round=12;s.life=life;
+  purchase(E,s,1);E.place(s,s.units[0].id,35);E.start(s);s.battle.units.filter(u=>u.side===0).forEach(u=>u.hp=0);E.tick(s,.1);
+  assert.equal(s.phase,life===1?'defeat':'result');const gold=s.gold;E.tick(s,.2);assert.equal(s.gold,gold);
+  assert.equal(E.next(s),life!==1);if(life!==1)assert.equal(s.round,13);
+ }
 });
 test('TFT adapts the real Survivor classifier without replacing melee identities',()=>{
  const {E,G}=fixture();assert.equal(typeof G.Enemies.behaviorOf,'function');
@@ -107,7 +107,7 @@ test('ten-line decks validate exact family identities and snapshot the selection
  assert.equal(s.deck[0],1);assert.equal(s.deck.length,10);
 });
 test('shop only offers chosen lines at every level, refresh and round',()=>{
- const {E}=fixture();const deck=[1,7,172,66,37,54,529,63,258,384],s=E.create(99,deck);
+ const {E}=fixture();const deck=[1,7,172,66,37,54,529,63,258,661],s=E.create(99,deck);
  s.gold=10000;
  for(const level of [3,4,5,6]){s.level=level;for(let i=0;i<150;i++){
   assert.ok(E.reroll(s));assert.ok(s.shop.every(d=>deck.includes(d)));
@@ -116,7 +116,7 @@ test('shop only offers chosen lines at every level, refresh and round',()=>{
  s.phase='result';E.next(s);assert.ok(s.shop.every(d=>deck.includes(d)));
 });
 test('decks without low-cost families still produce a playable cheapest shop',()=>{
- const {E}=fixture();const deck=E.ROSTER.filter(f=>f.cost>=3).slice(0,10).map(f=>f.dex);assert.equal(deck.length,10);
+ const {E}=fixture();const deck=E.PLAYABLE_ROSTER.filter(f=>f.cost>=3).slice(0,10).map(f=>f.dex);assert.equal(deck.length,10);
  const s=E.create(11,deck);for(let i=0;i<50;i++){
   E.reroll(s,true);assert.ok(s.shop.every(d=>E.BY[d].cost===3));
  }
@@ -260,7 +260,7 @@ test('complete rhythmic matches with signature/AOE units stay finite and collisi
    }
    assert.notEqual(s.phase,'combat');if(s.phase==='result')E.next(s);
   }
-  assert.ok(['victory','defeat'].includes(s.phase));assert.ok(s.history.length>0&&s.history.length<=12);
+  assert.equal(s.phase,'defeat');assert.ok(s.history.length>0&&s.history.length<=E.HISTORY_LIMIT);
   assert.ok(E.report(s,'match').every(r=>Number.isFinite(r.damage)&&r.damage>=0));
  }
 });
@@ -275,7 +275,7 @@ test('scouted opponents and formation match the coming fight without rerolling o
  const {E}=fixture(),s=E.create(2468,E.DEFAULT_DECK);const before=s.seed,foes=JSON.stringify(E.scout(s));
  E.scout(s)[0].dex=99999;assert.equal(JSON.stringify(E.scout(s)),foes);assert.equal(s.seed,before);
  s.shop=[4];E.buy(s,0);E.place(s,s.units[0].id,20);E.start(s);
- assert.equal(JSON.stringify(s.battle.units.filter(u=>u.side===1).map(({id,dex,star,pos})=>({id,dex,star,pos}))),foes);
+ assert.equal(JSON.stringify(s.battle.units.filter(u=>u.side===1).map(({id,dex,star,pos,boss,elite})=>({id,dex,star,pos,boss,elite}))),foes);
  while(s.phase==='combat')E.tick(s,.1);if(s.phase==='result'){E.next(s);assert.equal(s.opponentRound,2);assert.notEqual(JSON.stringify(E.scout(s)),foes);}
 });
 test('entrances do not pause the rhythm or reapply when combat resumes',()=>{
@@ -352,7 +352,7 @@ test('new support moves cleanse, share mana, drain actual HP and never spend a h
  {const {b,units:[a,t]}=battleFor(E,[[14,2,0,2,3],[133,1,1,2,2]]);const hp=t.hp;E.cast(b,a,t);assert.equal(t.hp,hp);assert.equal(a.mana,15);assert.ok(a.shield>0);}
 });
 test('new buffs and statuses survive a save and keep the same combat outcome',()=>{
- const {E}=fixture(),deck=[133,447,131,246,258,384,371,957,270,440],s=E.create(222,deck);s.gold=1000;s.level=6;
+ const {E}=fixture(),deck=[133,447,131,246,258,661,371,957,270,440],s=E.create(222,deck);s.gold=1000;s.level=6;
  for(const [i,d] of [133,447,131,258,371,957].entries()){
   for(let n=0;n<9;n++){s.shop=[d];E.buy(s,0);}E.place(s,s.units.find(u=>E.BY[u.dex].line[0]===d).id,18+i);
  }
@@ -568,4 +568,60 @@ test('Viento Afin boosts allies only, does not stack and expires; every family r
  }
  const s=E.create(10);s.units=[{id:1,dex:661,star:1,pos:20},{id:2,dex:663,star:3,pos:21},{id:3,dex:1,star:1,pos:22}];s.opponent=[{id:-1,dex:133,star:1,pos:0}];s.opponentRound=1;E.start(s);
  const ally=s.battle.units.find(u=>u.id===3);assert.equal(ally.boostPower,.16);const base=E.preview(s,s.units[2]).interval;assert.ok(Math.abs(ally.interval-base/1.16)<1e-9);
+});
+
+test('endless PvE generates themed encounters, specials and rotating bosses past wave twelve with six enemies maximum',()=>{
+ const {E,G}=fixture(),s=E.create(771,E.DEFAULT_DECK);s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,35);
+ const bosses=new Set(),names=new Set();
+ for(let wave=1;wave<=120;wave++){
+  assert.equal(s.round,wave);assert.ok(E.start(s));const foes=s.battle.units.filter(u=>u.side===1),scout=E.scout(s);names.add(E.waveInfo(wave).name);
+  assert.ok(foes.length>=2&&foes.length<=6);assert.equal(new Set(scout.map(u=>u.pos)).size,scout.length);
+  assert.ok(scout.filter(u=>!u.boss&&E.BY[u.dex].role==='healer').length<=1);
+  assert.equal(foes.some(u=>u.boss),wave%10===0);assert.equal(E.waveInfo(wave).kind,wave%10===0?'boss':wave%5===0?'elite':'normal');
+  if(wave%10===0){const boss=foes.find(u=>u.boss);bosses.add(boss.dex);assert.ok(G.DEX_BY[boss.dex]);assert.ok(boss.maxHp>E.preview({...s,opponent:scout}, {...scout.find(u=>u.boss),boss:false}).maxHp*2.9);}
+  for(const u of s.battle.units)u.hp=u.side===1?0:u.maxHp;
+  E.tick(s,.05);assert.equal(s.phase,'result');assert.equal(s.life,50);const paid=s.gold;E.tick(s,.1);assert.equal(s.gold,paid);
+  const saved=E.restore(E.serialize(s));assert.ok(saved,'restores wave '+wave);assert.equal(saved.round,wave);assert.ok(E.next(s));
+ }
+ assert.equal(bosses.size,6);assert.ok(names.size>6);assert.equal(s.completed,120);assert.equal(s.history.length,E.HISTORY_LIMIT);assert.equal(s.wins,120);assert.ok(s.totals.length>0);
+});
+test('legendary families are excluded from decks and shops and older ten-line decks migrate without duplicates',()=>{
+ const {E}=fixture();assert.equal(E.PLAYABLE_ROSTER.length,79);assert.equal(E.PLAYABLE_ROSTER.some(f=>f.dex===384),false);
+ const old=[1,4,7,172,92,280,529,246,374,384];assert.equal(E.validDeck(old),false);const deck=E.migrateDeck(old);assert.ok(E.validDeck(deck));assert.equal(deck.includes(384),false);assert.equal(new Set(deck).size,10);
+ const s=E.create(35,deck);s.gold=100000;s.level=6;
+ for(let i=0;i<100;i++){E.reroll(s,true);assert.ok(s.shop.every(d=>!E.BY[d].bossOnly));}
+ for(const dex of [144,145,146,382,383,384]){s.shop=[dex];const gold=s.gold;assert.equal(E.buy(s,0),false);assert.equal(s.gold,gold);}
+});
+test('version-one victory can continue to wave thirteen and legendary copies refund once during migration',()=>{
+ const {E}=fixture(),s=E.create(81,E.DEFAULT_DECK);s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,20);s.round=12;s.opponentRound=0;E.start(s);
+ for(const u of s.battle.units)u.hp=u.side===1?0:u.maxHp;E.tick(s,.05);
+ const old=JSON.parse(E.serialize(s));old.version=1;old.state.phase='victory';old.state.deck[9]=384;old.state.units.push({id:old.state.nextId++,dex:384,star:2,pos:null});
+ delete old.state.totals;delete old.state.completed;delete old.state.recordId;
+ const gold=old.state.gold,resumed=E.restore(JSON.stringify(old));assert.ok(resumed);assert.equal(resumed.phase,'result');assert.equal(resumed.units.some(u=>u.dex===384),false);assert.equal(resumed.gold,gold+15);assert.ok(E.validDeck(resumed.deck));
+ const twice=E.restore(E.serialize(resumed));assert.equal(twice.gold,resumed.gold);assert.ok(E.next(twice));assert.equal(twice.round,13);assert.equal(twice.phase,'planning');
+});
+test('old active fights safely return to preparation and bosses resist CC without immunity',()=>{
+ const {E}=fixture(),s=entryMatch(E,661,2),old=JSON.parse(E.serialize(s));old.version=1;old.state.deck[9]=384;
+ // Keep the purchased family in the legacy deck while replacing another slot.
+ old.state.deck[8]=661;const loaded=E.restore(JSON.stringify(old));assert.ok(loaded);assert.equal(loaded.phase,'planning');assert.equal(loaded.battle,null);assert.equal(loaded.gold,s.gold);
+ const {b,units:[a,t]}=battleFor(E,[[530,3,0,2,3],[144,2,1,2,2]]);t.boss=true;assert.ok(E.stun(b,a,t,1));assert.equal(t.stunUntil,.5);assert.equal(E.stun(b,t,t,1),false);
+});
+test('late losses stay recoverable and bounded reports retain full expedition totals',()=>{
+ const {E}=fixture(),s=E.create(1,E.DEFAULT_DECK);s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,35);s.round=1000;s.opponentRound=0;E.start(s);
+ for(const u of s.battle.units)if(u.side===0)u.hp=0;E.tick(s,.05);assert.ok(s.life>=38);assert.equal(s.phase,'result');assert.ok(E.restore(E.serialize(s)));
+ const a=E.create(61,E.DEFAULT_DECK);a.gold=100;purchase(E,a,4);E.place(a,a.units[0].id,20);
+ for(let i=0;i<35;i++){E.start(a);const hero=a.battle.units.find(u=>u.side===0);hero.hp=hero.maxHp;hero.damageDone=10;for(const u of a.battle.units)if(u.side===1)u.hp=0;E.tick(a,.05);E.next(a);}
+ assert.equal(a.history.length,20);assert.equal(E.report(a,'match')[0].damage,350);const restored=E.restore(E.serialize(a));assert.ok(restored);assert.equal(E.report(restored,'match')[0].damage,350);
+});
+
+test('every legendary boss has executable ranked moves and active boss fights resume deterministically',()=>{
+ const {E}=fixture();
+ for(const f of E.BOSS_DEFINITIONS)for(let star=1;star<=3;star++){
+  const {b,units:[a,t,ally]}=battleFor(E,[[f.dex,star,1,2,2],[4,3,0,2,3],[7,1,1,3,2]]);a.hp=a.maxHp*.5;ally.hp=ally.maxHp*.5;E.cast(b,a,t);
+  assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0);assert.ok(b.units.every(u=>Number.isFinite(u.hp)&&u.hp>=0&&u.hp<=u.maxHp));
+ }
+ const s=E.create(98,E.DEFAULT_DECK);s.gold=1000;s.level=6;s.round=40;s.opponentRound=0;
+ for(const [i,d]of [4,7,529,280,661,374].entries()){purchase(E,s,d,9);E.place(s,s.units.find(u=>E.BY[u.dex].line[0]===d).id,18+i);}
+ E.start(s);for(let i=0;i<10;i++)E.tick(s,.05);const restored=E.restore(E.serialize(s));assert.ok(restored);assert.ok(restored.battle.units.some(u=>u.boss&&u.dex===382));
+ while(s.phase==='combat')E.tick(s,.05);while(restored.phase==='combat')E.tick(restored,.05);assert.equal(JSON.stringify(restored.result),JSON.stringify(s.result));
 });

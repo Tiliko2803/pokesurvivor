@@ -1215,3 +1215,12 @@ body.tft-calm #tft-evolution { animation:none; }
  .tft-toolbar #tft-phase { max-width:70px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:10px; }
  .tft-toolbar { gap:4px; }
 }
+
+/* TFT survival presentation: overlays keep the board and controls in place. */
+.tft-record-label { font-size:10px!important; color:#8bc5c8; margin:2px 0 0!important; }
+.tft-wave-banner { position:absolute; top:8px; left:8px; right:8px; margin:auto; width:max-content; max-width:90%; padding:6px 12px; border:1px solid #6d8f9c; border-radius:8px; background:#102333e8; color:#d9f0e8; font-size:12px; text-align:center; pointer-events:none; box-shadow:0 3px 14px #0006; }
+.tft-arena[data-encounter="elite"] .tft-wave-banner { border-color:#bd88ed; color:#e5c6ff; background:#29203aee; }
+.tft-arena[data-encounter="boss"] .tft-wave-banner { border-color:#f1bf64; color:#ffe3a3; background:#38251bee; }
+.tft-arena[data-encounter="boss"] .tft-board-wrap { border-color:#dba960; box-shadow:0 0 18px #c9902b28; }
+#tft-records { padding-left:0; list-style:none; color:#c2d7de; font-size:12px; line-height:1.8; }
+@media(max-height:420px) { .tft-record-label { display:none; } .tft-wave-banner { padding:3px 8px; font-size:10px; } }
