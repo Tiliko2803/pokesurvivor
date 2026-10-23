@@ -39,6 +39,270 @@ G.TFT = (() => {
     [[371,372,373],4,'fighter',['Mordisco','Dragoaliento','Cometa Draco']],
     [[957,958,959],3,'fighter',['Golpe Roca','Martillazo','Martillo Colosal']]
   ];
+  // TFT adaptations: species identity, rank moves and opening tactics in one place.
+  const EXPANSION=[
+    {line:[129, 130],cost:2,role:"fighter",moves:["Salpicadura", "Cascada", "Vendaval Acuático"],
+      entry:"Mirada Intimidante",passive:["intimidate", 0.08, "Reduce un 8% el daño rival durante el combate. No se acumula con otras intimidaciones."],
+      skills:[
+        {"type":"normal","power":0,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 20% de su vida; recupera 20 de maná.","selfShield":0.2,"selfMana":20},
+        {"type":"water","power":2.5,"text":"Golpea al enemigo seleccionado; aturde 0,4 segundos.","stun":0.4},
+        {"type":"water","power":2.4,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; empuja 1 casilla libre.","shape":"area","radius":1,"center":"target","push":1}
+      ],
+      openers:[
+        {"type":"water","power":0.55,"text":"Golpea al enemigo seleccionado; empuja 1 casilla libre.","push":1},
+        {"type":"water","power":0.7,"text":"Golpea al enemigo seleccionado; empuja 1 casilla libre.","push":1},
+        {"type":"water","power":0.85,"text":"Golpea al enemigo seleccionado; empuja 1 casilla libre.","push":1}
+      ]
+    },
+    {line:[147, 148, 149],cost:4,role:"fighter",moves:["Dragoaliento", "Cola Dragón", "Enfado"],
+      entry:"Multiescamas",passive:["shield", 0.18, "Empieza con un escudo del 18% de su vida."],
+      skills:[
+        {"type":"dragon","power":2,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2},
+        {"type":"dragon","power":2.6,"text":"Golpea al enemigo seleccionado; empuja 1 casilla libre.","push":1},
+        {"type":"dragon","power":2.5,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; aumenta su cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","boost":0.2}
+      ],
+      openers:[
+        {"type":"dragon","power":0.55,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 6% de su vida.","selfShield":0.06},
+        {"type":"dragon","power":0.7,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 6% de su vida.","selfShield":0.06},
+        {"type":"dragon","power":0.85,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 6% de su vida.","selfShield":0.06}
+      ]
+    },
+    {line:[155, 156, 157],cost:2,role:"mage",moves:["Ascuas", "Rueda Fuego", "Estallido"],
+      entry:"Fogonazo",passive:["attack", 0.08, "Aumenta su daño un 8%."],
+      skills:[
+        {"type":"fire","power":2,"text":"Golpea al enemigo seleccionado; quema durante 3 segundos con 15% del ataque por segundo.","burn":0.15},
+        {"type":"fire","power":2,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; quema durante 3 segundos con 18% del ataque por segundo.","shape":"area","radius":1,"center":"target","burn":0.18},
+        {"type":"fire","power":2.5,"text":"Daña a los enemigos en un radio de 2 casillas alrededor del objetivo; quema durante 3 segundos con 20% del ataque por segundo.","shape":"area","radius":2,"center":"target","burn":0.2}
+      ],
+      openers:[
+        {"type":"fire","power":0.55,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; quema durante 3 segundos con 10% del ataque por segundo.","shape":"area","radius":1,"center":"target","burn":0.1},
+        {"type":"fire","power":0.7,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; quema durante 3 segundos con 10% del ataque por segundo.","shape":"area","radius":1,"center":"target","burn":0.1},
+        {"type":"fire","power":0.85,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; quema durante 3 segundos con 10% del ataque por segundo.","shape":"area","radius":1,"center":"target","burn":0.1}
+      ]
+    },
+    {line:[158, 159, 160],cost:2,role:"fighter",moves:["Pistola Agua", "Colmillo Hielo", "Hidroariete"],
+      entry:"Mandíbula Feroz",passive:["pierce", 0.1, "Ignora un 10% adicional de defensa."],
+      skills:[
+        {"type":"water","power":2.2,"text":"Golpea al enemigo seleccionado."},
+        {"type":"ice","power":2.4,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 25% durante 2 segundos.","slow":0.25},
+        {"type":"water","power":3,"text":"Golpea al enemigo seleccionado; aturde 0,5 segundos.","stun":0.5}
+      ],
+      openers:[
+        {"type":"water","power":0.55,"text":"Golpea al enemigo seleccionado; aumenta su cadencia un 15% durante 2 segundos.","boost":0.15},
+        {"type":"water","power":0.7,"text":"Golpea al enemigo seleccionado; aumenta su cadencia un 15% durante 2 segundos.","boost":0.15},
+        {"type":"water","power":0.85,"text":"Golpea al enemigo seleccionado; aumenta su cadencia un 15% durante 2 segundos.","boost":0.15}
+      ]
+    },
+    {line:[252, 253, 254],cost:2,role:"fighter",moves:["Absorber", "Hoja Aguda", "Lluevehojas"],
+      entry:"Agilidad Selvática",passive:["speed", 0.1, "Aumenta un 10% su cadencia."],
+      skills:[
+        {"type":"grass","power":1.7,"text":"Golpea al enemigo seleccionado. Cura al aliado con menos vida proporcional por el 70% del daño efectivo.","drain":0.7},
+        {"type":"grass","power":2.5,"text":"Golpea al enemigo seleccionado; ignora el 35% de defensa.","pierce":0.35},
+        {"type":"grass","power":2.3,"text":"Daña a los enemigos en un radio de 2 casillas alrededor del objetivo.","shape":"area","radius":2,"center":"target"}
+      ],
+      openers:[
+        {"type":"grass","power":0.55,"text":"Golpea al enemigo seleccionado; aumenta su cadencia un 15% durante 2 segundos.","boost":0.15},
+        {"type":"grass","power":0.7,"text":"Golpea al enemigo seleccionado; aumenta su cadencia un 15% durante 2 segundos.","boost":0.15},
+        {"type":"grass","power":0.85,"text":"Golpea al enemigo seleccionado; aumenta su cadencia un 15% durante 2 segundos.","boost":0.15}
+      ]
+    },
+    {line:[349, 350],cost:3,role:"healer",moves:["Chapoteo Protector", "Pulso Cura", "Agua Renovadora"],
+      entry:"Escama Especial",passive:["armor", 15, "Obtiene 15 de defensa."],
+      skills:[
+        {"type":"water","power":0,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 20% de su vida; cura a 1 aliados con menos vida proporcional por 200% de su ataque.","selfShield":0.2,"healing":2},
+        {"type":"water","power":0,"text":"Golpea al enemigo seleccionado; cura a 2 aliados con menos vida proporcional por 280% de su ataque; elimina quemadura, ralentización y aturdimiento de esos aliados.","healing":2.8,"friends":2,"cleanse":true},
+        {"type":"water","power":1.7,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; cura a 2 aliados con menos vida proporcional por 200% de su ataque; elimina quemadura, ralentización y aturdimiento de esos aliados.","shape":"area","radius":1,"center":"target","healing":2,"friends":2,"cleanse":true}
+      ],
+      openers:[
+        {"type":"water","power":0,"text":"Golpea al enemigo seleccionado; protege a 2 aliados con un escudo del 6% de la vida de cada receptor.","friendShield":0.06,"friends":2},
+        {"type":"water","power":0,"text":"Golpea al enemigo seleccionado; protege a 2 aliados con un escudo del 8% de la vida de cada receptor.","friendShield":0.08,"friends":2},
+        {"type":"water","power":0,"text":"Golpea al enemigo seleccionado; protege a 2 aliados con un escudo del 10% de la vida de cada receptor.","friendShield":0.1,"friends":2}
+      ]
+    },
+    {line:[387, 388, 389],cost:2,role:"tank",moves:["Absorber", "Bomba Germen", "Terremoto"],
+      entry:"Raíces Firmes",passive:["regen", 0.008, "Regenera un 0,8% de vida por segundo."],
+      skills:[
+        {"type":"grass","power":1.6,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 12% de su vida.","selfShield":0.12},
+        {"type":"grass","power":2,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; obtiene un escudo del 15% de su vida.","shape":"area","radius":1,"center":"target","selfShield":0.15},
+        {"type":"ground","power":2.3,"text":"Daña a los enemigos en un radio de 2 casillas alrededor del usuario; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":2,"center":"self","slow":0.2}
+      ],
+      openers:[
+        {"type":"grass","power":0,"text":"Golpea al enemigo seleccionado; protege a 2 aliados con un escudo del 5% de la vida de cada receptor.","friendShield":0.05,"friends":2},
+        {"type":"grass","power":0,"text":"Golpea al enemigo seleccionado; protege a 2 aliados con un escudo del 7% de la vida de cada receptor.","friendShield":0.07,"friends":2},
+        {"type":"grass","power":0,"text":"Golpea al enemigo seleccionado; protege a 2 aliados con un escudo del 9% de la vida de cada receptor.","friendShield":0.09,"friends":2}
+      ]
+    },
+    {line:[390, 391, 392],cost:2,role:"fighter",moves:["Ascuas", "Ultrapuño", "A Bocajarro"],
+      entry:"Puño de Hierro",passive:["attack", 0.08, "Aumenta su daño un 8%."],
+      skills:[
+        {"type":"fire","power":2,"text":"Golpea al enemigo seleccionado; quema durante 3 segundos con 15% del ataque por segundo.","burn":0.15},
+        {"type":"fighting","power":2.5,"text":"Golpea al enemigo seleccionado; aumenta su cadencia un 15% durante 2 segundos.","boost":0.15},
+        {"type":"fighting","power":3,"text":"Golpea al enemigo seleccionado; ignora el 50% de defensa; obtiene un escudo del 12% de su vida.","pierce":0.5,"selfShield":0.12}
+      ],
+      openers:[
+        {"type":"fighting","power":0.55,"text":"Golpea al enemigo seleccionado; ignora el 30% de defensa.","pierce":0.3},
+        {"type":"fighting","power":0.7,"text":"Golpea al enemigo seleccionado; ignora el 30% de defensa.","pierce":0.3},
+        {"type":"fighting","power":0.85,"text":"Golpea al enemigo seleccionado; ignora el 30% de defensa.","pierce":0.3}
+      ]
+    },
+    {line:[393, 394, 395],cost:2,role:"tank",moves:["Burbuja", "Pico Taladro", "Hidrobomba"],
+      entry:"Orgullo Imperial",passive:["armor", 15, "Obtiene 15 de defensa."],
+      skills:[
+        {"type":"water","power":2,"text":"Golpea al enemigo seleccionado; empuja 1 casilla libre.","push":1},
+        {"type":"flying","power":2.5,"text":"Golpea al enemigo seleccionado; ignora el 30% de defensa.","pierce":0.3},
+        {"type":"water","power":2.6,"text":"Atraviesa 4 casillas y daña a los enemigos en la línea; protege a 2 aliados con un escudo del 10% de la vida de cada receptor.","shape":"line","length":4,"friendShield":0.1,"friends":2}
+      ],
+      openers:[
+        {"type":"steel","power":0,"text":"Golpea al enemigo seleccionado; protege a 2 aliados con un escudo del 6% de la vida de cada receptor.","friendShield":0.06,"friends":2},
+        {"type":"steel","power":0,"text":"Golpea al enemigo seleccionado; protege a 2 aliados con un escudo del 8% de la vida de cada receptor.","friendShield":0.08,"friends":2},
+        {"type":"steel","power":0,"text":"Golpea al enemigo seleccionado; protege a 2 aliados con un escudo del 10% de la vida de cada receptor.","friendShield":0.1,"friends":2}
+      ]
+    },
+    {line:[443, 444, 445],cost:4,role:"fighter",moves:["Bucle Arena", "Garra Dragón", "Terremoto"],
+      entry:"Piel Tosca",passive:["armor", 12, "Obtiene 12 de defensa."],
+      skills:[
+        {"type":"ground","power":1.9,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2},
+        {"type":"dragon","power":2.7,"text":"Golpea al enemigo seleccionado; ignora el 30% de defensa.","pierce":0.3},
+        {"type":"ground","power":2.5,"text":"Daña a los enemigos en un radio de 2 casillas alrededor del usuario; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":2,"center":"self","slow":0.2}
+      ],
+      openers:[
+        {"type":"ground","power":0.55,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+        {"type":"ground","power":0.7,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+        {"type":"ground","power":0.85,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2}
+      ]
+    },
+    {line:[495, 496, 497],cost:2,role:"mage",moves:["Látigo Cepa", "Gigadrenado", "Lluevehojas"],
+      entry:"Espiral Respondona",passive:["mana", 20, "Empieza con 20 de maná adicional."],
+      skills:[
+        {"type":"grass","power":2,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2},
+        {"type":"grass","power":2,"text":"Golpea al enemigo seleccionado. Cura al aliado con menos vida proporcional por el 80% del daño efectivo.","drain":0.8},
+        {"type":"grass","power":2.3,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; aumenta su cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","boost":0.2}
+      ],
+      openers:[
+        {"type":"grass","power":0.55,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2},
+        {"type":"grass","power":0.7,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2},
+        {"type":"grass","power":0.85,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2}
+      ]
+    },
+    {line:[501, 502, 503],cost:2,role:"fighter",moves:["Pistola Agua", "Concha Filo", "Hidroariete"],
+      entry:"Armadura de Concha",passive:["shield", 0.15, "Empieza con un escudo del 15% de su vida."],
+      skills:[
+        {"type":"water","power":2.2,"text":"Golpea al enemigo seleccionado."},
+        {"type":"water","power":2.5,"text":"Golpea al enemigo seleccionado; ignora el 35% de defensa.","pierce":0.35},
+        {"type":"water","power":2.9,"text":"Golpea al enemigo seleccionado; empuja 1 casilla libre; obtiene un escudo del 15% de su vida.","push":1,"selfShield":0.15}
+      ],
+      openers:[
+        {"type":"water","power":0.55,"text":"Golpea al enemigo seleccionado; ignora el 25% de defensa.","pierce":0.25},
+        {"type":"water","power":0.7,"text":"Golpea al enemigo seleccionado; ignora el 25% de defensa.","pierce":0.25},
+        {"type":"water","power":0.85,"text":"Golpea al enemigo seleccionado; ignora el 25% de defensa.","pierce":0.25}
+      ]
+    },
+    {line:[633, 634, 635],cost:4,role:"mage",moves:["Mordisco", "Pulso Umbrío", "Cometa Draco"],
+      entry:"Presión Tricéfala",passive:["pierce", 0.1, "Ignora un 10% adicional de defensa."],
+      skills:[
+        {"type":"dark","power":2.1,"text":"Golpea al enemigo seleccionado; aturde 0,3 segundos.","stun":0.3},
+        {"type":"dark","power":2.1,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+        {"type":"dragon","power":2.5,"text":"Daña a los enemigos en un radio de 2 casillas alrededor del objetivo.","shape":"area","radius":2,"center":"target"}
+      ],
+      openers:[
+        {"type":"dark","power":0.55,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+        {"type":"dark","power":0.7,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+        {"type":"dark","power":0.85,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2}
+      ]
+    },
+    {line:[656, 657, 658],cost:3,role:"mage",moves:["Burbuja", "Hidropulso", "Shuriken de Agua"],
+      entry:"Reflejos Ninja",passive:["speed", 0.1, "Aumenta un 10% su cadencia."],
+      skills:[
+        {"type":"water","power":2,"text":"Golpea al enemigo seleccionado; empuja 1 casilla libre.","push":1},
+        {"type":"water","power":2,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+        {"type":"water","power":2.7,"text":"Atraviesa 4 casillas y daña a los enemigos en la línea; ignora el 25% de defensa.","shape":"line","length":4,"pierce":0.25}
+      ],
+      openers:[
+        {"type":"water","power":0.55,"text":"Atraviesa 3 casillas y daña a los enemigos en la línea.","shape":"line","length":3},
+        {"type":"water","power":0.7,"text":"Atraviesa 3 casillas y daña a los enemigos en la línea.","shape":"line","length":3},
+        {"type":"water","power":0.85,"text":"Atraviesa 3 casillas y daña a los enemigos en la línea.","shape":"line","length":3}
+      ]
+    },
+    {line:[704, 705, 706],cost:4,role:"tank",moves:["Absorber", "Agua Lodosa", "Pulso Dragón"],
+      entry:"Baba Protectora",passive:["regen", 0.008, "Regenera un 0,8% de vida por segundo."],
+      skills:[
+        {"type":"grass","power":1.6,"text":"Golpea al enemigo seleccionado. Cura al aliado con menos vida proporcional por el 80% del daño efectivo.","drain":0.8},
+        {"type":"water","power":1.9,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 25% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.25},
+        {"type":"dragon","power":2.2,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; obtiene un escudo del 20% de su vida.","shape":"area","radius":1,"center":"target","selfShield":0.2}
+      ],
+      openers:[
+        {"type":"water","power":0.55,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 25% durante 2 segundos.","slow":0.25},
+        {"type":"water","power":0.7,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 25% durante 2 segundos.","slow":0.25},
+        {"type":"water","power":0.85,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 25% durante 2 segundos.","slow":0.25}
+      ]
+    },
+    {line:[722, 723, 724],cost:3,role:"mage",moves:["Follaje", "Hoja Afilada", "Puntada Sombría"],
+      entry:"Acecho Silencioso",passive:["pierce", 0.1, "Ignora un 10% adicional de defensa."],
+      skills:[
+        {"type":"grass","power":2.1,"text":"Golpea al enemigo seleccionado."},
+        {"type":"grass","power":2.3,"text":"Atraviesa 4 casillas y daña a los enemigos en la línea.","shape":"line","length":4},
+        {"type":"ghost","power":2.8,"text":"Golpea al enemigo seleccionado; aturde 0,6 segundos.","stun":0.6}
+      ],
+      openers:[
+        {"type":"ghost","power":0.55,"text":"Golpea al enemigo seleccionado; aturde 0,25 segundos.","stun":0.25},
+        {"type":"ghost","power":0.7,"text":"Golpea al enemigo seleccionado; aturde 0,25 segundos.","stun":0.25},
+        {"type":"ghost","power":0.85,"text":"Golpea al enemigo seleccionado; aturde 0,25 segundos.","stun":0.25}
+      ]
+    },
+    {line:[725, 726, 727],cost:3,role:"tank",moves:["Ascuas", "Colmillo Ígneo", "Lariat Oscuro"],
+      entry:"Rugido Intimidante",passive:["intimidate", 0.08, "Reduce un 8% el daño rival durante el combate. No se acumula con otras intimidaciones."],
+      skills:[
+        {"type":"fire","power":2,"text":"Golpea al enemigo seleccionado; quema durante 3 segundos con 15% del ataque por segundo.","burn":0.15},
+        {"type":"fire","power":2.4,"text":"Golpea al enemigo seleccionado; quema durante 3 segundos con 20% del ataque por segundo.","burn":0.2},
+        {"type":"dark","power":2.4,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del usuario; ignora el 40% de defensa.","shape":"area","radius":1,"center":"self","pierce":0.4}
+      ],
+      openers:[
+        {"type":"dark","power":0.55,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2},
+        {"type":"dark","power":0.7,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2},
+        {"type":"dark","power":0.85,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2}
+      ]
+    },
+    {line:[782, 783, 784],cost:4,role:"fighter",moves:["Placaje", "Garra Dragón", "Fragor Escamas"],
+      entry:"Armadura Sonora",passive:["armor", 15, "Obtiene 15 de defensa."],
+      skills:[
+        {"type":"normal","power":2.2,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 10% de su vida.","selfShield":0.1},
+        {"type":"dragon","power":2.5,"text":"Golpea al enemigo seleccionado; ignora el 30% de defensa.","pierce":0.3},
+        {"type":"dragon","power":2.2,"text":"Daña a los enemigos en un radio de 2 casillas alrededor del usuario; obtiene un escudo del 18% de su vida.","shape":"area","radius":2,"center":"self","selfShield":0.18}
+      ],
+      openers:[
+        {"type":"dragon","power":0,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 10% de su vida; protege a 2 aliados con un escudo del 5% de la vida de cada receptor.","selfShield":0.1,"friendShield":0.05,"friends":2},
+        {"type":"dragon","power":0,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 14% de su vida; protege a 2 aliados con un escudo del 7% de la vida de cada receptor.","selfShield":0.14,"friendShield":0.07,"friends":2},
+        {"type":"dragon","power":0,"text":"Golpea al enemigo seleccionado; obtiene un escudo del 18% de su vida; protege a 2 aliados con un escudo del 9% de la vida de cada receptor.","selfShield":0.18,"friendShield":0.09,"friends":2}
+      ]
+    },
+    {line:[885, 886, 887],cost:4,role:"mage",moves:["Impresionar", "Bola Sombra", "Dracoflechas"],
+      entry:"Infiltración",passive:["pierce", 0.15, "Ignora un 15% adicional de defensa."],
+      skills:[
+        {"type":"ghost","power":2,"text":"Golpea al enemigo seleccionado; aturde 0,3 segundos.","stun":0.3},
+        {"type":"ghost","power":2.5,"text":"Golpea al enemigo seleccionado; ignora el 40% de defensa.","pierce":0.4},
+        {"type":"dragon","power":2.6,"text":"Atraviesa 4 casillas y daña a los enemigos en la línea; ignora el 40% de defensa.","shape":"line","length":4,"pierce":0.4}
+      ],
+      openers:[
+        {"type":"ghost","power":0.55,"text":"Atraviesa 3 casillas y daña a los enemigos en la línea; ignora el 30% de defensa.","shape":"line","length":3,"pierce":0.3},
+        {"type":"ghost","power":0.7,"text":"Atraviesa 3 casillas y daña a los enemigos en la línea; ignora el 30% de defensa.","shape":"line","length":3,"pierce":0.3},
+        {"type":"ghost","power":0.85,"text":"Atraviesa 3 casillas y daña a los enemigos en la línea; ignora el 30% de defensa.","shape":"line","length":3,"pierce":0.3}
+      ]
+    },
+    {line:[996, 997, 998],cost:4,role:"fighter",moves:["Colmillo Hielo", "Chuzos", "Asalto Espadón"],
+      entry:"Coraza Térmica",passive:["shield", 0.15, "Empieza con un escudo del 15% de su vida."],
+      skills:[
+        {"type":"ice","power":2,"text":"Golpea al enemigo seleccionado; reduce la cadencia un 20% durante 2 segundos.","slow":0.2},
+        {"type":"ice","power":2.1,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; aturde 0,4 segundos.","shape":"area","radius":1,"center":"target","stun":0.4},
+        {"type":"dragon","power":3.2,"text":"Golpea al enemigo seleccionado; ignora el 40% de defensa; obtiene un escudo del 12% de su vida.","pierce":0.4,"selfShield":0.12}
+      ],
+      openers:[
+        {"type":"ice","power":0.55,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+        {"type":"ice","power":0.7,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2},
+        {"type":"ice","power":0.85,"text":"Daña a los enemigos en un radio de 1 casillas alrededor del objetivo; reduce la cadencia un 20% durante 2 segundos.","shape":"area","radius":1,"center":"target","slow":0.2}
+      ]
+    },
+  ];
+  DEFINITIONS.push(...EXPANSION.map(f=>[f.line,f.cost,f.role,f.moves]));
   const ROSTER = DEFINITIONS.map(([line,cost,role,moves]) => ({dex:line[0],line,cost,role,moves,move:moves[0]}));
   const BY = {};
   for(const family of ROSTER) for(const [stage,dex] of family.line.entries())
@@ -194,7 +458,12 @@ G.TFT = (() => {
     246:{name:'Tormenta de Arena',mode:'sand',type:'rock',range:[2,2,3],power:[.6,.75,.9],text:'Daña a los enemigos en un radio de 2/2/3 casillas alrededor del usuario y reduce un 20% su cadencia durante 2 segundos.'},
     258:{name:'Oleada Lodosa',mode:'mud',type:'water',range:[3,3,3],power:[.55,.7,.85],text:'Lanza lodo al enemigo más cercano a un máximo de 3 casillas y reduce un 20% su cadencia durante 2 segundos. En ★★/★★★ alcanza sus vecinos.'}
   };
+  for(const f of EXPANSION){
+    ENTRANCES[f.line[0]]=[f.entry,...f.passive];
+    ACTIVE_ENTRANCES[f.line[0]]={name:f.entry,mode:'tactic',type:f.openers[0].type,range:[3,3,4],ranks:f.openers};
+  }
   function entranceFor(u) {
+    if(BY[u.dex].line[0]===129&&u.star===1)return {name:'Salpicadura Prudente',effect:'shield',value:.2,description:'Magikarp empieza con un escudo del 20% de su vida. Al evolucionar a Gyarados gana Mirada Intimidante y una oleada que empuja enemigos.'};
     const entry=ENTRANCES[BY[u.dex].line[0]];
     if(entry[1]==='seismic') {
       const radius=u.star===3?2:1,duration=[.5,.6,.8][u.star-1];
@@ -202,7 +471,7 @@ G.TFT = (() => {
         description:(u.star===1?'Provoca un temblor alrededor del usuario.':'Perfora hasta 3 casillas en dirección al enemigo más cercano y provoca un temblor al aterrizar. No atraviesa aliados ni ocupa casillas bloqueadas.')+` Daña a los enemigos en un radio de ${radius} casilla${radius===1?'':'s'} y los aturde ${String(duration).replace('.',',')} segundos. Se activa una vez al comenzar el combate y solo aturde a enemigos; los aliados siguen actuando.`};
     }
     const base={name:entry[0],effect:entry[1],value:entry[2],description:entry[3]},active=ACTIVE_ENTRANCES[BY[u.dex].line[0]];
-    return active?{...base,name:active.name,active:true,mode:active.mode,type:active.type,range:active.range?.[u.star-1],power:active.power?.[u.star-1],shield:active.shield?.[u.star-1],description:base.description+' '+active.text+' Se activa una sola vez al comenzar el combate, sin pausar al equipo.'}:base;
+    return active?{...base,...active,tactic:active.ranks?.[u.star-1],name:active.name,active:true,mode:active.mode,type:active.type,range:active.range?.[u.star-1],power:active.power?.[u.star-1],shield:active.shield?.[u.star-1],description:base.description+' '+(active.ranks?.[u.star-1]?.text||active.text)+(active.ranks?.[u.star-1]?.power>0?' Alcance inicial: '+active.range[u.star-1]+' casillas.':'')+' Se activa una sola vez al comenzar el combate, sin pausar al equipo.'}:base;
   }
   function entrances(b) {
     const intimidated=new Set();
@@ -222,7 +491,8 @@ G.TFT = (() => {
       b.events.push({kind:'entrance',from:a.id,move:e.name,ttl:1.2});
     }
     // Resolve support openers before offensive entries on either team.
-    for(const a of b.units)if(['barrier','veil'].includes(entranceFor(a).mode))activeEntrance(b,a);
+    const support=a=>{const e=entranceFor(a);return ['barrier','veil'].includes(e.mode)||e.tactic?.power===0;};
+    for(const a of b.units)if(support(a))activeEntrance(b,a);
     for(const a of b.units) {
       if(a.hp<=0)continue;
       const e=entranceFor(a);
@@ -231,7 +501,7 @@ G.TFT = (() => {
         if(a.star>=2)drill(b,a,target,a.attack*.8);
         shock(b,a,e.radius,e.duration,a.attack*.6);
         b.events.push({kind:'entryCast',from:a.id,move:e.name,type:'ground',sx:a.x,sy:a.y,tx:target.x,ty:target.y,ttl:.8});
-      } else if(e.active&&!['barrier','veil'].includes(e.mode))activeEntrance(b,a);
+      } else if(e.active&&!support(a))activeEntrance(b,a);
     }
   }
   function areaEvent(b,a,center,radius,type,victims,control=false) {
@@ -241,7 +511,11 @@ G.TFT = (() => {
   function activeEntrance(b,a) {
     const e=entranceFor(a),foes=b.units.filter(u=>u.side!==a.side&&u.hp>0);
     let target;
-    if(e.mode==='barrier'||e.mode==='veil'){
+    if(e.mode==='tactic'){
+      target=e.tactic.power===0?a:foes.sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id)[0];
+      if(!target||e.tactic.power>0&&distance(a,target)>e.range)return;
+      familyCast(b,a,target,e.tactic);
+    } else if(e.mode==='barrier'||e.mode==='veil'){
       const friends=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.armor-y.armor||x.maxHp-y.maxHp||x.id-y.id);
       for(const ally of friends.slice(0,e.mode==='veil'?6:2))shield(b,a,ally,ally.maxHp*e.shield);
       target=a;
@@ -365,7 +639,7 @@ G.TFT = (() => {
     63:{types:['psychic','psychic','psychic'],text:['Confusión golpea y reduce la cadencia del objetivo durante 2 segundos.','Psicorrayo atraviesa una línea de 4 casillas.','Psíquico golpea una zona y aturde 0,8 segundos.']}
   });
   // Per-stage move definitions for every family that does not use the bespoke resolver.
-  const SPECIAL_FAMILIES=new Set([133,447,131,246,258,384,371,957]);
+  const SPECIAL_FAMILIES=new Set([133,447,131,246,258,384,371,957,...EXPANSION.map(f=>f.line[0])]);
   const FAMILY_MOVES={
     "133":[
       {"type":"normal","power":2,"text":"Estrellas que golpean al objetivo y recuperan 10 de maná.","selfMana":10},
@@ -478,6 +752,7 @@ G.TFT = (() => {
       {"type":"steel","power":2.7,"text":"Martillo Colosal golpea una zona ignorando el 50% de defensa, aturde durante 0,5 segundos y obtiene un escudo del 12% de su vida.","shape":"area","radius":1,"center":"target","pierce":0.5,"stun":0.5,"selfShield":0.12}
     ]
   };
+  for(const f of EXPANSION)FAMILY_MOVES[f.line[0]]=f.skills;
   const AREA_MOVES={
     'Terremoto':{type:'ground',radius:2,power:2.4,center:'self'},
     'Terratemblor':{type:'ground',radius:1,power:1.7,center:'self',slow:.2},
@@ -677,8 +952,8 @@ G.TFT = (() => {
     }
     return true;
   }
-  function familyCast(b,a,target) {
-    const m=FAMILY_MOVES[BY[a.dex].line[0]]?.[a.star-1];if(!m)return false;
+  function familyCast(b,a,target,override) {
+    const m=override||FAMILY_MOVES[BY[a.dex].line[0]]?.[a.star-1];if(!m)return false;
     const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0);
     const friends=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id).slice(0,m.friends||1);
     let victims=[target];
