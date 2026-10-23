@@ -3,7 +3,8 @@ G.TFTUI = (() => {
   'use strict';
   const $=id=>document.getElementById(id),E=G.TFT;
   let state=null,selected=null,active=false,frame=0,last=0,paused=false,speed=1,quitPending=false;
-  const DECK_KEY='ps.tft.decks.v1';
+  const DECK_KEY='ps.tft.decks.v1',MATCH_KEY='ps.tft.match.v1';
+  let saveClock=0;
   let decks=loadDecks(),slot=0,picks=new Set(decks[0]),editing=true;
   function loadDecks() {
     try {const a=JSON.parse(localStorage.getItem(DECK_KEY));if(Array.isArray(a)&&a.length===3&&a.every(E.validDeck))return a;}
@@ -15,6 +16,17 @@ G.TFTUI = (() => {
     try {localStorage.setItem(DECK_KEY,JSON.stringify(decks));$('tft-deck-status').textContent='Mazo '+(slot+1)+' guardado en este dispositivo.';}
     catch(_) {$('tft-deck-status').textContent='El navegador no permite guardar. Puedes jugar con el mazo durante esta sesión.';}
     return true;
+  }
+  function persist() {
+    if(!state)return false;
+    try {localStorage.setItem(MATCH_KEY,E.serialize(state));if($('tft-save-status').textContent!=='Partida guardada en este dispositivo.')$('tft-save-status').textContent='Partida guardada en este dispositivo.';return true;}
+    catch(_){$('tft-save-status').textContent='No se pudo guardar. Mantén esta pestaña abierta para conservar la partida.';return false;}
+  }
+  function loadMatch() {try{return E.restore(localStorage.getItem(MATCH_KEY));}catch(_){return null;}}
+  function showMatch() {
+    editing=false;$('tft-deck-panel').classList.add('hidden');$('tft-match').classList.remove('hidden');
+    $('tft-current-deck').textContent='Mi mazo · 10 líneas';$('tft-deck-summary').textContent=state.deck.map(d=>G.DEX_BY[d].name).join(' · ');
+    selected=null;seenEvents=new WeakSet();anims.clear();views.clear();shownEvolution=null;reportScope='ally';lastReport=null;render();
   }
   function editDeck() {state=null;selected=null;editing=true;picks=new Set(decks[slot]);renderDeck();}
   function renderDeck() {
@@ -44,21 +56,21 @@ G.TFTUI = (() => {
     if(G.Social.room){G.UI.toast('Sal de la sala de cooperativo para jugar TFT individual.');return;}
     if(G.Game.state!=='ui')return;
     active=true;quitPending=false;document.body.classList.add('tft-active');document.body.classList.toggle('tft-calm',!!G.Settings?.get('calm'));G.UI.chrome(false);G.UI.show('scr-tft');
-    if(!state||['victory','defeat'].includes(state.phase))editDeck();
-    paused=false;last=0;if(!editing)render();cancelAnimationFrame(frame);frame=requestAnimationFrame(loop);
+    if(!state)state=loadMatch();
+    paused=state?.phase==='combat';
+    if(state)showMatch();else editDeck();
+    last=0;if(!editing)render();cancelAnimationFrame(frame);frame=requestAnimationFrame(loop);
   }
-  function reset() {if(!saveDeck())return;editing=false;state=E.create(Date.now(),[...picks]);$('tft-deck-panel').classList.add('hidden');$('tft-match').classList.remove('hidden');$('tft-current-deck').textContent='Mazo '+(slot+1)+' · 10 líneas';$('tft-deck-summary').textContent=state.deck.map(d=>G.DEX_BY[d].name).join(' · ');selected=null;paused=false;seenEvents=new WeakSet();anims.clear();views.clear();shownEvolution=null;reportScope='ally';lastReport=null;render();}
+  function reset() {if(!saveDeck())return;state=E.create(Date.now(),[...picks]);paused=false;showMatch();persist();}
   function close() {
-    if(state&&!quitPending&&!['victory','defeat'].includes(state.phase)) {
-      quitPending=true;render();return;
-    }
+    if(state&&!persist()&&!quitPending){quitPending=true;render();return;}
     active=false;quitPending=false;cancelAnimationFrame(frame);anims.clear();state=null;
     document.body.classList.remove('tft-active','tft-calm');G.UI.hide('scr-tft');G.Flow.goMenu();
   }
   function act(fn) {
     if(!fn()){G.UI.toast('Acción no disponible: revisa el oro, el banquillo o el límite de equipo.');return;}
     if(!state.units.some(u=>u.id===selected))selected=null;
-    render();
+    persist();render();
   }
   function unitCard(u,kind,index) {
     const p=G.DEX_BY[u.dex],def=E.BY[u.dex],next=E.evolvedDex(u.dex,Math.min(3,u.star+1));
@@ -95,14 +107,22 @@ G.TFTUI = (() => {
     $('tft-pause').disabled=s.phase!=='combat';$('tft-pause').textContent=paused?'Reanudar':'Pausar';
     $('tft-speed').textContent=`Velocidad ×${speed}`;
     $('tft-next').classList.toggle('hidden',s.phase!=='result');
-    $('tft-restart').classList.toggle('hidden',!['victory','defeat'].includes(s.phase));
+    $('tft-restart').classList.toggle('hidden',s.phase==='combat');
     $('tft-result').textContent=s.result?`${s.result.draw?'Tiempo agotado':s.result.won?'Victoria de ronda':'Derrota de ronda'} · +${s.result.income} oro (incluye ${s.result.interest} de interés y ${s.result.bonus} por racha). ${s.phase==='victory'?'Completaste las 12 rondas con vida.':''}`:'';
     $('tft-quit').classList.toggle('hidden',!quitPending);
     const tr=E.traits(deployed);
     $('tft-traits').innerHTML=Object.entries(tr).sort((a,b)=>b[1].count-a[1].count).map(([t,v])=>
       `<span class="tft-trait ${v.tier?'on':''}">${TYPE()[t]} ${v.count} · ${v.tier?'Nv. '+v.tier:'requiere 2'}<small>${effects[E.EFFECTS[t]]}</small></span>`).join('')||'<span class="sub">Despliega 2 o 4 familias distintas del mismo tipo para activar sus bonos.</span>';
-    syncCells();renderInfo();renderReport();
+    syncCells();renderInfo();renderReport();renderScout();
     paint(0);
+  }
+  function renderScout() {
+    const panel=$('tft-scout');panel.classList.toggle('hidden',state.phase!=='planning');
+    if(state.phase!=='planning')return;
+    const foes=E.scout(state),tr=E.traits(foes);
+    $('tft-scout-list').innerHTML=foes.map(u=>`<button class="btn small" data-scout="${u.id}">${G.DEX_BY[u.dex].name} ${'★'.repeat(u.star)} · ${aiNames[E.aiFor(u.dex)]}</button>`).join('');
+    $('tft-scout-notes').textContent='Sinergias rivales: '+(Object.entries(tr).filter(([,v])=>v.tier).map(([t,v])=>TYPE()[t]+' Nv. '+v.tier).join(' · ')||'ninguna activa')+'. Toca un rival para consultar su habilidad. Ajusta tu primera línea frente a sus atacantes y protege a tus apoyos.';
+    $('tft-scout-list').querySelectorAll('button').forEach(b=>b.onclick=()=>{selected=Number(b.dataset.scout);syncCells();renderInfo();});
   }
   function renderReport() {
     const panel=$('tft-report');panel.classList.toggle('hidden',!state?.result);if(!state?.result)return;
@@ -116,14 +136,14 @@ G.TFTUI = (() => {
     const leader=rows[0];$('tft-report-notes').textContent=leader?`Mayor daño: ${G.DEX_BY[leader.dex].name} · ${fmt(leader.damage)}. Compara las contribuciones para ajustar tu mazo y sus posiciones.`:'Sin unidades en este informe.';
   }
   function currentUnits() {
-    return state.battle&&state.phase!=='planning'?state.battle.units:state.units.filter(u=>u.pos!==null).map(u=>({...u,x:u.pos%6,y:Math.floor(u.pos/6),side:0}));
+    return state.battle&&state.phase!=='planning'?state.battle.units:[...state.units.filter(u=>u.pos!==null).map(u=>({...u,x:u.pos%6,y:Math.floor(u.pos/6),side:0})),...E.scout(state).map(u=>({...u,x:u.pos%6,y:Math.floor(u.pos/6),side:1}))];
   }
   function syncCells() {
     if(!state)return;
     const planning=state.phase==='planning',units=currentUnits();
     $('tft-cells').querySelectorAll('button').forEach((b,pos)=>{
       const unit=units.find(u=>u.x===pos%6&&u.y===Math.floor(pos/6)&&u.hp!==0);
-      b.disabled=planning?pos<18:!unit;
+      b.disabled=planning?pos<18&&!unit:!unit;
       b.setAttribute('aria-label',planning?`${pos<18?'Terreno rival':'Tu terreno'} fila ${Math.floor(pos/6)+1}, columna ${pos%6+1}${unit?', '+G.DEX_BY[unit.dex].name+' '+unit.star+' estrellas':''}`:
         unit?`${unit.side===0?'Aliado':'Rival'} ${G.DEX_BY[unit.dex].name}, fila ${Math.floor(pos/6)+1}, columna ${pos%6+1}`:'Casilla vacía');
       b.classList.toggle('tft-selected-cell',!!unit&&unit.id===selected);
@@ -131,15 +151,15 @@ G.TFTUI = (() => {
   }
   function renderInfo() {
     if(!state)return;
-    const unit=state.battle&&state.phase!=='planning'?state.battle.units.find(v=>v.id===selected)||state.units.find(v=>v.id===selected):state.units.find(v=>v.id===selected);
+    const unit=state.battle&&state.phase!=='planning'?state.battle.units.find(v=>v.id===selected)||state.units.find(v=>v.id===selected):state.units.find(v=>v.id===selected)||E.scout(state).find(v=>v.id===selected);
     const box=$('tft-unit-info');
     if(!unit){box.innerHTML='<p>Toca una unidad del tablero o banquillo para ver su vida, daño, habilidad y sinergias.</p>';return;}
-    const f=unit.maxHp?unit:E.preview(state,unit),ability=E.abilityFor(unit),p=G.DEX_BY[unit.dex];
+    const rival=unit.id<0,f=unit.maxHp?unit:E.preview(state,unit),ability=E.abilityFor(unit),entry=E.entranceFor(unit),p=G.DEX_BY[unit.dex];
     const tr=E.traits(state.units.filter(v=>v.pos!==null));
-    box.innerHTML=`<h3>${p.name} ${'★'.repeat(unit.star)}${unit.side===1?' · Rival':''}</h3><p>${p.types.map(t=>TYPE()[t]).join(' · ')} · ${aiNames[E.aiFor(unit.dex)]}</p>
+    box.innerHTML=`<h3>${p.name} ${'★'.repeat(unit.star)}${rival?' · Rival':''}</h3><p>${p.types.map(t=>TYPE()[t]).join(' · ')} · ${aiNames[E.aiFor(unit.dex)]}</p>
       <dl><div><dt>Vida</dt><dd>${Math.ceil(f.hp)}/${Math.ceil(f.maxHp)}</dd></div><div><dt>Daño/pulso</dt><dd>${Math.round(f.attack*(2*E.BEAT_SECONDS)/f.interval)}</dd></div><div><dt>Defensa</dt><dd>${f.armor}</dd></div><div><dt>Potencia de cadencia</dt><dd>×${((2*E.BEAT_SECONDS)/f.interval).toFixed(2)}</dd></div><div><dt>Maná</dt><dd>${Math.floor(f.mana)}/100</dd></div><div><dt>Escudo</dt><dd>${Math.ceil(f.shield)}</dd></div></dl>
-      <p><b>${ability.name}</b> · ${TYPE()[ability.type]}<br>${ability.description}</p>
-      ${unit.side===1?'':`<p class="sub">${p.types.map(t=>TYPE()[t]+': '+(tr[t]?.tier?'bono Nv. '+tr[t].tier:'sin bono')).join(' · ')}</p>`}`;
+      <div class="tft-ability tft-entry"><small>AL INICIO · una vez por combate</small><h4>${entry.name}</h4><p>${entry.description}</p></div><div class="tft-ability"><small>MOVIMIENTO · al llegar a 100 de maná</small><h4>${ability.name} · ${TYPE()[ability.type]}</h4><p>${ability.description}</p></div>
+      ${rival?'':`<p class="sub">${p.types.map(t=>TYPE()[t]+': '+(tr[t]?.tier?'bono Nv. '+tr[t].tier:'sin bono')).join(' · ')}</p>`}`;
   }
   function showEvolution() {
     const e=state.effects[state.effects.length-1],box=$('tft-evolution');
@@ -210,7 +230,7 @@ G.TFTUI = (() => {
       }
       ctx.globalAlpha=1;
     }
-    if(!combat){ctx.font='16px sans-serif';ctx.fillStyle='#c2abcb';ctx.textAlign='center';ctx.fillText('Terreno rival · aparece al combatir',300,55);}
+
     if(combat)for(const e of state.battle.events) {
       const from=units.find(u=>u.id===e.from),to=units.find(u=>u.id===e.to);if(!from)continue;
       if(to){
@@ -221,7 +241,7 @@ G.TFTUI = (() => {
         else {ctx.beginPath();ctx.arc(sx+(tx-sx)*p,sy+(ty-sy)*p,e.kind==='spell'?7:4,0,Math.PI*2);ctx.fill();}
         ctx.font='bold 17px sans-serif';ctx.fillText((['heal','shield'].includes(e.kind)?'+':'−')+e.amount,tx,ty-10-p*20);
         if(e.absorbed){ctx.font='11px sans-serif';ctx.fillStyle='#b7eaff';ctx.fillText('Escudo −'+e.absorbed,tx,ty+4);}
-      } else if(e.kind==='cast'){
+      } else if(e.kind==='cast'||e.kind==='entrance'&&state.battle.opening>0){
         ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffdf78';ctx.fillText(e.move,from.x*100+50,from.y*100+43);
       } else if(e.kind==='beam'||e.kind==='drill'){
         ctx.strokeStyle=G.U.TYPE_COLOR[e.type]||'#ffe08a';ctx.lineWidth=e.kind==='beam'?14:8;
@@ -232,7 +252,10 @@ G.TFTUI = (() => {
     paintCards(dt);
     const beat=combat?state.battle.beat||0:0;
     if($('tft-beats').dataset.beat!==String(beat))$('tft-beats').dataset.beat=String(beat);
-    if(state.phase==='combat')$('tft-clock').textContent=`${Math.max(0,Math.ceil(45-state.battle.time))} s`;
+    const opening=state.phase==='combat'&&state.battle.opening>0;
+    $('tft-entrances').classList.toggle('hidden',!opening);
+    if(opening){const text='Habilidades de entrada · '+state.battle.units.map(u=>(u.side===0?'Aliado ':'Rival ')+G.DEX_BY[u.dex].name+': '+E.entranceFor(u).name).join(' · ');if($('tft-entrances').textContent!==text)$('tft-entrances').textContent=text;}
+    if(state.phase==='combat')$('tft-clock').textContent=opening?'Habilidades de entrada…':`${Math.max(0,Math.ceil(45-state.battle.time))} s`;
     else $('tft-clock').textContent='';
   }
   function paintCards(dt) {
@@ -249,7 +272,7 @@ G.TFTUI = (() => {
     if(editing){paintCards(dt);frame=requestAnimationFrame(loop);return;}
     const before=state.phase;
     if(!paused&&!quitPending&&!document.hidden)E.tick(state,dt*speed);
-    if(state.phase!==before)render();
+    saveClock+=dt;if(state.phase!==before){persist();render();}else if(saveClock>=1){saveClock=0;persist();}
     paint(paused||quitPending?0:dt);frame=requestAnimationFrame(loop);
   }
   // Markup exists before these deferred scripts execute.
@@ -259,7 +282,8 @@ G.TFTUI = (() => {
     b.onclick=()=>{
       if(!state)return;
       if(state.phase!=='planning'){selected=currentUnits().find(u=>u.hp>0&&u.x===pos%6&&u.y===Math.floor(pos/6))?.id??null;render();return;}
-      if(selected!==null){act(()=>E.place(state,selected,pos));selected=null;render();}
+      if(pos<18){selected=E.scout(state).find(u=>u.pos===pos)?.id??null;syncCells();renderInfo();return;}
+      if(selected!==null&&selected>0){act(()=>E.place(state,selected,pos));selected=null;render();}
       else {selected=state.units.find(u=>u.pos===pos)?.id??null;render();}
     };grid.appendChild(b);
   }
@@ -272,13 +296,15 @@ G.TFTUI = (() => {
   $('tft-cancel-quit').onclick=()=>{quitPending=false;render();};
   $('tft-reroll').onclick=()=>act(()=>E.reroll(state));
   $('tft-xp').onclick=()=>act(()=>E.buyXP(state));
-  $('tft-lock').onclick=()=>{state.locked=!state.locked;render();};
+  $('tft-lock').onclick=()=>{state.locked=!state.locked;persist();render();};
   $('tft-sell').onclick=()=>act(()=>E.sell(state,selected));
   $('tft-return').onclick=()=>act(()=>E.place(state,selected,null));
   $('tft-fight').onclick=()=>{selected=null;act(()=>E.start(state));};
   $('tft-next').onclick=()=>act(()=>E.next(state));
-  $('tft-restart').onclick=editDeck;
+  $('tft-restart').onclick=()=>{if(!['victory','defeat'].includes(state.phase)&&!window.confirm('¿Empezar de nuevo? Se reemplazará la partida TFT guardada.'))return;state=null;try{localStorage.removeItem(MATCH_KEY);}catch(_){}editDeck();};
   $('tft-pause').onclick=()=>{paused=!paused;render();};
   $('tft-speed').onclick=()=>{speed=speed===1?2:1;render();};
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&state){paused=state.phase==='combat';persist();if(active)render();}});
+  window.addEventListener('pagehide',()=>{if(state)persist();});
   return {open,get active(){return active;},get state(){return state;}};
 })();

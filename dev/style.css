@@ -1106,3 +1106,12 @@ body.tft-active #rotate { display:none!important; }
 .tft-report-total { color:#ffe08a; font-weight:bold; }
 .tft-report [aria-pressed="true"] { border-color:#ffe08a; color:#ffe08a; }
 body.tft-calm #tft-evolution { animation:none; }
+
+.tft-ability { margin-top:12px; padding:12px; border-left:3px solid #77bfff; border-radius:8px; background:#102037; }
+.tft-ability.tft-entry { border-color:#ffe08a; }
+.tft-ability small { color:#adc4df; font-size:11px; letter-spacing:.5px; }
+.tft-ability h4 { margin:6px 0; font-size:17px; color:#ffe08a; }
+.tft-ability p { margin:0; }
+.tft-entrances { margin-top:10px; padding:12px; border:1px solid #ffe08a; border-radius:10px; background:#26374e; color:#ffe08a; font-size:14px; line-height:1.6; }
+#tft-scout .tft-actions { gap:5px; }
+#tft-scout .btn { white-space:normal; text-align:left; }

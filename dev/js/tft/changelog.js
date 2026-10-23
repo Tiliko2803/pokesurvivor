@@ -6,6 +6,16 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: habilidades de entrada, guardado y exploración', 'TFT: entrance abilities, saves and scouting'], new: [
+    ['Habilidades de entrada visibles antes del primer pulso: escudos, maná y bonos propios para cada familia. Los movimientos cargados conservan su activación con 100 de maná. Fichas separadas con el efecto y momento de activación.',
+     'Visible entrance abilities before the first beat: shields, mana and family bonuses. Charged moves still activate at 100 mana. Separate cards explain each effect and its trigger.'],
+    ['Guardado automático local de la partida, incluso en combate. Al volver, el combate queda en pausa; conserva oro, tienda, posiciones, rival e informes.',
+     'Local automatic match saves, including combat. Returning to a battle pauses it; gold, shop, formation, opponent and reports are preserved.'],
+    ['Explora el rival antes de luchar: formación real en el tablero, roles, sinergias y ficha de habilidades. Comprar o mover aliados no cambia el rival.',
+     'Scout the next opponent: actual board formation, roles, synergies and ability cards. Buying or moving allies does not reroll the enemy.'],
+    ['Movimientos propios para Venusaur, Raichu, Machamp, Meganium, Blaziken y Alakazam: drenaje, rayos encadenados, ruptura de escudos, limpieza de equipo, impulso temporal y rayos perforantes. Ya son 12 familias con movimientos únicos.',
+     'Signature moves for Venusaur, Raichu, Machamp, Meganium, Blaziken and Alakazam: drain, chain lightning, shield breaking, team cleansing, temporary speed boosts and piercing beams. Twelve families now have unique moves.']
+  ] },
   { d: '2026-10-22', title: ['TFT: compás, informe y más especies', 'TFT: rhythm, battle report and more species'], new: [
     ['Compás común de cuatro pulsos: salto y avance, ataque, movimiento, ataque. Cada pulso dura medio segundo; la velocidad de ataque aumenta potencia y maná por golpe sin romper el ritmo.',
      'Shared four-beat rhythm: hop and advance, attack, move, attack. Each beat lasts half a second; attack speed increases strike power and mana without breaking the rhythm.'],

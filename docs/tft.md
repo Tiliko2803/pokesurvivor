@@ -144,3 +144,13 @@ round resolved. Its report correctly displayed both teams and match totals,
 including actual healing and absorbed shields. With six saved gold, the win
 paid seven total (base five + win one + interest one). Native Android visual
 validation remains pending; the hosted desktop flow was verified.
+
+
+## 2026-10-23 · Entradas, exploración y continuación
+- La ronda almacena su rival al prepararse. `scout` devuelve copias; inspeccionar, comprar y recolocar no consume RNG ni cambia el encuentro. El tablero muestra posiciones reales, roles, sinergias y fichas rivales.
+- Cada Pokémon activa una habilidad de entrada una sola vez por combate. Hay 1,8 segundos de presentación antes del primer pulso y del reloj de 45 segundos. Los nombres son adaptaciones para TFT, no una reproducción de reglas de los juegos principales. Las entradas de familia se mantienen al evolucionar; los movimientos sí cambian por estrella.
+- Caparazón/Torrente/Chorro Arena añaden protección, Velo Protector escuda al equipo, Intimidación reduce 8% el daño enemigo sin acumularse por copias; otros bonos conceden maná, defensa, regeneración, perforación o cadencia. Las familias sin entrada específica tienen una de su rol. Los escudos conservan su límite global.
+- Se añaden seis familias de movimientos únicos: Bulbasaur, Pichu, Machop, Chikorita, Torchic y Abra. Junto con las seis anteriores suman doce. Drenaje cuenta daño efectivo; cadenas no repiten enemigos ni golpean aliados; Demolición destruye escudo sin contarlo como daño a PV; los bonos temporales no se acumulan al refrescarse.
+- Partida local en `ps.tft.match.v1`, separada de los tres mazos y del Survivor. Guarda después de acciones, al cambiar de fase, cada segundo y al ocultar/salir de la página. Conserva el estado de simulación y RNG, incluyendo estados alterados y aportes del informe. Al reabrir TFT, restaura automáticamente y deja un combate en pausa. No hay avance por tiempo transcurrido fuera de la página. Nueva partida sustituye el guardado; una partida activa pide confirmación para ese reemplazo.
+- Instantáneas con versión y validación de límites, unidades, estadísticas, mazo, posiciones e informes. Las incompatibles/corruptas se ignoran. Partículas visuales se descartan al cargar. Si el almacenamiento falla se muestra aviso; salir requiere confirmación sólo en ese caso. El guardado depende del mismo navegador y dispositivo; borrar sus datos borra la partida.
+- Pruebas de ida y vuelta en preparación, combate e informe: conserva resultado e ingresos, no vuelve a aplicar entradas ni paga dos veces. El combate conserva el compás 1/2/3/4 tras la presentación inicial.

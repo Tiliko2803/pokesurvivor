@@ -64,7 +64,7 @@ test('fixed-seed combat is deterministic across frame rates',()=>{
 });
 test('last round and zero life terminate; no next round or double payment',()=>{
   for(const life of [1,50]){const {E,s}=fixture();s.gold=100;s.round=12;s.life=life;
-    purchase(E,s,1);E.place(s,s.units[0].id,35);E.start(s);s.battle.units.filter(u=>u.side===0).forEach(u=>u.hp=0);E.tick(s,.1);
+    purchase(E,s,1);E.place(s,s.units[0].id,35);E.start(s);s.battle.opening=0;s.battle.units.filter(u=>u.side===0).forEach(u=>u.hp=0);E.tick(s,.1);
     assert.equal(s.phase,life===1?'defeat':'victory');assert.equal(E.next(s),false);
     const gold=s.gold;E.tick(s,.2);assert.equal(s.gold,gold);
   }
@@ -86,7 +86,7 @@ test('ranged units retreat into a free cell when a melee enemy reaches them',()=
  const {E,s}=fixture();s.gold=100;purchase(E,s,25); // tests may buy any known stage; shop rolls base species
  E.place(s,s.units[0].id,20);E.start(s);
  const a=s.battle.units.find(u=>u.side===0),foe=s.battle.units.find(u=>u.side===1);
- s.battle.units=[a,foe];a.x=2;a.y=3;foe.x=2;foe.y=2;foe.moveCD=99;foe.cooldown=99;
+ s.battle.opening=0;s.battle.units=[a,foe];a.x=2;a.y=3;foe.x=2;foe.y=2;foe.moveCD=99;foe.cooldown=99;
  E.tick(s,.05);assert.ok(Math.abs(a.x-foe.x)+Math.abs(a.y-foe.y)>1);
  assert.ok(a.x>=0&&a.x<6&&a.y>=0&&a.y<6);
 });
@@ -94,7 +94,7 @@ test('guardian grants a capped shield to a vulnerable teammate',()=>{
  const {E,s}=fixture();s.gold=100;purchase(E,s,374,3);purchase(E,s,4);
  s.units.forEach((u,i)=>E.place(s,u.id,18+i));E.start(s);
  const a=s.battle.units.find(u=>u.dex===375),ally=s.battle.units.find(u=>u.side===0&&u!==a),foe=s.battle.units.find(u=>u.side===1);
- s.battle.units=[a,ally,foe];a.x=2;a.y=3;a.mana=100;a.cooldown=0;ally.x=3;ally.y=3;ally.hp=ally.maxHp*.1;
+ s.battle.opening=0;s.battle.units=[a,ally,foe];a.x=2;a.y=3;a.mana=100;a.cooldown=0;ally.x=3;ally.y=3;ally.hp=ally.maxHp*.1;
  foe.x=2;foe.y=2;foe.cooldown=99;foe.moveCD=99;for(let i=0;i<12;i++)E.tick(s,.05);
  assert.ok(ally.shield>0);assert.ok(ally.shield<=ally.maxHp*.5);assert.equal(a.mana,0);
 });
@@ -190,7 +190,7 @@ test('ability descriptions change through each of the six signature families',()
 });
 test('interest grants one per five saved gold, caps at five and uses pre-income gold',()=>{
  for(const [gold,interest] of [[0,0],[4,0],[5,1],[9,1],[10,2],[24,4],[25,5],[100,5]]){
-  const {E,s}=fixture();s.gold=10;purchase(E,s,4);E.place(s,s.units[0].id,20);E.start(s);s.gold=gold;
+  const {E,s}=fixture();s.gold=10;purchase(E,s,4);E.place(s,s.units[0].id,20);E.start(s);s.battle.opening=0;s.gold=gold;
   for(const foe of s.battle.units.filter(u=>u.side===1))foe.hp=0;
   E.tick(s,.1);assert.equal(s.result.interest,interest,'saved '+gold);
   assert.equal(s.gold,gold+6+interest);const paid=s.gold;E.tick(s,.1);assert.equal(s.gold,paid);
@@ -267,6 +267,51 @@ test('complete rhythmic matches with signature/AOE units stay finite and collisi
 test('residual visual effects expire after a round while reports and payments remain unchanged',()=>{
  const {E,s}=fixture();s.gold=10;purchase(E,s,4);E.place(s,s.units[0].id,20);E.start(s);
  for(const foe of s.battle.units.filter(u=>u.side===1))foe.hp=0;
- s.battle.events.push({kind:'cast',ttl:.6});E.tick(s,.05);const report=JSON.stringify(s.result),gold=s.gold;
+ s.battle.opening=0;s.battle.events.push({kind:'cast',ttl:.6});E.tick(s,.05);const report=JSON.stringify(s.result),gold=s.gold;
  for(let i=0;i<20;i++)E.tick(s,.1);assert.equal(s.battle.events.length,0);assert.equal(JSON.stringify(s.result),report);assert.equal(s.gold,gold);
+});
+
+test('scouted opponents and formation match the coming fight without rerolling on inspection',()=>{
+ const {E}=fixture(),s=E.create(2468,E.DEFAULT_DECK);const before=s.seed,foes=JSON.stringify(E.scout(s));
+ E.scout(s)[0].dex=99999;assert.equal(JSON.stringify(E.scout(s)),foes);assert.equal(s.seed,before);
+ s.shop=[4];E.buy(s,0);E.place(s,s.units[0].id,20);E.start(s);
+ assert.equal(JSON.stringify(s.battle.units.filter(u=>u.side===1).map(({id,dex,star,pos})=>({id,dex,star,pos}))),foes);
+ while(s.phase==='combat')E.tick(s,.1);if(s.phase==='result'){E.next(s);assert.equal(s.opponentRound,2);assert.notEqual(JSON.stringify(E.scout(s)),foes);}
+});
+test('entrances apply once before the rhythm and never reapply when a battle resumes',()=>{
+ const {E}=fixture(),s=E.create(3,E.DEFAULT_DECK);s.gold=100;
+ for(const d of [7,280,529]){s.shop=[d];E.buy(s,0);}s.units.forEach((u,i)=>E.place(s,u.id,18+i));
+ const base=E.preview(s,s.units[0]);E.start(s);const a=s.battle.units.find(u=>u.dex===7);
+ assert.ok(a.shield>=a.maxHp*.19);assert.ok(s.battle.events.some(e=>e.kind==='entrance'));
+ for(let i=0;i<10;i++)E.tick(s,.1);assert.equal(s.battle.time,0);assert.equal(s.battle.beat,0);
+ const saved=E.restore(E.serialize(s));assert.ok(saved);assert.equal(saved.battle.units[0].shield,a.shield);assert.equal(saved.battle.opening,s.battle.opening);
+ for(let i=0;i<10;i++)E.tick(saved,.1);assert.ok(saved.battle.time>0);assert.equal(saved.battle.units[0].shield,a.shield);
+ assert.ok(base.shield===0);
+});
+test('all roster families expose an entrance; twelve families have distinct evolving moves',()=>{
+ const {E}=fixture();for(const f of E.ROSTER)assert.ok(E.entranceFor({dex:f.dex,star:1}).description);
+ for(const d of [1,4,7,172,66,152,63,255,529,92,280,374])for(let star=1;star<=3;star++)assert.equal(E.abilityFor({dex:E.evolvedDex(d,star),star}).signature,true);
+});
+test('new signature moves drain actual HP, chain enemies, break shields, cleanse and expire buffs',()=>{
+ const {E}=fixture();
+ {const {b,units:[a,t]}=battleFor(E,[[1,1,0,2,3],[7,1,1,2,2]]);a.hp=a.maxHp/2;const hp=a.hp;E.cast(b,a,t);assert.ok(a.hp>hp);assert.ok(a.healingDone<=a.damageDone*.5+1);}
+ {const {b,units:[a,t,other,ally]}=battleFor(E,[[26,3,0,2,3],[7,1,1,2,2],[7,1,1,3,2],[7,1,0,3,3]]);const hp=ally.hp;E.cast(b,a,t);assert.ok(other.hp<other.maxHp);assert.equal(ally.hp,hp);assert.ok(t.stunUntil>0);}
+ {const {s,b,units:[a,t]}=battleFor(E,[[68,3,0,2,3],[7,1,1,2,2]]);t.shield=1000;const armor=a.armor;E.cast(b,a,t);assert.equal(t.shield,0);assert.equal(a.armor,armor-10);a.cooldown=99;t.cooldown=99;for(let i=0;i<42;i++)E.tick(s,.05);assert.equal(a.armor,armor);}
+ {const {b,units:[a,t,ally]}=battleFor(E,[[154,3,0,2,3],[7,1,1,2,2],[7,1,0,3,3]]);ally.hp/=2;ally.burn={};ally.stunUntil=10;E.cast(b,a,t);assert.equal(ally.burn,null);assert.equal(ally.stunUntil,0);assert.ok(ally.hp>ally.maxHp/2);}
+ {const {s,b,units:[a,t]}=battleFor(E,[[257,3,0,2,3],[7,1,1,2,2]]);const interval=a.interval;E.cast(b,a,t);assert.ok(a.interval<interval);a.cooldown=99;t.cooldown=99;t.hp=100000;t.maxHp=100000;for(let i=0;i<42;i++)E.tick(s,.05);assert.ok(Math.abs(a.interval-interval)<1e-9);}
+});
+test('save/resume preserves shop, formation, RNG, economy and combat outcome without duplicate income',()=>{
+ const {E}=fixture(),s=E.create(12345,E.DEFAULT_DECK);s.shop=[4,7];E.buy(s,0);E.buy(s,1);s.units.forEach((u,i)=>E.place(s,u.id,18+i));s.locked=true;
+ const planning=E.restore(E.serialize(s));assert.ok(planning);assert.equal(E.serialize(planning),E.serialize(s));
+ E.start(s);for(let i=0;i<45;i++)E.tick(s,.1);const restored=E.restore(E.serialize(s));assert.ok(restored);
+ while(s.phase==='combat')E.tick(s,.1);while(restored.phase==='combat')E.tick(restored,.1);
+ assert.equal(JSON.stringify(restored.result),JSON.stringify(s.result));assert.equal(restored.gold,s.gold);
+ const result=E.restore(E.serialize(s));assert.ok(result);E.tick(result,.1);assert.equal(result.gold,s.gold);assert.equal(JSON.stringify(result.history),JSON.stringify(s.history));
+});
+test('invalid, incompatible and incomplete snapshots are rejected safely',()=>{
+ const {E}=fixture(),s=E.create(5,E.DEFAULT_DECK);const data=JSON.parse(E.serialize(s));
+ for(const raw of [null,'{','x'.repeat(300001),JSON.stringify({...data,version:999})])assert.equal(E.restore(raw),null);
+ for(const change of [s=>s.gold=-1,s=>s.deck=[4],s=>s.units=[{id:1,dex:9999,star:1,pos:20}],s=>s.opponent=null,s=>s.history=[{round:1,report:[{dex:4}]}],s=>s.phase='combat']){
+ const copy=JSON.parse(JSON.stringify(data));change(copy.state);assert.equal(E.restore(JSON.stringify(copy)),null);
+ }
 });
