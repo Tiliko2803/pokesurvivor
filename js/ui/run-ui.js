@@ -124,6 +124,8 @@ G.RunUI = (() => {
   }
 
   function showOver(r, onBack) {
+    const summary = r.summaryHtml ?? runSummary();
+    $('over-summary').innerHTML = summary;
     const megaReward=r.megaReward||G.Mega.DEF;
     $('over-title').textContent = r.challenge ? (r.challenge.won ? '¡Desafío superado!' : 'Desafío fallido') : r.dead ? 'Has caído…' : 'Run terminada';
     $('over-stats').innerHTML = `
@@ -141,8 +143,8 @@ G.RunUI = (() => {
         <div style="font-size:12px;color:var(--muted)">${r.breakdown}</div></div>
       ${r.t1 || r.t10 ? `<div style="grid-column:1/-1"><span>Tickets del gacha</span><b>
         ${r.t1 ? G.Icons.html('ticket', 22) + ' +' + r.t1 + ' ' : ''}${r.t10 ? G.Icons.html('ticket10', 22) + ' +' + r.t10 + ' ×10' : ''}</b></div>` : ''}
-      <div style="grid-column:1/-1"><span>Movimientos</span><b style="font-size:15px">
-        ${r.moves.map(m => `${G.Icons.html('move:' + m.id, 16)} ${m.name} Nv.${m.lvl}`).join(' · ') || '—'}</b></div>
+      ${summary ? '' : `<div style="grid-column:1/-1"><span>Movimientos</span><b style="font-size:15px">
+        ${r.moves.map(m => `${G.Icons.html('move:' + m.id, 16)} ${m.name} Nv.${m.lvl}`).join(' · ') || '—'}</b></div>`}
       ${r.caught && r.caught.length ? `<div style="grid-column:1/-1" class="caught"><span>${G.Icons.html('shiny', 12)} Shinies conseguidos</span>
         <div class="caught-row" id="over-caught"></div></div>` : ''}
       ${r.record ? '<div style="grid-column:1/-1;text-align:center" class="gold">¡Nuevo récord de tiempo!</div>' : ''}
@@ -254,10 +256,9 @@ G.RunUI = (() => {
    * daño por segundo), tus estadísticas con todo lo subido y el objeto y las
    * cartas de mejora que llevas.
    */
-  function pauseSummary() {
-    const pl = G.Game.player;
+  function runSummary(pl = G.Game.player, t = G.Game.st.time) {
     if (!pl) return '';
-    const t = G.Game.st.time, n = v => Math.round(v).toLocaleString('es');
+    const n = v => Math.round(v).toLocaleString('es');
     const k2 = v => '×' + v.toFixed(2).replace('.', ',');
     const pct = v => Math.round(v * 100) + ' %';
     const moves = pl.moves.map(m => {
@@ -295,7 +296,7 @@ G.RunUI = (() => {
   }
 
   function showPause(coop = false) {
-    $('pause-sum').innerHTML = pauseSummary();
+    $('pause-sum').innerHTML = runSummary();
     G.UI.soundControls($('pause-sound'));
     $('pause-coop').classList.toggle('hidden', !coop);
     $('btn-quit').textContent = coop ? 'Salir de la partida' : 'Abandonar run';
@@ -313,5 +314,5 @@ G.RunUI = (() => {
     if (run) el.textContent = 'Desafío · ' + G.U.mmss(Math.ceil(run.def.duration - run.time));
   }
 
-  return { challengeHUD, showLevelUp, reroll, showItemChoice, showBond, pickBond, bondBack, pick, setWaiting, closeLevelUp, showOver, wirePause, showPause };
+  return { runSummary, challengeHUD, showLevelUp, reroll, showItemChoice, showBond, pickBond, bondBack, pick, setWaiting, closeLevelUp, showOver, wirePause, showPause };
 })();

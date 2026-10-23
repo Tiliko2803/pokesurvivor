@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-22', title: ['Estadísticas al terminar la partida', 'End-of-run statistics'], new: [
+    ['Al terminar una partida también puedes ver el daño y DPS de cada movimiento, estadísticas finales, objeto y cartas. El resumen guarda los valores justo al terminar y se puede desplazar en móvil.',
+     'At the end of a run you can also see damage and DPS per move, final stats, held item and cards. The summary captures values at the moment the run ends and scrolls on mobile.']
+  ] },
   { d: '2026-10-20', title: ['Una frase sorpresa en el menú', 'A surprise line on the menu'], new: [
     ['32 frases cortas sobre Arceus, los curanderos, las builds y la panadería de Tiliko. Cada visita al juego elige una; conserva la misma al volver al menú y evita repetir la anterior cuando es posible.',
      '32 short lines about Arceus, healers, builds and Tiliko’s bakery. Each visit chooses one; returning to the menu keeps it, and the previous line is avoided when possible.']

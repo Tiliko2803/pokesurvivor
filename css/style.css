@@ -1000,3 +1000,13 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
 @media (max-height: 460px) and (orientation: landscape) {
   #scr-menu .menu-splash { max-width: 290px; margin: 5px auto 3px; font-size: 11px; }
 }
+
+/* Resumen final: el mismo detalle que la pausa, con desplazamiento en movil. */
+#scr-over .run-over-box { width: min(720px, 100%); max-height: calc(100dvh - 24px);
+  overflow-y: auto; overscroll-behavior: contain; }
+#over-summary .sum-moves { table-layout: auto; }
+#over-summary td:first-child { overflow-wrap: anywhere; }
+#scr-over #btn-again { position: sticky; bottom: 0; margin-top: 12px; }
+@media (max-height: 460px) {
+  #scr-over .run-over-box { max-height: calc(100dvh - 12px); }
+}

@@ -67,3 +67,14 @@ test('Poison retains normal scaling up to 60k HP and grows with square-root effe
 test('Lost non-Judgment bosses return near a living player after four seconds without healing',()=>{
  const {G,p}=setup();const e=new G.Enemy({dex:95,hp:10000,spd:0,dmg:1,xp:1,behavior:'chase'},5000,5000,{hp:1,spd:1,dmg:1},true);e.update=noop;e.hp=1234;G.EnemyMgr.add(e);let returned=0;G.Spawner.ahead=(enemy,near)=>{returned++;enemy.x=near.x+200;enemy.y=near.y;return true;};for(let i=0;i<8;i++)G.EnemyMgr.update(.5,[p]);assert.equal(returned,0);G.EnemyMgr.update(.5,[p]);assert.equal(returned,1);assert.equal(e.hp,1234);
 });
+test('Final report reuses pause details and freezes Judgment-adjusted stats before run cleanup',()=>{
+ const f=setup(68),{G,p}=f;G.Icons={html:()=>''};G.Items={BY:{}};const get=G.UI.$;G.UI.$=id=>id==='over-ask'?null:get(id);f.load('js/ui/run-ui.js');
+ p.moves[0].dealt=12345;p.baseSpd=300;G.Judgment.active=true;G.Judgment.capSpd=s=>130+(s-130)*.25;G.Judgment.reset=()=>{G.Judgment.active=false;};
+ const expected=G.RunUI.runSummary(p,G.Game.st.time);G.RunUI.showPause();assert.equal(f.nodes.get('pause-sum').innerHTML,expected);
+ let report;const show=G.RunUI.showOver;G.RunUI.showOver=(r,back)=>{report=r;show(r,back);};G.Game.quit();assert.equal(G.Game.state,'over');
+ assert.equal(report.summaryHtml,expected);assert.equal(f.nodes.get('over-summary').innerHTML,expected);assert.match(expected,/Tus ataques|Por segundo/);assert.match(expected,/12[.,]345/);assert.notEqual(G.RunUI.runSummary(),expected,'effective speed changes after Judgment cleanup');
+});
+test('Defeat report includes zero remaining HP, final attacks, item and cards',()=>{
+ const f=setup(68),{G,p}=f;G.Icons={html:()=>''};G.Items={BY:{leftovers:{name:'Restos',desc:'Regeneración'}}};const get=G.UI.$;G.UI.$=id=>id==='over-ask'?null:get(id);f.load('js/ui/run-ui.js');
+ p.item='leftovers';p.statsTaken.atk=3;p.hp=0;p.dead=true;f.tick(82);assert.equal(G.Game.state,'over');const html=f.nodes.get('over-summary').innerHTML;assert.match(html,/Vida/);assert.match(html,/>0 \/ /);assert.match(html,/Restos/);assert.match(html,/Potencia ×3/);assert.match(html,/Tus ataques/);assert.doesNotMatch(html,/NaN|undefined/);
+});
