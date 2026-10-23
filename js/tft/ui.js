@@ -211,7 +211,7 @@ G.TFTUI = (() => {
       const target=combat&&u.hp>0?E.selectTarget(state.battle,u):null;
       const facing=target?G.Sprites.dirFromAngle(Math.atan2(target.y-u.y,target.x-u.x)):null;
       const age=combat?state.battle.time-(state.battle.beatStarted||0):1;
-      const hop=!calm&&u.hp!==0&&state.phase==='combat'&&(state.battle.beat===1||state.battle.beat===3&&moving)?Math.sin(Math.PI*Math.min(1,age/.26))*11:0;
+      const hop=!calm&&u.hp!==0&&state.phase==='combat'&&!(u.stunUntil>state.battle.time)&&(state.battle.beat===1||state.battle.beat===3&&moving)?Math.sin(Math.PI*Math.min(1,age/.26))*11:0;
       const x=v.x*cell+50,y=v.y*cell+76-hop;
       ctx.globalAlpha=alpha;
       ctx.fillStyle=u.side===0?'#69e5b580':'#ff718b80';ctx.beginPath();ctx.ellipse(x,y-3,25,9,0,0,Math.PI*2);ctx.fill();
