@@ -772,10 +772,10 @@ G.TFT = (() => {
     const theme=THEMES[(s.round-1)%THEMES.length],pool=PLAYABLE_ROSTER.filter(p=>p.cost<=cap&&theme.pool.includes(p.dex));
     const units=[],positions=[7,9,6,10,1,3];let healers=0;
     for(let i=0;i<n;i++) {
-      const options=pool.filter(p=>healers<1||p.role!=='healer'),f=options[Math.floor(random(s)*options.length)];
-      const isBoss=boss&&i===0,dex=isBoss?info.bossDex:f.dex;
-      if(!isBoss&&f.role==='healer')healers++;
-      const star=isBoss?(s.round>=30?3:2):s.round>=9?(i<Math.floor((s.round-9)/4)?3:2):s.round>=4&&i<Math.floor((s.round-2)/2)?2:1;
+      const isBoss=boss&&i===0,star=isBoss?(s.round>=30?3:2):s.round>=9?(i<Math.floor((s.round-9)/4)?3:2):s.round>=4&&i<Math.floor((s.round-2)/2)?2:1;
+      const healing=p=>p.role==='healer'||aiFor(evolvedDex(p.dex,star))==='healer';
+      const options=pool.filter(p=>healers<1||!healing(p)),f=options[Math.floor(random(s)*options.length)],dex=isBoss?info.bossDex:f.dex;
+      if(healing(BY[dex]))healers++;
       units.push({id:-(i+1),dex:evolvedDex(dex,star),star,pos:positions[i],boss:isBoss,elite});
     }
     return units;
