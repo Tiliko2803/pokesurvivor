@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: entrada sísmica y sprites de frente', 'TFT: seismic entrance and front-facing sprites'], chg: [
+    ['Drilbur y Excadrill son iniciadores de control: Entrada Sísmica se activa al comenzar cada combate. Excadrill perfora hasta 3 casillas y aturde alrededor del aterrizaje; radio y duración mejoran con estrellas. Sus movimientos de maná también aturden al aterrizar.',
+     'Drilbur and Excadrill initiate crowd control: Seismic Entrance activates at the beginning of each battle. Excadrill drills up to 3 cells and stuns around its landing; radius and duration improve with stars. Its mana moves also stun on landing.'],
+    ['Los sprites del editor de mazos, tienda, banquillo y anuncio de evolución miran de frente. En combate siguen orientándose hacia sus objetivos.',
+     'Deck editor, shop, bench and evolution announcement sprites face the viewer. Combat units continue facing their targets.']
+  ] },
   { d: '2026-10-23', title: ['TFT: habilidades para todas las familias', 'TFT: abilities for every family'], new: [
     ['Las 34 familias tienen habilidades de entrada propias y movimientos definidos en sus tres niveles, sin depender del movimiento genérico de su rol. Las fichas muestran el tipo y efecto de cada movimiento.',
      'All 34 families have named entrance abilities and moves defined at all three ranks, without relying on generic role moves. Cards show the actual move type and effect.'],

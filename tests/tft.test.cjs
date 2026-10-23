@@ -360,3 +360,37 @@ test('new buffs and statuses survive a save and keep the same combat outcome',()
  while(s.phase==='combat')E.tick(s,.1);while(restored.phase==='combat')E.tick(restored,.1);
  assert.equal(JSON.stringify(restored.result),JSON.stringify(s.result));
 });
+
+function seismicMatch(E,star=2) {
+ const s=E.create(444,E.DEFAULT_DECK);s.gold=1000;
+ for(let i=0;i<3**(star-1);i++){s.shop=[529];E.buy(s,0);}
+ const a=s.units[0];E.place(s,a.id,20);s.shop=[7];E.buy(s,0);E.place(s,s.units.find(u=>u.dex===7).id,21);
+ s.opponent=[{id:-1,dex:133,star:1,pos:8},{id:-2,dex:133,star:1,pos:9},{id:-3,dex:133,star:1,pos:5}];s.opponentRound=s.round;
+ E.start(s);return s;
+}
+test('Excadrill opens once with a safe drill and area stun before the first beat',()=>{
+ const {E}=fixture();for(const star of [2,3]){
+  const s=seismicMatch(E,star),b=s.battle,a=b.units.find(u=>u.dex===530),ally=b.units.find(u=>u.dex===7),near=b.units.find(u=>u.id===-1),diagonal=b.units.find(u=>u.id===-2),far=b.units.find(u=>u.id===-3);
+  assert.equal(b.beat,0);assert.equal(b.time,0);assert.equal(a.y,0);assert.equal(a.x,2);
+  assert.ok(near.hp<near.maxHp);assert.equal(near.stunUntil,star===3?.8:.6);
+  assert.equal(!!diagonal.stunUntil,star===3);assert.equal(far.hp,far.maxHp);assert.equal(far.stunUntil,undefined);
+  assert.equal(ally.hp,ally.maxHp);assert.equal(ally.stunUntil,undefined);assert.equal(a.mana,0,'entrance does not spend or fill mana');
+  assert.equal(new Set(b.units.filter(u=>u.hp>0).map(u=>u.x+','+u.y)).size,b.units.filter(u=>u.hp>0).length);
+  const hp=near.hp;for(let i=0;i<10;i++)E.tick(s,.1);assert.equal(b.time,0);assert.equal(near.hp,hp);assert.equal(near.stunUntil,star===3?.8:.6);
+  const restored=E.restore(E.serialize(s));assert.ok(restored);assert.equal(restored.battle.units.find(u=>u.id===-1).hp,hp);
+  while(b.opening>0)E.tick(s,.1);for(let i=0;i<11;i++)E.tick(s,.05);
+  assert.ok(!b.events.some(e=>e.kind==='hit'&&e.from===near.id),'stunned unit cannot attack on the first attack beat');
+ }
+});
+test('Drilbur has a smaller stationary opener and allied blockers stop Excadrill entry',()=>{
+ const {E}=fixture();
+ {const s=E.create(555,E.DEFAULT_DECK);s.shop=[529];E.buy(s,0);E.place(s,s.units[0].id,18);s.opponent=[{id:-1,dex:133,star:1,pos:12}];s.opponentRound=1;E.start(s);const [a,t]=s.battle.units;assert.equal(a.y,3);assert.equal(t.stunUntil,.5);assert.ok(t.hp<t.maxHp);}
+ {const s=E.create(555,E.DEFAULT_DECK);s.gold=100;for(let i=0;i<3;i++){s.shop=[529];E.buy(s,0);}E.place(s,s.units[0].id,24);s.shop=[7];E.buy(s,0);E.place(s,s.units.find(u=>u.dex===7).id,18);s.opponent=[{id:-1,dex:133,star:1,pos:6}];s.opponentRound=1;E.start(s);const a=s.battle.units.find(u=>u.dex===530),t=s.battle.units.find(u=>u.side===1);assert.equal(a.y,4);assert.equal(t.hp,t.maxHp);assert.equal(t.stunUntil,undefined);}
+});
+test('Excadrill mana move stuns the landing area and overlapping stuns never add duration',()=>{
+ const {E}=fixture();for(const star of [2,3]){
+  const {s,b,units:[a,t,other,ally]}=battleFor(E,[[530,star,0,2,3],[133,1,1,2,1],[133,1,1,3,1],[7,1,0,4,3]]);
+  const allyHP=ally.hp;a.mana=100;E.cast(b,a,t);assert.equal(a.mana,0);assert.equal(t.stunUntil,star===3?.8:.6);assert.equal(ally.hp,allyHP);assert.equal(ally.stunUntil,undefined);
+  t.stunUntil=5;ally.x=2;ally.y=2;E.cast(b,a,t);assert.equal(t.stunUntil,5,'a shorter CC cannot extend an existing longer stun');
+ }
+});

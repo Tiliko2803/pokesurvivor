@@ -152,7 +152,7 @@ G.TFT = (() => {
     172:['Electricidad Estática','mana',25,'Empieza con 25 de maná adicional.'],
     92:['Cuerpo Maldito','pierce',.1,'Ignora un 10% adicional de defensa.'],
     280:['Velo Protector','teamShield',.05,'Concede a cada aliado un escudo del 5% de la vida de ese aliado.'],
-    529:['Ímpetu Arena','speed',.1,'Aumenta un 10% su potencia de cadencia.'],
+    529:['Entrada Sísmica','seismic',0,'Perfora y provoca un temblor al entrar.'],
     374:['Cuerpo Puro','armor',12,'Obtiene 12 de defensa.'],
     246:['Chorro Arena','shield',.18,'La arena lo protege con un escudo del 18% de su vida.'],
     371:['Intimidación','intimidate',.08,'Reduce un 8% el daño de los rivales durante este combate. No se acumula.'],
@@ -185,6 +185,11 @@ G.TFT = (() => {
   });
   function entranceFor(u) {
     const entry=ENTRANCES[BY[u.dex].line[0]];
+    if(entry[1]==='seismic') {
+      const radius=u.star===3?2:1,duration=[.5,.6,.8][u.star-1];
+      return {name:'Entrada Sísmica',effect:'seismic',radius,duration,control:true,
+        description:(u.star===1?'Provoca un temblor alrededor del usuario.':'Perfora hasta 3 casillas en dirección al enemigo más cercano y provoca un temblor al aterrizar. No atraviesa aliados ni ocupa casillas bloqueadas.')+` Daña a los enemigos en un radio de ${radius} casilla${radius===1?'':'s'} y los aturde ${String(duration).replace('.',',')} segundos. Se activa una vez antes del primer pulso; el aturdimiento cuenta después de la presentación.`};
+    }
     return {name:entry[0],effect:entry[1],value:entry[2],description:entry[3]};
   }
   function entrances(b) {
@@ -203,6 +208,15 @@ G.TFT = (() => {
         intimidated.add(a.side);for(const foe of b.units.filter(u=>u.side!==a.side))foe.attack*=1-e.value;
       }
       b.events.push({kind:'entrance',from:a.id,move:e.name,ttl:1.8});
+    }
+    // Every unit receives its defensive entrance before offensive openers resolve.
+    // The opening presentation does not advance b.time, so CC survives it intact.
+    for(const a of b.units) {
+      if(a.hp<=0||entranceFor(a).effect!=='seismic')continue;
+      const target=selectTarget(b,a);if(!target)continue;
+      const e=entranceFor(a);
+      if(a.star>=2)drill(b,a,target,a.attack*.8);
+      shock(b,a,e.radius,e.duration,a.attack*.6);
     }
   }
   // Reuse the Survivor personality classifier, adapting its decisions to a grid.
@@ -276,8 +290,8 @@ G.TFT = (() => {
       'Dispara un chorro en línea de 4 casillas que daña y empuja hasta 2 casillas.']},
     529:{types:['steel','ground','ground'],text:[
       'Un golpe de Acero potente contra un enemigo.',
-      'Perfora hasta 3 casillas, golpea a los enemigos de la línea y acaba en una casilla libre.',
-      'Perfora la línea y provoca una onda de Tierra alrededor del aterrizaje.']},
+      'Perfora hasta 3 casillas y acaba en una casilla libre. El aterrizaje golpea en un radio de 1 casilla y aturde 0,6 segundos.',
+      'Perfora la línea y provoca una onda de Tierra en un radio de 2 casillas alrededor del aterrizaje; aturde 0,8 segundos.']},
     92:{types:['ghost','ghost','ghost'],text:[
       'Golpea y ralentiza los ataques del objetivo durante 2 segundos.',
       'Bola Sombra hace un 50% más de daño a objetivos por debajo del 40% de vida.',
@@ -483,6 +497,26 @@ G.TFT = (() => {
     if(!t.burn||power>=t.burn.power)t.burn={source:a.id,power,remaining:duration,cd:1};
     else t.burn.remaining=Math.max(t.burn.remaining,duration);
   }
+  // Shared by Excadrill's entrance and mana move; never tunnels through allies.
+  function drill(b,a,target,power) {
+    const sx=a.x,sy=a.y,dx=target.x-sx,dy=target.y-sy,vx=Math.abs(dx)>Math.abs(dy)?Math.sign(dx):0,vy=vx?0:Math.sign(dy)||1;
+    let landing={x:sx,y:sy},end={...landing};
+    for(let i=1;i<=3;i++) {
+      const x=sx+vx*i,y=sy+vy*i;
+      if(x<0||x>=COLS||y<0||y>=ROWS||b.units.some(u=>u!==a&&u.side===a.side&&u.hp>0&&u.x===x&&u.y===y))break;
+      end={x,y};for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&u.x===x&&u.y===y))hit(b,a,t,power,true,'ground');
+      if(!b.units.some(u=>u!==a&&u.hp>0&&u.x===x&&u.y===y))landing={x,y};
+    }
+    a.x=landing.x;a.y=landing.y;a.moveCD=.35;
+    b.events.push({kind:'drill',from:a.id,sx,sy,tx:end.x,ty:end.y,type:'ground',ttl:.6});
+  }
+  function shock(b,a,radius,duration,power) {
+    b.events.push({kind:'area',from:a.id,x:a.x,y:a.y,radius,type:'ground',ttl:.6});
+    for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=radius)) {
+      hit(b,a,t,power,true,'ground');
+      if(t.hp>0)t.stunUntil=Math.max(t.stunUntil||0,b.time+duration);
+    }
+  }
   function signature(b,a,target) {
     const family=BY[a.dex].line[0],rank=a.star,foes=()=>b.units.filter(u=>u.side!==a.side&&u.hp>0);
     const allies=()=>b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id);
@@ -510,17 +544,8 @@ G.TFT = (() => {
     } else if(family===529) {
       if(rank===1)hit(b,a,target,a.attack*2.8,true,'steel');
       else {
-        const sx=a.x,sy=a.y,dx=target.x-sx,dy=target.y-sy,vx=Math.abs(dx)>Math.abs(dy)?Math.sign(dx):0,vy=vx?0:Math.sign(dy)||1;
-        let landing={x:sx,y:sy},end={...landing};
-        for(let i=1;i<=3;i++) {
-          const x=sx+vx*i,y=sy+vy*i;
-          if(x<0||x>=COLS||y<0||y>=ROWS||b.units.some(u=>u!==a&&u.side===a.side&&u.hp>0&&u.x===x&&u.y===y))break;
-          end={x,y};for(const t of foes().filter(t=>t.x===x&&t.y===y))hit(b,a,t,a.attack*2.6,true,'ground');
-          if(!b.units.some(u=>u!==a&&u.hp>0&&u.x===x&&u.y===y))landing={x,y};
-        }
-        a.x=landing.x;a.y=landing.y;a.moveCD=.35;
-        b.events.push({kind:'drill',from:a.id,sx,sy,tx:end.x,ty:end.y,type:'ground',ttl:.6});
-        if(rank===3){b.events.push({kind:'area',from:a.id,x:a.x,y:a.y,radius:2,type:'ground',ttl:.6});for(const t of foes().filter(t=>distance(a,t)<=2))hit(b,a,t,a.attack*1.5,true,'ground');}
+        drill(b,a,target,a.attack*2.6);
+        shock(b,a,rank===3?2:1,rank===3?.8:.6,a.attack*(rank===3?1.5:.6));
       }
     } else if(family===92) {
       const weak=target.hp/target.maxHp<.4;

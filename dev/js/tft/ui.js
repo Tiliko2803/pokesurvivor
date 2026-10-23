@@ -49,6 +49,7 @@ G.TFTUI = (() => {
   let shownEvolution=null,infoClock=0,reportScope='ally',lastReport=null;
   let seenEvents=new WeakSet();
   const TYPE=()=>G.U.TYPE_NAME;
+  const roleLabel=dex=>E.BY[dex].line[0]===529?'Iniciador · control en área':aiNames[E.aiFor(dex)];
   const aiNames={healer:'Apoyo · cura',guardian:'Guardián · protege aliados',ranged:'Distancia · retrocede',diver:'Asaltante · busca retaguardia',tank:'Tanque · primera línea',fighter:'Luchador · persigue'};
   const effects={attack:'daño +15/30%',hp:'vida +20/40%',armor:'defensa +20/40',speed:'ataques +15/30%',
     mana:'maná por golpe +5/10',regen:'cura 1,5/3% de vida por segundo',pierce:'ignora 15/30% de defensa',slow:'ralentiza ataques 15/30%'};
@@ -80,14 +81,14 @@ G.TFTUI = (() => {
       <canvas width="110" height="70" data-tft-dex="${u.dex}" aria-hidden="true"></canvas>
       <b>${p.name}</b><span>${kind==='shop'?def.cost+' oro':'★'.repeat(u.star)}</span>
       <small>${p.types.map(t=>TYPE()[t]).join(' · ')}</small>
-      <small>${kind==='shop'?aiNames[E.aiFor(u.dex)]:u.star<3?(next!==u.dex?'→ '+G.DEX_BY[next].name:'→ Potenciar'):'Máximo'}</small></button>`;
+      <small>${kind==='shop'?roleLabel(u.dex):u.star<3?(next!==u.dex?'→ '+G.DEX_BY[next].name:'→ Potenciar'):'Máximo'}</small></button>`;
   }
   function render() {
     if(!state)return;
     const s=state,planning=s.phase==='planning',deployed=s.units.filter(u=>u.pos!==null),u=s.units.find(u=>u.id===selected);
     $('tft-stats').textContent=`Ronda ${s.round}/${E.LAST_ROUND} · ${s.life} PV · ${s.gold} oro · Equipo ${deployed.length}/${s.level}`;
     $('tft-phase').textContent=paused?'En pausa':{planning:'Preparación',combat:'Combate automático',result:'Fin de ronda',victory:'¡Desafío superado!',defeat:'Equipo derrotado'}[s.phase];
-    $('tft-help').textContent=u?`${G.DEX_BY[u.dex].name} ${'★'.repeat(u.star)} · ${E.moveFor(u)} · ${aiNames[E.aiFor(u.dex)]}. ${planning?'Toca una casilla azul para colocarlo o intercambiarlo.':'Toca otra unidad para consultar su ficha.'}`:planning?'Compra Pokémon, toca uno del banquillo y después una casilla azul. Tres copias del mismo nivel se fusionan y evolucionan.':'Toca una unidad del tablero para consultar sus estadísticas y habilidad.';
+    $('tft-help').textContent=u?`${G.DEX_BY[u.dex].name} ${'★'.repeat(u.star)} · ${E.moveFor(u)} · ${roleLabel(u.dex)}. ${planning?'Toca una casilla azul para colocarlo o intercambiarlo.':'Toca otra unidad para consultar su ficha.'}`:planning?'Compra Pokémon, toca uno del banquillo y después una casilla azul. Tres copias del mismo nivel se fusionan y evolucionan.':'Toca una unidad del tablero para consultar sus estadísticas y habilidad.';
     $('tft-shop').innerHTML=s.shop.map((dex,i)=>dex?unitCard({dex,star:1},'shop',i):'<div class="tft-card tft-empty">Comprado</div>').join('');
     const bench=s.units.filter(u=>u.pos===null);
     $('tft-bench').innerHTML=bench.map(v=>unitCard(v,'bench')).join('')+
@@ -120,7 +121,7 @@ G.TFTUI = (() => {
     const panel=$('tft-scout');panel.classList.toggle('hidden',state.phase!=='planning');
     if(state.phase!=='planning')return;
     const foes=E.scout(state),tr=E.traits(foes);
-    $('tft-scout-list').innerHTML=foes.map(u=>`<button class="btn small" data-scout="${u.id}">${G.DEX_BY[u.dex].name} ${'★'.repeat(u.star)} · ${aiNames[E.aiFor(u.dex)]}</button>`).join('');
+    $('tft-scout-list').innerHTML=foes.map(u=>`<button class="btn small" data-scout="${u.id}">${G.DEX_BY[u.dex].name} ${'★'.repeat(u.star)} · ${roleLabel(u.dex)}</button>`).join('');
     $('tft-scout-notes').textContent='Sinergias rivales: '+(Object.entries(tr).filter(([,v])=>v.tier).map(([t,v])=>TYPE()[t]+' Nv. '+v.tier).join(' · ')||'ninguna activa')+'. Toca un rival para consultar su habilidad. Ajusta tu primera línea frente a sus atacantes y protege a tus apoyos.';
     $('tft-scout-list').querySelectorAll('button').forEach(b=>b.onclick=()=>{selected=Number(b.dataset.scout);syncCells();renderInfo();});
   }
@@ -156,7 +157,7 @@ G.TFTUI = (() => {
     if(!unit){box.innerHTML='<p>Toca una unidad del tablero o banquillo para ver su vida, daño, habilidad y sinergias.</p>';return;}
     const rival=unit.id<0,f=unit.maxHp?unit:E.preview(state,unit),ability=E.abilityFor(unit),entry=E.entranceFor(unit),p=G.DEX_BY[unit.dex];
     const tr=E.traits(state.units.filter(v=>v.pos!==null));
-    box.innerHTML=`<h3>${p.name} ${'★'.repeat(unit.star)}${rival?' · Rival':''}</h3><p>${p.types.map(t=>TYPE()[t]).join(' · ')} · ${aiNames[E.aiFor(unit.dex)]}</p>
+    box.innerHTML=`<h3>${p.name} ${'★'.repeat(unit.star)}${rival?' · Rival':''}</h3><p>${p.types.map(t=>TYPE()[t]).join(' · ')} · ${roleLabel(unit.dex)}</p>
       <dl><div><dt>Vida</dt><dd>${Math.ceil(f.hp)}/${Math.ceil(f.maxHp)}</dd></div><div><dt>Daño/pulso</dt><dd>${Math.round(f.attack*(2*E.BEAT_SECONDS)/f.interval)}</dd></div><div><dt>Defensa</dt><dd>${f.armor}</dd></div><div><dt>Potencia de cadencia</dt><dd>×${((2*E.BEAT_SECONDS)/f.interval).toFixed(2)}</dd></div><div><dt>Maná</dt><dd>${Math.floor(f.mana)}/100</dd></div><div><dt>Escudo</dt><dd>${Math.ceil(f.shield)}</dd></div></dl>
       <div class="tft-ability tft-entry"><small>AL INICIO · una vez por combate</small><h4>${entry.name}</h4><p>${entry.description}</p></div><div class="tft-ability"><small>${ability.special?'MOVIMIENTO ESPECIAL':'MOVIMIENTO PROPIO'} · 100 de maná</small><h4>${ability.name} · ${TYPE()[ability.type]}</h4><p>${ability.description}</p></div>
       ${rival?'':`<p class="sub">${p.types.map(t=>TYPE()[t]+': '+(tr[t]?.tier?'bono Nv. '+tr[t].tier:'sin bono')).join(' · ')}</p>`}`;
@@ -261,7 +262,8 @@ G.TFTUI = (() => {
   function paintCards(dt) {
     document.querySelectorAll(editing?'#tft-deck-list canvas[data-tft-dex]':'#tft-match canvas[data-tft-dex]').forEach((c,i)=>{
       const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.imageSmoothingEnabled=false;
-      drawSprite(x,'card:'+i,Number(c.dataset.tftDex),55,64,62,dt);
+      // SpriteCollab direction 0 faces the viewer; board facing remains target-driven.
+      drawSprite(x,'card:'+i,Number(c.dataset.tftDex),55,64,62,dt,0,0,0);
     });
   }
   function loop(now) {
