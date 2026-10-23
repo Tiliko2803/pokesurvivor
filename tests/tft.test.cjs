@@ -576,7 +576,7 @@ test('endless PvE generates themed encounters, specials and rotating bosses past
  for(let wave=1;wave<=120;wave++){
   assert.equal(s.round,wave);assert.ok(E.start(s));const foes=s.battle.units.filter(u=>u.side===1),scout=E.scout(s);names.add(E.waveInfo(wave).name);
   assert.ok(foes.length>=2&&foes.length<=6);assert.equal(new Set(scout.map(u=>u.pos)).size,scout.length);
-  assert.ok(scout.filter(u=>!u.boss&&E.BY[u.dex].role==='healer').length<=1);
+  assert.ok(scout.filter(u=>E.BY[u.dex].role==='healer'||E.aiFor(u.dex)==='healer').length<=1);
   assert.equal(foes.some(u=>u.boss),wave%10===0);assert.equal(E.waveInfo(wave).kind,wave%10===0?'boss':wave%5===0?'elite':'normal');
   if(wave%10===0){const boss=foes.find(u=>u.boss);bosses.add(boss.dex);assert.ok(G.DEX_BY[boss.dex]);assert.ok(boss.maxHp>E.preview({...s,opponent:scout}, {...scout.find(u=>u.boss),boss:false}).maxHp*2.9);}
   for(const u of s.battle.units)u.hp=u.side===1?0:u.maxHp;
