@@ -56,7 +56,7 @@ G.TFT = (() => {
     if(deck!==undefined&&!validDeck(deck))throw new Error('Elige exactamente 10 líneas distintas.');
     const s = {seed:seed>>>0,nextId:1,round:1,life:50,gold:10,level:3,xp:0,
       deck:deck?deck.slice():ROSTER.map(p=>p.dex),history:[],effects:[],units:[],shop:[],locked:false,phase:'planning',battle:null,result:null,wins:0,streak:0};
-    reroll(s,true); return s;
+    reroll(s,true);prepareEnemy(s); return s;
   }
   function random(s) { s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0; return s.seed/4294967296; }
   function roll(s) {
@@ -141,6 +141,48 @@ G.TFT = (() => {
       units.push({id:-(i+1),dex:evolvedDex(dex,star),star,pos:6+i});
     }
     return units;
+  }
+  // Cache once: scouting never rerolls the encounter or consumes additional RNG.
+  function prepareEnemy(s) {s.opponent=enemyTeam(s);s.opponentRound=s.round;}
+  function scout(s) {return (s.opponent||[]).map(u=>({...u}));}
+  const ENTRANCES={
+    1:['Espesura','regen',.008,'Regenera un 0,8% de vida por segundo.'],
+    4:['Mar Llamas','attack',.08,'Aumenta su daño un 8%.'],
+    7:['Caparazón','shield',.15,'Empieza con un escudo del 15% de su vida.'],
+    172:['Electricidad Estática','mana',25,'Empieza con 25 de maná adicional.'],
+    92:['Cuerpo Maldito','pierce',.1,'Ignora un 10% adicional de defensa.'],
+    280:['Velo Protector','teamShield',.05,'Concede a cada aliado un escudo del 5% de la vida de ese aliado.'],
+    529:['Ímpetu Arena','speed',.1,'Aumenta un 10% su potencia de cadencia.'],
+    374:['Cuerpo Puro','armor',12,'Obtiene 12 de defensa.'],
+    246:['Chorro Arena','shield',.18,'La arena lo protege con un escudo del 18% de su vida.'],
+    371:['Intimidación','intimidate',.08,'Reduce un 8% el daño de los rivales durante este combate. No se acumula.'],
+    258:['Torrente','shield',.15,'Empieza con un escudo del 15% de su vida.'],
+    255:['Impulso','speed',.1,'Aumenta un 10% su potencia de cadencia.']
+  };
+  function entranceFor(u) {
+    const entry=ENTRANCES[BY[u.dex].line[0]]||({tank:['Guardia Inicial','shield',.1,'Empieza con un escudo del 10% de su vida.'],
+      healer:['Aura de Apoyo','mana',20,'Empieza con 20 de maná adicional.'],
+      mage:['Concentración','mana',20,'Empieza con 20 de maná adicional.'],
+      fighter:['Determinación','attack',.05,'Aumenta su daño un 5%.']})[BY[u.dex].role];
+    return {name:entry[0],effect:entry[1],value:entry[2],description:entry[3]};
+  }
+  function entrances(b) {
+    const intimidated=new Set();
+    for(const a of b.units) {
+      const e=entranceFor(a);a.entrance=e.name;
+      if(e.effect==='shield')shield(b,a,a,a.maxHp*e.value);
+      else if(e.effect==='teamShield')for(const ally of b.units.filter(u=>u.side===a.side))shield(b,a,ally,ally.maxHp*e.value);
+      else if(e.effect==='attack')a.attack*=1+e.value;
+      else if(e.effect==='speed')a.interval/=1+e.value;
+      else if(e.effect==='mana')a.mana=Math.min(100,a.mana+e.value);
+      else if(e.effect==='armor')a.armor+=e.value;
+      else if(e.effect==='regen')a.regen+=e.value;
+      else if(e.effect==='pierce')a.pierce+=e.value;
+      else if(e.effect==='intimidate'&&!intimidated.has(a.side)) {
+        intimidated.add(a.side);for(const foe of b.units.filter(u=>u.side!==a.side))foe.attack*=1-e.value;
+      }
+      b.events.push({kind:'entrance',from:a.id,move:e.name,ttl:1.8});
+    }
   }
   // Reuse the Survivor personality classifier, adapting its decisions to a grid.
   function aiFor(dex) {
@@ -228,6 +270,14 @@ G.TFT = (() => {
       'Escuda al aliado más vulnerable y golpea con Garra Metal.',
       'Puño Meteoro golpea una zona, aturde durante 1 segundo y concede un escudo a Metagross.']}
   };
+  Object.assign(SIGNATURES,{
+    1:{types:['grass','grass','grass'],text:['Absorbe vida del objetivo y se cura el 50% del daño causado.','Planta drenadoras: daña, ralentiza y se cura el 60% del daño causado.','Rayo Solar atraviesa una línea de 5 casillas y cura al usuario el 30% del daño total.']},
+    172:{types:['electric','electric','electric'],text:['Descarga contra un objetivo y lo aturde 0,3 segundos.','Rayo salta hasta 3 enemigos, con daño decreciente.','Trueno salta hasta 4 enemigos y los aturde 0,6 segundos.']},
+    66:{types:['fighting','fighting','fighting'],text:['Golpe Karate ignora parte de la defensa.','Demolición destruye el escudo antes de golpear.','A Bocajarro rompe el escudo y golpea con gran potencia, pero reduce su propia defensa en 10 durante 2 segundos.']},
+    152:{types:['grass','grass','grass'],text:['Absorbe vida y cura al aliado más herido.','Síntesis cura a los 2 aliados más heridos.','Aromaterapia cura a todos los aliados y elimina quemaduras, ralentizaciones y aturdimientos.']},
+    255:{types:['fire','fighting','fire'],text:['Ascuas quema al objetivo durante 3 segundos.','Doble Patada golpea dos veces y gana 10% de cadencia durante 2 segundos.','Patada Ígnea daña, quema y gana 20% de cadencia durante 2 segundos.']},
+    63:{types:['psychic','psychic','psychic'],text:['Confusión golpea y reduce la cadencia del objetivo durante 2 segundos.','Psicorrayo atraviesa una línea de 4 casillas.','Psíquico golpea una zona y aturde 0,8 segundos.']}
+  });
   const AREA_MOVES={
     'Terremoto':{type:'ground',radius:2,power:2.4,center:'self'},
     'Terratemblor':{type:'ground',radius:1,power:1.7,center:'self',slow:.2},
@@ -255,13 +305,14 @@ G.TFT = (() => {
       role==='tank'?'Obtiene un escudo y daña a los enemigos cercanos.':role==='mage'?'Daña al objetivo y a los enemigos junto a él.':'Da un golpe potente a un enemigo.';
     return {name:moveFor(u),type:G.DEX_BY[u.dex].types[0],description};
   }
-  function preview(s,u) {return fighter(u,0,traits(s.units.filter(v=>v.pos!==null)),1);}
+  function preview(s,u) {const rival=u.id<0;return fighter(u,rival?1:0,traits(rival?s.opponent:s.units.filter(v=>v.pos!==null)),rival?s.round:1);}
   function start(s) {
     if(!planning(s)||!s.units.some(u=>u.pos!==null))return false;
-    const team=s.units.filter(u=>u.pos!==null),foes=enemyTeam(s);
-    s.battle={time:0,acc:0,beat:0,beatCount:0,beatStarted:0,nextBeat:.05,events:[],units:[...team.map(u=>fighter(u,0,traits(team),s.round)),
+    if(s.opponentRound!==s.round)prepareEnemy(s);
+    const team=s.units.filter(u=>u.pos!==null),foes=scout(s);
+    s.battle={time:0,acc:0,opening:1.8,beat:0,beatCount:0,beatStarted:0,nextBeat:.05,events:[],units:[...team.map(u=>fighter(u,0,traits(team),s.round)),
       ...foes.map(u=>fighter(u,1,traits(foes),s.round))]};
-    s.phase='combat';s.result=null;return true;
+    entrances(s.battle);s.phase='combat';s.result=null;return true;
   }
   const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
   function hit(b,a,t,power,spell=false,type=a.types[0]) {
@@ -353,6 +404,41 @@ G.TFT = (() => {
         for(const t of foes().filter(t=>distance(center,t)<=1)){hit(b,a,t,a.attack*(t===target?3:1.5),true,'steel');t.stunUntil=b.time+1;}
         shield(b,a,a,a.maxHp*.25);
       }
+    } else if(family===1) {
+      let total=0;
+      if(rank<3){total=hit(b,a,target,a.attack*(rank===1?1.8:2.3),true,'grass');if(rank===2){target.slowUntil=b.time+3;target.slowPower=.25;}}
+      else {
+        const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1;
+        for(const t of foes()){const x=t.x-a.x,y=t.y-a.y,d=(x*dx+y*dy)/len;if(d>=0&&d<=5&&Math.abs(x*dy-y*dx)/len<=.7)total+=hit(b,a,t,a.attack*2.8,true,'grass');}
+        b.events.push({kind:'beam',from:a.id,sx:a.x,sy:a.y,tx:Math.max(0,Math.min(5,a.x+dx/len*5)),ty:Math.max(0,Math.min(5,a.y+dy/len*5)),type:'grass',ttl:.6});
+      }
+      heal(b,a,a,total*(rank===1?.5:rank===2?.6:.3));
+    } else if(family===172) {
+      let t=target;const seen=new Set();
+      for(let i=0;i<(rank===1?1:rank===2?3:4)&&t;i++) {
+        seen.add(t.id);hit(b,a,t,a.attack*(rank===1?2:2.2)*(.8**i),true,'electric');
+        if(rank!==2)t.stunUntil=b.time+(rank===1?.3:.6);
+        const previous=t;t=foes().filter(u=>!seen.has(u.id)&&distance(previous,u)<=3).sort((x,y)=>distance(previous,x)-distance(previous,y)||x.id-y.id)[0];
+      }
+    } else if(family===66) {
+      if(rank>=2)target.shield=0;
+      const old=a.pierce;if(rank===1)a.pierce=Math.max(a.pierce,.5);
+      hit(b,a,target,a.attack*(rank===3?4:rank===2?3:2.7),true,'fighting');a.pierce=old;
+      if(rank===3){if(!a.exposedUntil||a.exposedUntil<=b.time)a.armor-=10;a.exposedUntil=b.time+2;}
+    } else if(family===152) {
+      if(rank===1){const lost=hit(b,a,target,a.attack*1.6,true,'grass');heal(b,a,allies()[0],lost);}
+      else for(const ally of allies().slice(0,rank===2?2:6)){heal(b,a,ally,a.attack*(rank===2?2:1.6));if(rank===3){ally.burn=null;ally.slowUntil=0;ally.stunUntil=0;}}
+    } else if(family===255) {
+      if(rank===2){hit(b,a,target,a.attack*1.5,true,'fighting');hit(b,a,target,a.attack*1.5,true,'fighting');}
+      else {hit(b,a,target,a.attack*(rank===1?2:3.2),true,'fire');burn(b,a,target,3,a.attack*.2);}
+      if(rank>=2){if(a.boostUntil>b.time)a.interval*=1+a.boostPower;a.boostPower=rank===2?.1:.2;a.interval/=1+a.boostPower;a.boostUntil=b.time+2;}
+    } else if(family===63) {
+      if(rank===1){hit(b,a,target,a.attack*2,true,'psychic');target.slowUntil=b.time+2;target.slowPower=.25;}
+      else if(rank===2){
+        const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1;
+        for(const t of foes()){const x=t.x-a.x,y=t.y-a.y,d=(x*dx+y*dy)/len;if(d>=0&&d<=4&&Math.abs(x*dy-y*dx)/len<=.7)hit(b,a,t,a.attack*2.4,true,'psychic');}
+        b.events.push({kind:'beam',from:a.id,sx:a.x,sy:a.y,tx:Math.max(0,Math.min(5,a.x+dx/len*4)),ty:Math.max(0,Math.min(5,a.y+dy/len*4)),type:'psychic',ttl:.6});
+      } else {b.events.push({kind:'area',from:a.id,x:target.x,y:target.y,radius:1,type:'psychic',ttl:.6});for(const t of foes().filter(t=>distance(target,t)<=1)){hit(b,a,t,a.attack*2.6,true,'psychic');t.stunUntil=b.time+.8;}}
     } else return false;
     return true;
   }
@@ -445,6 +531,8 @@ G.TFT = (() => {
         if(dot.cd<=.00001){const source=b.units.find(u=>u.id===dot.source);if(source)hit(b,source,a,dot.power,true,'fire');dot.cd+=1;}
         if(dot.remaining<=.00001)a.burn=null;
       }
+      if(a.exposedUntil&&a.exposedUntil<=b.time){a.armor+=10;a.exposedUntil=0;}
+      if(a.boostUntil&&a.boostUntil<=b.time){a.interval*=1+a.boostPower;a.boostUntil=0;}
       a.cooldown-=dt;a.moveCD-=dt;
     }
     b.nextBeat??=.05;
@@ -468,13 +556,54 @@ G.TFT = (() => {
     if(!Number.isFinite(dt)||dt<=0)return;
     s.effects=s.effects.filter(e=>(e.ttl-=Math.min(dt,.25))>0);
     if(s.phase!=='combat'){if(s.battle)s.battle.events=s.battle.events.filter(e=>(e.ttl-=Math.min(dt,.25))>0);return;}
+    if(s.battle.opening>0){s.battle.opening=Math.max(0,s.battle.opening-Math.min(dt,.25));return;}
     s.battle.acc+=Math.min(dt,.25);
     while(s.battle.acc>=.05&&s.phase==='combat'){s.battle.acc-=.05;step(s,.05);}
   }
   function next(s) {
     if(s.phase!=='result')return false;
-    s.round++;s.phase='planning';s.battle=null;
+    s.round++;s.phase='planning';s.battle=null;prepareEnemy(s);
     if(!s.locked)reroll(s,true);return true;
   }
-  return {COLS,ROWS,BENCH,LAST_ROUND,BEAT_SECONDS,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
+  const SAVE_VERSION=1;
+  function serialize(s) {return JSON.stringify({version:SAVE_VERSION,state:s});}
+  function restore(raw) {
+    try {
+      if(typeof raw!=='string'||raw.length>300000)return null;
+      const data=JSON.parse(raw),s=data.state;
+      const int=(n,min,max)=>Number.isInteger(n)&&n>=min&&n<=max;
+      const unit=u=>u&&int(u.id,-6,100000)&&u.id!==0&&BY[u.dex]&&int(u.star,1,3)&&evolvedDex(u.dex,u.star)===u.dex&&
+        (u.pos===null||int(u.pos,0,35));
+      const numbers=o=>Object.values(o).every(v=>typeof v!=='number'||Number.isFinite(v)&&Math.abs(v)<1e12);
+      if(data.version!==SAVE_VERSION||!s||!numbers(s)||!validDeck(s.deck)||!int(s.round,1,LAST_ROUND)||!int(s.level,3,6)||
+        !int(s.seed,0,4294967295)||!int(s.nextId,1,100001)||!int(s.life,0,50)||!int(s.gold,0,1000000)||!int(s.xp,0,20)||
+        s.opponentRound!==s.round||!int(s.wins,0,12)||!int(s.streak,-12,12)||typeof s.locked!=='boolean'||
+        !['planning','combat','result','victory','defeat'].includes(s.phase))return null;
+      if(!Array.isArray(s.units)||s.units.length>14||!s.units.every(u=>unit(u)&&u.id>0&&u.id<s.nextId&&s.deck.includes(BY[u.dex].line[0])&&(u.pos===null||u.pos>=18))||
+        new Set(s.units.map(u=>u.id)).size!==s.units.length||new Set(s.units.filter(u=>u.pos!==null).map(u=>u.pos)).size!==s.units.filter(u=>u.pos!==null).length||
+        s.units.filter(u=>u.pos===null).length>BENCH||s.units.filter(u=>u.pos!==null).length>s.level)return null;
+      if(!Array.isArray(s.shop)||s.shop.length>5||!s.shop.every(d=>d===null||s.deck.includes(d)))return null;
+      if(!Array.isArray(s.opponent)||!s.opponent.length||s.opponent.length>6||!s.opponent.every(u=>unit(u)&&u.id<0&&u.pos<18))return null;
+      const report=rows=>Array.isArray(rows)&&rows.length<=12&&rows.every(u=>BY[u.dex]&&int(u.star,1,3)&&[0,1].includes(u.side)&&['damage','healing','shielding','taken','blocked','kills'].every(k=>Number.isFinite(u[k])&&u[k]>=0&&u[k]<1e10));
+      if(!Array.isArray(s.history)||s.history.length>12||!s.history.every(h=>int(h.round,1,12)&&report(h.report)))return null;
+      if(s.result&&(!int(s.result.round,1,12)||!report(s.result.report)||!numbers(s.result)))return null;
+      if(['result','victory','defeat'].includes(s.phase)&&!s.result)return null;
+      if(s.battle) {
+        const b=s.battle;
+        if(!numbers(b)||!Number.isFinite(b.time)||b.time<0||b.time>46||!Number.isFinite(b.acc)||b.acc<0||b.acc>.3||
+          !Number.isFinite(b.nextBeat)||b.nextBeat<0||!int(b.beat,0,4)||!int(b.beatCount,0,100)||!Array.isArray(b.units)||b.units.length>12||!b.units.length)return null;
+        if(!b.units.every(u=>unit(u)&&[0,1].includes(u.side)&&int(u.x,0,5)&&int(u.y,0,5)&&numbers(u)&&
+          ['hp','maxHp','attack','armor','interval','range','mana','shield','manaGain','regen','pierce','slow','cooldown','moveCD','flash','damageDone','damageTaken','blocked','kills','healingDone','shieldingDone'].every(k=>Number.isFinite(u[k]))&&
+          u.hp>=0&&u.hp<=u.maxHp&&u.maxHp>0&&u.interval>0&&u.shield>=0&&u.mana>=0&&u.mana<=100&&
+          Array.isArray(u.types)&&u.types.every(t=>Object.hasOwn(EFFECTS,t))&&['tank','healer','mage','fighter'].includes(u.role)&&
+          ['tank','healer','guardian','ranged','diver','fighter'].includes(u.ai)&&(!u.burn||numbers(u.burn)&&['source','power','remaining','cd'].every(k=>Number.isFinite(u.burn[k])))))return null;
+        if(new Set(b.units.map(u=>u.id)).size!==b.units.length)return null;
+        const live=b.units.filter(u=>u.hp>0);if(new Set(live.map(u=>u.y*6+u.x)).size!==live.length)return null;
+        // Transient particles are expendable; never trust persisted display strings.
+        b.events=[];for(const u of b.units)delete u.entrance;
+      } else if(s.phase==='combat')return null;
+      s.effects=[];return s;
+    } catch(_){return null;}
+  }
+  return {serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,LAST_ROUND,BEAT_SECONDS,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
 })();
