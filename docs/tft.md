@@ -204,3 +204,24 @@ El campo `opening` es ahora sólo la duración visual del anuncio (1,2 s): no bl
 
 
 Validación: 85 pruebas pasan, más la prueba completa de navegador en cinco tamaños de pantalla. Los casos nuevos recorren las nueve familias activas en sus tres niveles, comprueban alcance, separación de bandos, conservación de maná y ausencia de solapamientos; reanudan cada familia sin repetir entradas; verifican CC aliado rechazado, CC enemigo válido, interrupción de ataque en el mismo pulso, expiración de estados y casillas de CC sin aliados. La regresión de Excadrill muestra a un aliado moviéndose con el anuncio aún visible mientras las víctimas rivales siguen aturdidas. Se mantiene el tablero fijo y los paneles nuevos.
+
+
+### Expansión de veinte familias · 23 de octubre de 2026
+
+El roster actual tiene 54 familias y 162 rangos de movimientos definidos. Se preservan los mazos de diez líneas, las partidas guardadas y la publicación aislada en `/dev/`. Las habilidades son adaptaciones para TFT; las fichas describen sus efectos reales, no pretenden implementar todo el sistema de habilidades de los juegos principales. Todas las nuevas familias usan sprites locales del Survivor.
+
+| Generación | Familias añadidas (evolución final) |
+|---|---|
+| I | Gyarados, Dragonite |
+| II | Typhlosion, Feraligatr |
+| III | Sceptile, Milotic |
+| IV | Torterra, Infernape, Empoleon, Garchomp |
+| V | Serperior, Samurott, Hydreigon |
+| VI | Greninja, Goodra |
+| VII | Decidueye, Incineroar, Kommo-o |
+| VIII | Dragapult |
+| IX | Baxcalibur |
+
+La configuración de cada familia reúne línea, coste, rol, habilidad, entrada por rango y tres movimientos en `EXPANSION`. Las entradas reutilizan el resolvedor de habilidades con parámetros explícitos, sin consumir maná y con alcance inicial 3/3/4 casillas. Las entradas de protección se resuelven antes de las ofensivas en ambos bandos. Magikarp tiene escudo al inicio y Salpicadura protectora; Gyarados adquiere intimidación del 8% (tope compartido con Salamence e Incineroar) y empuje. Milotic limpia estados y cura; Empoleon protege aliados; Decidueye controla objetivos; Dragapult perfora líneas; Baxcalibur combina hielo y remate dragón. No hay inmunidad permanente ni control global nuevo.
+
+Validación de la expansión: 89 pruebas automatizadas pasan; casos nuevos recorren las 20 familias en sus tres niveles, comprueban entradas con efecto real, evoluciones, ausencia de daño/estados aliados, límites de alcance, intimidación sin acumulación y guardado determinista. Los 60 combates terminan sin solapamientos ni pagos duplicados. Se precargan y verifican los archivos de animación de todo el roster. La regresión completa de interfaz pasa en 1280×800, 390×844, 320×568, 844×390 y 568×320, con selección y persistencia de Magikarp en el mazo de diez líneas.

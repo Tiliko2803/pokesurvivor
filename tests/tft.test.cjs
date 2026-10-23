@@ -7,8 +7,8 @@ function fixture(seed=123) {
   const E=ctx.G.TFT,s=E.create(seed);return {G:ctx.G,E,s};
 }
 function purchase(E,s,dex,n=1) {for(let i=0;i<n;i++){s.shop=[dex];assert.ok(E.buy(s,0));}}
-test('34 complete evolution families use local Pokédex and sprite assets',()=>{
-  const {G,E}=fixture();assert.equal(E.ROSTER.length,34);
+test('54 complete evolution families use local Pokédex and sprite assets',()=>{
+  const {G,E}=fixture();assert.equal(E.ROSTER.length,54);
   for(const family of E.ROSTER)for(const dex of family.line){
     assert.ok(G.DEX_BY[dex]);assert.ok(fs.existsSync(path.join(root,`assets/pokemon/${dex}/Idle.png`)));
   }
@@ -317,7 +317,7 @@ test('invalid, incompatible and incomplete snapshots are rejected safely',()=>{
  }
 });
 
-test('all 34 families have explicit entrances and executable moves at all 102 ranks',()=>{
+test('all 54 families have explicit entrances and executable moves at all 162 ranks',()=>{
  const {E}=fixture(),names=new Set();
  for(const family of E.ROSTER){
   const entry=E.entranceFor({dex:family.dex,star:1});names.add(entry.name);
@@ -333,7 +333,7 @@ test('all 34 families have explicit entrances and executable moves at all 102 ra
    assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
   }
  }
- assert.equal(names.size,34,'each family has its own named entrance');
+ assert.equal(names.size,54,'each family has its own named entrance');
 });
 test('iconic moves protect the correct allies, ignore armor and strengthen against wounded targets',()=>{
  const {E}=fixture();
@@ -457,5 +457,52 @@ test('active entry effects and CC resume without repeating damage, shields or co
   assert.equal(JSON.stringify(saved.battle.units.map(state)),JSON.stringify(s.battle.units.map(state)));
   while(s.phase==='combat')E.tick(s,.1);while(saved.phase==='combat')E.tick(saved,.1);
   assert.equal(JSON.stringify(saved.result),JSON.stringify(s.result),family+' result is unchanged by resume');
+ }
+});
+
+const EXPANSION_LINES=[129,147,155,158,252,349,387,390,393,443,495,501,633,656,704,722,725,782,885,996];
+test('twenty expansion families evolve, execute friendly-safe entrances and resume all ranks',()=>{
+ const {E}=fixture();
+ for(const family of EXPANSION_LINES)for(let star=1;star<=3;star++){
+  const s=entryMatch(E,family,star),b=s.battle,a=b.units.find(u=>E.BY[u.dex].line[0]===family),ally=b.units.find(u=>u.side===a.side&&u!==a);
+  assert.equal(a.dex,E.evolvedDex(family,star));assert.equal(a.star,star);
+  assert.equal(ally.hp,ally.maxHp);assert.equal(ally.stunUntil,undefined);assert.equal(ally.slowUntil,undefined);assert.equal(ally.burn,undefined);
+  assert.ok(a.damageDone+a.shieldingDone>0,`${family}/${star}: actual opener effect`);
+  assert.ok(b.units.every(u=>Number.isFinite(u.hp)&&Number.isFinite(u.interval)));
+  if(family!==129||star!==1){assert.ok(E.entranceFor(a).active);assert.equal(b.events.filter(e=>e.kind==='entryCast'&&e.from===a.id).length,1);}
+  const restored=E.restore(E.serialize(s));assert.ok(restored,`${family}/${star}: valid saved fight`);
+  for(let i=0;i<100;i++){E.tick(s,.05);E.tick(restored,.05);}
+  const normalize=state=>JSON.stringify(state,(key,value)=>key==='entrance'?undefined:value);
+  assert.equal(normalize(s),normalize(restored),`${family}/${star}: deterministic restore`);
+ }
+});
+test('Gyarados gains intimidation on evolution and shares its non-stacking cap with Salamence and Incineroar',()=>{
+ const {E}=fixture();
+ const make=(extra=false)=>{
+  const s=E.create(17);s.units=[{id:1,dex:130,star:2,pos:20}];
+  if(extra)s.units.push({id:2,dex:373,star:3,pos:21},{id:3,dex:727,star:3,pos:22});
+  s.opponent=[{id:-1,dex:133,star:1,pos:0}];s.opponentRound=1;E.start(s);return s;
+ };
+ const single=make(),stack=make(true);assert.equal(single.battle.units.find(u=>u.side===1).attack,stack.battle.units.find(u=>u.side===1).attack);
+ const weak=entryMatch(E,129,1),fish=weak.battle.units.find(u=>u.dex===129);assert.equal(fish.damageDone,0);assert.ok(fish.shield>0);assert.equal(E.entranceFor(fish).active,undefined);
+ const evolved=entryMatch(E,129,2),gyarados=evolved.battle.units.find(u=>u.dex===130);assert.ok(gyarados.damageDone>0);assert.equal(E.entranceFor(gyarados).name,'Mirada Intimidante');
+});
+test('expanded opening tactics respect range and support shields stay on their own team',()=>{
+ const {E}=fixture();
+ for(const family of EXPANSION_LINES){
+  const s=E.create(7);s.units=[{id:1,dex:E.evolvedDex(family,3),star:3,pos:35},{id:2,dex:1,star:1,pos:34}];
+  s.opponent=[{id:-1,dex:133,star:1,pos:0}];s.opponentRound=1;E.start(s);
+  const a=s.battle.units[0],foe=s.battle.units.find(u=>u.side===1);assert.equal(a.damageDone,0,'no cross-board opening '+family);assert.equal(foe.shield,0);assert.equal(foe.stunUntil,undefined);
+ }
+});
+test('all expansion families complete fights at each rank without collisions, invalid HP or duplicate income',()=>{
+ const {E}=fixture();
+ for(const family of EXPANSION_LINES)for(let star=1;star<=3;star++){
+  const s=entryMatch(E,family,star);
+  for(let i=0;i<1000&&s.phase==='combat';i++){
+   E.tick(s,.05);const live=s.battle.units.filter(u=>u.hp>0);assert.equal(new Set(live.map(u=>u.x+','+u.y)).size,live.length);
+   assert.ok(s.battle.units.every(u=>Number.isFinite(u.hp)&&u.hp>=0&&u.hp<=u.maxHp&&u.shield<=u.maxHp*.5+.0001));
+  }
+  assert.notEqual(s.phase,'combat',`${family}/${star} finishes`);const gold=s.gold;E.tick(s,.1);assert.equal(s.gold,gold);
  }
 });

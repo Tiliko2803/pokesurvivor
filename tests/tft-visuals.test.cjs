@@ -28,7 +28,7 @@ test('every roster rank has a real available pose and can prewarm its local spri
    for(const step of plan){assert.ok(G.Sprites.meta(dex).a[step.name],dex+' '+step.name);assert.ok(Number.isFinite(V.animationSpeed(dex,step.name,step.duration)));}
   }
  }
- V.warm([{dex:4},{dex:4},{dex:530}]);assert.equal(images.length,new Set(images).size,'each sheet requested once');
+ V.warm([...E.ROSTER.flatMap(f=>f.line.map(dex=>({dex}))),{dex:4},{dex:530}]);assert.equal(images.length,new Set(images).size,'each sheet requested once');
  assert.ok(images.some(p=>p.endsWith('/Attack.png')));assert.ok(images.some(p=>p.endsWith('/Shoot.png')));
  for(const p of images)assert.ok(fs.existsSync(path.join(root,p)),'local asset '+p);
 });

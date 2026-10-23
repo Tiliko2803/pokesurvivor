@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: veinte familias nuevas', 'TFT: twenty new evolution families'], new: [
+    ['El roster crece de 34 a 54 familias, repartidas entre las nueve generaciones. Se suman Gyarados, Dragonite, Typhlosion, Feraligatr, Sceptile, Milotic, Torterra, Infernape, Empoleon, Garchomp, Serperior, Samurott, Hydreigon, Greninja, Goodra, Decidueye, Incineroar, Kommo-o, Dragapult y Baxcalibur con sus preevoluciones.',
+     'The roster grows from 34 to 54 families across all nine generations. Gyarados, Dragonite, Typhlosion, Feraligatr, Sceptile, Milotic, Torterra, Infernape, Empoleon, Garchomp, Serperior, Samurott, Hydreigon, Greninja, Goodra, Decidueye, Incineroar, Kommo-o, Dragapult and Baxcalibur join with their pre-evolutions.'],
+    ['Cada familia tiene habilidades adaptadas a TFT, movimientos en sus tres niveles y una entrada propia: barreras, oleadas, quemaduras, ralentizaciones, perforación y control. Magikarp se protege; al evolucionar, Gyarados intimida y lanza una oleada. La intimidación compartida con Salamence e Incineroar no se acumula.',
+     'Each family has TFT-adapted abilities, moves at all three ranks and its own entrance: barriers, waves, burns, slows, piercing and control. Magikarp protects itself; after evolving, Gyarados intimidates and launches a wave. Intimidation shared with Salamence and Incineroar does not stack.']
+  ] },
   { d: '2026-10-23', title: ['TFT: más entradas activas y CC más claro', 'TFT: more active entrances and clearer crowd control'], new: [
     ['Entradas activas para las familias de Charizard, Blastoise, Raichu, Gengar, Gardevoir, Metagross, Lapras, Tyranitar y Swampert: fuego, oleadas, descargas, sombra, barreras, meteoros y arena. Se suman a la entrada sísmica de Excadrill; mejoran con estrellas y respetan el alcance y los bandos.',
      'Active entrances for the Charizard, Blastoise, Raichu, Gengar, Gardevoir, Metagross, Lapras, Tyranitar and Swampert families: fire, waves, sparks, shadow, barriers, meteors and sand. They join Excadrill seismic entrance, scale with stars and respect range and teams.']
