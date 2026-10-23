@@ -20,7 +20,7 @@ G.TFTVisuals = (() => {
   function animation(u,e) {
     const meta=G.Sprites.meta(u.dex)?.a||{};
     const choose=names=>names.find(n=>meta[n])||'Idle';
-    const special=e.kind==='cast'||e.kind==='drill'||e.kind==='entrance';
+    const special=e.kind==='cast'||e.kind==='entryCast'||e.kind==='drill'||e.kind==='entrance';
     const melee=e.kind==='drill'||u.range<=1;
     const strike=choose(melee?['Attack','Shoot']:['Shoot','Attack']);
     if(special&&meta.Charge)return [{name:'Charge',duration:.1},{name:strike,duration:.25}];
@@ -39,13 +39,21 @@ G.TFTVisuals = (() => {
     for(const e of events){
       if(e.to&&['hit','spell'].includes(e.kind))hurt.add(e.to);
       if(e.periodic)continue;
-      const priority={hit:1,spell:2,cast:3,drill:4}[e.kind]||0;
+      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4}[e.kind]||0;
       if(priority&&(!actions.has(e.from)||actions.get(e.from).priority<priority))actions.set(e.from,{e,priority});
     }
     return {actions,hurt};
   }
-  function life(e) {return e.life||(['hit','spell'].includes(e.kind)?.45:e.kind==='cast'?.8:e.kind==='entrance'?1.8:.6);}
+  function life(e) {return e.life||(['hit','spell'].includes(e.kind)?.45:['cast','entryCast'].includes(e.kind)?.8:e.kind==='entrance'?1.2:.6);}
   function progress(e) {return clamp(1-e.ttl/life(e),0,1);}
+  function areaCells(e,units,time=0) {
+    if(e.control){
+      const source=units.find(u=>u.id===e.from);
+      return units.filter(u=>source&&u.side!==source.side&&u.hp>0&&e.targets?.includes(u.id)&&u.stunUntil>time).map(u=>u.y*6+u.x);
+    }
+    const cells=[];for(let y=0;y<6;y++)for(let x=0;x<6;x++)if(Math.abs(x-e.x)+Math.abs(y-e.y)<=e.radius)cells.push(y*6+x);
+    return cells;
+  }
   function draw(ctx,e,units,options={}) {
     const from=units.find(u=>u.id===e.from),to=units.find(u=>u.id===e.to);if(!from)return;
     const vis=style(from,e),p=progress(e),calm=!!options.calm,low=options.quality===0;
@@ -71,6 +79,8 @@ G.TFTVisuals = (() => {
         sprite(shape,e.kind==='drill'?'ground':vis.pal,sx+(tx-sx)*t,sy+(ty-sy)*t,e.kind==='drill'?.7:1,calm?.65:fade,angle);
       }
       if(!calm)sprite('impact',vis.pal,tx,ty,1.4,fade);
+    } else if(to&&e.kind==='stun') {
+      if(to.hp>0)sprite('star','electric',tx,ty-22,.8,fade);
     } else if(to&&['heal','shield'].includes(e.kind)) {
       const pal=e.kind==='heal'?'grass':'ice';
       sprite('ring',pal,tx,ty,1.1+p,fade*.7);
@@ -93,5 +103,5 @@ G.TFTVisuals = (() => {
     }
     ctx.restore();
   }
-  return {style,animation,animationSpeed,warm,actions,progress,draw};
+  return {style,animation,animationSpeed,warm,actions,areaCells,progress,draw};
 })();

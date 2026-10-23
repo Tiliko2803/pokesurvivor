@@ -55,3 +55,9 @@ test('low graphics and calm mode reduce sprite work; progress remains fixed whil
  const full=count({quality:2}),low=count({quality:0}),calm=count({quality:2,calm:true});assert.ok(full>low&&low>calm);
  const p=V.progress(e);V.draw(ctx,e,units);assert.equal(V.progress(e),p);assert.equal(V.progress({...e,ttl:0}),1);
 });
+
+test('CC highlights only living affected enemies and never friendly occupied cells',()=>{
+ const {V}=fixture(),units=[{id:1,side:0,hp:100,x:2,y:2},{id:2,side:0,hp:100,x:3,y:2,stunUntil:4},{id:-1,side:1,hp:100,x:2,y:1,stunUntil:.8},{id:-2,side:1,hp:100,x:3,y:1},{id:-3,side:1,hp:0,x:1,y:1,stunUntil:4}];
+ const area={kind:'area',from:1,control:true,targets:[2,-1,-2,-3],x:2,y:2,radius:2};
+ assert.equal(JSON.stringify(V.areaCells(area,units,.1)),JSON.stringify([8]));assert.equal(V.areaCells(area,units,.9).length,0,'expired CC loses its highlight');
+});

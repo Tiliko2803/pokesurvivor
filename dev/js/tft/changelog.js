@@ -6,6 +6,15 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: más entradas activas y CC más claro', 'TFT: more active entrances and clearer crowd control'], new: [
+    ['Entradas activas para las familias de Charizard, Blastoise, Raichu, Gengar, Gardevoir, Metagross, Lapras, Tyranitar y Swampert: fuego, oleadas, descargas, sombra, barreras, meteoros y arena. Se suman a la entrada sísmica de Excadrill; mejoran con estrellas y respetan el alcance y los bandos.',
+     'Active entrances for the Charizard, Blastoise, Raichu, Gengar, Gardevoir, Metagross, Lapras, Tyranitar and Swampert families: fire, waves, sparks, shadow, barriers, meteors and sand. They join Excadrill seismic entrance, scale with stars and respect range and teams.']
+  ], fix: [
+    ['La presentación de habilidades ya no pausa a todos: el combate empieza de inmediato. El CC se identifica con una marca propia, duración y autor en la ficha. Las zonas de aturdimiento resaltan sólo a enemigos afectados, sin pintar aliados como objetivos.',
+     'Ability presentation no longer pauses everyone: combat starts immediately. CC has its own marker, remaining duration and source in the unit card. Stun zones highlight affected enemies only, without marking allies as targets.'],
+    ['Todos los aturdimientos pasan por una comprobación común que rechaza aliados y al lanzador. Un Pokémon aturdido durante el pulso tampoco puede ejecutar un ataque que ya estuviese preparado.',
+     'All stuns pass a shared check that rejects allies and the caster. A Pokémon stunned during a beat cannot execute a strike already queued for that beat.']
+  ] },
   { d: '2026-10-23', title: ['TFT: tablero siempre visible', 'TFT: keep the board in view'], chg: [
     ['Nueva disposición de TFT: tablero fijo y paneles de Tienda, Equipo, Ficha, Rival e Informe con desplazamiento independiente. En vertical los paneles van debajo y en horizontal al lado. Puedes ocultarlos para despejar el tablero.',
      'New TFT layout: a fixed board with independently scrolling Shop, Team, Unit, Opponent and Report panels. Panels sit below in portrait and beside the board in landscape. Hide them for a clearer arena.'],

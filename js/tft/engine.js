@@ -183,14 +183,26 @@ G.TFT = (() => {
     "95":["Coraza","armor",18,"Obtiene 18 de defensa."],
     "957":["Rompemoldes","pierce",0.12,"Sus ataques ignoran un 12% adicional de defensa."]
   });
+  const ACTIVE_ENTRANCES={
+    4:{name:'Aliento Inicial',mode:'flame',type:'fire',range:[3,3,4],power:[.6,.75,.9],text:'Lanza fuego en un cono de 3/3/4 casillas y quema a los enemigos alcanzados durante 2 segundos.'},
+    7:{name:'Oleada Inicial',mode:'water',type:'water',range:[3,3,3],power:[.6,.75,.9],text:'Dispara agua al enemigo más cercano a un máximo de 3 casillas y lo empuja 1 casilla libre. En ★★/★★★ alcanza también sus vecinos.'},
+    172:{name:'Chispa Paralizante',mode:'spark',type:'electric',range:[3,3,3],power:[.45,.6,.75],text:'Golpea al enemigo más cercano a un máximo de 3 casillas y lo aturde 0,25/0,35/0,45 segundos según las estrellas.'},
+    92:{name:'Sombra Acechante',mode:'shadow',type:'ghost',range:[4,4,4],power:[.6,.75,.9],text:'Golpea al enemigo más cercano a un máximo de 4 casillas y reduce un 25% su cadencia durante 2 segundos.'},
+    280:{name:'Barrera de Entrada',mode:'barrier',type:'fairy',shield:[.05,.07,.09],text:'Añade un escudo del 5/7/9% de la vida del receptor a los 2 aliados más vulnerables según las estrellas.'},
+    374:{name:'Impacto Meteórico',mode:'meteor',type:'steel',range:[3,3,3],power:[.6,.7,.8],text:'Golpea al enemigo más cercano a un máximo de 3 casillas y lo aturde 0,25/0,35/0,5 segundos. En ★★/★★★ alcanza sus vecinos.'},
+    131:{name:'Velo Aurora',mode:'veil',type:'ice',shield:[.04,.05,.06],text:'Añade a todos los aliados un escudo del 4/5/6% de la vida de cada receptor según las estrellas.'},
+    246:{name:'Tormenta de Arena',mode:'sand',type:'rock',range:[2,2,3],power:[.6,.75,.9],text:'Daña a los enemigos en un radio de 2/2/3 casillas alrededor del usuario y reduce un 20% su cadencia durante 2 segundos.'},
+    258:{name:'Oleada Lodosa',mode:'mud',type:'water',range:[3,3,3],power:[.55,.7,.85],text:'Lanza lodo al enemigo más cercano a un máximo de 3 casillas y reduce un 20% su cadencia durante 2 segundos. En ★★/★★★ alcanza sus vecinos.'}
+  };
   function entranceFor(u) {
     const entry=ENTRANCES[BY[u.dex].line[0]];
     if(entry[1]==='seismic') {
       const radius=u.star===3?2:1,duration=[.5,.6,.8][u.star-1];
-      return {name:'Entrada Sísmica',effect:'seismic',radius,duration,control:true,
-        description:(u.star===1?'Provoca un temblor alrededor del usuario.':'Perfora hasta 3 casillas en dirección al enemigo más cercano y provoca un temblor al aterrizar. No atraviesa aliados ni ocupa casillas bloqueadas.')+` Daña a los enemigos en un radio de ${radius} casilla${radius===1?'':'s'} y los aturde ${String(duration).replace('.',',')} segundos. Se activa una vez antes del primer pulso; el aturdimiento cuenta después de la presentación.`};
+      return {name:'Entrada Sísmica',effect:'seismic',radius,duration,control:true,active:true,
+        description:(u.star===1?'Provoca un temblor alrededor del usuario.':'Perfora hasta 3 casillas en dirección al enemigo más cercano y provoca un temblor al aterrizar. No atraviesa aliados ni ocupa casillas bloqueadas.')+` Daña a los enemigos en un radio de ${radius} casilla${radius===1?'':'s'} y los aturde ${String(duration).replace('.',',')} segundos. Se activa una vez al comenzar el combate y solo aturde a enemigos; los aliados siguen actuando.`};
     }
-    return {name:entry[0],effect:entry[1],value:entry[2],description:entry[3]};
+    const base={name:entry[0],effect:entry[1],value:entry[2],description:entry[3]},active=ACTIVE_ENTRANCES[BY[u.dex].line[0]];
+    return active?{...base,name:active.name,active:true,mode:active.mode,type:active.type,range:active.range?.[u.star-1],power:active.power?.[u.star-1],shield:active.shield?.[u.star-1],description:base.description+' '+active.text+' Se activa una sola vez al comenzar el combate, sin pausar al equipo.'}:base;
   }
   function entrances(b) {
     const intimidated=new Set();
@@ -207,17 +219,56 @@ G.TFT = (() => {
       else if(e.effect==='intimidate'&&!intimidated.has(a.side)) {
         intimidated.add(a.side);for(const foe of b.units.filter(u=>u.side!==a.side))foe.attack*=1-e.value;
       }
-      b.events.push({kind:'entrance',from:a.id,move:e.name,ttl:1.8});
+      b.events.push({kind:'entrance',from:a.id,move:e.name,ttl:1.2});
     }
-    // Every unit receives its defensive entrance before offensive openers resolve.
-    // The opening presentation does not advance b.time, so CC survives it intact.
+    // Resolve support openers before offensive entries on either team.
+    for(const a of b.units)if(['barrier','veil'].includes(entranceFor(a).mode))activeEntrance(b,a);
     for(const a of b.units) {
-      if(a.hp<=0||entranceFor(a).effect!=='seismic')continue;
-      const target=selectTarget(b,a);if(!target)continue;
+      if(a.hp<=0)continue;
       const e=entranceFor(a);
-      if(a.star>=2)drill(b,a,target,a.attack*.8);
-      shock(b,a,e.radius,e.duration,a.attack*.6);
+      if(e.effect==='seismic'){
+        const target=selectTarget(b,a);if(!target)continue;
+        if(a.star>=2)drill(b,a,target,a.attack*.8);
+        shock(b,a,e.radius,e.duration,a.attack*.6);
+        b.events.push({kind:'entryCast',from:a.id,move:e.name,type:'ground',sx:a.x,sy:a.y,tx:target.x,ty:target.y,ttl:.8});
+      } else if(e.active&&!['barrier','veil'].includes(e.mode))activeEntrance(b,a);
     }
+  }
+  function areaEvent(b,a,center,radius,type,victims,control=false) {
+    b.events.push({kind:'area',from:a.id,x:center.x,y:center.y,radius,type,control,
+      targets:victims.map(u=>u.id),cells:victims.map(u=>u.y*COLS+u.x),ttl:.6});
+  }
+  function activeEntrance(b,a) {
+    const e=entranceFor(a),foes=b.units.filter(u=>u.side!==a.side&&u.hp>0);
+    let target;
+    if(e.mode==='barrier'||e.mode==='veil'){
+      const friends=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.armor-y.armor||x.maxHp-y.maxHp||x.id-y.id);
+      for(const ally of friends.slice(0,e.mode==='veil'?6:2))shield(b,a,ally,ally.maxHp*e.shield);
+      target=a;
+    } else {
+      target=foes.sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id)[0];
+      if(!target||distance(a,target)>e.range)return;
+      let victims=[target];
+      if(e.mode==='flame'){
+        const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1;
+        victims=foes.filter(t=>{const x=t.x-a.x,y=t.y-a.y,d=Math.hypot(x,y)||1;return distance(a,t)<=e.range&&(x*dx+y*dy)/(len*d)>=.65;});
+      } else if(e.mode==='sand')victims=foes.filter(t=>distance(a,t)<=e.range);
+      else if(['water','meteor','mud'].includes(e.mode)&&a.star>=2)victims=foes.filter(t=>distance(target,t)<=1);
+      if(e.mode==='sand'||['water','meteor','mud'].includes(e.mode))areaEvent(b,a,e.mode==='sand'?a:target,e.mode==='sand'?e.range:a.star>=2?1:0,e.type,victims,e.mode==='meteor');
+      const control=e.mode==='spark'?[.25,.35,.45][a.star-1]:e.mode==='meteor'?[.25,.35,.5][a.star-1]:0;
+      victims.sort((x,y)=>distance(a,y)-distance(a,x));
+      for(const t of victims){
+        hit(b,a,t,a.attack*e.power,true,e.type);
+        if(t.hp<=0)continue;
+        if(control)stun(b,a,t,control);
+        if(e.mode==='flame')burn(b,a,t,2,a.attack*.12);
+        if(e.mode==='water')push(b,a,t,1);
+        if(['shadow','sand','mud'].includes(e.mode)){
+          t.slowPower=Math.max(t.slowUntil>b.time?t.slowPower||0:0,e.mode==='shadow'?.25:.2);t.slowUntil=b.time+2;
+        }
+      }
+    }
+    b.events.push({kind:'entryCast',from:a.id,move:e.name,type:e.type,to:target.id,sx:a.x,sy:a.y,tx:target.x,ty:target.y,ttl:.8});
   }
   // Reuse the Survivor personality classifier, adapting its decisions to a grid.
   function aiFor(dex) {
@@ -460,7 +511,7 @@ G.TFT = (() => {
     if(!planning(s)||!s.units.some(u=>u.pos!==null))return false;
     if(s.opponentRound!==s.round)prepareEnemy(s);
     const team=s.units.filter(u=>u.pos!==null),foes=scout(s);
-    s.battle={time:0,acc:0,opening:1.8,beat:0,beatCount:0,beatStarted:0,nextBeat:.05,events:[],units:[...team.map(u=>fighter(u,0,traits(team),s.round)),
+    s.battle={time:0,acc:0,opening:1.2,beat:0,beatCount:0,beatStarted:0,nextBeat:.05,events:[],units:[...team.map(u=>fighter(u,0,traits(team),s.round)),
       ...foes.map(u=>fighter(u,1,traits(foes),s.round))]};
     entrances(s.battle);s.phase='combat';s.result=null;return true;
   }
@@ -510,11 +561,21 @@ G.TFT = (() => {
     a.x=landing.x;a.y=landing.y;a.moveCD=.35;
     b.events.push({kind:'drill',from:a.id,sx,sy,tx:end.x,ty:end.y,type:'ground',ttl:.6});
   }
+  function isStunned(b,u) {return u.hp>0&&Number.isFinite(u.stunUntil)&&u.stunUntil>b.time;}
+  function stun(b,a,t,duration) {
+    // One shared boundary: no CC can be applied to the caster or its allies.
+    if(a.side===t.side||t.hp<=0||!Number.isFinite(duration)||duration<=0)return false;
+    const until=b.time+duration;
+    if(until>(t.stunUntil||0)){t.stunUntil=until;t.stunSource=a.id;}
+    b.events.push({kind:'stun',from:a.id,to:t.id,type:'electric',sx:a.x,sy:a.y,tx:t.x,ty:t.y,ttl:duration,life:duration});
+    return true;
+  }
   function shock(b,a,radius,duration,power) {
-    b.events.push({kind:'area',from:a.id,x:a.x,y:a.y,radius,type:'ground',ttl:.6});
-    for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=radius)) {
+    const victims=b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=radius);
+    areaEvent(b,a,a,radius,'ground',victims,true);
+    for(const t of victims) {
       hit(b,a,t,power,true,'ground');
-      if(t.hp>0)t.stunUntil=Math.max(t.stunUntil||0,b.time+duration);
+      stun(b,a,t,duration);
     }
   }
   function signature(b,a,target) {
@@ -562,7 +623,8 @@ G.TFT = (() => {
       else if(rank===2){shield(b,a,allies()[0],a.maxHp*.25);hit(b,a,target,a.attack*1.8,true,'steel');}
       else {
         const center={x:target.x,y:target.y};
-        for(const t of foes().filter(t=>distance(center,t)<=1)){hit(b,a,t,a.attack*(t===target?3:1.5),true,'steel');t.stunUntil=b.time+1;}
+        const victims=foes().filter(t=>distance(center,t)<=1);areaEvent(b,a,center,1,'steel',victims,true);
+        for(const t of victims){hit(b,a,t,a.attack*(t===target?3:1.5),true,'steel');stun(b,a,t,1);}
         shield(b,a,a,a.maxHp*.25);
       }
     } else if(family===1) {
@@ -578,7 +640,7 @@ G.TFT = (() => {
       let t=target;const seen=new Set();
       for(let i=0;i<(rank===1?1:rank===2?3:4)&&t;i++) {
         seen.add(t.id);hit(b,a,t,a.attack*(rank===1?2:2.2)*(.8**i),true,'electric');
-        if(rank!==2)t.stunUntil=b.time+(rank===1?.3:.6);
+        if(rank!==2)stun(b,a,t,rank===1?.3:.6);
         const previous=t;t=foes().filter(u=>!seen.has(u.id)&&distance(previous,u)<=3).sort((x,y)=>distance(previous,x)-distance(previous,y)||x.id-y.id)[0];
       }
     } else if(family===66) {
@@ -599,18 +661,19 @@ G.TFT = (() => {
         const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1;
         for(const t of foes()){const x=t.x-a.x,y=t.y-a.y,d=(x*dx+y*dy)/len;if(d>=0&&d<=4&&Math.abs(x*dy-y*dx)/len<=.7)hit(b,a,t,a.attack*2.4,true,'psychic');}
         b.events.push({kind:'beam',from:a.id,sx:a.x,sy:a.y,tx:Math.max(0,Math.min(5,a.x+dx/len*4)),ty:Math.max(0,Math.min(5,a.y+dy/len*4)),type:'psychic',ttl:.6});
-      } else {b.events.push({kind:'area',from:a.id,x:target.x,y:target.y,radius:1,type:'psychic',ttl:.6});for(const t of foes().filter(t=>distance(target,t)<=1)){hit(b,a,t,a.attack*2.6,true,'psychic');t.stunUntil=b.time+.8;}}
+      } else {const victims=foes().filter(t=>distance(target,t)<=1);areaEvent(b,a,target,1,'psychic',victims,true);for(const t of victims){hit(b,a,t,a.attack*2.6,true,'psychic');stun(b,a,t,.8);}}
     } else return false;
     return true;
   }
   function areaCast(b,a,target) {
     const area=AREA_MOVES[moveFor(a)];if(!area)return false;
     const center=area.center==='self'?a:target;
-    b.events.push({kind:'area',from:a.id,x:center.x,y:center.y,radius:area.radius,type:area.type,ttl:.6});
-    for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(center,u)<=area.radius)){
+    const victims=b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(center,u)<=area.radius);
+    areaEvent(b,a,center,area.radius,area.type,victims,!!area.stun);
+    for(const t of victims){
       hit(b,a,t,a.attack*area.power,true,area.type);
       if(area.slow){t.slowUntil=b.time+2;t.slowPower=Math.max(t.slowPower||0,area.slow);}
-      if(area.stun)t.stunUntil=b.time+area.stun;
+      if(area.stun)stun(b,a,t,area.stun);
     }
     return true;
   }
@@ -622,7 +685,7 @@ G.TFT = (() => {
     if(m.shape==='area') {
       const center=m.center==='self'?a:{x:target.x,y:target.y};
       victims=foes.filter(t=>distance(center,t)<=m.radius);
-      b.events.push({kind:'area',from:a.id,x:center.x,y:center.y,radius:m.radius,type:m.type,ttl:.6});
+      areaEvent(b,a,center,m.radius,m.type,victims,!!m.stun);
     } else if(m.shape==='line') {
       const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1;
       victims=foes.filter(t=>{const x=t.x-a.x,y=t.y-a.y,d=(x*dx+y*dy)/len;return d>=0&&d<=m.length&&Math.abs(x*dy-y*dx)/len<=.7;});
@@ -638,7 +701,7 @@ G.TFT = (() => {
       total+=hit(b,a,t,a.attack*m.power*(1+(m.execute||0)*(1-t.hp/t.maxHp)),true,m.type);
       if(t.hp<=0)continue;
       if(m.slow){t.slowPower=Math.max(t.slowUntil>b.time?t.slowPower||0:0,m.slow);t.slowUntil=b.time+2;}
-      if(m.stun)t.stunUntil=Math.max(t.stunUntil||0,b.time+m.stun);
+      if(m.stun)stun(b,a,t,m.stun);
       if(m.burn)burn(b,a,t,3,a.attack*m.burn);
       if(m.push)push(b,a,t,m.push);
     }
@@ -703,14 +766,14 @@ G.TFT = (() => {
     // Both teams share one clock. Alternate cell/attack initiative each bar.
     const order=Math.floor((b.beatCount-1)/4)%2?[...b.units].reverse():b.units;
     if(b.beat===1||b.beat===3) {
-      for(const a of order){if(a.hp<=0||a.stunUntil>b.time)continue;const target=selectTarget(b,a);if(target)moveToward(b,a,target);}
+      for(const a of order){if(a.hp<=0||isStunned(b,a))continue;const target=selectTarget(b,a);if(target)moveToward(b,a,target);}
       return;
     }
     // Choose attacks from the same pulse's initial formation, then resolve in order.
-    const attacks=order.filter(a=>a.hp>0&&!(a.stunUntil>b.time)&&a.cooldown<=0)
+    const attacks=order.filter(a=>a.hp>0&&!isStunned(b,a)&&a.cooldown<=0)
       .map(a=>({a,target:selectTarget(b,a)})).filter(p=>p.target&&distance(p.a,p.target)<=p.a.range);
     for(const {a,target:chosen} of attacks) {
-      if(a.hp<=0)continue;
+      if(a.hp<=0||isStunned(b,a))continue;
       const target=chosen.hp>0?chosen:selectTarget(b,a);if(!target||distance(a,target)>a.range)continue;
       // One basic strike per attack beat; speed changes strike power/mana instead
       // of creating off-beat attacks. Slow affects those same values temporarily.
@@ -724,7 +787,7 @@ G.TFT = (() => {
     }
   }
   function step(s,dt) {
-    const b=s.battle;b.time+=dt;b.events=b.events.filter(e=>(e.ttl-=dt)>0);
+    const b=s.battle;b.time+=dt;b.opening=Math.max(0,(b.opening||0)-dt);b.events=b.events.filter(e=>(e.ttl-=dt)>0);
     for(const a of b.units) {
       a.flash=Math.max(0,a.flash-dt);if(a.hp<=0)continue;
       const regen=Math.max(0,Math.min(a.maxHp-a.hp,a.maxHp*a.regen*dt));a.hp+=regen;a.healingDone+=regen;
@@ -758,7 +821,6 @@ G.TFT = (() => {
     if(!Number.isFinite(dt)||dt<=0)return;
     s.effects=s.effects.filter(e=>(e.ttl-=Math.min(dt,.25))>0);
     if(s.phase!=='combat'){if(s.battle)s.battle.events=s.battle.events.filter(e=>(e.ttl-=Math.min(dt,.25))>0);return;}
-    if(s.battle.opening>0){s.battle.opening=Math.max(0,s.battle.opening-Math.min(dt,.25));return;}
     s.battle.acc+=Math.min(dt,.25);
     while(s.battle.acc>=.05&&s.phase==='combat'){s.battle.acc-=.05;step(s,.05);}
   }
@@ -807,5 +869,5 @@ G.TFT = (() => {
       s.effects=[];return s;
     } catch(_){return null;}
   }
-  return {serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,LAST_ROUND,BEAT_SECONDS,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
+  return {isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,LAST_ROUND,BEAT_SECONDS,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
 })();

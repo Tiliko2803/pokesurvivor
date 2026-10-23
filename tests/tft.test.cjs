@@ -278,14 +278,15 @@ test('scouted opponents and formation match the coming fight without rerolling o
  assert.equal(JSON.stringify(s.battle.units.filter(u=>u.side===1).map(({id,dex,star,pos})=>({id,dex,star,pos}))),foes);
  while(s.phase==='combat')E.tick(s,.1);if(s.phase==='result'){E.next(s);assert.equal(s.opponentRound,2);assert.notEqual(JSON.stringify(E.scout(s)),foes);}
 });
-test('entrances apply once before the rhythm and never reapply when a battle resumes',()=>{
+test('entrances do not pause the rhythm or reapply when combat resumes',()=>{
  const {E}=fixture(),s=E.create(3,E.DEFAULT_DECK);s.gold=100;
  for(const d of [7,280,529]){s.shop=[d];E.buy(s,0);}s.units.forEach((u,i)=>E.place(s,u.id,18+i));
+ s.opponent=[{id:-1,dex:133,star:1,pos:5}];s.opponentRound=1;
  const base=E.preview(s,s.units[0]);E.start(s);const a=s.battle.units.find(u=>u.dex===7);
  assert.ok(a.shield>=a.maxHp*.19);assert.ok(s.battle.events.some(e=>e.kind==='entrance'));
- for(let i=0;i<10;i++)E.tick(s,.1);assert.equal(s.battle.time,0);assert.equal(s.battle.beat,0);
+ for(let i=0;i<3;i++)E.tick(s,.1);assert.ok(s.battle.time>.29);assert.equal(s.battle.beat,1);assert.ok(s.battle.opening>0,'banner remains visible while units act');
  const saved=E.restore(E.serialize(s));assert.ok(saved);assert.equal(saved.battle.units[0].shield,a.shield);assert.equal(saved.battle.opening,s.battle.opening);
- for(let i=0;i<10;i++)E.tick(saved,.1);assert.ok(saved.battle.time>0);assert.equal(saved.battle.units[0].shield,a.shield);
+ for(let i=0;i<3;i++){E.tick(saved,.1);E.tick(s,.1);}assert.equal(saved.battle.units[0].shield,a.shield);assert.equal(saved.battle.time,s.battle.time);
  assert.ok(base.shield===0);
 });
 test('all roster families expose an entrance; twelve families have distinct evolving moves',()=>{
@@ -376,16 +377,16 @@ test('Excadrill opens once with a safe drill and area stun before the first beat
   assert.equal(!!diagonal.stunUntil,star===3);assert.equal(far.hp,far.maxHp);assert.equal(far.stunUntil,undefined);
   assert.equal(ally.hp,ally.maxHp);assert.equal(ally.stunUntil,undefined);assert.equal(a.mana,0,'entrance does not spend or fill mana');
   assert.equal(new Set(b.units.filter(u=>u.hp>0).map(u=>u.x+','+u.y)).size,b.units.filter(u=>u.hp>0).length);
-  const hp=near.hp;for(let i=0;i<10;i++)E.tick(s,.1);assert.equal(b.time,0);assert.equal(near.hp,hp);assert.equal(near.stunUntil,star===3?.8:.6);
-  const restored=E.restore(E.serialize(s));assert.ok(restored);assert.equal(restored.battle.units.find(u=>u.id===-1).hp,hp);
-  while(b.opening>0)E.tick(s,.1);for(let i=0;i<11;i++)E.tick(s,.05);
+  const hp=near.hp,allyPosition=ally.x+','+ally.y;E.tick(s,.05);assert.ok(b.time>0);assert.ok(b.opening>0);assert.notEqual(ally.x+','+ally.y,allyPosition,'unstunned ally moves while entry banner is still visible');assert.equal(near.hp,hp);
+  const restored=E.restore(E.serialize(s));assert.ok(restored);assert.equal(restored.battle.units.find(u=>u.id===-1).hp,hp);assert.equal(restored.battle.units.find(u=>u.id===-1).stunUntil,near.stunUntil);
+  for(let i=0;i<10;i++)E.tick(s,.05);
   assert.ok(!b.events.some(e=>e.kind==='hit'&&e.from===near.id),'stunned unit cannot attack on the first attack beat');
  }
 });
 test('Drilbur has a smaller stationary opener and allied blockers stop Excadrill entry',()=>{
  const {E}=fixture();
  {const s=E.create(555,E.DEFAULT_DECK);s.shop=[529];E.buy(s,0);E.place(s,s.units[0].id,18);s.opponent=[{id:-1,dex:133,star:1,pos:12}];s.opponentRound=1;E.start(s);const [a,t]=s.battle.units;assert.equal(a.y,3);assert.equal(t.stunUntil,.5);assert.ok(t.hp<t.maxHp);}
- {const s=E.create(555,E.DEFAULT_DECK);s.gold=100;for(let i=0;i<3;i++){s.shop=[529];E.buy(s,0);}E.place(s,s.units[0].id,24);s.shop=[7];E.buy(s,0);E.place(s,s.units.find(u=>u.dex===7).id,18);s.opponent=[{id:-1,dex:133,star:1,pos:6}];s.opponentRound=1;E.start(s);const a=s.battle.units.find(u=>u.dex===530),t=s.battle.units.find(u=>u.side===1);assert.equal(a.y,4);assert.equal(t.hp,t.maxHp);assert.equal(t.stunUntil,undefined);}
+ {const s=E.create(555,E.DEFAULT_DECK);s.gold=100;for(let i=0;i<3;i++){s.shop=[529];E.buy(s,0);}E.place(s,s.units[0].id,24);s.shop=[7];E.buy(s,0);E.place(s,s.units.find(u=>u.dex===7).id,18);s.opponent=[{id:-1,dex:133,star:1,pos:6}];s.opponentRound=1;E.start(s);const a=s.battle.units.find(u=>u.dex===530),t=s.battle.units.find(u=>u.side===1);assert.equal(a.y,4);assert.equal(a.damageDone,0,'blocked Excadrill deals no entry damage; Squirtle may still attack');assert.equal(t.stunUntil,undefined);}
 });
 test('Excadrill mana move stuns the landing area and overlapping stuns never add duration',()=>{
  const {E}=fixture();for(const star of [2,3]){
@@ -400,4 +401,61 @@ test('burn events identify periodic damage for animation without recasting the s
  E.cast(b,a,t);for(let i=0;i<21;i++)E.tick(s,.05);
  const dot=b.events.find(e=>e.periodic);assert.ok(dot);assert.equal(dot.from,a.id);assert.equal(dot.to,t.id);assert.equal(dot.type,'fire');assert.equal(dot.move,'Ascuas');
  assert.equal(b.events.filter(e=>e.kind==='cast').length,0,'burn has no extra cast event');
+});
+
+function entryMatch(E,family,star=1) {
+ const deck=E.DEFAULT_DECK.slice();if(!deck.includes(family))deck[9]=family;
+ const s=E.create(555,deck);s.gold=1000;
+ for(let i=0;i<3**(star-1);i++){s.shop=[family];E.buy(s,0);}E.place(s,s.units[0].id,20);
+ s.shop=[1];E.buy(s,0);E.place(s,s.units.find(u=>u.id!==s.units[0].id).id,21);
+ s.opponent=[{id:-1,dex:133,star:1,pos:8},{id:-2,dex:133,star:1,pos:9},{id:-3,dex:133,star:1,pos:5}];s.opponentRound=1;
+ E.start(s);return s;
+}
+test('nine more families have real active entrance effects at every rank without spending mana',()=>{
+ const {E}=fixture();
+ for(const family of [4,7,172,92,280,374,131,246,258])for(let star=1;star<=3;star++){
+  const s=entryMatch(E,family,star),b=s.battle,a=b.units.find(u=>E.BY[u.dex].line[0]===family),ally=b.units.find(u=>u.side===a.side&&u!==a),foes=b.units.filter(u=>u.side!==a.side);
+  assert.equal(E.entranceFor(a).active,true);assert.ok(b.events.some(e=>e.kind==='entryCast'&&e.from===a.id),family+' rank '+star);
+  assert.equal(ally.hp,ally.maxHp);assert.equal(ally.stunUntil,undefined);assert.equal(ally.burn,undefined);
+  if([280,131].includes(family)){assert.ok(a.shieldingDone>0);assert.ok(ally.shield>0);}
+  else assert.ok(a.damageDone>0,family+' entrance damages enemies');
+  if([172,374].includes(family))assert.ok(foes.some(u=>E.isStunned(b,u)&&u.stunSource===a.id));
+  if([92,246,258].includes(family))assert.ok(foes.some(u=>u.slowUntil>0));
+  if(family===4)assert.ok(foes.some(u=>u.burn));
+  assert.equal(a.mana,family===172?25:0,'entrance keeps mana granted by passive and spends none');
+  const live=b.units.filter(u=>u.hp>0);assert.equal(new Set(live.map(u=>u.x+','+u.y)).size,live.length);
+ }
+});
+test('entrance attacks respect range and never reach across the whole board',()=>{
+ const {E}=fixture();for(const family of [4,7,172,92,374,246,258]){
+  const deck=E.DEFAULT_DECK.slice();if(!deck.includes(family))deck[9]=family;
+  const s=E.create(444,deck);s.gold=100;s.shop=[family];E.buy(s,0);E.place(s,s.units[0].id,35);s.opponent=[{id:-1,dex:133,star:1,pos:0}];s.opponentRound=1;E.start(s);
+  const a=s.battle.units.find(u=>u.side===0),t=s.battle.units.find(u=>u.side===1);assert.equal(t.hp,t.maxHp);assert.equal(t.stunUntil,undefined);assert.equal(a.damageDone,0);
+ }
+});
+test('CC boundary rejects caster and allied targets; enemy CC expires while allies act',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,ally]}=battleFor(E,[[530,3,0,2,3],[133,1,1,2,2],[7,1,0,3,3]]);
+ const before=JSON.stringify(ally),events=b.events.length;assert.equal(E.stun(b,a,a,1),false);assert.equal(E.stun(b,a,ally,1),false);assert.equal(JSON.stringify(ally),before);assert.equal(b.events.length,events);
+ assert.equal(E.stun(b,a,t,.8),true);assert.equal(E.isStunned(b,t),true);assert.equal(t.stunSource,a.id);assert.equal(E.isStunned(b,ally),false);
+ for(let i=0;i<17;i++)E.tick(s,.05);assert.equal(E.isStunned(b,t),false);
+});
+test('a stun interrupts an enemy already queued to attack in the same pulse',()=>{
+ const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[172,1,0,2,3],[66,1,1,2,2]]);
+ a.mana=100;a.cooldown=t.cooldown=0;b.beatCount=1;b.beat=1;b.nextBeat=.05;
+ E.tick(s,.05);assert.equal(b.beat,2);assert.ok(E.isStunned(b,t));assert.equal(t.damageDone,0,'target cannot execute an already queued strike after being stunned');assert.ok(a.damageDone>0);
+});
+test('an enemy Excadrill stuns our units but never its own teammates',()=>{
+ const {E}=fixture(),s=E.create(333,E.DEFAULT_DECK);s.shop=[1];E.buy(s,0);E.place(s,s.units[0].id,20);
+ s.opponent=[{id:-1,dex:530,star:3,pos:8},{id:-2,dex:133,star:1,pos:9}];s.opponentRound=1;E.start(s);
+ const b=s.battle,player=b.units.find(u=>u.side===0),caster=b.units.find(u=>u.id===-1),enemyMate=b.units.find(u=>u.id===-2);
+ assert.equal(E.isStunned(b,caster),false);assert.equal(E.isStunned(b,enemyMate),false);assert.ok(E.isStunned(b,player));assert.equal(player.stunSource,-1);
+});
+test('active entry effects and CC resume without repeating damage, shields or control duration',()=>{
+ const {E}=fixture();for(const family of [4,7,172,92,280,374,131,246,258]){
+  const s=entryMatch(E,family,2);E.tick(s,.1);const saved=E.restore(E.serialize(s));assert.ok(saved,family);
+  const state=u=>({id:u.id,hp:u.hp,shield:u.shield,mana:u.mana,stunUntil:u.stunUntil,burn:u.burn});
+  assert.equal(JSON.stringify(saved.battle.units.map(state)),JSON.stringify(s.battle.units.map(state)));
+  while(s.phase==='combat')E.tick(s,.1);while(saved.phase==='combat')E.tick(saved,.1);
+  assert.equal(JSON.stringify(saved.result),JSON.stringify(s.result),family+' result is unchanged by resume');
+ }
 });
