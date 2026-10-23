@@ -1,7 +1,7 @@
 /* PokéSurvivor TFT alpha — isolated rules; no survivor save, coins or rankings. */
 G.TFT = (() => {
   'use strict';
-  const COLS = 6, ROWS = 6, BENCH = 8, LAST_ROUND = 12;
+  const COLS = 6, ROWS = 6, BENCH = 8, LAST_ROUND = 12, BEAT_SECONDS = .5;
   // cost, role, signature move; stats/types/art come from the existing Pokédex.
   const DEFINITIONS = [
     [[1,2,3],1,'healer',['Absorber','Drenadoras','Rayo Solar']],
@@ -27,7 +27,17 @@ G.TFT = (() => {
     [[258,259,260],4,'tank',['Pistola Agua','Agua Lodosa','Terremoto']],
     [[255,256,257],4,'fighter',['Ascuas','Doble Patada','Patada Ígnea']],
     [[374,375,376],4,'tank',['Placaje','Garra Metal','Puño Meteoro']],
-    [[384],5,'mage',['Pulso Dragón','Cometa Draco','Cometa Draco']]
+    [[384],5,'mage',['Pulso Dragón','Cometa Draco','Cometa Draco']],
+    [[27,28],1,'fighter',['Arañazo','Terratemblor','Terremoto']],
+    [[13,14,15],1,'fighter',['Picotazo Veneno','Fortaleza','Tijera X']],
+    [[179,180,181],1,'mage',['Impactrueno','Chispazo','Trueno']],
+    [[74,75,76],2,'tank',['Lanzarrocas','Terratemblor','Terremoto']],
+    [[270,271,272],2,'healer',['Absorber','Síntesis','Gigadrenado']],
+    [[363,364,365],2,'tank',['Nieve Polvo','Rayo Hielo','Ventisca']],
+    [[440,113,242],2,'healer',['Encanto','Pulso Cura','Amortiguador']],
+    [[95,208],3,'tank',['Tumba Rocas','Terremoto','Fuerza Telúrica']],
+    [[371,372,373],4,'fighter',['Mordisco','Dragoaliento','Cometa Draco']],
+    [[957,958,959],3,'fighter',['Golpe Roca','Martillazo','Martillo Colosal']]
   ];
   const ROSTER = DEFINITIONS.map(([line,cost,role,moves]) => ({dex:line[0],line,cost,role,moves,move:moves[0]}));
   const BY = {};
@@ -45,7 +55,7 @@ G.TFT = (() => {
   function create(seed = Date.now(),deck) {
     if(deck!==undefined&&!validDeck(deck))throw new Error('Elige exactamente 10 líneas distintas.');
     const s = {seed:seed>>>0,nextId:1,round:1,life:50,gold:10,level:3,xp:0,
-      deck:deck?deck.slice():ROSTER.map(p=>p.dex),effects:[],units:[],shop:[],locked:false,phase:'planning',battle:null,result:null,wins:0,streak:0};
+      deck:deck?deck.slice():ROSTER.map(p=>p.dex),history:[],effects:[],units:[],shop:[],locked:false,phase:'planning',battle:null,result:null,wins:0,streak:0};
     reroll(s,true); return s;
   }
   function random(s) { s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0; return s.seed/4294967296; }
@@ -175,7 +185,7 @@ G.TFT = (() => {
       ai,maxHp:(def.role==='tank'?480:330)*(1+def.cost*.1)*power,
       attack:(35+def.cost*9)*power,armor:def.role==='tank'?40:20,
       interval:Math.max(.65,1.35-(p.spd-90)/100),range:['ranged','healer'].includes(ai)?3:1,
-      damageDone:0,healingDone:0,shieldingDone:0,mana:0,manaGain:0,regen:0,pierce:0,slow:0,shield:0,cooldown:.2,moveCD:0,flash:0};
+      damageDone:0,damageTaken:0,blocked:0,kills:0,healingDone:0,shieldingDone:0,mana:0,manaGain:0,regen:0,pierce:0,slow:0,shield:0,cooldown:.2,moveCD:0,flash:0};
     for(const type of p.types) {
       const tier=synergies[type]?.tier||0;if(!tier)continue;
       switch(EFFECTS[type]) {
@@ -218,9 +228,28 @@ G.TFT = (() => {
       'Escuda al aliado más vulnerable y golpea con Garra Metal.',
       'Puño Meteoro golpea una zona, aturde durante 1 segundo y concede un escudo a Metagross.']}
   };
+  const AREA_MOVES={
+    'Terremoto':{type:'ground',radius:2,power:2.4,center:'self'},
+    'Terratemblor':{type:'ground',radius:1,power:1.7,center:'self',slow:.2},
+    'Fuerza Telúrica':{type:'ground',radius:2,power:2.6,center:'self'},
+    'Agua Lodosa':{type:'water',radius:2,power:1.8,center:'self'},
+    'Nieve Polvo':{type:'ice',radius:1,power:1.6,center:'target',slow:.2},
+    'Ventisca':{type:'ice',radius:2,power:2.1,center:'target',slow:.25},
+    'Chispazo':{type:'electric',radius:3,power:1.7,center:'self'},
+    'Trueno':{type:'electric',radius:1,power:2.6,center:'target'},
+    'Avalancha':{type:'rock',radius:1,power:2,center:'target',stun:.35},
+    'Roca Afilada':{type:'rock',radius:1,power:2.2,center:'target'},
+    'Tumba Rocas':{type:'rock',radius:1,power:1.8,center:'target',slow:.2},
+    'Tijera X':{type:'bug',radius:1,power:1.9,center:'target'},
+    'Cometa Draco':{type:'dragon',radius:2,power:2.4,center:'target'},
+    'Martillo Colosal':{type:'steel',radius:1,power:2.7,center:'target'}
+  };
   function abilityFor(u) {
     const signature=SIGNATURES[BY[u.dex].line[0]],i=u.star-1;
     if(signature)return {name:moveFor(u),type:signature.types[i],description:signature.text[i],signature:true};
+    const area=AREA_MOVES[moveFor(u)];
+    if(area)return {name:moveFor(u),type:area.type,description:`Golpea a los enemigos en un área de ${area.radius} casillas alrededor ${area.center==='self'?'del usuario':'del objetivo'}.${area.slow?' Ralentiza sus ataques durante 2 segundos.':''}${area.stun?' Aturde brevemente.':''}`,area:true};
+    if(moveFor(u)==='Fortaleza')return {name:'Fortaleza',type:'normal',description:'Obtiene un escudo del 30% de su vida máxima.'};
     const ai=aiFor(u.dex),role=BY[u.dex].role;
     const description=ai==='healer'?'Cura al aliado con menos vida proporcional.':ai==='guardian'?'Escuda al aliado más vulnerable y golpea al enemigo.':
       role==='tank'?'Obtiene un escudo y daña a los enemigos cercanos.':role==='mage'?'Daña al objetivo y a los enemigos junto a él.':'Da un golpe potente a un enemigo.';
@@ -230,7 +259,7 @@ G.TFT = (() => {
   function start(s) {
     if(!planning(s)||!s.units.some(u=>u.pos!==null))return false;
     const team=s.units.filter(u=>u.pos!==null),foes=enemyTeam(s);
-    s.battle={time:0,acc:0,events:[],units:[...team.map(u=>fighter(u,0,traits(team),s.round)),
+    s.battle={time:0,acc:0,beat:0,beatCount:0,beatStarted:0,nextBeat:.05,events:[],units:[...team.map(u=>fighter(u,0,traits(team),s.round)),
       ...foes.map(u=>fighter(u,1,traits(foes),s.round))]};
     s.phase='combat';s.result=null;return true;
   }
@@ -239,10 +268,10 @@ G.TFT = (() => {
     if(t.hp<=0)return 0;
     const mult=G.Types?.mult?G.Types.mult(type,t.types):1;
     const damage=Math.max(1,Math.round(power*mult*100/(100+t.armor*(1-Math.min(.8,a.pierce)))));
-    const absorbed=Math.min(t.shield,damage),lost=Math.min(t.hp,damage-absorbed);t.shield-=absorbed;t.hp=Math.max(0,t.hp-lost);a.damageDone+=lost;
+    const absorbed=Math.min(t.shield,damage),lost=Math.min(t.hp,damage-absorbed);t.shield-=absorbed;t.hp=Math.max(0,t.hp-lost);a.damageDone+=lost;t.damageTaken+=lost;t.blocked+=absorbed;if(t.hp===0&&lost>0)a.kills++;
     t.flash=.16;t.mana=Math.min(100,t.mana+8);
     if(a.slow)t.slowUntil=b.time+2,t.slowPower=a.slow;
-    b.events.push({kind:spell?'spell':'hit',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,type,amount:lost,absorbed,ttl:.45});
+    b.events.push({kind:spell?'spell':'hit',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,type,amount:lost,absorbed,beat:b.beat,ttl:.45});
     return lost;
   }
   function heal(b,a,t,amount) {
@@ -304,7 +333,7 @@ G.TFT = (() => {
         }
         a.x=landing.x;a.y=landing.y;a.moveCD=.35;
         b.events.push({kind:'drill',from:a.id,sx,sy,tx:end.x,ty:end.y,type:'ground',ttl:.6});
-        if(rank===3)for(const t of foes().filter(t=>distance(a,t)<=2))hit(b,a,t,a.attack*1.5,true,'ground');
+        if(rank===3){b.events.push({kind:'area',from:a.id,x:a.x,y:a.y,radius:2,type:'ground',ttl:.6});for(const t of foes().filter(t=>distance(a,t)<=2))hit(b,a,t,a.attack*1.5,true,'ground');}
       }
     } else if(family===92) {
       const weak=target.hp/target.maxHp<.4;
@@ -327,9 +356,21 @@ G.TFT = (() => {
     } else return false;
     return true;
   }
+  function areaCast(b,a,target) {
+    const area=AREA_MOVES[moveFor(a)];if(!area)return false;
+    const center=area.center==='self'?a:target;
+    b.events.push({kind:'area',from:a.id,x:center.x,y:center.y,radius:area.radius,type:area.type,ttl:.6});
+    for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(center,u)<=area.radius)){
+      hit(b,a,t,a.attack*area.power,true,area.type);
+      if(area.slow){t.slowUntil=b.time+2;t.slowPower=Math.max(t.slowPower||0,area.slow);}
+      if(area.stun)t.stunUntil=b.time+area.stun;
+    }
+    return true;
+  }
   function cast(b,a,target) {
-    a.mana=0;b.events.push({kind:'cast',from:a.id,move:moveFor(a),ttl:.8});
-    if(signature(b,a,target))return;
+    a.mana=0;b.events.push({kind:'cast',from:a.id,move:moveFor(a),beat:b.beat,ttl:.8});
+    if(signature(b,a,target)||areaCast(b,a,target))return;
+    if(moveFor(a)==='Fortaleza'){shield(b,a,a,a.maxHp*.3);return;}
     if(a.ai==='guardian') {
       const ally=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id)[0];
       shield(b,a,ally,a.maxHp*.25);hit(b,a,target,a.attack*1.5,true);
@@ -350,55 +391,78 @@ G.TFT = (() => {
     }
     const interest=Math.min(5,Math.floor(s.gold/5)),bonus=Math.min(3,Math.floor(Math.abs(s.streak)/2));
     const income=5+interest+bonus+(won?1:0);s.gold+=income;gainXP(s,2);
-    s.result={won,draw:winner===-1,income,interest,bonus,round:s.round};
+    const report=b.units.map(u=>({id:u.id,dex:u.dex,star:u.star,side:u.side,damage:u.damageDone,healing:u.healingDone,shielding:u.shieldingDone,taken:u.damageTaken,blocked:u.blocked,kills:u.kills}));
+    s.result={won,draw:winner===-1,income,interest,bonus,round:s.round,report};
+    s.history.push({round:s.round,won,report});
     s.phase=s.life<=0?'defeat':s.round>=LAST_ROUND?'victory':'result';
   }
+  function moveToward(b,a,target) {
+    if(a.moveCD>0||retreat(b,a)||distance(a,target)<=a.range)return;
+    const occupied=new Set(b.units.filter(u=>u!==a&&u.hp>0).map(u=>u.y*COLS+u.x));
+    const queue=[{x:a.x,y:a.y,first:null}],seen=new Set([a.y*COLS+a.x]);let next=null;
+    for(let i=0;i<queue.length;i++) {
+      const q=queue[i];if(distance(q,target)<=a.range){next=q.first;break;}
+      for(const [dx,dy] of [[0,-1],[-1,0],[1,0],[0,1]]) {
+        const x=q.x+dx,y=q.y+dy,key=y*COLS+x;
+        if(x<0||x>=COLS||y<0||y>=ROWS||seen.has(key)||occupied.has(key))continue;
+        seen.add(key);queue.push({x,y,first:q.first||{x,y}});
+      }
+    }
+    if(next){a.x=next.x;a.y=next.y;}a.moveCD=.3;
+  }
+  function pulse(b) {
+    b.beatCount=(b.beatCount||0)+1;b.beat=(b.beatCount-1)%4+1;b.beatStarted=b.time;
+    // Both teams share one clock. Alternate cell/attack initiative each bar.
+    const order=Math.floor((b.beatCount-1)/4)%2?[...b.units].reverse():b.units;
+    if(b.beat===1||b.beat===3) {
+      for(const a of order){if(a.hp<=0||a.stunUntil>b.time)continue;const target=selectTarget(b,a);if(target)moveToward(b,a,target);}
+      return;
+    }
+    // Choose attacks from the same pulse's initial formation, then resolve in order.
+    const attacks=order.filter(a=>a.hp>0&&!(a.stunUntil>b.time)&&a.cooldown<=0)
+      .map(a=>({a,target:selectTarget(b,a)})).filter(p=>p.target&&distance(p.a,p.target)<=p.a.range);
+    for(const {a,target:chosen} of attacks) {
+      if(a.hp<=0)continue;
+      const target=chosen.hp>0?chosen:selectTarget(b,a);if(!target||distance(a,target)>a.range)continue;
+      // One basic strike per attack beat; speed changes strike power/mana instead
+      // of creating off-beat attacks. Slow affects those same values temporarily.
+      const rate=(2*BEAT_SECONDS)/a.interval*(a.slowUntil>b.time?1-a.slowPower:1);
+      hit(b,a,target,a.attack*rate);a.mana=Math.min(100,a.mana+(25+a.manaGain)*rate);
+      a.cooldown=.25;
+      if(a.mana>=100) {
+        const alive=target.hp>0?target:selectTarget(b,a);
+        if(alive&&distance(a,alive)<=a.range)cast(b,a,alive);
+      }
+    }
+  }
   function step(s,dt) {
-    const b=s.battle;b.time+=dt;
-    b.events=b.events.filter(e=>(e.ttl-=dt)>0);
-    // Alternate initiative to avoid a permanent first-side advantage.
-    const order=Math.floor(b.time*20)%2?[...b.units].reverse():b.units;
-    for(const a of order) {
+    const b=s.battle;b.time+=dt;b.events=b.events.filter(e=>(e.ttl-=dt)>0);
+    for(const a of b.units) {
       a.flash=Math.max(0,a.flash-dt);if(a.hp<=0)continue;
-      a.hp=Math.min(a.maxHp,a.hp+a.maxHp*a.regen*dt);
+      const regen=Math.max(0,Math.min(a.maxHp-a.hp,a.maxHp*a.regen*dt));a.hp+=regen;a.healingDone+=regen;
       if(a.burn) {
         const dot=a.burn;dot.remaining-=dt;dot.cd-=dt;
         if(dot.cd<=.00001){const source=b.units.find(u=>u.id===dot.source);if(source)hit(b,source,a,dot.power,true,'fire');dot.cd+=1;}
         if(dot.remaining<=.00001)a.burn=null;
-        if(a.hp<=0)continue;
       }
       a.cooldown-=dt;a.moveCD-=dt;
-      if(a.stunUntil>b.time)continue;
-      const enemies=b.units.filter(u=>u.side!==a.side&&u.hp>0);
-      if(!enemies.length){finish(s,a.side);return;}
-      const target=selectTarget(b,a);
-      const retreated=retreat(b,a);
-      if(distance(a,target)<=a.range) {
-        if(a.cooldown<=0) {
-          a.cooldown=a.interval/(a.slowUntil>b.time?1-a.slowPower:1);
-          hit(b,a,target,a.attack);a.mana=Math.min(100,a.mana+25+a.manaGain);
-          if(a.mana>=100) {
-            const alive=target.hp>0?target:enemies.filter(t=>t.hp>0).sort((x,y)=>distance(a,x)-distance(a,y))[0];if(alive&&distance(a,alive)<=a.range)cast(b,a,alive);
-          }
-        }
-      } else if(!retreated&&a.moveCD<=0) {
-        // BFS routes around occupied cells instead of walking through allies.
-        const occupied=new Set(b.units.filter(u=>u!==a&&u.hp>0).map(u=>u.y*COLS+u.x));
-        const queue=[{x:a.x,y:a.y,first:null}],seen=new Set([a.y*COLS+a.x]);let next=null;
-        for(let i=0;i<queue.length;i++) {
-          const q=queue[i];if(distance(q,target)<=a.range){next=q.first;break;}
-          for(const [dx,dy] of [[0,-1],[-1,0],[1,0],[0,1]]) {
-            const x=q.x+dx,y=q.y+dy,key=y*COLS+x;
-            if(x<0||x>=COLS||y<0||y>=ROWS||seen.has(key)||occupied.has(key))continue;
-            seen.add(key);queue.push({x,y,first:q.first||{x,y}});
-          }
-        }
-        if(next){a.x=next.x;a.y=next.y;}a.moveCD=.3;
-      }
     }
+    b.nextBeat??=.05;
+    if(b.time+.00001>=b.nextBeat){pulse(b);b.nextBeat+=BEAT_SECONDS;}
     const alive=[0,1].map(side=>b.units.some(u=>u.side===side&&u.hp>0));
     if(!alive[0]||!alive[1])finish(s,alive[0]?0:alive[1]?1:-1);
-    else if(b.time>=45)finish(s,-1); // timeout is a loss; healing cannot stall forever
+    else if(b.time>=45)finish(s,-1);
+  }
+  function report(s,scope='ally') {
+    if(scope!=='match')return (s.result?.report||[]).filter(u=>u.side===(scope==='enemy'?1:0)).map(u=>({...u})).sort((a,b)=>b.damage-a.damage);
+    const rows=new Map();
+    for(const round of s.history)for(const u of round.report.filter(u=>u.side===0)){
+      const family=BY[u.dex].line[0];let row=rows.get(family);
+      if(!row){row={id:family,dex:u.dex,star:u.star,side:0,damage:0,healing:0,shielding:0,taken:0,blocked:0,kills:0};rows.set(family,row);}
+      if(u.star>=row.star){row.dex=u.dex;row.star=u.star;}
+      for(const field of ['damage','healing','shielding','taken','blocked','kills'])row[field]+=u[field];
+    }
+    return [...rows.values()].sort((a,b)=>b.damage-a.damage);
   }
   function tick(s,dt) {
     if(!Number.isFinite(dt)||dt<=0)return;
@@ -412,5 +476,5 @@ G.TFT = (() => {
     s.round++;s.phase='planning';s.battle=null;
     if(!s.locked)reroll(s,true);return true;
   }
-  return {COLS,ROWS,BENCH,LAST_ROUND,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
+  return {COLS,ROWS,BENCH,LAST_ROUND,BEAT_SECONDS,ROSTER,BY,DEFAULT_DECK,validDeck,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
 })();

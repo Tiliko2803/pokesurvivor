@@ -1089,3 +1089,20 @@ body.tft-active #rotate { display:none!important; }
 #tft-evolution p { margin:4px 0; font-size:14px; }
 @keyframes tft-evolve { from { transform:scale(.92); opacity:.3; } to { transform:scale(1); opacity:1; } }
 @media(prefers-reduced-motion:reduce) { #tft-evolution { animation:none; } }
+
+.tft-beats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:10px; font-size:13px; color:#adc2dc; }
+.tft-beats span { padding:7px 4px; border:1px solid #3d5474; border-radius:8px; text-align:center; background:#122338; }
+.tft-beats b { display:inline-block; margin-right:3px; color:#fff; }
+.tft-beats[data-beat="1"] [data-pulse="1"],.tft-beats[data-beat="2"] [data-pulse="2"],.tft-beats[data-beat="3"] [data-pulse="3"],.tft-beats[data-beat="4"] [data-pulse="4"] { color:#ffe08a; border-color:#ffe08a; background:#3c3550; box-shadow:inset 0 0 0 1px #ffe08a55; }
+
+.tft-report { margin-top:12px; padding:10px; background:#152840; border:1px solid #557192; border-radius:9px; }
+.tft-report summary { cursor:pointer; color:#ffe08a; padding:5px 0 10px; font-size:18px; }
+.tft-report p { font-size:13px; line-height:1.4; }
+.tft-report-scroll { overflow-x:auto; max-width:100%; }
+.tft-report table { width:100%; min-width:450px; border-collapse:collapse; font-size:13px; }
+.tft-report th,.tft-report td { padding:8px 5px; border-bottom:1px solid #365371; text-align:right; }
+.tft-report th:first-child,.tft-report td:first-child { text-align:left; }
+.tft-report th { color:#b6d4f4; }
+.tft-report-total { color:#ffe08a; font-weight:bold; }
+.tft-report [aria-pressed="true"] { border-color:#ffe08a; color:#ffe08a; }
+body.tft-calm #tft-evolution { animation:none; }

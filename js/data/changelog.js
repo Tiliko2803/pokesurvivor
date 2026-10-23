@@ -6,6 +6,16 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-22', title: ['TFT: compás, informe y más especies', 'TFT: rhythm, battle report and more species'], new: [
+    ['Compás común de cuatro pulsos: salto y avance, ataque, movimiento, ataque. Cada pulso dura medio segundo; la velocidad de ataque aumenta potencia y maná por golpe sin romper el ritmo.',
+     'Shared four-beat rhythm: hop and advance, attack, move, attack. Each beat lasts half a second; attack speed increases strike power and mana without breaking the rhythm.'],
+    ['Informe al terminar cada ronda: daño, curación, escudos concedidos y daño bloqueado de ambos equipos; acumulado de la partida por línea evolutiva.',
+     'End-of-round report: damage, healing, granted shields and blocked damage for both teams; match totals grouped by evolution family.'],
+    ['34 líneas disponibles: se suman Sandshrew, Weedle, Mareep, Geodude, Lotad, Spheal, Happiny, Onix, Bagon y Tinkatink con sus evoluciones.',
+     '34 available families: Sandshrew, Weedle, Mareep, Geodude, Lotad, Spheal, Happiny, Onix, Bagon and Tinkatink join with their evolutions.'],
+    ['Daño en área por movimiento: Terremoto, Terratemblor, Fuerza Telúrica, Agua Lodosa, Ventisca, Chispazo, Cometa Draco y Martillo Colosal, entre otros. Las casillas afectadas se iluminan; los aliados no reciben daño.',
+     'Move-specific area damage for Earthquake, Bulldoze, Earth Power, Muddy Water, Blizzard, Discharge, Draco Meteor and Gigaton Hammer, among others. Affected cells light up; allies take no damage.']
+  ] },
   { d: '2026-10-22', title: ['TFT: mazos, evoluciones y habilidades propias', 'TFT: decks, evolutions and signature abilities'], new: [
     ['Intereses de TFT: cada 5 de oro ahorrados dan +1 por ronda, con un máximo de +5 al ahorrar 25.',
      'TFT interest: every 5 saved gold grants +1 per round, capped at +5 when saving 25.'],

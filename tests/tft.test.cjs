@@ -7,8 +7,8 @@ function fixture(seed=123) {
   const E=ctx.G.TFT,s=E.create(seed);return {G:ctx.G,E,s};
 }
 function purchase(E,s,dex,n=1) {for(let i=0;i<n;i++){s.shop=[dex];assert.ok(E.buy(s,0));}}
-test('24 complete evolution families use local Pokédex and sprite assets',()=>{
-  const {G,E}=fixture();assert.equal(E.ROSTER.length,24);
+test('34 complete evolution families use local Pokédex and sprite assets',()=>{
+  const {G,E}=fixture();assert.equal(E.ROSTER.length,34);
   for(const family of E.ROSTER)for(const dex of family.line){
     assert.ok(G.DEX_BY[dex]);assert.ok(fs.existsSync(path.join(root,`assets/pokemon/${dex}/Idle.png`)));
   }
@@ -95,7 +95,7 @@ test('guardian grants a capped shield to a vulnerable teammate',()=>{
  s.units.forEach((u,i)=>E.place(s,u.id,18+i));E.start(s);
  const a=s.battle.units.find(u=>u.dex===375),ally=s.battle.units.find(u=>u.side===0&&u!==a),foe=s.battle.units.find(u=>u.side===1);
  s.battle.units=[a,ally,foe];a.x=2;a.y=3;a.mana=100;a.cooldown=0;ally.x=3;ally.y=3;ally.hp=ally.maxHp*.1;
- foe.x=2;foe.y=2;foe.cooldown=99;foe.moveCD=99;E.tick(s,.05);
+ foe.x=2;foe.y=2;foe.cooldown=99;foe.moveCD=99;for(let i=0;i<12;i++)E.tick(s,.05);
  assert.ok(ally.shield>0);assert.ok(ally.shield<=ally.maxHp*.5);assert.equal(a.mana,0);
 });
 test('ten-line decks validate exact family identities and snapshot the selection',()=>{
@@ -116,7 +116,7 @@ test('shop only offers chosen lines at every level, refresh and round',()=>{
  s.phase='result';E.next(s);assert.ok(s.shop.every(d=>deck.includes(d)));
 });
 test('decks without low-cost families still produce a playable cheapest shop',()=>{
- const {E}=fixture();const deck=E.ROSTER.filter(f=>f.cost>=3).map(f=>f.dex);assert.equal(deck.length,10);
+ const {E}=fixture();const deck=E.ROSTER.filter(f=>f.cost>=3).slice(0,10).map(f=>f.dex);assert.equal(deck.length,10);
  const s=E.create(11,deck);for(let i=0;i<50;i++){
   E.reroll(s,true);assert.ok(s.shop.every(d=>E.BY[d].cost===3));
  }
@@ -194,5 +194,73 @@ test('interest grants one per five saved gold, caps at five and uses pre-income 
   for(const foe of s.battle.units.filter(u=>u.side===1))foe.hp=0;
   E.tick(s,.1);assert.equal(s.result.interest,interest,'saved '+gold);
   assert.equal(s.gold,gold+6+interest);const paid=s.gold;E.tick(s,.1);assert.equal(s.gold,paid);
+ }
+});
+test('shared four-beat rhythm attacks on 2/4 and moves on 1/3 only',()=>{
+ const {E}=fixture();const {s,b,units:[a,t]}=battleFor(E,[[66,1,0,2,4],[133,1,1,2,3]]);
+ a.cooldown=t.cooldown=0;a.hp=a.maxHp=10000;
+ E.tick(s,.05);assert.equal(b.beat,1);assert.equal(b.events.filter(e=>e.kind==='hit').length,0);
+ for(let i=0;i<10;i++)E.tick(s,.05);assert.equal(b.beat,2);
+ const hits=b.events.filter(e=>e.kind==='hit');assert.equal(hits.length,2);assert.ok(hits.every(e=>e.beat===2));
+ const hp=t.hp;for(let i=0;i<10;i++)E.tick(s,.05);assert.equal(b.beat,3);assert.equal(t.hp,hp);
+ for(let i=0;i<10;i++)E.tick(s,.05);assert.equal(b.beat,4);assert.ok(t.hp<hp);
+ for(let i=0;i<10;i++)E.tick(s,.05);assert.equal(b.beat,1);assert.equal(b.beatCount,5);
+});
+test('a unit advances at most one ordinary cell on a movement pulse and never between pulses',()=>{
+ const {E}=fixture();const {s,b,units:[a,t]}=battleFor(E,[[66,1,0,2,5],[133,1,1,2,0]]);a.moveCD=0;
+ E.tick(s,.05);assert.equal(a.y,4);const pos=a.x+','+a.y;
+ for(let i=0;i<19;i++)E.tick(s,.05);assert.equal(a.x+','+a.y,pos);assert.equal(b.beat,2);
+ E.tick(s,.05);assert.equal(b.beat,3);assert.equal(a.y,3);
+});
+test('attack-speed differences affect power and mana while both units strike on the same beat',()=>{
+ const {E}=fixture();const {s,b,units:[a,t]}=battleFor(E,[[66,1,0,2,4],[66,1,1,2,3]]);
+ a.cooldown=t.cooldown=0;a.hp=a.maxHp=10000;a.interval=.7;t.interval=1.4;
+ for(let i=0;i<11;i++)E.tick(s,.05);
+ assert.equal(b.beat,2);const hits=b.events.filter(e=>e.kind==='hit');assert.equal(hits.length,2);
+ assert.ok(a.damageDone>t.damageDone*1.9);assert.ok(a.mana>t.mana);
+});
+test('Earthquake hits multiple enemies in radius but never allies or distant targets',()=>{
+ const {E}=fixture();for(const dex of [28,76,260,208]){
+  const rank=dex===208?2:3;const {b,units:[a,t,other,far,ally]}=battleFor(E,[[dex,rank,0,2,3],[133,1,1,2,2],[133,1,1,3,3],[133,1,1,5,0],[7,1,0,1,3]]);
+  const allyHP=ally.hp;assert.equal(E.abilityFor(a).area,true);E.cast(b,a,t);
+  assert.ok(t.hp<10000);assert.ok(other.hp<10000);assert.equal(far.hp,10000);assert.equal(ally.hp,allyHP);
+  assert.ok(b.events.some(e=>e.kind==='area'&&e.type==='ground'&&e.radius===2));
+ }
+});
+test('area Blizzard and Discharge damage clusters and report their real damage types',()=>{
+ const {E}=fixture();for(const [dex,star,type] of [[365,3,'ice'],[180,2,'electric'],[959,3,'steel']]){
+  const {b,units:[a,t,other]}=battleFor(E,[[dex,star,0,2,4],[133,1,1,2,3],[133,1,1,3,3]]);E.cast(b,a,t);
+  assert.ok(t.hp<10000&&other.hp<10000);assert.ok(b.events.some(e=>e.kind==='area'&&e.type===type));
+ }
+});
+test('round reports snapshot actual damage, healing and shield absorption without overkill',()=>{
+ const {E}=fixture();const {s,b,units:[a,t]}=battleFor(E,[[94,3,0,2,4],[133,1,1,2,3]]);
+ a.hp=a.maxHp*.2;t.hp=10;t.shield=20;E.cast(b,a,t);E.tick(s,.05);
+ assert.equal(s.result.report.find(r=>r.id===a.id).damage,10);
+ assert.equal(s.result.report.find(r=>r.id===t.id).blocked,20);
+ assert.equal(s.result.report.find(r=>r.id===t.id).taken,10);
+ const snapshot=JSON.stringify(s.history);a.damageDone=99999;t.hp=123;
+ assert.equal(JSON.stringify(s.history),snapshot);assert.equal(E.report(s,'ally')[0].damage,10);
+});
+test('match reports aggregate the same family across evolving species and do not mutate rounds',()=>{
+ const {E,s}=fixture();const row=(dex,star,damage)=>({id:1,dex,star,side:0,damage,healing:0,shielding:0,taken:0,blocked:0,kills:0});
+ s.history=[{round:1,report:[row(4,1,10)]},{round:2,report:[row(5,2,20)]},{round:3,report:[row(6,3,30)]}];
+ const before=JSON.stringify(s.history),rows=E.report(s,'match');assert.equal(rows.length,1);assert.equal(rows[0].damage,60);assert.equal(rows[0].dex,6);
+ rows[0].damage=999;assert.equal(JSON.stringify(s.history),before);
+});
+test('complete rhythmic matches with signature/AOE units stay finite and collision-free',()=>{
+ for(const seed of [9,71]){
+  const {E,s}=fixture(seed);s.gold=10000;s.level=6;
+  for(const [i,d] of [4,7,529,92,280,374].entries()){purchase(E,s,d,9);E.place(s,s.units.find(u=>u.dex===E.evolvedDex(d,3)).id,18+i);}
+  while(s.phase==='planning'){
+   assert.ok(E.start(s));for(let i=0;i<1000&&s.phase==='combat';i++){
+    E.tick(s,.05);const alive=s.battle.units.filter(u=>u.hp>0);
+    assert.equal(new Set(alive.map(u=>u.x+','+u.y)).size,alive.length);
+    assert.ok(s.battle.units.every(u=>Number.isFinite(u.hp)&&Number.isFinite(u.mana)&&u.hp>=0&&u.hp<=u.maxHp));
+   }
+   assert.notEqual(s.phase,'combat');if(s.phase==='result')E.next(s);
+  }
+  assert.ok(['victory','defeat'].includes(s.phase));assert.ok(s.history.length>0&&s.history.length<=12);
+  assert.ok(E.report(s,'match').every(r=>Number.isFinite(r.damage)&&r.damage>=0));
  }
 });

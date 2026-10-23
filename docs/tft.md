@@ -6,7 +6,7 @@ Entry: Jugar → TFT · Evoluciones. Hoenn preview remains available.
 
 ## Decks (requested first)
 
-- Three local slots, each exactly ten distinct evolution families out of 24.
+- Three local slots, each exactly ten distinct evolution families out of 34.
 - A family includes its complete line; species are not separate deck slots.
 - Tap to select/remove families; filter by cost; save or start when count is ten.
 - Browser preferences use only `ps.tft.decks.v1`. Invalid data or blocked storage
@@ -28,7 +28,7 @@ Movement interpolates visually; fixed-step combat positions remain authoritative
 Type-colored projectile effects, damage/healing numbers, shield arcs and bars,
 burn/stun markers, fading defeated units and facing animations clarify battles.
 Touch a friendly or enemy board unit during combat, or a bench unit, to inspect
-HP, attack, defense, attacks/s, mana, shields and its actual ability description.
+HP, damage per pulse, defense, cadence multiplier, mana, shields and its actual ability description.
 Friendly trait activation is shown. Reduced-motion settings avoid combat flashes
 and movement interpolation; OS reduced-motion disables the evolution CSS effect.
 
@@ -87,3 +87,50 @@ and test changes are retained on feat/tft-mode for a later authorized release.
 Hosted smoke checks cover the previous alpha. This iteration requires checking
 saved-deck editing, launching a chosen deck and unit inspection in the hosted UI;
 local automated browser runs require an installed Chromium executable.
+
+
+## Rhythm, reports and roster expansion
+
+A shared 0.5-second beat drives both teams: 1 hop/advance, 2 attack, 3 move,
+4 attack. Normal movement takes at most one cell and only on beats 1/3. Basic
+attacks and mana abilities only occur on beats 2/4 when in range; residual burn
+and regeneration continue on the fixed-step status clock. Initiative alternates
+by bar for collision/attack resolution. This is one shared cadence, not a
+simultaneous turn-resolution system. Attack-speed differences scale damage and
+mana per pulse, preserving DPS differences; slow scales those same values.
+Push/drill movement is part of the ability on an attack beat. The HUD shows the
+current beat and units hop while advancing; pause/×2 apply to the shared clock.
+
+Round reports snapshot actual HP damage/healing (not overkill/overheal), shield
+grants, received damage, absorbed shield damage and kills. Passive regeneration
+counts as self healing. The table compares both sides; match totals aggregate
+friendly contributions by evolution family across rounds/evolutions. Records
+are in-memory only and are never submitted to Survivor rankings or accounts.
+
+Ten new families bring the roster to 34:
+
+| Cost | New family |
+|---|---|
+| 1 | Sandshrew → Sandslash |
+| 1 | Weedle → Kakuna → Beedrill |
+| 1 | Mareep → Flaaffy → Ampharos |
+| 2 | Geodude → Graveler → Golem |
+| 2 | Lotad → Lombre → Ludicolo |
+| 2 | Spheal → Sealeo → Walrein |
+| 2 | Happiny → Chansey → Blissey |
+| 3 | Onix → Steelix |
+| 3 | Tinkatink → Tinkatuff → Tinkaton |
+| 4 | Bagon → Shelgon → Salamence |
+
+Move-specific AoE is defined in AREA_MOVES, in addition to the six signature
+families. Earthquake affects enemies within two Manhattan cells of the user;
+Bulldoze uses one cell and slows. Blizzard, Discharge, Draco Meteor, Gigaton
+Hammer and additional rock/water/ice moves also use explicit area definitions.
+Area effects highlight exactly the included cells and never damage allies.
+Excadrill keeps its signature drill plus landing shockwave at rank three.
+Kakuna's Harden grants a self shield. Other new species use their role/AI and
+any matching area move, rather than receiving a full bespoke three-stage kit.
+
+Engine tests include all 34 families' local sprites, interest at 5-gold thresholds,
+pulse timing, AoE targets, snapshot reports and complete collision-free matches.
+Balance remains provisional; the report provides evidence for later adjustments.

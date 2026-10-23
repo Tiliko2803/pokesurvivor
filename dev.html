@@ -460,11 +460,17 @@
    <details class="tft-rules"><summary id="tft-current-deck">Mi mazo</summary><p id="tft-deck-summary"></p></details>
   <div class="tft-layout">
    <main class="tft-arena"><div class="tft-actions"><b id="tft-phase"></b><span id="tft-clock"></span><button id="tft-pause" class="btn small">Pausar</button><button id="tft-speed" class="btn small ghost">Velocidad ×1</button></div>
+    <div id="tft-beats" class="tft-beats" aria-label="Compás: salto, ataque, movimiento, ataque" data-beat="0"><span data-pulse="1"><b>1</b> Salto</span><span data-pulse="2"><b>2</b> Ataque</span><span data-pulse="3"><b>3</b> Paso</span><span data-pulse="4"><b>4</b> Ataque</span></div>
     <div class="tft-board-wrap"><canvas id="tft-board" width="600" height="600" aria-hidden="true"></canvas><div id="tft-cells" role="group" aria-label="Tablero de seis por seis"></div></div>
     <div id="tft-evolution" role="status" aria-live="polite" class="hidden"></div>
     <p id="tft-help" class="tft-hint"></p>
     <div class="tft-actions"><button id="tft-fight" class="btn gold">¡Combatir!</button><button id="tft-next" class="btn gold hidden">Siguiente ronda</button><button id="tft-restart" class="btn gold hidden">Nueva partida</button><button id="tft-return" class="btn small">Al banquillo</button><button id="tft-sell" class="btn small">Vender seleccionado</button></div>
     <p id="tft-result" role="status" aria-live="polite"></p>
+    <details id="tft-report" class="tft-report hidden"><summary id="tft-report-title">Informe de combate</summary>
+     <div class="tft-actions" aria-label="Equipo del informe"><button class="btn small" data-report="ally" aria-pressed="true">Tu equipo</button><button class="btn small" data-report="enemy" aria-pressed="false">Rival</button><button class="btn small" data-report="match" aria-pressed="false">Acumulado</button></div>
+     <p id="tft-report-notes"></p><div class="tft-report-scroll"><table><thead><tr><th>Unidad</th><th>Daño</th><th>Curación</th><th>Escudo dado</th><th>Bloqueado</th></tr></thead><tbody id="tft-report-rows"></tbody></table></div>
+     <p class="sub">Daño y curación efectivos, sin contar excesos. Escudo dado es protección concedida; Bloqueado es daño que absorbió. El acumulado agrupa tu equipo por línea evolutiva.</p>
+    </details>
    </main>
    <aside class="tft-management"><h3 id="tft-bench-count">Banquillo</h3><div id="tft-bench" role="group" aria-label="Banquillo"></div>
     <h3>Tienda</h3><div id="tft-shop" role="group" aria-label="Tienda de Pokémon"></div>
@@ -477,7 +483,7 @@
      <p>Los tipos, el sprite y el movimiento cambian al evolucionar. Las líneas de Charizard, Blastoise, Excadrill, Gengar, Gardevoir y Metagross tienen habilidades propias que cambian al evolucionar. Las demás usan el comportamiento de su rol: apoyo cura, defensor se protege y golpea alrededor, luchador da un golpe potente, atacante a distancia daña una zona.</p>
      <p>Sinergias: 2/4 familias distintas de un tipo activan los bonos indicados para los miembros de ese tipo. Las copias de una familia no suman más. Se conservan las afinidades de tipos del Survivor.</p>
      <p>Tras cada ronda: 5 de oro, +1 por victoria, +1 por cada 5 ahorrados (máximo 5; se alcanza con 25 de oro) y bonos de racha cada 2 rondas (máximo 3). Recibes 2 EXP gratis; comprar 4 EXP cuesta 4 de oro. Nivel máximo 6. Renovar cuesta 2; bloquear conserva la tienda.</p>
-     <p>Los equipos se curan entre rondas. Perder resta PV; agotar los 45 segundos cuenta como derrota. Supera la ronda 12 con vida para completar el desafío. Pausa o usa ×2 durante el combate.</p>
+     <p>Los equipos se curan entre rondas. Perder resta PV; agotar los 45 segundos cuenta como derrota. Supera la ronda 12 con vida para completar el desafío. Terremoto y otros ataques de área golpean a los enemigos de las casillas indicadas; no dañan a aliados. Al terminar cada ronda puedes comparar daño, curación y escudos de ambos equipos. El combate sigue un compás común: 1 salto y avance, 2 ataque, 3 movimiento, 4 ataque. Cada pulso dura medio segundo. La velocidad de ataque aumenta potencia y maná por golpe; no añade golpes fuera de compás. Pausa o usa ×2 durante el combate.</p>
      <p>Alpha local: la partida dura esta sesión; los tres mazos se guardan en este dispositivo. La IA adapta comportamientos del Survivor: distancia retrocede, asaltante busca la retaguardia y guardián escuda al aliado más vulnerable. El oro y las unidades de TFT son independientes de tu cuenta y colección. Multijugador, objetos y recompensas de cuenta pendientes.</p>
     </details>
    </aside>
