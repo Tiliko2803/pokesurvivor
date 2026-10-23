@@ -7,8 +7,8 @@ function fixture(seed=123) {
   const E=ctx.G.TFT,s=E.create(seed);return {G:ctx.G,E,s};
 }
 function purchase(E,s,dex,n=1) {for(let i=0;i<n;i++){s.shop=[dex];assert.ok(E.buy(s,0));}}
-test('54 complete evolution families use local Pokédex and sprite assets',()=>{
-  const {G,E}=fixture();assert.equal(E.ROSTER.length,54);
+test('79 complete evolution families use local Pokédex and sprite assets',()=>{
+  const {G,E}=fixture();assert.equal(E.ROSTER.length,79);
   for(const family of E.ROSTER)for(const dex of family.line){
     assert.ok(G.DEX_BY[dex]);assert.ok(fs.existsSync(path.join(root,`assets/pokemon/${dex}/Idle.png`)));
   }
@@ -317,7 +317,7 @@ test('invalid, incompatible and incomplete snapshots are rejected safely',()=>{
  }
 });
 
-test('all 54 families have explicit entrances and executable moves at all 162 ranks',()=>{
+test('all 79 families have explicit entrances and executable moves at all 237 ranks',()=>{
  const {E}=fixture(),names=new Set();
  for(const family of E.ROSTER){
   const entry=E.entranceFor({dex:family.dex,star:1});names.add(entry.name);
@@ -333,7 +333,7 @@ test('all 54 families have explicit entrances and executable moves at all 162 ra
    assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
   }
  }
- assert.equal(names.size,54,'each family has its own named entrance');
+ assert.equal(names.size,79,'each family has its own named entrance');
 });
 test('iconic moves protect the correct allies, ignore armor and strengthen against wounded targets',()=>{
  const {E}=fixture();
@@ -460,8 +460,9 @@ test('active entry effects and CC resume without repeating damage, shields or co
  }
 });
 
-const EXPANSION_LINES=[129,147,155,158,252,349,387,390,393,443,495,501,633,656,704,722,725,782,885,996];
-test('twenty expansion families evolve, execute friendly-safe entrances and resume all ranks',()=>{
+const SECOND_WAVE=[32,173,58,60,298,285,498,650,810,821,653,728,813,816,906,909,912,215,446,304,479,597,607,679,884];
+const EXPANSION_LINES=[129,147,155,158,252,349,387,390,393,443,495,501,633,656,704,722,725,782,885,996,...SECOND_WAVE];
+test('forty-five expansion families evolve, execute friendly-safe entrances and resume all ranks',()=>{
  const {E}=fixture();
  for(const family of EXPANSION_LINES)for(let star=1;star<=3;star++){
   const s=entryMatch(E,family,star),b=s.battle,a=b.units.find(u=>E.BY[u.dex].line[0]===family),ally=b.units.find(u=>u.side===a.side&&u!==a);
@@ -505,4 +506,35 @@ test('all expansion families complete fights at each rank without collisions, in
   }
   assert.notEqual(s.phase,'combat',`${family}/${star} finishes`);const gold=s.gold;E.tick(s,.1);assert.equal(s.gold,gold);
  }
+});
+
+test('second wave adds 25 unique families with 10/8/5/2 costs and every regional starter',()=>{
+ const {E}=fixture(),costs={};assert.equal(new Set(E.ROSTER.flatMap(f=>Array.from(f.line))).size,E.ROSTER.reduce((n,f)=>n+f.line.length,0),'no overlapping evolution families');
+ for(const d of SECOND_WAVE){assert.ok(E.BY[d]);const c=E.BY[d].cost;costs[c]=(costs[c]||0)+1;}
+ assert.deepEqual(costs,{1:10,2:8,3:5,4:2});
+ for(const starter of [1,4,7,152,155,158,252,255,258,387,390,393,495,498,501,650,653,656,722,725,728,810,813,816,906,909,912])assert.ok(E.ROSTER.some(f=>f.dex===starter),'starter '+starter);
+ const cheap=SECOND_WAVE.filter(d=>E.BY[d].cost===1),s=E.create(17,cheap);
+ for(let i=0;i<30;i++){E.reroll(s,true);assert.ok(s.shop.every(d=>cheap.includes(d)&&E.BY[d].cost===1));}
+ s.gold=10;for(const d of cheap.slice(0,8))purchase(E,s,d);s.shop=[cheap[8]];assert.equal(E.buy(s,0),false);assert.equal(s.units.length,8,'bench still caps capacity');assert.equal(s.gold,2);
+});
+test('Ferrothorn reflects only HP lost to adjacent basics, with no reflection chains or special counters',()=>{
+ const {E}=fixture();assert.equal(entryMatch(E,597,3).battle.units.find(u=>u.dex===598).thorns,.2);
+ for(const [gap,shielded] of [[1,false],[2,false],[1,true]]){
+  const {s,b,units:[a,t]}=battleFor(E,[[66,1,0,2,3],[598,3,1,2,3-gap]]);
+  a.hp=a.maxHp=10000;a.cooldown=0;a.range=3;a.thorns=.2;t.thorns=.2;t.shield=shielded?10000:0;b.beatCount=1;b.nextBeat=.05;
+  E.tick(s,.05);const reflected=b.events.filter(e=>e.from===t.id&&e.periodic);
+  assert.equal(reflected.length,gap===1&&!shielded?1:0);
+  if(reflected.length){assert.equal(reflected[0].type,'steel');assert.ok(a.hp<a.maxHp);assert.ok(t.damageDone>0);}
+ }
+ const {b,units:[a,t]}=battleFor(E,[[66,1,0,2,3],[598,3,1,2,2]]);t.thorns=.2;const hp=a.hp;E.cast(b,a,t);assert.equal(a.hp,hp);assert.equal(b.events.filter(e=>e.periodic).length,0);
+});
+test('a basic attacker defeated by contact reflection cannot cast after its death',()=>{
+ const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[66,1,0,2,3],[598,3,1,2,2]]);
+ a.hp=1;a.mana=99;a.cooldown=0;t.thorns=.2;b.beatCount=1;b.nextBeat=.05;
+ E.tick(s,.05);assert.equal(a.hp,0);assert.equal(b.events.filter(e=>e.kind==='cast'&&e.from===a.id).length,0);
+});
+test('Snorlax Rest heals and cleanses itself even when another ally is more injured',()=>{
+ const {E}=fixture(),{b,units:[a,t,ally]}=battleFor(E,[[143,3,0,2,3],[133,1,1,2,2],[1,1,0,3,3]]);
+ a.hp=a.maxHp*.3;ally.hp=1;for(const u of [a,ally]){u.burn={remaining:2};u.stunUntil=2;u.slowUntil=2;}
+ const hp=a.hp;E.cast(b,a,t);assert.ok(a.hp>hp);assert.equal(a.burn,null);assert.equal(a.stunUntil,0);assert.equal(a.slowUntil,0);assert.equal(ally.hp,1);assert.ok(ally.burn);assert.equal(ally.stunUntil,2);
 });

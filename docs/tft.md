@@ -232,3 +232,25 @@ Validación de la expansión: 89 pruebas automatizadas pasan; casos nuevos recor
 `Nueva partida` estaba dentro de Equipo → Opciones y reglas, mientras que los finales abrían Informe. Se mueve a las acciones principales junto al tablero, fuera de los paneles y de los detalles plegables, para que siempre sea accesible en victoria/derrota, incluso recuperadas del guardado. El reinicio conserva los tres mazos, elimina sólo la partida TFT y limpia pausa/aviso de salida/reloj de guardado; después abre el editor y enfoca Jugar con este mazo. En partidas en curso mantiene la confirmación previa.
 
 Validación: 89 pruebas pasan y la regresión de navegador recorre cinco tamaños. Reproduce victoria de ronda 12 y derrota con cero vida, sale y recupera cada final del guardado, comprueba el botón desde las cinco pestañas y con panel oculto, empieza una nueva partida con ronda 1, 50 PV, 10 oro y equipo vacío, y verifica que los mazos y la cuenta Survivor no cambian.
+
+
+### Segunda expansión: 25 familias y economía inicial · 23 de octubre de 2026
+
+El roster pasa de 54 a 79 familias, con 237 rangos de movimientos definidos y los 27 iniciales de las nueve generaciones. Los diez pseudolegendarios ya estaban representados antes de esta tanda. Se amplía la selección económica: hay 21 familias de coste 1 en el roster completo, diez de ellas nuevas. Todos los sprites y animaciones provienen de los assets locales del Survivor.
+
+| Coste de la línea | Nuevas familias (evolución final) |
+|---|---|
+| 1 oro · 10 | Nidoking, Clefable, Arcanine, Poliwrath, Azumarill, Breloom, Emboar, Chesnaught, Rillaboom, Corviknight |
+| 2 oro · 8 | Delphox, Primarina, Cinderace, Inteleon, Meowscarada, Skeledirge, Quaquaval, Weavile |
+| 3 oro · 5 | Snorlax, Aggron, Rotom, Ferrothorn, Chandelure |
+| 4 oro · 2 | Aegislash, Archaludon |
+
+Las familias incluyen sus preevoluciones; Rotom ocupa una sola especie y se potencia al subir estrellas. Poliwag sigue la rama Poliwrath, Sneasel la de Weavile y Duraludon evoluciona en Archaludon. Las habilidades son adaptaciones para TFT y las fichas describen el efecto exacto. Los costes no alteran las reglas de combinar tres copias ni el precio de venta. No se cambian los mazos existentes, ni las probabilidades por categoría de coste, ni el límite de interés, ni el final de partida.
+
+Las opciones baratas cubren tanque, daño, curación y control; las demás añaden perforación, curación de estados, protección, ataques en línea y remates. Las entradas ofensivas siguen usando alcance 3/3/4 y sólo enemigos; las barreras se resuelven antes de las entradas ofensivas. Arcanine comparte el tope de intimidación del 8% con las demás familias que intimidan, sin acumulación.
+
+Ferrothorn usa el nuevo efecto pasivo `thorns`: devuelve el 20% de la vida efectivamente perdida por un ataque básico adyacente como daño de Acero, mitigado normalmente. No devuelve daño absorbido por escudos, ataques a distancia, movimientos especiales ni daño periódico. El reflejo se registra como daño periódico de habilidad para evitar cadenas y animaciones de lanzamiento espurias. Si el atacante muere por el reflejo no puede lanzar su movimiento de maná después. Descanso de Snorlax usa curación y limpieza propias, incluso si otro aliado está más herido.
+
+Validación de reglas: 93 pruebas automatizadas pasan. La cobertura de familias recorre ahora las 45 añadidas entre ambas expansiones en los tres niveles: evolución, habilidad de entrada real, alcance, separación de bandos, guardado determinista, combate sin solapamientos ni pagos duplicados. Se comprueba el reparto de precios 10/8/5/2 y la disponibilidad de los 27 iniciales, así como reflejo de contacto sin cadenas y Descanso aplicado al usuario.
+
+Validación de interfaz: pasa la regresión completa en 1280×800, 390×844, 320×568, 844×390 y 568×320. Incluye filtro de 1 oro (21 líneas), selección y persistencia de Tepig, mazo de diez familias, despliegue, combate, pausa, reanudación y reinicio tras victoria/derrota guardada sin tocar la cuenta Survivor.

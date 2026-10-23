@@ -6,6 +6,14 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: 25 familias y más opciones de un oro', 'TFT: 25 families and more one-gold options'], new: [
+    ['El roster crece de 54 a 79 familias. Diez nuevas cuestan 1 oro: Nidoking, Clefable, Arcanine, Poliwrath, Azumarill, Breloom, Emboar, Chesnaught, Rillaboom y Corviknight con sus preevoluciones. Otras ocho cuestan 2, cinco cuestan 3 y dos cuestan 4.',
+     'The roster grows from 54 to 79 families. Ten new families cost 1 gold: Nidoking, Clefable, Arcanine, Poliwrath, Azumarill, Breloom, Emboar, Chesnaught, Rillaboom and Corviknight with their pre-evolutions. Eight more cost 2, five cost 3 and two cost 4.'],
+    ['Se completan los 27 iniciales de las nueve generaciones. También llegan Weavile, Snorlax, Aggron, Rotom, Ferrothorn, Chandelure, Aegislash y Archaludon. Todas las familias tienen entrada propia y movimientos para sus tres niveles. Rotom mantiene su forma base al potenciarse.',
+     'All 27 regional starters across nine generations are represented. Weavile, Snorlax, Aggron, Rotom, Ferrothorn, Chandelure, Aegislash and Archaludon also join. Every family has its own entrance and moves at all three ranks. Rotom keeps its base form when empowered.'],
+    ['Puntas de Acero de Ferrothorn devuelve parte del daño de ataques básicos adyacentes, sin cadenas de reflejo; Descanso de Snorlax lo cura y limpia sus estados. Las habilidades son adaptaciones para TFT y sus fichas describen el efecto real.',
+     'Ferrothorn Steel Spikes returns some damage from adjacent basic attacks without reflection chains; Snorlax Rest heals itself and clears its statuses. Abilities are TFT adaptations and their cards describe the actual effects.']
+  ] },
   { d: '2026-10-23', title: ['TFT: volver a jugar al terminar', 'TFT: start again after a finished match'], fix: [
     ['Nueva partida queda junto al tablero, accesible al terminar y al recuperar una victoria o derrota guardada. Ya no está escondida dentro de Equipo y Opciones. Reinicia la partida TFT y conserva tus mazos.',
      'New match sits beside the board, accessible after finishing and when restoring a saved victory or defeat. It is no longer hidden inside Team and Options. It resets the TFT match while keeping your decks.']
