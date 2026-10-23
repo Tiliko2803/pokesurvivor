@@ -625,3 +625,35 @@ test('every legendary boss has executable ranked moves and active boss fights re
  E.start(s);for(let i=0;i<10;i++)E.tick(s,.05);const restored=E.restore(E.serialize(s));assert.ok(restored);assert.ok(restored.battle.units.some(u=>u.boss&&u.dex===382));
  while(s.phase==='combat')E.tick(s,.05);while(restored.phase==='combat')E.tick(restored,.05);assert.equal(JSON.stringify(restored.result),JSON.stringify(s.result));
 });
+
+test('wave balance caps tank roles and tank AI across seeds without removing healer limits',()=>{
+ const {E}=fixture();
+ for(let seed=1;seed<=20;seed++){
+  const s=E.create(seed);
+  for(let wave=1;wave<=120;wave++){
+   const enemies=E.scout(s);
+   assert.ok(enemies.filter(u=>E.BY[u.dex].role==='tank'||['tank','guardian'].includes(E.aiFor(u.dex))).length<=2,`tank cap seed ${seed} wave ${wave}`);
+   assert.ok(enemies.filter(u=>E.BY[u.dex].role==='healer'||E.aiFor(u.dex)==='healer').length<=1);
+   if(wave<25&&wave%10)assert.ok(enemies.every(u=>u.star<3));
+   if(wave===24)assert.ok(enemies.every(u=>u.star===2));
+   if(wave===25)assert.equal(enemies.filter(u=>u.star===3).length,1);
+   s.phase='result';assert.ok(E.next(s));
+  }
+ }
+});
+test('enemy durability and damage grow separately, tanks lose enemy damage only',()=>{
+ const {E,s}=fixture();s.round=24;
+ for(const dex of [4,7]){
+  const ally={id:1,dex,star:1,pos:20},enemy={...ally,id:-1,pos:7};s.units=[ally];s.opponent=[enemy];
+  const a=E.preview(s,ally),b=E.preview(s,enemy);
+  assert.ok(Math.abs(b.maxHp/a.maxHp-1.575)<1e-9);
+  const tank=E.BY[dex].role==='tank'||['tank','guardian'].includes(E.aiFor(dex));
+  assert.ok(Math.abs(b.attack/a.attack-1.345*(tank?.8:1))<1e-9);
+ }
+});
+test('older planning saves rebalance once while active fights keep exact state',()=>{
+ const {E}=fixture(),s=E.create(123,E.DEFAULT_DECK);s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,35);
+ delete s.balanceVersion;const restored=E.restore(E.serialize(s));assert.ok(restored);assert.equal(restored.balanceVersion,1);
+ const seed=restored.seed,foes=JSON.stringify(E.scout(restored)),again=E.restore(E.serialize(restored));assert.equal(again.seed,seed);assert.equal(JSON.stringify(E.scout(again)),foes);
+ assert.ok(E.start(s));delete s.balanceVersion;const battle=JSON.stringify(s.battle.units.map(({entrance,...u})=>u)),active=E.restore(E.serialize(s));assert.ok(active);assert.equal(active.phase,'combat');assert.equal(JSON.stringify(active.battle.units),battle);
+});

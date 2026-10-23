@@ -757,7 +757,7 @@ G.TFT = (() => {
     {name:'Enjambre',pool:[13,27,285,123,650,810]},
     {name:'Vanguardia',pool:[32,58,60,66,298,529,443,661]},
     {name:'Artillería',pool:[4,172,179,37,653,816,479,607]},
-    {name:'Bastión',pool:[7,194,74,821,304,597,679,884]},
+    {name:'Bastión',pool:[7,194,74,821,304,597,679,884,4,172,607]},
     {name:'Expedición',pool:[1,4,7,32,58,66,172,173,280,529,258,661]}
   ];
   const BOSS_ROTATION=[144,145,146,382,383,384];
@@ -770,18 +770,22 @@ G.TFT = (() => {
     const info=waveInfo(s.round),boss=info.kind==='boss',elite=info.kind==='elite';
     const n=boss?3:Math.min(6,2+Math.floor((s.round-1)/3)+(elite?1:0)),cap=Math.min(4,1+Math.floor((s.round-1)/3));
     const theme=THEMES[(s.round-1)%THEMES.length],pool=PLAYABLE_ROSTER.filter(p=>p.cost<=cap&&theme.pool.includes(p.dex));
-    const units=[],positions=[7,9,6,10,1,3];let healers=0;
+    const units=[],positions=[7,9,6,10,1,3];let healers=0,tanks=0;
     for(let i=0;i<n;i++) {
-      const isBoss=boss&&i===0,star=isBoss?(s.round>=30?3:2):s.round>=9?(i<Math.floor((s.round-9)/4)?3:2):s.round>=4&&i<Math.floor((s.round-2)/2)?2:1;
+      const isBoss=boss&&i===0,star=isBoss?(s.round>=30?3:2):s.round>=12?(i<Math.max(0,1+Math.floor((s.round-25)/6))?3:2):s.round>=6&&i<1+Math.floor((s.round-6)/2)?2:1;
       const healing=p=>p.role==='healer'||aiFor(evolvedDex(p.dex,star))==='healer';
-      const options=pool.filter(p=>healers<1||!healing(p)),f=options[Math.floor(random(s)*options.length)],dex=isBoss?info.bossDex:f.dex;
-      if(healing(BY[dex]))healers++;
+      const tank=p=>p.role==='tank'||['tank','guardian'].includes(aiFor(evolvedDex(p.dex,star)));
+      const allowed=p=>(healers<1||!healing(p))&&(tanks<2||!tank(p));
+      // Keep the theme when possible; its cheapest tier can contain only tanks.
+      const themed=pool.filter(allowed),options=themed.length?themed:PLAYABLE_ROSTER.filter(p=>p.cost<=cap&&allowed(p));
+      const f=options[Math.floor(random(s)*options.length)],dex=isBoss?info.bossDex:f.dex;
+      if(healing(BY[dex]))healers++;if(tank(BY[dex]))tanks++;
       units.push({id:-(i+1),dex:evolvedDex(dex,star),star,pos:positions[i],boss:isBoss,elite});
     }
     return units;
   }
   // Cache once: scouting, shopping and formation never consume encounter RNG.
-  function prepareEnemy(s) {s.opponent=enemyTeam(s);s.opponentRound=s.round;s.encounter=waveInfo(s.round);}
+  function prepareEnemy(s) {s.opponent=enemyTeam(s);s.opponentRound=s.round;s.encounter=waveInfo(s.round);s.balanceVersion=1;}
   function scout(s) {return (s.opponent||[]).map(u=>({...u}));}
   const ENTRANCES={
     1:['Espesura','regen',.008,'Regenera un 0,8% de vida por segundo.'],
@@ -982,7 +986,11 @@ G.TFT = (() => {
         case 'slow':f.slow=Math.max(f.slow,.15*tier);break;
       }
     }
-    if(side===1) {const k=1+(round-1)*.035;f.maxHp*=k*(u.boss?3:u.elite?1.18:1);f.attack*=k*(u.boss?1.15:u.elite?1.1:1);}
+    if(side===1) {
+      f.maxHp*=(1+(round-1)*.025)*(u.boss?3:u.elite?1.18:1);
+      f.attack*=(1+(round-1)*.015)*(u.boss?1.15:u.elite?1.1:1);
+      if(def.role==='tank'||['tank','guardian'].includes(ai))f.attack*=.8;
+    }
     if(def.line[0]===661)f.basicType='flying';
     f.hp=f.maxHp;return f;
   }
@@ -1549,6 +1557,8 @@ G.TFT = (() => {
         if(s.phase==='combat'){s.phase='planning';s.battle=null;s.result=null;}
         if(s.phase==='planning')prepareEnemy(s);
       } else if(!int(s.completed,0,MAX_WAVE)||!report(s.totals,ROSTER.length)||typeof s.recordId!=='string'||s.recordId.length>40)return null;
+      // Rebalance cached planning encounters once; an active fight resumes intact.
+      if(s.phase==='planning'&&s.balanceVersion!==1)prepareEnemy(s);
       s.encounter=waveInfo(s.round);s.effects=[];return s;
     } catch(_){return null;}
   }
