@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: oleadas más justas', 'TFT: fairer waves'], chg: [
+    ['Máximo dos tanques enemigos por oleada, contando también su IA. Los tanques enemigos hacen un 20% menos de daño. La vida escala un 2,5% y el ataque un 1,5% por oleada, en lugar de un 3,5% ambos. Las dos estrellas empiezan en la oleada 6 y las tres en la 25, con progresión gradual. Los jefes mantienen su progresión propia.',
+     'At most two enemy tanks per wave, including tank AI. Enemy tanks deal 20% less damage. Health scales by 2.5% and attack by 1.5% per wave, instead of 3.5% for both. Two stars start on wave 6 and three stars on wave 25, progressing gradually. Bosses keep their own progression.']
+  ] },
   { d: '2026-10-23', title: ['TFT: supervivencia PvE infinita', 'TFT: endless PvE survival'], new: [
     ['El desafío de 12 rondas se convierte en oleadas infinitas: Enjambre, Vanguardia, Artillería, Bastión y Expedición, especiales cada 5 y jefes cada 10. Articuno, Zapdos, Moltres, Kyogre, Groudon y Rayquaza rotan como jefes. Hasta 6 enemigos y un sanador por encuentro; dificultad creciente.',
      'The 12-round challenge becomes endless waves: Swarm, Vanguard, Artillery, Bastion and Expedition, specials every 5 waves and bosses every 10. Articuno, Zapdos, Moltres, Kyogre, Groudon and Rayquaza rotate as bosses. Up to 6 enemies and one healer per encounter, with increasing difficulty.'],
