@@ -7,7 +7,8 @@ G.TFTVisuals = (() => {
     'Martillo Colosal':'meteor-mash','Martillazo':'meteor-mash','Puño Meteoro':'meteor-mash','Rapidez':'swift',
     'Gigadrenado':'giga-drain','Pulso Cura':'giga-drain','Deseo':'giga-drain','Síntesis':'giga-drain',
     'Amortiguador':'giga-drain','Aromaterapia':'giga-drain','Taladradora':'metal-claw','Demolición':'karate-chop',
-    'A Bocajarro':'karate-chop','Doble Patada':'rolling-kick','Patada Ígnea':'rolling-kick'};
+    'A Bocajarro':'karate-chop','Doble Patada':'rolling-kick','Patada Ígnea':'rolling-kick',
+    'Taladro Rompefilas':'metal-claw','Jardín Solar':'solar-beam'};
   const moves=new Map((G.Moves?.ALL||[]).map(m=>[m.name,m]));
   function style(u,e) {
     const name=e.move||(e.kind==='spell'?G.TFT.moveFor(u):''),move=moves.get(name);
@@ -18,6 +19,10 @@ G.TFTVisuals = (() => {
     return {...vis,name,meteor:/Cometa|Avalancha|Meteoro|Martillo Colosal|Martillo Cataclísmico/.test(name)};
   }
   function animation(u,e) {
+    if(G.TFT.isMega(u)&&[530,154].includes(u.dex)){
+      if(e.kind==='drillWarning')return [{name:'Charge',duration:.5}];
+      return [{name:u.dex===530?'Attack':'Shoot',duration:.4}];
+    }
     const meta=G.Sprites.meta(u.dex)?.a||{};
     const choose=names=>names.find(n=>meta[n])||'Idle';
     const special=e.kind==='cast'||e.kind==='entryCast'||e.kind==='drill'||e.kind==='entrance';
@@ -26,11 +31,13 @@ G.TFTVisuals = (() => {
     if(special&&meta.Charge)return [{name:'Charge',duration:.1},{name:strike,duration:.25}];
     return [{name:strike,duration:special?.35:.25}];
   }
-  function animationSpeed(dex,name,duration) {
+  function animationSpeed(dex,name,duration,mega=false) {
+    if(mega&&[530,154].includes(dex)&&G.SurvivorMegas)return G.SurvivorMegas.duration[name]/Math.max(.05,duration);
     const m=G.Sprites.animMeta(dex,name);
     return m?clamp(m.d.reduce((a,n)=>a+n,0)/60/Math.max(.05,duration),.25,12):1;
   }
   function warm(units) {
+    for(const u of units)if(G.TFT.isMega(u)&&[530,154].includes(u.dex))G.SurvivorMegas?.preload(u.dex);
     if(units.some(u=>u.dex===887))G.Sprites.sheet(885,'Idle');
     for(const dex of new Set(units.map(u=>u.dex)))for(const name of ['Idle','Walk','Attack','Shoot','Charge','Hurt','Faint'])
       if(G.Sprites.meta(dex)?.a[name])G.Sprites.sheet(dex,name);
@@ -40,7 +47,7 @@ G.TFTVisuals = (() => {
     for(const e of events){
       if(e.to&&['hit','spell'].includes(e.kind))hurt.add(e.to);
       if(e.periodic)continue;
-      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,flight:4,blink:4,rescue:4,throw:4,flank:4,dreepy:4,leafFan:4,headShot:4,lift:4}[e.kind]||0;
+      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,megaDrill:4,drillWarning:4,solarRay:4,flight:4,blink:4,rescue:4,throw:4,flank:4,dreepy:4,leafFan:4,headShot:4,lift:4}[e.kind]||0;
       if(priority&&(!actions.has(e.from)||actions.get(e.from).priority<priority))actions.set(e.from,{e,priority});
     }
     return {actions,hurt};
@@ -74,7 +81,7 @@ G.TFTVisuals = (() => {
     const p=progress(e);return {x:e.sx+(e.tx-e.sx)*p,y:e.sy+(e.ty-e.sy)*p,lift:Math.sin(p*Math.PI)*55};
   }
   function areaCells(e,units,time=0) {
-    if(e.kind==='wave')return [...e.cells];
+    if(e.kind==='wave'||e.kind==='drillWarning')return [...e.cells];
     if(e.control){
       const source=units.find(u=>u.id===e.from);
       return units.filter(u=>source&&u.side!==source.side&&u.hp>0&&e.targets?.includes(u.id)&&u.stunUntil>time).map(u=>u.y*6+u.x);
@@ -93,7 +100,13 @@ G.TFTVisuals = (() => {
       G.VFX.draw(ctx,shape,pal,clamp(x,0,600),clamp(y,0,600),{scale,alpha,angle:rotation,frame:calm?0:frame});
     };
     ctx.save();ctx.imageSmoothingEnabled=false;
-    if(e.kind==='headShot') {
+    if(e.kind==='drillWarning') {
+      ctx.strokeStyle='#ffd09b';ctx.lineWidth=3;ctx.globalAlpha=calm?.7:.4+Math.sin(p*Math.PI*4)*.15;
+      for(const cell of e.cells)ctx.strokeRect(cell%6*100+12,Math.floor(cell/6)*100+12,74,74);
+    } else if(e.kind==='garden') {
+      const cx=e.x*100+50,cy=e.y*100+48;
+      for(let i=0;i<4;i++){const a=i*Math.PI/2,r=calm?35:25+p*20;sprite('leaf','grass',cx+Math.cos(a)*r,cy+Math.sin(a)*r,.8,fade,a);sprite('star','fairy',cx+Math.cos(a)*r,cy+Math.sin(a)*r,.4,fade);}
+    } else if(e.kind==='headShot') {
       const startX=sx+(e.head-1)*20,startY=sy-Math.abs(e.head-1)*12,t=calm?1:p;
       sprite('star','dragon',startX+(tx-startX)*t,startY+(ty-startY)*t,.9,fade,angle);
       if(p>.65)sprite('impact','dragon',tx,ty,1.1,fade);
@@ -145,11 +158,12 @@ G.TFTVisuals = (() => {
         const a=i*Math.PI*2/(low?4:8),d=r*(.25+.65*p),shape=['ground','rock'].includes(e.type)?'rock':vis.aura||vis.proj;
         sprite(shape,vis.pal,x+Math.cos(a)*d,y+Math.sin(a)*d,.6,fade,a);
       }
-    } else if(e.kind==='beam'||e.kind==='drill') {
+    } else if(['beam','drill','megaDrill','solarRay'].includes(e.kind)) {
+      const drilling=e.kind==='drill'||e.kind==='megaDrill';
       const length=Math.hypot(tx-sx,ty-sy),count=Math.min(low?8:16,Math.max(2,Math.ceil(length/24)));
       for(let i=0;i<count;i++){
-        const t=i/(count-1),shape=e.kind==='drill'?'rock':vis.beam==='lightning'?'bolt':vis.beam||vis.proj;
-        sprite(shape,e.kind==='drill'?'ground':vis.pal,sx+(tx-sx)*t,sy+(ty-sy)*t,e.kind==='drill'?.7:1,calm?.65:fade,angle);
+        const t=i/(count-1),shape=drilling?'rock':vis.beam==='lightning'?'bolt':vis.beam||vis.proj;
+        sprite(shape,drilling?'ground':vis.pal,sx+(tx-sx)*t,sy+(ty-sy)*t,drilling?.7:1,calm?.65:fade,angle);
       }
       if(!calm)sprite('impact',vis.pal,tx,ty,1.4,fade);
     } else if(to&&e.kind==='stun') {

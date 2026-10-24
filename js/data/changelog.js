@@ -6,6 +6,11 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  {d:'2026-10-24',title:['TFT: Mega Excadrill y Mega Meganium','TFT: Mega Excadrill and Mega Meganium'],new:[
+    ['Dos nuevas megas de Iridio: completa Oro y compra tres copias más de Drilbur o Chikorita al precio normal. Conservan posición, sinergias, guardado y valor de venta.', 'Two new Iridium Megas: complete Gold and buy three more regular-price Drilbur or Chikorita copies. Placement, traits, saves and resale value are preserved.'],
+    ['Mega Excadrill prepara Taladro Rompefilas: atraviesa una línea, perfora defensas y reduce la curación rival. Puedes interrumpirlo o salir de la trayectoria.', 'Mega Excadrill prepares a piercing tunnel that penetrates armor and reduces enemy healing. It can be interrupted or dodged.'],
+    ['Mega Meganium gana Planta/Hada: cuatro rayos solares, limpieza de estados y un jardín fijo que cura aliados cercanos durante cuatro pulsos de movimiento.', 'Mega Meganium gains Grass/Fairy: four solar rays, status cleansing and a fixed garden that heals nearby allies for four movement pulses.']
+  ]},
   {d:'2026-10-24',title:['Mega Excadrill y Mega Meganium','Mega Excadrill and Mega Meganium'],new:[
     ['Mega Excadrill: Taladro Rompefilas atraviesa hordas cada 4 s y hace un 50% más de daño a sanadores y escuderos.', 'Mega Excadrill: a piercing drill every 4 seconds deals 50% extra damage to healers and shielders.'],
     ['Mega Meganium Planta/Hada: Rayo Solar sin carga y Jardín Solar con cuatro rayos, ralentización y curación del 4% al acertar.', 'Grass/Fairy Mega Meganium: instant Solar Beam and Solar Garden with four rays, slowing and 4% healing on hit.'],

@@ -2471,9 +2471,13 @@ G.TFT = (() => {
   function random(s) { s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0; return s.seed/4294967296; }
   const TRAINING_COSTS=[3,4,5,6,7,8];
   const MEGAS={260:{name:'Mega Swampert',move:'Diluvio Sísmico',type:'water',description:'Lanza dos frentes de inundación en direcciones opuestas, de tres casillas de ancho. Avanzan en pulsos de movimiento; cada frente golpea una vez por enemigo (180%) y empuja una casilla libre. Sus básicos salpican a enemigos adyacentes a la presa (35%).'},257:{name:'Mega Blaziken',move:'Relevos Ígneos',type:'fire',description:'Salta sucesivamente junto a hasta tres enemigos distintos a distancia 4 con casillas libres y les da una patada (160%) que quema durante 3 segundos. Impulso: cada básico gana 10% de potencia y maná, hasta 50%; aturdirlo reinicia la acumulación.'},248:{name:'Mega Tyranitar',move:'Rey de la Tormenta',type:'rock',description:'Mientras pueda actuar, su arena de radio 2 obliga a enemigos dentro a seleccionar objetivos dentro de esa misma tormenta para sus básicos. Cada pulso de movimiento daña dentro (25%). Su habilidad atrae una casilla a enemigos a distancia 3 si hay espacio, rompe sus escudos y golpea (220%). Los jefes no se desplazan.'},959:{name:'Mega Tinkaton',move:'Martillo Cataclísmico',type:'steel',description:'Prepara un martillazo de radio 2 (450%) que destruye escudos; deja una réplica (150%) en el siguiente pulso de ataque. Mantiene recuperación y puede ser interrumpida antes del primer golpe.'},47:{name:'Mega Parasect',move:'Red Fúngica',type:'ghost',description:'Infecta hasta tres enemigos a alcance 3. En cada pulso de movimiento drena 35% del ataque y cura al aliado más herido a distancia 2 de cada víctima. Cada infectado muerto propaga una sola vez a dos enemigos a distancia 2. Sin acumulación de marcas del mismo Parasect.'}};
+  Object.assign(MEGAS,{
+    530:{name:'Mega Excadrill',move:'Taladro Rompefilas',type:'ground',description:'Prepara una perforación recta de hasta 5 casillas y la ejecuta en el siguiente pulso de ataque. Atraviesa enemigos con 280% del ataque, ignora 50% de defensa y reduce a la mitad la curación recibida durante 3 segundos. Termina en la última casilla libre; los aliados bloquean el túnel. Aturdirlo cancela la preparación. Los enemigos pueden salir de la trayectoria.'},
+    154:{name:'Mega Meganium',move:'Jardín Solar',type:'grass',description:'Dispara cuatro rayos cardinales de alcance 4 (150% del ataque) que ralentizan 25% durante 2 segundos. Limpia quemaduras, ralentizaciones y aturdimientos de aliados a 2 casillas. Deja un jardín fijo de radio 2 durante cuatro pulsos de movimiento: cura a los dos aliados más heridos por 75% del ataque por pulso. Aturdida pierde el pulso; al caer cesa el jardín. Planta/Hada.'}
+  });
   const promotion=u=>u.promotion||0;
   const isMega=u=>promotion(u)===7&&!!MEGAS[u.dex];
-  const typesFor=u=>isMega(u)&&u.dex===47?['bug','ghost']:G.DEX_BY[u.dex].types;
+  const typesFor=u=>isMega(u)&&u.dex===47?['bug','ghost']:isMega(u)&&u.dex===154?['grass','fairy']:G.DEX_BY[u.dex].types;
   const nameFor=u=>isMega(u)?MEGAS[u.dex].name:G.DEX_BY[u.dex].name;
   const maxPromotion=u=>MEGAS[u.dex]?7:6;
   const maxed=u=>promotion(u)>=maxPromotion(u);
@@ -3057,7 +3061,7 @@ G.TFT = (() => {
     return lost;
   }
   function heal(b,a,t,amount) {
-    const added=Math.max(0,Math.min(t.maxHp-t.hp,Math.round(amount)));t.hp+=added;a.healingDone+=added;
+    const added=Math.max(0,Math.min(t.maxHp-t.hp,Math.round(amount*(t.healCutUntil>b.time ? .5 : 1))));t.hp+=added;a.healingDone+=added;
     if(added)b.events.push({kind:'heal',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,amount:added,ttl:.6});return added;
   }
   function shield(b,a,t,amount) {
@@ -3100,6 +3104,7 @@ G.TFT = (() => {
     const until=b.time+duration;
     if(until>(t.stunUntil||0)){t.stunUntil=until;t.stunSource=a.id;}
     if(t.dex===959){delete t.hammerX;delete t.hammerY;b.events=b.events.filter(e=>e.kind!=='warning'||e.from!==t.id);}
+    if(t.megaDrillDx!==undefined){delete t.megaDrillDx;delete t.megaDrillDy;b.events=b.events.filter(e=>e.kind!=='drillWarning'||e.from!==t.id);}
     if(isMega(t)&&t.dex===257)t.impulse=0;
     if(t.dex===94)delete t.ambushPending;
     if(t.dex===373){delete t.swoopDx;delete t.swoopDy;}
@@ -3364,8 +3369,46 @@ G.TFT = (() => {
     }
     return false;
   }
+  function megaDrillPath(b,a,dx,dy){
+    const cells=[];let landing={x:a.x,y:a.y};
+    for(let step=1;step<=5;step++){
+      const x=a.x+dx*step,y=a.y+dy*step;
+      if(x<0||x>=COLS||y<0||y>=ROWS||b.units.some(t=>t!==a&&t.hp>0&&t.side===a.side&&t.x===x&&t.y===y))break;
+      cells.push(y*COLS+x);if(freeCell(b,x,y,a))landing={x,y};
+    }
+    return {cells,landing};
+  }
+  function megaDrillPulse(b,a){
+    const dx=a.megaDrillDx,dy=a.megaDrillDy;delete a.megaDrillDx;delete a.megaDrillDy;
+    if(isStunned(b,a)||a.shadowed)return;
+    const sx=a.x,sy=a.y,{cells,landing}=megaDrillPath(b,a,dx,dy),last=cells.at(-1);
+    const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&cells.includes(t.y*COLS+t.x));
+    const old=a.pierce;a.pierce=Math.max(old,.5);
+    for(const t of foes){hit(b,a,t,a.attack*2.8,true,'ground');if(t.hp>0)t.healCutUntil=Math.max(t.healCutUntil||0,b.time+3);}
+    a.pierce=old;a.x=landing.x;a.y=landing.y;
+    b.events.push({kind:'megaDrill',from:a.id,sx,sy,tx:last===undefined?sx:last%COLS,ty:last===undefined?sy:Math.floor(last/COLS),type:'ground',ttl:.7,life:.7});
+  }
   function megaCast(b,a,target){
     if(!isMega(a)||a.dex===959)return false;
+    if(a.dex===530){
+      const {dx,dy}=cardinal(a,target);a.megaDrillDx=dx;a.megaDrillDy=dy;
+      const {cells}=megaDrillPath(b,a,dx,dy),last=cells.at(-1);
+      b.events.push({kind:'drillWarning',from:a.id,sx:a.x,sy:a.y,tx:last===undefined?a.x:last%COLS,ty:last===undefined?a.y:Math.floor(last/COLS),cells,type:'ground',ttl:1,life:1});return true;
+    }
+    if(a.dex===154){
+      a.gardenX=a.x;a.gardenY=a.y;a.gardenTicks=4;
+      for(const ally of b.units.filter(t=>t.side===a.side&&t.hp>0&&distance(a,t)<=2)){ally.burn=null;ally.slowUntil=0;ally.stunUntil=0;}
+      for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
+        const tx=Math.max(0,Math.min(5,a.x+dx*4)),ty=Math.max(0,Math.min(5,a.y+dy*4));
+        b.events.push({kind:'solarRay',from:a.id,sx:a.x,sy:a.y,tx,ty,type:'grass',ttl:.65,life:.65});
+        for(const t of b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed)){
+          const along=(t.x-a.x)*dx+(t.y-a.y)*dy,across=(t.x-a.x)*dy-(t.y-a.y)*dx;
+          if(along<=0||along>4||across!==0)continue;
+          hit(b,a,t,a.attack*1.5,true,'grass');
+          if(t.hp>0){t.slowPower=Math.max(t.slowUntil>b.time?t.slowPower||0:0,.25);t.slowUntil=Math.max(t.slowUntil||0,b.time+2);}
+        }
+      }return true;
+    }
     if(a.dex===260){
       const d=cardinal(a,target);for(const sign of [1,-1])if((b.waves?.length||0)<48)(b.waves??=[]).push({source:a.id,side:a.side,x:a.x,y:a.y,dx:d.dx*sign,dy:d.dy*sign,step:0,hit:[],power:a.attack*1.8});return true;
     }
@@ -3385,6 +3428,15 @@ G.TFT = (() => {
     return false;
   }
   function megaMovement(b){
+    for(const a of b.units.filter(u=>u.hp>0&&isMega(u)&&u.dex===154&&u.gardenTicks)){
+      if(!isStunned(b,a)&&!a.shadowed){
+        const center={x:a.gardenX,y:a.gardenY};
+        const allies=b.units.filter(t=>t.side===a.side&&t.hp>0&&t.hp<t.maxHp&&distance(center,t)<=2).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id).slice(0,2);
+        for(const ally of allies)heal(b,a,ally,a.attack*.75);
+        b.events.push({kind:'garden',from:a.id,x:center.x,y:center.y,radius:2,type:'fairy',ttl:.6,life:.6});
+      }
+      if(--a.gardenTicks===0){delete a.gardenTicks;delete a.gardenX;delete a.gardenY;}
+    }
     for(const a of b.units.filter(u=>u.hp>0&&isMega(u)&&!isStunned(b,u)&&!u.shadowed)){
       if(a.dex===248){const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&distance(a,t)<=2);areaEvent(b,a,a,2,'rock',foes);for(const t of foes)hit(b,a,t,a.attack*.25,true,'rock',true);}
       if(a.dex===47&&a.fungalIds){
@@ -3440,6 +3492,7 @@ G.TFT = (() => {
     return true;
   }
   function tacticalPulse(b,a) {
+    if(a.megaDrillDx!==undefined){megaDrillPulse(b,a);return true;}
     if(a.liftedBy!==undefined)return true;
     if(pseudoPulse(b,a))return true;
     if(a.leafPulse!==undefined){
@@ -3576,7 +3629,7 @@ G.TFT = (() => {
     if(b.beat===1||b.beat===3) {
       for(const a of order){if(a.hp<=0)continue;
         if(a.ambushPending){if(isStunned(b,a))delete a.ambushPending;else a.shadowed=true;continue;}
-        if(isStunned(b,a)||a.hammerX!==undefined||a.swoopDx!==undefined||a.liftTarget!==undefined)continue;
+        if(isStunned(b,a)||a.hammerX!==undefined||a.swoopDx!==undefined||a.liftTarget!==undefined||a.megaDrillDx!==undefined)continue;
         const steps=a.dex===658?2:1;
         for(let i=0;i<steps;i++){const target=(a.leafPulse!==undefined?b.units.find(t=>t.id===a.leafTarget&&t.side!==a.side&&t.hp>0&&!t.shadowed):null)||selectTarget(b,a);if(!target)break;
           if(i)a.moveCD=0;const x=a.x,y=a.y;moveToward(b,a,target);if(a.x===x&&a.y===y)break;
@@ -3611,7 +3664,7 @@ G.TFT = (() => {
     b.time+=dt;b.opening=Math.max(0,(b.opening||0)-dt);b.events=b.events.filter(e=>(e.ttl-=dt)>0);
     for(const a of b.units) {
       a.flash=Math.max(0,a.flash-dt);if(a.hp<=0)continue;
-      const regen=Math.max(0,Math.min(a.maxHp-a.hp,a.maxHp*a.regen*dt));a.hp+=regen;a.healingDone+=regen;
+      const regen=Math.max(0,Math.min(a.maxHp-a.hp,a.maxHp*a.regen*dt*(a.healCutUntil>b.time ? .5 : 1)));a.hp+=regen;a.healingDone+=regen;
       if(a.burn) {
         const dot=a.burn;dot.remaining-=dt;dot.cd-=dt;
         if(dot.cd<=.00001){const source=b.units.find(u=>u.id===dot.source);if(source)hit(b,source,a,dot.power,true,'fire',true);dot.cd+=1;}
@@ -3684,6 +3737,9 @@ G.TFT = (() => {
           u.hp>=0&&u.hp<=u.maxHp&&u.maxHp>0&&u.interval>0&&u.shield>=0&&u.mana>=0&&u.mana<=100&&
           (u.leafPulse===undefined&&u.leafTarget===undefined&&u.leafDx===undefined&&u.leafDy===undefined||
             u.dex===254&&int(u.leafPulse,0,2)&&int(u.leafTarget,-6,100000)&&int(u.leafDx,-1,1)&&int(u.leafDy,-1,1)&&Math.abs(u.leafDx)+Math.abs(u.leafDy)===1)&&
+          (u.megaDrillDx===undefined&&u.megaDrillDy===undefined||isMega(u)&&u.dex===530&&int(u.megaDrillDx,-1,1)&&int(u.megaDrillDy,-1,1)&&Math.abs(u.megaDrillDx)+Math.abs(u.megaDrillDy)===1)&&
+          (u.gardenTicks===undefined&&u.gardenX===undefined&&u.gardenY===undefined||isMega(u)&&u.dex===154&&int(u.gardenTicks,1,4)&&int(u.gardenX,0,5)&&int(u.gardenY,0,5))&&
+          (u.healCutUntil===undefined||typeof u.healCutUntil==='number'&&Number.isFinite(u.healCutUntil)&&u.healCutUntil>=0&&u.healCutUntil<=50)&&
           (u.impulse===undefined||isMega(u)&&u.dex===257&&int(u.impulse,0,5))&&
           (u.hammerEcho===undefined||isMega(u)&&u.dex===959&&u.hammerRecovery&&int(u.hammerEcho.x,0,5)&&int(u.hammerEcho.y,0,5))&&
           (u.fungalIds===undefined&&u.fungalBurst===undefined||isMega(u)&&u.dex===47&&Array.isArray(u.fungalIds)&&Array.isArray(u.fungalBurst)&&u.fungalIds.length<=12&&new Set(u.fungalIds).size===u.fungalIds.length&&new Set(u.fungalBurst).size===u.fungalBurst.length&&u.fungalIds.every(id=>b.units.some(t=>t.id===id&&t.side!==u.side))&&u.fungalBurst.every(id=>u.fungalIds.includes(id)))&&

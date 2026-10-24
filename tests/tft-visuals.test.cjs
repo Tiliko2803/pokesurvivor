@@ -1,6 +1,22 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
 const root=path.join(__dirname,'..');
+test('new Mega warnings, solar rays and gardens render in full and reduced modes without mutating combat',()=>{
+ const {G,E,V,ctx,calls}=fixture(),loaded=[];
+ G.SurvivorMegas={preload:d=>loaded.push(d),duration:{Attack:.42,Shoot:.48,Charge:.65}};
+ const units=[{id:1,dex:530,star:3,promotion:7,x:2,y:4,range:1,types:['ground','steel']},{id:2,dex:154,star:3,promotion:7,x:3,y:4,range:3,types:['grass','fairy']}];
+ V.warm(units);assert.deepEqual(loaded,[530,154]);
+ const events=[{from:1,kind:'drillWarning',sx:2,sy:4,tx:2,ty:0,cells:[20,14,8,2],type:'ground',ttl:.5,life:1},
+  {from:1,kind:'megaDrill',sx:2,sy:4,tx:2,ty:0,type:'ground',ttl:.4,life:.7},
+  {from:2,kind:'solarRay',sx:3,sy:4,tx:3,ty:0,type:'grass',ttl:.4,life:.65},
+  {from:2,kind:'garden',x:3,y:4,radius:2,type:'fairy',ttl:.4,life:.6}];
+ const before=JSON.stringify({units,events});
+ for(const calm of [false,true])for(const quality of [0,2])for(const e of events){const n=calls.length;V.draw(ctx,e,units,{calm,quality});assert.ok(calls.length>n);}
+ assert.equal(JSON.stringify({units,events}),before);assert.deepEqual(Array.from(V.areaCells(events[0],units)),[20,14,8,2]);
+ assert.equal(V.animation(units[0],events[0])[0].name,'Charge');assert.equal(V.animation(units[1],events[2])[0].name,'Shoot');
+ assert.equal(V.animationSpeed(154,'Shoot',.4,true),1.2);assert.equal(V.actions(events).actions.get(1).e.kind,'drillWarning');
+ assert.equal(E.isMega(units[1]),true);
+});
 function fixture(){
  const calls=[],images=[];
  const canvasContext=()=>new Proxy({globalAlpha:1},{get(o,k){if(k in o)return o[k];return (...args)=>{calls.push({kind:k,args});};},set(o,k,v){o[k]=v;return true;}});
