@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: cada jefe tiene su entrada', 'TFT: every boss makes an entrance'], new: [
+    ['Presentaciones de jefe con zoom al Pokémon, banda de nombre inclinada y subtítulo propio. Duran 2,8 segundos, pueden saltarse y respetan pausa, velocidad y movimiento reducido. El combate y las habilidades de entrada esperan al final de la presentación; al volver a una partida guardada se conserva el punto de la secuencia.',
+     'Boss introductions zoom onto the Pokémon with an angled name banner and a unique subtitle. They last 2.8 seconds, can be skipped and respect pause, speed and reduced motion. Combat and entry abilities wait until the introduction ends; saved games preserve the sequence position.'],
+    ['Nuevo resumen de fin de expedición: oleada alcanzada, marca local, victorias, daño y curación acumulados, Pokémon con mayor daño y equipo final. Acceso directo a otra partida y al informe detallado; puedes volver a abrir el resumen.',
+     'New expedition finale: wave reached, local best, wins, cumulative damage and healing, top damage Pokémon and final team. Direct access to a new game and the detailed report; the summary can be reopened.']
+  ] },
   { d: '2026-10-23', title: ['TFT: Bronce, Plata y Oro', 'TFT: Bronze, Silver and Gold'], new: [
     ['Nueve rangos: las tres estrellas de Bronce mantienen las evoluciones; 3/4/5/6/7/8 copias adicionales desbloquean los seis rangos de Plata y Oro. Cada rango adicional multiplica vida y daño por 1,18. La ficha muestra el entrenamiento y vender devuelve todas las copias invertidas. Los enemigos conservan sus tres rangos actuales.',
      'Nine ranks: three Bronze stars keep evolutions; 3/4/5/6/7/8 additional copies unlock six Silver and Gold ranks. Each additional rank multiplies health and damage by 1.18. Unit details show training and selling refunds all invested copies. Enemies keep their existing three ranks.']

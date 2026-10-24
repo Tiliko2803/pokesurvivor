@@ -1224,3 +1224,36 @@ body.tft-calm #tft-evolution { animation:none; }
 .tft-arena[data-encounter="boss"] .tft-board-wrap { border-color:#dba960; box-shadow:0 0 18px #c9902b28; }
 #tft-records { padding-left:0; list-style:none; color:#c2d7de; font-size:12px; line-height:1.8; }
 @media(max-height:420px) { .tft-record-label { display:none; } .tft-wave-banner { padding:3px 8px; font-size:10px; } }
+
+/* TFT boss introductions and expedition finale. All timing follows the paused simulation. */
+.tft-boss-intro { position:absolute; inset:0; z-index:6; overflow:hidden; pointer-events:none; background:radial-gradient(ellipse at 50% 36%,transparent 18%,#070d1b99 95%); border-block:clamp(8px,3vw,22px) solid #070c16; }
+.tft-boss-card { position:absolute; left:-3%; right:-3%; bottom:17%; padding:12px 8%; background:linear-gradient(100deg,#edb857 0%,#f8d580 70%,#b77d35); color:#171b27; border-block:3px solid #fff0be; box-shadow:0 8px 0 #050b17aa; text-align:left; clip-path:polygon(0 0,100% 4%,98% 100%,1% 94%); }
+.tft-boss-card small,.tft-boss-card strong,.tft-boss-card span { display:block; }
+.tft-boss-card small { font:700 clamp(8px,1.5vw,12px)/1.4 var(--font); letter-spacing:.16em; }
+.tft-boss-card strong { font:900 clamp(24px,5vw,52px)/1.05 var(--font); text-transform:uppercase; letter-spacing:-.04em; overflow-wrap:anywhere; }
+.tft-boss-card span { margin-top:4px; font:700 clamp(10px,2vw,17px)/1.2 var(--font); }
+#tft-intro-skip { position:absolute; bottom:3%; right:4%; pointer-events:auto; background:#0d192be8; color:#fff; min-height:32px; }
+.tft-finale { position:absolute; inset:0; z-index:7; overflow:auto; overscroll-behavior:contain; background:radial-gradient(ellipse at 50% 0,#29324a,#0c1727 70%); color:#eef5f9; text-align:center; padding:clamp(8px,2vw,22px); }
+.tft-end-content { max-width:480px; margin:auto; }
+.tft-end-kicker { color:#e8bc7a; letter-spacing:.18em; font:700 10px/1.5 var(--font); }
+#tft-end-title { margin:6px 0; font:800 clamp(15px,2.5vw,25px)/1.2 var(--font); }
+.tft-end-score { margin:8px 0 0; color:#c1d3e8; font:700 12px/1 var(--font); letter-spacing:.15em; }
+.tft-end-score strong { display:block; color:#ffe0a2; font:900 clamp(36px,8vw,76px)/1.1 var(--font); letter-spacing:-.06em; }
+#tft-end-record { color:#d6bd84; font:12px/1.4 var(--font); margin:4px 0 12px; }
+.tft-end-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+.tft-end-stats div { background:#ffffff08; border:1px solid #a9c0de26; padding:8px 3px; border-radius:8px; min-width:0; }
+.tft-end-stats b,.tft-end-stats span { display:block; overflow-wrap:anywhere; font:700 clamp(12px,2.5vw,20px)/1.3 var(--font); }
+.tft-end-stats span { font:10px/1.4 var(--font); color:#aac0d7; }
+.tft-end-mvp { display:flex; align-items:center; justify-content:center; gap:8px; margin:10px 0; padding:5px; background:#dfb66b0a; border:1px solid #dfb66b4d; border-radius:10px; text-align:left; }
+.tft-end-mvp canvas { width:82px; height:52px; image-rendering:pixelated; flex-shrink:0; }
+.tft-end-mvp small,.tft-end-mvp b,.tft-end-mvp span { display:block; font:10px/1.5 var(--font); }
+.tft-end-mvp small { color:#c4ad81; font-size:8px; letter-spacing:.05em; }
+.tft-end-mvp b { font-size:15px; }
+.tft-end-roster { font:11px/1.4 var(--font); text-align:left; padding:6px; }
+#tft-end-team { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); text-align:center; gap:6px; }
+#tft-end-team canvas { width:72px; height:46px; image-rendering:pixelated; }
+#tft-end-team span,#tft-end-team small { display:block; font-size:9px; }
+.tft-end-local { color:#8ba6c1; font:10px/1.4 var(--font); }
+.tft-end-actions { display:flex; justify-content:center; gap:6px; position:sticky; bottom:0; background:#0c1727ed; padding:6px 0; flex-wrap:wrap; }
+.tft-end-actions .btn { min-height:34px; font-size:11px; padding:6px 10px; }
+@media(max-width:400px) { .tft-end-mvp { margin:6px 0; } #tft-end-record { margin-bottom:6px; } .tft-boss-card { padding-block:8px; } }

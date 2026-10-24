@@ -107,6 +107,15 @@ async function checkBoard(page,viewport){
     await page.setViewportSize(bootViewport);await page.locator('#tft-exit').click();
     await page.evaluate(()=>document.querySelector('#scr-menu [data-go="play"]').click());await page.locator('#btn-tft').click();await page.setViewportSize(viewport);
     assert.equal(await page.evaluate(()=>G.TFTUI.state.phase),terminal);
+    if(terminal==='defeat'){
+     assert.equal(await page.locator('#tft-finale').isVisible(),true);
+     assert.equal(await page.locator('#tft-end-wave').innerText(),'1');
+     assert.match(await page.locator('#tft-end-mvp').innerText(),/MAYOR DAÑO/);
+     await page.locator('#scr-tft').screenshot({animations:'disabled',path:`/workspace/scratch/tft-finale-${viewport.width}x${viewport.height}.png`});
+     await page.locator('#tft-end-report').click();assert.equal(await page.locator('#tft-finale').isVisible(),false);
+     await page.locator('#tft-end-open').click();assert.equal(await page.locator('#tft-finale').isVisible(),true);
+     await page.locator('#tft-end-report').click();
+    }
     assert.equal(await page.locator('#tft-report').isVisible(),true);
     assert.equal(await page.locator('#tft-restart').isVisible(),true);await checkBoard(page,viewport);
     for(const tab of ['shop','team','info','scout','report']){
@@ -144,18 +153,29 @@ async function checkBoard(page,viewport){
    await page.evaluate(()=>document.querySelector('#scr-menu [data-go="play"]').click());await page.locator('#btn-tft').click();await page.setViewportSize(viewport);
    assert.equal(await page.evaluate(()=>G.TFTUI.state.units[0].promotion),1);
    assert.equal(await page.evaluate(()=>G.TFTUI.state.units[0].training),1);
-   if(viewport.width===1280){
+   {
     await page.evaluate(()=>{
      const s=G.TFTUI.state;Object.assign(s,G.TFT.create(198,G.TFT.DEFAULT_DECK));s.gold=1000;s.level=6;s.round=10;s.opponentRound=0;
      for(const [i,d]of [4,7,529,280,661,374].entries()){for(let n=0;n<9;n++){s.shop=[d];G.TFT.buy(s,0);}G.TFT.place(s,s.units.find(u=>G.TFT.BY[u.dex].line[0]===d).id,18+i);}
-     G.TFT.start(s);G.TFTUI.open();
+     G.TFT.start(s,{presentation:true});G.TFTUI.open();
     });
+    assert.equal(await page.locator('#tft-boss-intro').isVisible(),true);
+    await page.locator('#tft-pause').click();await page.waitForFunction(()=>G.TFTUI.state.battle.intro<1.8);
+    await page.locator('#tft-pause').click();assert.equal(await page.evaluate(()=>G.TFTUI.state.battle.time),0);
+    assert.equal(await page.evaluate(()=>document.getElementById('tft-cells').inert),true);
+    assert.equal(await page.locator('#tft-boss-name').innerText(),'ARTICUNO');
+    await page.locator('#scr-tft').screenshot({animations:'disabled',path:`/workspace/scratch/tft-boss-intro-${viewport.width}x${viewport.height}.png`});
+    const introLeft=await page.evaluate(()=>G.TFTUI.state.battle.intro);
+    await page.setViewportSize(bootViewport);await page.locator('#tft-exit').click();
+    await page.evaluate(()=>document.querySelector('#scr-menu [data-go="play"]').click());await page.locator('#btn-tft').click();await page.setViewportSize(viewport);
+    assert.equal(await page.evaluate(()=>G.TFTUI.state.battle.intro),introLeft);
+    await page.locator('#tft-intro-skip').click();assert.equal(await page.locator('#tft-boss-intro').isVisible(),false);
     await page.getByRole('button',{name:/Rival Articuno/}).click();assert.match(await page.locator('#tft-unit-info').innerText(),/JEFE/);
     assert.match(await page.locator('#tft-wave-banner').innerText(),/Articuno/);await checkBoard(page,viewport);
     await page.locator('#tft-pause').click();await page.waitForFunction(()=>G.TFTUI.state.battle.time>1.2);
-    await page.locator('#tft-pause').click();await page.locator('#scr-tft').screenshot({path:'/workspace/scratch/tft-pve-jefe-preview.png'});
+    await page.locator('#tft-pause').click();await page.locator('#scr-tft').screenshot({animations:'disabled',path:'/workspace/scratch/tft-pve-jefe-preview.png'});
    }
-   await page.locator('#scr-tft').screenshot({path:`/workspace/scratch/tft-layout-${viewport.width}x${viewport.height}.png`});
+   await page.locator('#scr-tft').screenshot({animations:'disabled',path:`/workspace/scratch/tft-layout-${viewport.width}x${viewport.height}.png`});
    await page.setViewportSize(bootViewport);await page.locator('#tft-exit').click();
    assert.equal(await page.evaluate(()=>G.TFTUI.active),false);
    assert.equal(await page.locator('#scr-menu').isVisible(),true);

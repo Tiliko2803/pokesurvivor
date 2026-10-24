@@ -699,3 +699,18 @@ test('later waves pay growing base income and boss loot alongside uncapped inter
   assert.equal(s.result.baseIncome,base);assert.equal(s.result.encounterBonus,loot);assert.equal(s.result.interest,20);assert.equal(s.gold,100+base+loot+21);assert.ok(E.restore(E.serialize(s)));
  }
 });
+
+test('boss introductions freeze combat and entry effects, save mid-sequence and skip exactly once',()=>{
+ const {E}=fixture(),s=E.create(117,E.DEFAULT_DECK);s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,20);s.round=10;s.opponentRound=0;
+ assert.ok(E.start(s,{presentation:true}));assert.equal(s.battle.intro,2.8);assert.equal(s.battle.events.length,0);const units=JSON.stringify(s.battle.units);
+ for(let i=0;i<10;i++)E.tick(s,.05);
+ assert.equal(s.battle.time,0);assert.equal(s.battle.beatCount,0);assert.equal(JSON.stringify(s.battle.units),units);
+ const restored=E.restore(E.serialize(s));assert.ok(restored);assert.equal(restored.battle.intro,s.battle.intro);
+ assert.ok(E.skipIntro(s));const after=JSON.stringify(s.battle.units);assert.equal(E.skipIntro(s),false);assert.equal(JSON.stringify(s.battle.units),after);
+ assert.ok(s.battle.events.some(e=>e.kind==='entrance'));
+ while(restored.battle.intro>0)E.tick(restored,.05);
+ assert.equal(restored.battle.time,0);assert.equal(JSON.stringify(restored.battle.units),after);
+ E.tick(s,.05);E.tick(restored,.05);assert.equal(JSON.stringify(restored.battle.units),JSON.stringify(s.battle.units));
+ const bad=JSON.parse(E.serialize(s));bad.state.battle.intro=3;assert.equal(E.restore(JSON.stringify(bad)),null);
+ const plain=E.create(118,E.DEFAULT_DECK);plain.gold=100;purchase(E,plain,4);E.place(plain,plain.units[0].id,20);E.start(plain,{presentation:true});assert.equal(plain.battle.intro,0);assert.ok(plain.battle.events.length>0);
+});

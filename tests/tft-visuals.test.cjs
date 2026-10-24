@@ -69,3 +69,11 @@ test('attack anticipation and impact recoil are stateless, pause-stable and disa
  assert.equal(JSON.stringify(V.pose(u,e,hurt,{calm:true})),JSON.stringify({x:0,y:0,scale:1,flash:0}));
  const long={...e,tx:5,ty:0,ttl:.3};assert.equal(V.impact(long),0);assert.ok(V.impact({...long,ttl:.1})>0);assert.ok(V.impact({...long,periodic:true})>0);
 });
+
+test('boss camera is deterministic, centres on the boss and removes motion in calm mode',()=>{
+ const {G}=fixture(),V=G.TFTVisuals,b={intro:2.8,units:[{boss:true,x:1,y:1}]};
+ const initial=V.bossCamera(b);assert.equal(initial.zoom,1);assert.equal(initial.x,0);assert.equal(initial.active,true);
+ b.intro=1.4;const before=JSON.stringify(b),camera=V.bossCamera(b);assert.equal(JSON.stringify(b),before);assert.ok(camera.zoom>2);assert.ok(Math.abs(150*camera.zoom+camera.x-300)<1e-8);
+ assert.equal(V.bossCamera(b,true).zoom,1);assert.equal(V.bossCamera(b,true).x,0);assert.equal(V.bossCamera(b,true).reveal,1);
+ b.intro=0;assert.equal(V.bossCamera(b).active,false);assert.equal(V.bossCamera(null).zoom,1);
+});
