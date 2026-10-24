@@ -130,5 +130,13 @@ G.TFTVisuals = (() => {
     }
     ctx.restore();
   }
-  return {style,animation,animationSpeed,warm,actions,areaCells,progress,impact,pose,draw};
+  function bossCamera(b,calm=false) {
+    const boss=b?.units.find(u=>u.boss),active=!!boss&&b.intro>0;
+    if(!active)return {active:false,zoom:1,x:0,y:0,reveal:0};
+    const p=clamp(1-b.intro/2.8,0,1),smooth=n=>{n=clamp(n,0,1);return n*n*(3-2*n);};
+    const reveal=Math.min(smooth(p/.22),smooth((1-p)/.2));
+    const zoom=calm?1:1+1.25*reveal,fx=boss.x*100+50,fy=boss.y*100+51;
+    return {active:true,zoom,x:calm?0:(300-fx)*reveal+(1-zoom)*fx,y:calm?0:(235-fy)*reveal+(1-zoom)*fy,reveal:calm?1:reveal};
+  }
+  return {bossCamera,style,animation,animationSpeed,warm,actions,areaCells,progress,impact,pose,draw};
 })();

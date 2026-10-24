@@ -1198,14 +1198,15 @@ G.TFT = (() => {
     return {name:moveFor(u),type:G.DEX_BY[u.dex].types[0],description};
   }
   function preview(s,u) {const rival=u.id<0;return fighter(u,rival?1:0,traits(rival?s.opponent:s.units.filter(v=>v.pos!==null)),rival?s.round:1);}
-  function start(s) {
+  function start(s,options={}) {
     if(!planning(s)||!s.units.some(u=>u.pos!==null))return false;
     if(s.opponentRound!==s.round)prepareEnemy(s);
     const team=s.units.filter(u=>u.pos!==null),foes=scout(s);
-    s.battle={time:0,acc:0,opening:1.2,beat:0,beatCount:0,beatStarted:0,nextBeat:.05,events:[],units:[...team.map(u=>fighter(u,0,traits(team),s.round)),
+    s.battle={intro:options.presentation&&foes.some(u=>u.boss)?2.8:0,time:0,acc:0,opening:1.2,beat:0,beatCount:0,beatStarted:0,nextBeat:.05,events:[],units:[...team.map(u=>fighter(u,0,traits(team),s.round)),
       ...foes.map(u=>fighter(u,1,traits(foes),s.round))]};
-    entrances(s.battle);s.phase='combat';s.result=null;return true;
+    if(!s.battle.intro)entrances(s.battle);s.phase='combat';s.result=null;return true;
   }
+  function skipIntro(s){if(s.phase!=='combat'||!(s.battle.intro>0))return false;s.battle.intro=0;entrances(s.battle);return true;}
   const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
   function hit(b,a,t,power,spell=false,type=a.types[0],periodic=false) {
     if(t.hp<=0)return 0;
@@ -1494,7 +1495,9 @@ G.TFT = (() => {
     }
   }
   function step(s,dt) {
-    const b=s.battle;b.time+=dt;b.opening=Math.max(0,(b.opening||0)-dt);b.events=b.events.filter(e=>(e.ttl-=dt)>0);
+    const b=s.battle;
+    if(b.intro>0){b.intro=Math.max(0,b.intro-dt);if(b.intro<.00001){b.intro=0;entrances(b);}return;}
+    b.time+=dt;b.opening=Math.max(0,(b.opening||0)-dt);b.events=b.events.filter(e=>(e.ttl-=dt)>0);
     for(const a of b.units) {
       a.flash=Math.max(0,a.flash-dt);if(a.hp<=0)continue;
       const regen=Math.max(0,Math.min(a.maxHp-a.hp,a.maxHp*a.regen*dt));a.hp+=regen;a.healingDone+=regen;
@@ -1563,7 +1566,7 @@ G.TFT = (() => {
       if(['result','victory','defeat'].includes(s.phase)&&!s.result)return null;
       if(s.battle) {
         const b=s.battle;
-        if(!numbers(b)||!Number.isFinite(b.time)||b.time<0||b.time>46||!Number.isFinite(b.acc)||b.acc<0||b.acc>.3||
+        if(!numbers(b)||(b.intro!==undefined&&(!Number.isFinite(b.intro)||b.intro<0||b.intro>2.8||b.intro>0&&(b.time!==0||!b.units?.some(u=>u.boss))))||!Number.isFinite(b.time)||b.time<0||b.time>46||!Number.isFinite(b.acc)||b.acc<0||b.acc>.3||
           !Number.isFinite(b.nextBeat)||b.nextBeat<0||!int(b.beat,0,4)||!int(b.beatCount,0,100)||!Array.isArray(b.units)||b.units.length>12||!b.units.length)return null;
         if(!b.units.every(u=>unit(u)&&[0,1].includes(u.side)&&int(u.x,0,5)&&int(u.y,0,5)&&numbers(u)&&
           ['hp','maxHp','attack','armor','interval','range','mana','shield','manaGain','regen','pierce','slow','cooldown','moveCD','flash','damageDone','damageTaken','blocked','kills','healingDone','shieldingDone'].every(k=>Number.isFinite(u[k]))&&
@@ -1588,5 +1591,5 @@ G.TFT = (() => {
       s.encounter=waveInfo(s.round);s.effects=[];return s;
     } catch(_){return null;}
   }
-  return {TRAINING_COSTS,rank,rankLabel,rankColor,unitCopies,trainingLabel,hasAttackPriority,isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,BEAT_SECONDS,ROSTER,PLAYABLE_ROSTER,BOSS_DEFINITIONS,BY,DEFAULT_DECK,validDeck,migrateDeck,waveInfo,HISTORY_LIMIT,MAX_WAVE,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
+  return {skipIntro,TRAINING_COSTS,rank,rankLabel,rankColor,unitCopies,trainingLabel,hasAttackPriority,isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,BEAT_SECONDS,ROSTER,PLAYABLE_ROSTER,BOSS_DEFINITIONS,BY,DEFAULT_DECK,validDeck,migrateDeck,waveInfo,HISTORY_LIMIT,MAX_WAVE,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
 })();

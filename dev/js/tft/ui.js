@@ -52,7 +52,7 @@ G.TFTUI = (() => {
   function showMatch() {
     editing=false;$('tft-deck-panel').classList.add('hidden');$('tft-match').classList.remove('hidden');
     $('tft-current-deck').textContent='Mi mazo · 10 líneas';$('tft-deck-summary').textContent=state.deck.map(d=>G.DEX_BY[d].name).join(' · ');
-    selected=null;seenEvents=new WeakSet();anims.clear();views.clear();shownEvolution=null;reportScope='ally';lastReport=null;render();selectPanel(state.phase==='combat'?'info':state.phase==='planning'?'shop':'report',state.phase==='combat');
+    selected=null;finaleDismissed=false;seenEvents=new WeakSet();anims.clear();views.clear();shownEvolution=null;reportScope='ally';lastReport=null;render();selectPanel(state.phase==='combat'?'info':state.phase==='planning'?'shop':'report',state.phase==='combat');
   }
   function editDeck() {state=null;selected=null;editing=true;picks=new Set(decks[slot]);renderDeck();}
   function renderDeck() {
@@ -72,6 +72,7 @@ G.TFTUI = (() => {
     paintCards(0);
   }
   const anims=new Map(),views=new Map();
+  let finaleDismissed=false;
   let shownEvolution=null,infoClock=0,reportScope='ally',lastReport=null;
   let seenEvents=new WeakSet();
   const TYPE=()=>G.U.TYPE_NAME;
@@ -144,9 +145,34 @@ G.TFTUI = (() => {
     const tr=E.traits(deployed);
     $('tft-traits').innerHTML=Object.entries(tr).sort((a,b)=>b[1].count-a[1].count).map(([t,v])=>
       `<span class="tft-trait ${v.tier?'on':''}">${TYPE()[t]} ${v.count} · ${v.tier?'Nv. '+v.tier:'requiere 2'}<small>${effects[E.EFFECTS[t]]}</small></span>`).join('')||'<span class="sub">Despliega 2 o 4 familias distintas del mismo tipo para activar sus bonos.</span>';
-    syncCells();renderInfo();renderReport();renderScout();
+    syncCells();renderInfo();renderReport();renderScout();renderFinale();
     V.warm(currentUnits());
     paint(0);
+  }
+  function renderFinale() {
+    const show=state.phase==='defeat';
+    $('tft-finale').classList.toggle('hidden',!show||finaleDismissed);
+    $('tft-end-open').classList.toggle('hidden',!show||!finaleDismissed);
+    if(!show)return;
+    const rows=E.report(state,'match'),leader=rows[0],fmt=n=>Math.round(n).toLocaleString('es');
+    const damage=rows.reduce((n,u)=>n+u.damage,0),healing=rows.reduce((n,u)=>n+u.healing,0);
+    $('tft-end-wave').textContent=state.round;
+    $('tft-end-record').textContent=records[0]?.id===state.recordId?'Tu mejor marca local':'Mejor marca local · Oleada '+(records[0]?.wave||state.round);
+    $('tft-end-stats').innerHTML=`<div><b>${state.wins}</b><span>Oleadas ganadas</span></div><div><b>${fmt(damage)}</b><span>Daño total</span></div><div><b>${fmt(healing)}</b><span>Curación total</span></div>`;
+    $('tft-end-mvp').innerHTML=leader?`<canvas width="110" height="70" data-tft-dex="${leader.dex}" aria-hidden="true"></canvas><div><small>MAYOR DAÑO DE LA EXPEDICIÓN</small><b>${G.DEX_BY[leader.dex].name}</b><span style="color:${E.rankColor(leader)}">${E.rankLabel(leader)} · ${fmt(leader.damage)} de daño</span></div>`:'<p>Tu próxima expedición empieza con un nuevo equipo.</p>';
+    $('tft-end-team').innerHTML=state.units.filter(u=>u.pos!==null).map(u=>`<div><canvas width="110" height="70" data-tft-dex="${u.dex}" aria-hidden="true"></canvas><span>${G.DEX_BY[u.dex].name}</span><small style="color:${E.rankColor(u)}">${E.rankLabel(u)}</small></div>`).join('');
+  }
+  const bossTitles={144:'Guardián de la ventisca',145:'La tormenta tiene alas',146:'Furia entre cenizas',382:'El océano despierta',383:'La tierra reclama su trono',384:'Soberano de los cielos'};
+  function paintBossIntro(camera) {
+    const intro=$('tft-boss-intro'),on=state.phase==='combat'&&camera.active;
+    intro.classList.toggle('hidden',!on);document.querySelector('#scr-tft .tft-board-overlay').style.visibility=on?'hidden':'';$('tft-cells').inert=on||state.phase==='defeat'&&!finaleDismissed;
+    if(!on)return;
+    const boss=state.battle.units.find(u=>u.boss),name=G.DEX_BY[boss.dex].name;
+    const encounterKey=state.recordId+':'+state.round;
+    if(intro.dataset.encounter!==encounterKey){intro.dataset.encounter=encounterKey;$('tft-boss-name').textContent=name;$('tft-boss-title').textContent=bossTitles[boss.dex]||'Un nuevo rival';$('tft-boss-wave').textContent='ENCUENTRO DE JEFE · OLEADA '+state.round;}
+    const calm=G.Settings?.get('calm')||window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('tft-boss-card').style.transform=calm?'none':`translateX(${(1-camera.reveal)*-25}%) rotate(-3deg)`;
+    $('tft-boss-card').style.opacity=String(camera.reveal);
   }
   function renderScout() {
     const panel=$('tft-scout');panel.classList.toggle('hidden',state.phase!=='planning');$('tft-scout-unavailable').classList.toggle('hidden',state.phase==='planning');
@@ -216,6 +242,8 @@ G.TFTUI = (() => {
   function paint(dt) {
     const cv=$('tft-board'),ctx=cv.getContext('2d'),cell=100;
     ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,600,600);
+    const camera=V.bossCamera(state.phase==='combat'?state.battle:null,G.Settings?.get('calm')||window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    ctx.save();ctx.translate(camera.x,camera.y);ctx.scale(camera.zoom,camera.zoom);
     for(let y=0;y<6;y++)for(let x=0;x<6;x++){
       ctx.fillStyle=y<3?((x+y)%2?'#40314b':'#35293e'):((x+y)%2?'#193e5b':'#16354d');
       ctx.fillRect(x*cell,y*cell,cell-2,cell-2);
@@ -255,7 +283,7 @@ G.TFTUI = (() => {
       if(v.actionLeft>0)v.actionLeft=Math.max(0,v.actionLeft-dt);
       if(combat&&u.hp<=0){if(v.deadAge===0)a.play('Faint',{hold:true});v.deadAge+=dt;if(v.deadAge>=.5)continue;}
       a.loop(moving?'Walk':'Idle');
-      const alpha=combat&&u.hp<=0?1-v.deadAge/.5:1;
+      const alpha=(combat&&u.hp<=0?1-v.deadAge/.5:1)*(camera.active&&!u.boss?.25:1);
       const target=combat&&u.hp>0?E.selectTarget(state.battle,u):null;
       const facing=v.actionLeft>0&&v.actionFacing!==null?v.actionFacing:target?G.Sprites.dirFromAngle(Math.atan2(target.y-u.y,target.x-u.x)):null;
       const age=combat?state.battle.time-(state.battle.beatStarted||0):1;
@@ -268,8 +296,8 @@ G.TFTUI = (() => {
       if(evo){ctx.strokeStyle='#ffe08a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y-25,calm?36:28+(1.6-evo.ttl)*15,0,Math.PI*2);ctx.stroke();}
       drawSprite(ctx,key,u.dex,x,y,u.boss?82:65,dt,u.side,pose.flash,facing,alpha,pose.scale*(evo&&!calm?1+Math.sin(evo.ttl*10)*.1:1));
       ctx.globalAlpha=alpha;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff';
-      ctx.fillText(G.DEX_BY[u.dex].name,x,y+12);ctx.fillStyle=E.rankColor(u);ctx.fillText(E.rankLabel(u),x,v.y*cell+15);
-      if(combat&&u.hp>0){
+      if(!camera.active){ctx.fillText(G.DEX_BY[u.dex].name,x,y+12);ctx.fillStyle=E.rankColor(u);ctx.fillText(E.rankLabel(u),x,v.y*cell+15);}
+      if(combat&&u.hp>0&&!camera.active){
         ctx.fillStyle='#111b2a';ctx.fillRect(x-34,v.y*cell+21,68,6);
         v.health??=1;v.health=calm?u.hp/u.maxHp:v.health+(u.hp/u.maxHp-v.health)*Math.min(1,dt*10);
         ctx.fillStyle='#ffcf7580';ctx.fillRect(x-34,v.y*cell+21,68*v.health,6);
@@ -296,15 +324,16 @@ G.TFTUI = (() => {
         ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffdf78';ctx.textAlign='center';ctx.fillText(e.move,from.x*100+50,from.y*100+43);
       }
     }
+    ctx.restore();paintBossIntro(camera);
     infoClock+=dt;if(state.phase==='combat'&&infoClock>=.15){infoClock=0;syncCells();renderInfo();}
     paintCards(dt);
     const beat=combat?state.battle.beat||0:0;
     if($('tft-beats').dataset.beat!==String(beat))$('tft-beats').dataset.beat=String(beat);
-    const opening=state.phase==='combat'&&state.battle.opening>0;
+    const opening=state.phase==='combat'&&!camera.active&&state.battle.opening>0;
     if(state.phase==='combat')$('tft-wave-banner').classList.toggle('hidden',!opening);
     $('tft-entrances').classList.toggle('hidden',!opening);
     if(opening){const text='Habilidades de entrada · '+state.battle.units.map(u=>(u.side===0?'Aliado ':'Rival ')+G.DEX_BY[u.dex].name+': '+E.entranceFor(u).name).join(' · ');if($('tft-entrances').textContent!==text)$('tft-entrances').textContent=text;}
-    if(state.phase==='combat')$('tft-clock').textContent=opening?`Entradas activas · ${Math.max(0,Math.ceil(45-state.battle.time))} s`:`${Math.max(0,Math.ceil(45-state.battle.time))} s`;
+    if(state.phase==='combat')$('tft-clock').textContent=camera.active?'Presentación de jefe':opening?`Entradas activas · ${Math.max(0,Math.ceil(45-state.battle.time))} s`:`${Math.max(0,Math.ceil(45-state.battle.time))} s`;
     else $('tft-clock').textContent='';
   }
   function paintCards(dt) {
@@ -358,8 +387,12 @@ G.TFTUI = (() => {
   $('tft-lock').onclick=()=>{state.locked=!state.locked;persist();render();};
   $('tft-sell').onclick=()=>act(()=>E.sell(state,selected));
   $('tft-return').onclick=()=>act(()=>E.place(state,selected,null));
-  $('tft-fight').onclick=()=>{selected=null;act(()=>E.start(state));if(state.phase==='combat')selectPanel('info',true);};
+  $('tft-fight').onclick=()=>{selected=null;act(()=>E.start(state,{presentation:true}));if(state.phase==='combat')selectPanel('info',true);};
   $('tft-next').onclick=()=>{act(()=>E.next(state));selectPanel('shop');};
+  $('tft-intro-skip').onclick=()=>act(()=>E.skipIntro(state));
+  $('tft-end-report').onclick=()=>{finaleDismissed=true;renderFinale();selectPanel('report');$('tft-tab-report').focus();};
+  $('tft-end-open').onclick=()=>{finaleDismissed=false;renderFinale();$('tft-end-title').focus();};
+  $('tft-end-restart').onclick=()=>$('tft-restart').click();
   $('tft-restart').onclick=()=>{if(!['victory','defeat'].includes(state.phase)&&!window.confirm('¿Empezar de nuevo? Se reemplazará la partida TFT guardada.'))return;state=null;paused=false;quitPending=false;saveClock=0;try{localStorage.removeItem(MATCH_KEY);}catch(_){}editDeck();$('tft-deck-start').focus();};
   $('tft-pause').onclick=()=>{paused=!paused;render();};
   $('tft-speed').onclick=()=>{speed=speed===1?2:1;render();};
