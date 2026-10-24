@@ -85,3 +85,9 @@ test('rework mouse volleys and flights render without changing simulation and fl
  assert.ok(calls.some(c=>c.kind==='ellipse'));
  const flight={kind:'flight',from:1,sx:2,sy:3,tx:2,ty:0,ttl:.3};assert.ok(V.pose(units[0],flight,null).y<-50);assert.equal(V.pose(units[0],flight,null,{calm:true}).y,0);
 });
+test('second tactical wave renders rescue portals, ambush, hammer warning and Bullet Punch in calm and full modes',()=>{
+ const {V,ctx,calls}=fixture(),units=[{id:1,dex:212,star:3,x:2,y:3,types:['steel'],range:1},{id:-1,dex:7,star:1,x:2,y:2,types:['water'],range:1}];
+ const events=[{kind:'rescue',move:'Rescate',type:'fairy',ttl:.4},{kind:'blink',type:'ghost',ttl:.3},{kind:'warning',type:'steel',x:2,y:2,radius:1,ttl:.5,life:1},{kind:'spell',type:'steel',move:'Puño Bala',bullet:1,ttl:.3}];
+ for(const e of events){Object.assign(e,{from:1,to:-1,sx:2,sy:3,tx:2,ty:2});const before=JSON.stringify(e);for(const calm of [false,true]){const count=calls.length;V.draw(ctx,e,units,{calm});assert.ok(calls.length>count);}assert.equal(JSON.stringify(e),before);}
+ assert.equal(V.areaCells(events[2],units).length,5);assert.equal(calls.filter(c=>c.kind==='save').length,calls.filter(c=>c.kind==='restore').length);
+});

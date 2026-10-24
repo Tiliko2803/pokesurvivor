@@ -236,7 +236,7 @@ G.TFTUI = (() => {
       ${stunned?`<p class="tft-control-status">CC · Aturdido ${Math.max(0,f.stunUntil-state.battle.time).toFixed(1)} s${source?(source.side===0?' · Lanzador aliado: ':' · Lanzador rival: ')+G.DEX_BY[source.dex].name:''}</p>`:''}
       ${f.galeWings?`<p class="tft-control-status">Alas Vendaval · ${E.hasAttackPriority(f)?'Prioridad activa · Vida completa':'Prioridad inactiva · Necesita toda su vida'}</p>`:''}
       <dl><div><dt>Vida</dt><dd>${Math.ceil(f.hp)}/${Math.ceil(f.maxHp)}</dd></div><div><dt>Daño/pulso</dt><dd>${Math.round(f.attack*(2*E.BEAT_SECONDS)/f.interval)}</dd></div><div><dt>Defensa</dt><dd>${f.armor}</dd></div><div><dt>Potencia de cadencia</dt><dd>×${((2*E.BEAT_SECONDS)/f.interval).toFixed(2)}</dd></div><div><dt>Maná</dt><dd>${Math.floor(f.mana)}/100</dd></div><div><dt>Escudo</dt><dd>${Math.ceil(f.shield)}</dd></div></dl>
-      <div class="tft-ability tft-entry"><small>${entry.effect==='gale'?'ENTRADA + PASIVA CONDICIONAL':'AL INICIO · una vez por combate'}</small><h4>${entry.name}</h4><p>${entry.description}</p></div><div class="tft-ability"><small>${ability.special?'MOVIMIENTO ESPECIAL':'MOVIMIENTO PROPIO'} · 100 de maná</small><h4>${ability.name} · ${TYPE()[ability.type]}</h4><p>${ability.description}</p></div>
+      <div class="tft-ability tft-entry"><small>${entry.effect==='technician'?'PASIVA · EXPERTO':entry.effect==='gale'?'ENTRADA + PASIVA CONDICIONAL':'AL INICIO · una vez por combate'}</small><h4>${entry.name}</h4><p>${entry.description}</p></div><div class="tft-ability"><small>${ability.special?'MOVIMIENTO ESPECIAL':'MOVIMIENTO PROPIO'} · 100 de maná</small><h4>${ability.name} · ${TYPE()[ability.type]}</h4><p>${ability.description}</p></div>
       ${rival?'':`<p class="sub">${p.types.map(t=>TYPE()[t]+': '+(tr[t]?.tier?'bono Nv. '+tr[t].tier:'sin bono')).join(' · ')}</p>`}`;
   }
   function showEvolution() {
@@ -266,7 +266,7 @@ G.TFTUI = (() => {
     }
     ctx.strokeStyle='#ffd365';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,300);ctx.lineTo(600,300);ctx.stroke();
     const combat=state.phase!=='planning'&&state.battle;
-    if(combat)for(const fx of state.battle.events.filter(e=>e.kind==='area')) {
+    if(combat)for(const fx of state.battle.events.filter(e=>e.kind==='area'||e.kind==='warning')) {
       ctx.fillStyle=fx.control?'#ffc55e':G.U.TYPE_COLOR[fx.type]||'#d1b783';ctx.globalAlpha=Math.max(0,fx.ttl)*.38;
       for(const cell of V.areaCells(fx,state.battle.units,state.battle.time))ctx.fillRect((cell%6)*100+3,Math.floor(cell/6)*100+3,94,94);
       ctx.globalAlpha=1;
@@ -299,7 +299,7 @@ G.TFTUI = (() => {
       if(v.actionLeft>0)v.actionLeft=Math.max(0,v.actionLeft-dt);
       if(combat&&u.hp<=0){if(v.deadAge===0)a.play('Faint',{hold:true});v.deadAge+=dt;if(v.deadAge>=.5)continue;}
       a.loop(moving?'Walk':'Idle');
-      const alpha=(combat&&u.hp<=0?1-v.deadAge/.5:1)*(camera.active&&!u.boss?.25:1);
+      const alpha=(combat&&u.hp<=0?1-v.deadAge/.5:u.shadowed?.18:1)*(camera.active&&!u.boss?.25:1);
       const target=combat&&u.hp>0?E.selectTarget(state.battle,u):null;
       const facing=v.actionLeft>0&&v.actionFacing!==null?v.actionFacing:target?G.Sprites.dirFromAngle(Math.atan2(target.y-u.y,target.x-u.x)):null;
       const age=combat?state.battle.time-(state.battle.beatStarted||0):1;
@@ -322,6 +322,8 @@ G.TFTUI = (() => {
         ctx.fillStyle='#5dbfff';ctx.fillRect(x-34,v.y*cell+29,68*u.mana/100,3);
         if(u.shield>0){ctx.fillStyle='#a4dcff99';ctx.fillRect(x-34,v.y*cell+21,68*Math.min(.5,u.shield/u.maxHp),6);ctx.strokeStyle='#a4dcff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-26,34,Math.PI,2*Math.PI);ctx.stroke();}
         if(u.bladePending||u.populationPulse!==undefined){ctx.fillStyle='#ffe08a';ctx.font='bold 10px sans-serif';ctx.fillText(u.bladePending?'ESCUDO → FILO':'PROLIFERACIÓN '+[0,3,6][u.populationPulse]+'/10',x,y+25);}
+        const tactic=u.shadowed?'OCULTO':u.hammerX!==undefined?'PREPARANDO MARTILLO':u.hammerRecovery?'RECUPERACIÓN':u.bulletPulses?'PUÑO BALA · '+u.bulletPulses:u.dex===282?(u.rescueUsed?'RESCATE USADO':'RESCATE LISTO'):'';
+        if(tactic){ctx.fillStyle=u.rescueUsed?'#a8b3c8':'#ffe08a';ctx.font='bold 10px sans-serif';ctx.fillText(tactic,x,y+25);}
         if(u.burn) {ctx.fillStyle='#ffad59';ctx.fillText('🔥',x+27,y-28);}
         if(E.isStunned(state.battle,u)){ctx.fillStyle='#563125';ctx.fillRect(x+16,y-44,29,16);ctx.fillStyle='#ffe08a';ctx.font='bold 11px sans-serif';ctx.fillText('CC',x+30,y-32);}
       }
@@ -337,7 +339,7 @@ G.TFTUI = (() => {
         ctx.fillStyle=e.kind==='shield'?'#a4dcff':e.kind==='heal'?'#83ff9e':'#ffde75';ctx.font='bold 17px sans-serif';ctx.textAlign='center';
         if(G.Settings?.get('dmgNumbers')!==false)ctx.fillText((['heal','shield'].includes(e.kind)?'+':'−')+Math.round(e.amount),tx,ty-10-(calm?0:p*20));
         if(e.absorbed){ctx.font='11px sans-serif';ctx.fillStyle='#b7eaff';ctx.fillText('Escudo −'+Math.round(e.absorbed),tx,ty+4);}
-      } else if(['cast','entryCast'].includes(e.kind)||e.kind==='entrance'&&state.battle.opening>0){
+      } else if(['cast','entryCast','rescue'].includes(e.kind)||e.kind==='entrance'&&state.battle.opening>0){
         ctx.font='bold 12px sans-serif';ctx.fillStyle='#ffdf78';ctx.textAlign='center';ctx.fillText(e.move,from.x*100+50,from.y*100+43);
       }
     }

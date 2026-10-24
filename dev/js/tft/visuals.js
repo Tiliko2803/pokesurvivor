@@ -39,12 +39,12 @@ G.TFTVisuals = (() => {
     for(const e of events){
       if(e.to&&['hit','spell'].includes(e.kind))hurt.add(e.to);
       if(e.periodic)continue;
-      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,flight:4}[e.kind]||0;
+      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,flight:4,blink:4,rescue:4}[e.kind]||0;
       if(priority&&(!actions.has(e.from)||actions.get(e.from).priority<priority))actions.set(e.from,{e,priority});
     }
     return {actions,hurt};
   }
-  function life(e) {return e.life||(['hit','spell'].includes(e.kind)?.45:['cast','entryCast'].includes(e.kind)?.8:e.kind==='entrance'?1.2:.6);}
+  function life(e) {return e.life||(['hit','spell'].includes(e.kind)?.45:['cast','entryCast','rescue'].includes(e.kind)?.8:e.kind==='entrance'?1.2:.6);}
   function progress(e) {return clamp(1-e.ttl/life(e),0,1);}
   function impact(e) {
     if(!e)return 0;
@@ -86,7 +86,17 @@ G.TFTVisuals = (() => {
       G.VFX.draw(ctx,shape,pal,clamp(x,0,600),clamp(y,0,600),{scale,alpha,angle:rotation,frame:calm?0:frame});
     };
     ctx.save();ctx.imageSmoothingEnabled=false;
-    if(e.kind==='flight') {
+    if(e.kind==='rescue'||e.kind==='blink') {
+      const pal=e.kind==='rescue'?'fairy':'ghost';
+      sprite('ring',pal,sx,sy,1.8-p,fade);sprite('ring',pal,tx,ty,.8+p,fade);
+      if(!calm&&!low)for(let i=0;i<4;i++){const t=clamp(p-i*.12,0,1);sprite('star',pal,sx+(tx-sx)*t,sy+(ty-sy)*t,.45,fade*.6);}
+    } else if(e.kind==='warning') {
+      sprite('ring','steel',tx,ty,2.5,calm?.5:.35+Math.sin(p*Math.PI*4)*.15);
+    } else if(e.bullet!==undefined) {
+      const t=calm?1:clamp((p-e.bullet*.12)/.5,0,1),x=sx+(tx-sx)*t,y=sy+(ty-sy)*t;
+      sprite('impact','steel',x,y,1.1,fade,angle);
+      if(!calm&&!low)sprite('star','fire',x-(tx-sx)*.1,y-(ty-sy)*.1,.5,fade*.6,angle);
+    } else if(e.kind==='flight') {
       const travel=calm?1:p,x=sx+(tx-sx)*travel,y=sy+(ty-sy)*travel-(calm?0:Math.sin(p*Math.PI)*65);
       sprite('star','flying',x,y,1.2,fade,angle);
       if(!calm&&!low)for(let i=1;i<=3;i++)sprite('star','flying',sx+(tx-sx)*Math.max(0,p-i*.1),sy+(ty-sy)*Math.max(0,p-i*.1),.5,fade*.3,angle);

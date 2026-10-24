@@ -160,11 +160,11 @@ test('Excadrill pierces multiple enemies and lands free; allied blockers stop th
   assert.equal(new Set(b.units.filter(u=>u.hp>0).map(u=>u.x+','+u.y)).size,b.units.filter(u=>u.hp>0).length);
  }
 });
-test('Gengar punishes wounded targets and heals from actual damage dealt',()=>{
+test('Haunter retains its execute bonus before evolving into ambush Gengar',()=>{
  const {E}=fixture();const run=weak=>{
-  const {b,units:[a,t]}=battleFor(E,[[94,3,0,2,4],[133,1,1,2,3]]);if(weak)t.hp=3000;
-  a.hp=a.maxHp*.2;const hp=a.hp,before=t.hp;E.cast(b,a,t);return {damage:before-t.hp,healed:a.hp-hp};
- };const weak=run(true),healthy=run(false);assert.ok(weak.damage>healthy.damage*1.7);assert.ok(weak.healed>0);assert.ok(weak.healed<=weak.damage*.25+1);
+  const {b,units:[a,t]}=battleFor(E,[[93,2,0,2,4],[133,1,1,2,3]]);if(weak)t.hp=3000;
+  const before=t.hp;E.cast(b,a,t);return before-t.hp;
+ };assert.ok(run(true)>run(false)*1.4);
 });
 test('Gardevoir heals and shields exactly the two most wounded allies',()=>{
  const {E}=fixture();const {b,units:[a,t,x,y,z]}=battleFor(E,[[282,3,0,2,4],[133,1,1,2,3],[7,1,0,1,4],[172,1,0,3,4],[66,1,0,4,4]]);
@@ -229,12 +229,12 @@ test('Earthquake hits multiple enemies in radius but never allies or distant tar
 });
 test('area Blizzard and Discharge damage clusters and report their real damage types',()=>{
  const {E}=fixture();for(const [dex,star,type] of [[365,3,'ice'],[180,2,'electric'],[959,3,'steel']]){
-  const {b,units:[a,t,other]}=battleFor(E,[[dex,star,0,2,4],[133,1,1,2,3],[133,1,1,3,3]]);E.cast(b,a,t);
+  const {s,b,units:[a,t,other]}=battleFor(E,[[dex,star,0,2,4],[133,1,1,2,3],[133,1,1,3,3]]);E.cast(b,a,t);if(dex===959)reworkBeat(E,s);
   assert.ok(t.hp<10000&&other.hp<10000);assert.ok(b.events.some(e=>e.kind==='area'&&e.type===type));
  }
 });
-test('round reports snapshot actual damage, healing and shield absorption without overkill',()=>{
- const {E}=fixture();const {s,b,units:[a,t]}=battleFor(E,[[94,3,0,2,4],[133,1,1,2,3]]);
+test('round reports snapshot actual damage and shield absorption without overkill',()=>{
+ const {E}=fixture();const {s,b,units:[a,t]}=battleFor(E,[[93,2,0,2,4],[133,1,1,2,3]]);
  a.hp=a.maxHp*.2;t.hp=10;t.shield=20;E.cast(b,a,t);E.tick(s,.05);
  assert.equal(s.result.report.find(r=>r.id===a.id).damage,10);
  assert.equal(s.result.report.find(r=>r.id===t.id).blocked,20);
@@ -327,7 +327,7 @@ test('all 107 families have explicit entrances and executable moves at all 321 b
    const {b,units:[a,t,other,ally]}=battleFor(E,[[dex,star,0,2,3],[133,1,1,2,2],[133,1,1,3,2],[7,1,0,3,3]]);
    a.hp=a.maxHp/2;ally.hp=ally.maxHp/3;const allyHP=ally.hp;a.mana=100;
    E.cast(b,a,t);
-   assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0||a.populationPulse===0,`${family.dex} rank ${star} has a real effect`);
+   assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0||a.populationPulse===0||a.ambushPending||a.hammerX!==undefined||a.bulletPulses,`${family.dex} rank ${star} has a real effect`);
    assert.ok(ally.hp>=allyHP,'never damages its ally');assert.ok(b.units.every(u=>Number.isFinite(u.hp)&&u.hp>=0&&u.hp<=u.maxHp&&Number.isFinite(u.mana)));
    assert.ok(a.mana>=0&&a.mana<=100);assert.ok(a.shield<=a.maxHp*.5);
    assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
@@ -801,4 +801,78 @@ test('mid-chain Maushold and shielded Aegislash restore deterministically and re
   assert.equal(normalize(s.battle),normalize(restored.battle));
   const bad=JSON.parse(saved);bad.state.battle.units[0].populationPulse=999;assert.equal(E.restore(JSON.stringify(bad)),null);
  }
+});
+
+test('Gengar hides on movement, is untargetable, then ambushes the weakest available victim on an attack beat',()=>{
+ const {E}=fixture(),{s,b,units:[a,front,weak,ally]}=battleFor(E,[[94,3,0,2,4],[7,1,1,2,3],[7,1,1,4,0],[7,1,0,1,4]]);
+ weak.hp=1;E.cast(b,a,front);assert.equal(a.damageDone,0);reworkBeat(E,s,1);assert.equal(a.shadowed,true);
+ assert.notEqual(E.selectTarget(b,front)?.id,a.id);const hp=a.hp;E.cast(b,front,a);assert.equal(a.hp,hp);assert.equal(E.stun(b,front,a,1),false);
+ reworkBeat(E,s,2);assert.equal(a.shadowed,undefined);assert.equal(a.ambushPending,undefined);assert.equal(weak.hp,0);assert.equal(a.mana,50);
+ assert.equal(Math.abs(a.x-weak.x)+Math.abs(a.y-weak.y),1);assert.equal(ally.damageTaken,0);
+ const live=b.units.filter(u=>u.hp>0);assert.equal(new Set(live.map(u=>u.y*6+u.x)).size,live.length);
+});
+test('stunning Gengar before hiding cancels the ambush without granting invulnerability',()=>{
+ const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[94,3,0,2,3],[7,1,1,2,2]]);
+ E.cast(b,a,t);E.stun(b,t,a,2);reworkBeat(E,s,1);assert.equal(a.shadowed,undefined);assert.equal(a.ambushPending,undefined);assert.equal(a.damageDone,0);
+});
+test('Gardevoir rescues one nearby ally to a legal rear cell at 1 HP and shields it, then cannot rescue twice',()=>{
+ const {E}=fixture(),{b,units:[g,foe,ally]}=battleFor(E,[[282,3,0,2,3],[93,2,1,2,1],[7,1,0,2,2]]);
+ foe.attack=100000;ally.hp=20;E.cast(b,foe,ally);
+ assert.equal(g.rescueUsed,true);assert.equal(ally.hp,1);assert.ok(ally.y>g.y);assert.ok(ally.shield>0);assert.equal(foe.kills,0);assert.equal(foe.damageDone,19);assert.ok(g.shieldingDone>0);
+ assert.ok(b.events.some(e=>e.kind==='rescue'));E.cast(b,foe,ally);assert.equal(ally.hp,0);assert.equal(foe.kills,1);
+});
+test('Rescue requires another ally, range, an available Gardevoir and a free rear cell on both sides',()=>{
+ for(const mode of ['self','range','stunned','no-space','enemy']){
+  const {E}=fixture(),{b,units:[g,foe,ally]}=battleFor(E,[[282,3,0,2,3],[93,2,1,2,1],[7,1,0,2,2]]);foe.attack=100000;ally.hp=20;
+  if(mode==='range'){g.x=5;g.y=5;}
+  if(mode==='stunned')g.stunUntil=1;
+  if(mode==='no-space')g.y=5;
+  if(mode==='enemy')g.side=1;
+  const victim=mode==='self'?g:ally;E.cast(b,foe,victim);assert.equal(victim.hp,0,mode);assert.equal(g.rescueUsed,undefined,mode);
+ }
+ const {E}=fixture(),{b,units:[g,foe,ally]}=battleFor(E,[[282,3,1,2,2],[93,2,0,2,4],[7,1,1,2,3]]);foe.attack=100000;ally.hp=20;E.cast(b,foe,ally);assert.equal(ally.hp,1);assert.ok(ally.y<g.y);
+});
+test('Tinkaton telegraphs a fixed area, destroys only enemy shields, then loses one attack beat recovering',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,near,ally]}=battleFor(E,[[959,3,0,2,3],[7,1,1,2,2],[7,1,1,3,2],[7,1,0,1,2]]);
+ t.shield=near.shield=1000;ally.shield=100;const allyHP=ally.hp;E.cast(b,a,t);assert.equal(a.damageDone,0);assert.ok(b.events.some(e=>e.kind==='warning'));
+ t.x=5;t.y=0;a.moveCD=0;reworkBeat(E,s,1);assert.equal(a.y,3);reworkBeat(E,s,2);
+ assert.equal(t.hp,t.maxHp);assert.equal(t.shield,1000);assert.equal(near.shield,0);assert.ok(near.hp<near.maxHp);assert.equal(ally.hp,allyHP);assert.equal(ally.shield,100);assert.equal(a.hammerRecovery,true);
+ a.cooldown=0;const damage=a.damageDone;reworkBeat(E,s,4);assert.equal(a.damageDone,damage);assert.equal(a.hammerRecovery,undefined);
+});
+test('stunning Tinkaton interrupts preparation and never damages the telegraphed zone',()=>{
+ const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[959,3,0,2,3],[7,1,1,2,2]]);E.cast(b,a,t);E.stun(b,t,a,1);reworkBeat(E,s);assert.equal(a.hammerX,undefined);assert.equal(a.hammerY,undefined);assert.equal(a.hammerRecovery,undefined);assert.equal(a.damageDone,0);
+});
+test('Scizor executes six explicitly weak Steel hits boosted by Technician and earns no attacking mana',()=>{
+ for(const star of [2,3]){
+  const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[212,star,0,2,3],[7,1,1,2,2]]);t.armor=0;a.interval=1;a.attack=100;t.types=['normal'];
+  E.cast(b,a,t);assert.equal(a.damageDone,0);assert.ok(E.hasAttackPriority(a));
+  for(let i=0;i<3;i++)reworkBeat(E,s);
+  assert.equal(a.damageDone,540);assert.equal(a.mana,0);assert.equal(a.bulletPulses,undefined);assert.equal(E.hasAttackPriority(a),false);assert.equal(E.moveFor(a),'Puño Bala');
+  assert.equal(b.events.filter(e=>e.bullet!==undefined).length,6);
+ }
+});
+test('Scizor priority can defeat a foe before its attack, but cannot bypass stun or range',()=>{
+ const {E}=fixture(),{s,b,units:[foe,a]}=battleFor(E,[[7,1,1,2,2],[212,3,0,2,3]]);foe.hp=1;foe.cooldown=0;E.cast(b,a,foe);const hp=a.hp;reworkBeat(E,s);assert.equal(foe.hp,0);assert.equal(a.hp,hp);assert.equal(foe.damageDone,0);
+ for(const mode of ['stun','range']){
+  const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[212,3,0,2,3],[7,1,1,2,2]]);E.cast(b,a,t);
+  if(mode==='stun')a.stunUntil=1;else t.y=0;
+  reworkBeat(E,s);assert.equal(a.damageDone,0,mode);assert.equal(a.bulletPulses,2,mode);
+ }
+});
+test('second-wave tactical states restore without resetting actions and reject invalid pending fields',()=>{
+ const {E}=fixture();
+ for(const dex of [94,212,959]){
+  const family=E.BY[dex].line[0],deck=[family,...E.DEFAULT_DECK.filter(d=>d!==family)].slice(0,10),s=E.create(72,deck);
+  s.units=[{id:1,dex,star:3,pos:20}];s.nextId=2;s.opponent=[{id:-1,dex:7,star:1,pos:14}];s.opponentRound=1;E.start(s);const [a,t]=s.battle.units;t.hp=t.maxHp=100000;E.cast(s.battle,a,t);if(dex===94)reworkBeat(E,s,1);
+  const saved=E.serialize(s),restored=E.restore(saved);assert.ok(restored,`${dex} restores`);
+  for(let i=0;i<70;i++){E.tick(s,.05);E.tick(restored,.05);}
+  const normalize=b=>JSON.stringify(b.units.map(u=>{const x={...u};delete x.entrance;return x;}));assert.equal(normalize(s.battle),normalize(restored.battle));
+  const invalid=JSON.parse(saved);invalid.state.battle.units[0].bulletPulses=9;assert.equal(E.restore(JSON.stringify(invalid)),null);
+ }
+});
+test('saving after a Gardevoir rescue preserves its spent charge and prevents a second rescue after reload',()=>{
+ const {E}=fixture(),deck=[280,...E.DEFAULT_DECK.filter(d=>d!==280)].slice(0,10),s=E.create(41,deck);
+ s.units=[{id:1,dex:282,star:3,pos:20},{id:2,dex:7,star:1,pos:19}];s.nextId=3;s.opponent=[{id:-1,dex:93,star:2,pos:13}];s.opponentRound=1;E.start(s);
+ const [g,ally,foe]=s.battle.units;foe.attack=100000;ally.hp=20;E.cast(s.battle,foe,ally);assert.equal(ally.hp,1);
+ const r=E.restore(E.serialize(s));assert.ok(r);assert.equal(r.battle.units[0].rescueUsed,true);E.cast(r.battle,r.battle.units[2],r.battle.units[1]);assert.equal(r.battle.units[1].hp,0);
 });

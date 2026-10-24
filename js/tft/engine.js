@@ -2445,7 +2445,7 @@ G.TFT = (() => {
     BY[dex]={...family,dex,stage,move:family.moves[stage]};
   for(const f of BOSS_DEFINITIONS)BY[f.dex]={...f,stage:0,move:f.moves[0],bossOnly:true};
   const evolvedDex=(dex,star)=>BY[dex].line[Math.min(star-1,BY[dex].line.length-1)];
-  const moveFor=u=>BY[u.dex].moves[u.star-1];
+  const moveFor=u=>u.dex===212?'Puño Bala':u.dex===94?'Emboscada Sombría':BY[u.dex].moves[u.star-1];
   const DEFAULT_DECK=[1,4,7,172,92,280,529,246,374,661];
   function validDeck(deck,legacy=false) {
     return Array.isArray(deck)&&deck.length===10&&new Set(deck).size===10&&
@@ -2657,6 +2657,7 @@ G.TFT = (() => {
     ACTIVE_ENTRANCES[f.dex]={...ACTIVE_ENTRANCES[source],name:f.name};
   }
   function entranceFor(u) {
+    if(u.dex===212)return {name:'Experto',effect:'technician',value:.5,description:'Potencia un 50% los golpes de baja potencia de Puño Bala. La prioridad se activa durante su ráfaga de tres pulsos; respeta alcance y aturdimientos.'};
     if(BY[u.dex].line[0]===129&&u.star===1)return {name:'Salpicadura Prudente',effect:'shield',value:.2,description:'Magikarp empieza con un escudo del 20% de su vida. Al evolucionar a Gyarados gana Mirada Intimidante y una oleada que empuja enemigos.'};
     const entry=ENTRANCES[BY[u.dex].line[0]];
     if(entry[1]==='seismic') {
@@ -2705,7 +2706,7 @@ G.TFT = (() => {
       targets:victims.map(u=>u.id),cells:victims.map(u=>u.y*COLS+u.x),ttl:.6});
   }
   function activeEntrance(b,a) {
-    const e=entranceFor(a),foes=b.units.filter(u=>u.side!==a.side&&u.hp>0);
+    const e=entranceFor(a),foes=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed);
     let target;
     if(e.mode==='tactic'){
       target=e.tactic.power===0?a:foes.sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id)[0];
@@ -2753,7 +2754,7 @@ G.TFT = (() => {
     return role==='tank'?'tank':'fighter';
   }
   function selectTarget(b,a) {
-    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0);
+    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed);
     const priority=u=>['healer','ranged'].includes(u.ai)?0:1;
     return foes.sort((x,y)=>{
       if(a.ai==='diver')return priority(x)-priority(y)||distance(a,x)-distance(a,y)||x.id-y.id;
@@ -2767,7 +2768,7 @@ G.TFT = (() => {
   }
   function retreat(b,a) {
     if(!['healer','ranged'].includes(a.ai)||a.moveCD>0)return false;
-    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0);
+    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed);
     const nearest=q=>Math.min(...foes.map(e=>distance(q,e)));
     if(nearest(a)>=2)return false;
     const occupied=new Set(b.units.filter(u=>u!==a&&u.hp>0).map(u=>u.y*COLS+u.x));
@@ -2972,6 +2973,13 @@ G.TFT = (() => {
     'Martillo Colosal':{type:'steel',radius:1,power:2.7,center:'target'}
   };
   function abilityFor(u) {
+    const tactical={
+      94:{type:'ghost',description:'Emboscada Sombría: desaparece en el próximo pulso de movimiento y reaparece en el siguiente de ataque junto al enemigo con menor vida proporcional con espacio libre. Golpea con 340% del ataque; una baja devuelve 50 de maná. Aturdirlo interrumpe la emboscada y lo revela.'},
+      282:{type:'fairy',description:'Cura y escuda a dos aliados. Rescate pasivo, una vez por combate: evita un golpe letal a otro aliado a 3 casillas, lo deja a 1 PV, lo teletransporta a una casilla libre detrás de Gardevoir y le da un escudo del 25% de la vida máxima del aliado rescatado. Requiere espacio y que Gardevoir pueda actuar.'},
+      959:{type:'steel',description:'Martillo Colosal: marca un área de 1 casilla y prepara el golpe hasta el próximo pulso de ataque. Destruye los escudos enemigos en ella y golpea con 450% del ataque. Después pierde un pulso recuperándose. No se mueve durante la preparación; un aturdimiento interrumpe el golpe.'},
+      212:{type:'steel',description:'Experto + Puño Bala: durante los tres siguientes pulsos de ataque sustituye su básico por dos golpes de Acero del 60% del ataque, potenciados un 50% por Experto y ajustados a su cadencia. Tiene prioridad; no genera maná ofensivo. Aturdirse o quedar fuera de alcance pierde el pulso.'}
+    }[u.dex];
+    if(tactical)return {name:moveFor(u),...tactical,signature:true,special:true,area:u.dex===959};
     const family=BY[u.dex].line[0],signature=SIGNATURES[family],i=u.star-1,move=FAMILY_MOVES[family]?.[i];
     if(move)return {name:moveFor(u),type:move.type,description:move.text,signature:true,special:SPECIAL_FAMILIES.has(family),area:move.shape==='area'};
     if(signature)return {name:moveFor(u),type:signature.types[i],description:signature.text[i],signature:true,special:true};
@@ -2994,14 +3002,34 @@ G.TFT = (() => {
   }
   function skipIntro(s){if(s.phase!=='combat'||!(s.battle.intro>0))return false;s.battle.intro=0;entrances(s.battle);return true;}
   const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
-  function hit(b,a,t,power,spell=false,type=a.types[0],periodic=false) {
-    if(t.hp<=0)return 0;
+  function rescueAlly(b,t) {
+    const guards=b.units.filter(g=>g.dex===282&&g!==t&&g.side===t.side&&g.hp>0&&!g.rescueUsed&&!isStunned(b,g)&&!g.shadowed&&distance(g,t)<=3)
+      .sort((x,y)=>distance(x,t)-distance(y,t)||x.id-y.id);
+    for(const g of guards){
+      const free=[];for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+        if((g.side===0?y<=g.y:y>=g.y)||b.units.some(u=>u.hp>0&&u.x===x&&u.y===y))continue;
+        free.push({x,y});
+      }
+      free.sort((x,y)=>distance(g,x)-distance(g,y)||distance(t,x)-distance(t,y)||x.y-y.y||x.x-y.x);
+      if(!free.length)continue;
+      const sx=t.x,sy=t.y;t.x=free[0].x;t.y=free[0].y;g.rescueUsed=true;
+      b.events.push({kind:'rescue',from:g.id,to:t.id,sx,sy,tx:t.x,ty:t.y,type:'fairy',move:'Rescate',ttl:.8});
+      return g;
+    }
+    return null;
+  }
+  function hit(b,a,t,power,spell=false,type=a.types[0],periodic=false,lowPower=false) {
+    if(t.hp<=0||t.shadowed)return 0;
+    if(lowPower&&a.dex===212)power*=1.5;
     const mult=G.Types?.mult?G.Types.mult(type,t.types):1;
     const damage=Math.max(1,Math.round(power*mult*100/(100+t.armor*(1-Math.min(.8,a.pierce)))));
-    const absorbed=Math.min(t.shield,damage),lost=Math.min(t.hp,damage-absorbed);t.shield-=absorbed;t.hp=Math.max(0,t.hp-lost);a.damageDone+=lost;t.damageTaken+=lost;t.blocked+=absorbed;if(t.hp===0&&lost>0)a.kills++;
+    const absorbed=Math.min(t.shield,damage);let lost=Math.min(t.hp,damage-absorbed);
+    const rescue=lost>=t.hp?rescueAlly(b,t):null;if(rescue)lost=Math.max(0,t.hp-1);
+    t.shield-=absorbed;t.hp=Math.max(0,t.hp-lost);a.damageDone+=lost;t.damageTaken+=lost;t.blocked+=absorbed;if(t.hp===0&&lost>0)a.kills++;
     t.flash=.16;t.mana=Math.min(100,t.mana+8);
     if(a.slow)t.slowUntil=b.time+2,t.slowPower=a.slow;
     b.events.push({kind:spell?'spell':'hit',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,type,move:spell?moveFor(a):null,periodic,amount:lost,absorbed,beat:b.beat,ttl:.45});
+    if(rescue)shield(b,rescue,t,t.maxHp*.25);
     // Reflection is a spell marked periodic: it cannot reflect again or replay a cast.
     if(!spell&&!periodic&&lost>0&&t.thorns&&a.side!==t.side&&a.hp>0&&distance(a,t)<=1)hit(b,t,a,lost*t.thorns,true,'steel',true);
     return lost;
@@ -3015,6 +3043,7 @@ G.TFT = (() => {
     if(added)b.events.push({kind:'shield',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,amount:Math.round(added),ttl:.6});
   }
   function push(b,a,t,steps) {
+    if(t.hp<=0||t.shadowed)return;
     const dx=t.x-a.x,dy=t.y-a.y;
     const vx=Math.abs(dx)>Math.abs(dy)?Math.sign(dx):0,vy=vx?0:Math.sign(dy)||1;
     for(let i=0;i<steps;i++){
@@ -3024,7 +3053,7 @@ G.TFT = (() => {
     }
   }
   function burn(b,a,t,duration,power) {
-    if(t.hp<=0)return;
+    if(t.hp<=0||t.shadowed)return;
     if(!t.burn||power>=t.burn.power)t.burn={source:a.id,power,remaining:duration,cd:1};
     else t.burn.remaining=Math.max(t.burn.remaining,duration);
   }
@@ -3035,7 +3064,7 @@ G.TFT = (() => {
     for(let i=1;i<=3;i++) {
       const x=sx+vx*i,y=sy+vy*i;
       if(x<0||x>=COLS||y<0||y>=ROWS||b.units.some(u=>u!==a&&u.side===a.side&&u.hp>0&&u.x===x&&u.y===y))break;
-      end={x,y};for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&u.x===x&&u.y===y))hit(b,a,t,power,true,'ground');
+      end={x,y};for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&u.x===x&&u.y===y))hit(b,a,t,power,true,'ground');
       if(!b.units.some(u=>u!==a&&u.hp>0&&u.x===x&&u.y===y))landing={x,y};
     }
     a.x=landing.x;a.y=landing.y;a.moveCD=.35;
@@ -3044,15 +3073,17 @@ G.TFT = (() => {
   function isStunned(b,u) {return u.hp>0&&Number.isFinite(u.stunUntil)&&u.stunUntil>b.time;}
   function stun(b,a,t,duration) {
     // One shared boundary: no CC can be applied to the caster or its allies.
-    if(a.side===t.side||t.hp<=0||!Number.isFinite(duration)||duration<=0)return false;
+    if(a.side===t.side||t.hp<=0||t.shadowed||!Number.isFinite(duration)||duration<=0)return false;
     if(t.boss)duration*=.5;
     const until=b.time+duration;
     if(until>(t.stunUntil||0)){t.stunUntil=until;t.stunSource=a.id;}
+    if(t.dex===959){delete t.hammerX;delete t.hammerY;b.events=b.events.filter(e=>e.kind!=='warning'||e.from!==t.id);}
+    if(t.dex===94)delete t.ambushPending;
     b.events.push({kind:'stun',from:a.id,to:t.id,type:'electric',sx:a.x,sy:a.y,tx:t.x,ty:t.y,ttl:duration,life:duration});
     return true;
   }
   function shock(b,a,radius,duration,power) {
-    const victims=b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=radius);
+    const victims=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(a,u)<=radius);
     areaEvent(b,a,a,radius,'ground',victims,true);
     for(const t of victims) {
       hit(b,a,t,power,true,'ground');
@@ -3060,7 +3091,7 @@ G.TFT = (() => {
     }
   }
   function signature(b,a,target) {
-    const family=BY[a.dex].line[0],rank=a.star,foes=()=>b.units.filter(u=>u.side!==a.side&&u.hp>0);
+    const family=BY[a.dex].line[0],rank=a.star,foes=()=>b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed);
     const allies=()=>b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id);
     if(family===4) {
       const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1;
@@ -3149,7 +3180,7 @@ G.TFT = (() => {
   function areaCast(b,a,target) {
     const area=AREA_MOVES[moveFor(a)];if(!area)return false;
     const center=area.center==='self'?a:target;
-    const victims=b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(center,u)<=area.radius);
+    const victims=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(center,u)<=area.radius);
     areaEvent(b,a,center,area.radius,area.type,victims,!!area.stun);
     for(const t of victims){
       hit(b,a,t,a.attack*area.power,true,area.type);
@@ -3166,7 +3197,7 @@ G.TFT = (() => {
   }
   function familyCast(b,a,target,override) {
     const m=override||FAMILY_MOVES[BY[a.dex].line[0]]?.[a.star-1];if(!m)return false;
-    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0);
+    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed);
     const friends=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id).slice(0,m.friends||1);
     let victims=[target];
     if(m.shape==='area') {
@@ -3209,11 +3240,19 @@ G.TFT = (() => {
     if(m.boost)boostCadence(b,a,m.boost);
     return true;
   }
+  function adjacentFree(b,a,target){
+    return [[0,-1],[-1,0],[1,0],[0,1]].map(([dx,dy])=>({x:target.x+dx,y:target.y+dy}))
+      .filter(q=>q.x>=0&&q.x<COLS&&q.y>=0&&q.y<ROWS&&!b.units.some(u=>u!==a&&u.hp>0&&u.x===q.x&&u.y===q.y))
+      .sort((x,y)=>distance(a,x)-distance(a,y)||x.y-y.y||x.x-y.x);
+  }
   function tacticalCast(b,a,target) {
+    if(a.dex===94){a.ambushPending=true;return true;}
+    if(a.dex===959){a.hammerX=target.x;a.hammerY=target.y;areaEvent(b,a,{x:a.hammerX,y:a.hammerY},1,'steel',[]);b.events[b.events.length-1].kind='warning';b.events[b.events.length-1].ttl=1;b.events[b.events.length-1].life=1;return true;}
+    if(a.dex===212){a.bulletPulses=3;return true;}
     if(a.dex===925&&a.star===3){a.populationPulse=0;a.populationTarget=target.id;return true;}
     if(a.dex===681){a.bladePending=true;shield(b,a,a,a.maxHp*.3);return true;}
     if(a.dex!==663)return false;
-    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0).sort((x,y)=>distance(a,y)-distance(a,x)||x.id-y.id);
+    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed).sort((x,y)=>distance(a,y)-distance(a,x)||x.id-y.id);
     let landing=null,victim=null;
     for(const foe of foes){
       const cells=[[0,-1],[-1,0],[1,0],[0,1]].map(([dx,dy])=>({x:foe.x+dx,y:foe.y+dy}))
@@ -3223,19 +3262,55 @@ G.TFT = (() => {
     if(!landing){landing={x:a.x,y:a.y};victim=target;}
     const sx=a.x,sy=a.y;a.x=landing.x;a.y=landing.y;
     b.events.push({kind:'flight',from:a.id,to:victim.id,sx,sy,tx:a.x,ty:a.y,type:'flying',ttl:.6});
-    areaEvent(b,a,a,1,'flying',b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=1));
+    areaEvent(b,a,a,1,'flying',b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(a,u)<=1));
     const old=a.pierce;a.pierce=Math.max(old,.3);
-    for(const foe of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=1))hit(b,a,foe,a.attack*2.8,true,'flying');
+    for(const foe of b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(a,u)<=1))hit(b,a,foe,a.attack*2.8,true,'flying');
     a.pierce=old;
     const recoil=Math.min(a.hp-1,a.maxHp*.1);if(recoil>0){a.hp-=recoil;a.damageTaken+=recoil;}
     return true;
   }
   function tacticalPulse(b,a) {
+    if(a.ambushPending){
+      // Only reveal after a movement beat has actually hidden Gengar.
+      if(!a.shadowed)return true;
+      delete a.shadowed;delete a.ambushPending;
+      if(isStunned(b,a))return true;
+      const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id);
+      for(const target of foes){
+        const cells=adjacentFree(b,a,target);if(!cells.length)continue;
+        const sx=a.x,sy=a.y;a.x=cells[0].x;a.y=cells[0].y;
+        b.events.push({kind:'blink',from:a.id,to:target.id,sx,sy,tx:a.x,ty:a.y,type:'ghost',ttl:.6});
+        const kills=a.kills;hit(b,a,target,a.attack*3.4,true,'ghost');if(a.kills>kills)a.mana=Math.min(100,a.mana+50);
+        break;
+      }
+      return true;
+    }
+    if(a.hammerRecovery){delete a.hammerRecovery;return true;}
+    if(a.hammerX!==undefined){
+      const center={x:a.hammerX,y:a.hammerY};delete a.hammerX;delete a.hammerY;
+      if(isStunned(b,a))return true;
+      a.hammerRecovery=true;
+      const victims=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(center,u)<=1);
+      areaEvent(b,a,center,1,'steel',victims);
+      for(const t of victims){t.shield=0;hit(b,a,t,a.attack*4.5,true,'steel');}
+      return true;
+    }
+    if(a.bulletPulses){
+      a.bulletPulses--;if(!isStunned(b,a)){
+        const rate=(2*BEAT_SECONDS)/a.interval*(a.slowUntil>b.time?1-a.slowPower:1);
+        for(let i=0;i<2;i++){
+          const t=selectTarget(b,a);if(!t||distance(a,t)>a.range)break;
+          hit(b,a,t,a.attack*.6*rate,true,'steel',false,true);
+          const e=b.events[b.events.length-1];if(e?.from===a.id){e.bullet=i;e.move='Puño Bala';}
+        }
+      }
+      if(!a.bulletPulses)delete a.bulletPulses;return true;
+    }
     if(a.populationPulse!==undefined){
       const count=[3,3,4][a.populationPulse++];
       if(!isStunned(b,a))for(let i=0;i<count;i++){
-        let target=b.units.find(u=>u.id===a.populationTarget&&u.side!==a.side&&u.hp>0);
-        if(!target){target=b.units.filter(u=>u.side!==a.side&&u.hp>0).sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id)[0];a.populationTarget=target?.id||0;}
+        let target=b.units.find(u=>u.id===a.populationTarget&&u.side!==a.side&&u.hp>0&&!u.shadowed);
+        if(!target){target=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed).sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id)[0];a.populationTarget=target?.id||0;}
         if(!target||distance(a,target)>a.range)break;
         hit(b,a,target,a.attack*.55,true,'normal');
         const e=b.events[b.events.length-1];e.mouse=i;e.life=.65;e.ttl=.65;
@@ -3263,9 +3338,9 @@ G.TFT = (() => {
       const ally=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0];heal(b,a,ally,a.attack*3.2);
     } else if(a.role==='tank') {
       shield(b,a,a,a.maxHp*.25);
-      for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=2))hit(b,a,t,a.attack*1.5,true);
+      for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(a,u)<=2))hit(b,a,t,a.attack*1.5,true);
     } else if(a.role==='mage') {
-      for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(target,u)<=1))hit(b,a,t,a.attack*2,true);
+      for(const t of b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(target,u)<=1))hit(b,a,t,a.attack*2,true);
     } else hit(b,a,target,a.attack*3.5,true);
   }
   function finish(s,winner) {
@@ -3297,13 +3372,15 @@ G.TFT = (() => {
     }
     if(next){a.x=next.x;a.y=next.y;}a.moveCD=.3;
   }
-  function hasAttackPriority(a) {return !!a.galeWings&&a.hp>0&&a.hp>=a.maxHp;}
+  function hasAttackPriority(a) {return a.hp>0&&(!!a.bulletPulses||!!a.galeWings&&a.hp>=a.maxHp);}
   function pulse(b) {
     b.beatCount=(b.beatCount||0)+1;b.beat=(b.beatCount-1)%4+1;b.beatStarted=b.time;
     // Both teams share one clock. Alternate cell/attack initiative each bar.
     const order=Math.floor((b.beatCount-1)/4)%2?[...b.units].reverse():b.units;
     if(b.beat===1||b.beat===3) {
-      for(const a of order){if(a.hp<=0||isStunned(b,a))continue;
+      for(const a of order){if(a.hp<=0)continue;
+        if(a.ambushPending){if(isStunned(b,a))delete a.ambushPending;else a.shadowed=true;continue;}
+        if(isStunned(b,a)||a.hammerX!==undefined)continue;
         const steps=a.dex===658?2:1;
         for(let i=0;i<steps;i++){const target=selectTarget(b,a);if(!target)break;
           if(i)a.moveCD=0;const x=a.x,y=a.y;moveToward(b,a,target);if(a.x===x&&a.y===y)break;
@@ -3312,13 +3389,13 @@ G.TFT = (() => {
       return;
     }
     // Choose attacks from the same pulse's initial formation, then resolve in order.
-    const busy=new Set();for(const a of order)if(a.hp>0&&tacticalPulse(b,a))busy.add(a.id);
-    const attacks=order.filter(a=>!busy.has(a.id)&&a.hp>0&&!isStunned(b,a)&&a.cooldown<=0)
-      .map(a=>({a,target:selectTarget(b,a)})).filter(p=>p.target&&distance(p.a,p.target)<=p.a.range)
+    const attacks=order.filter(a=>a.hp>0).map(a=>({a,target:selectTarget(b,a)}))
       .sort((p,q)=>Number(hasAttackPriority(q.a))-Number(hasAttackPriority(p.a)));
     for(const {a,target:chosen} of attacks) {
-      if(a.hp<=0||isStunned(b,a))continue;
-      const target=chosen.hp>0?chosen:selectTarget(b,a);if(!target||distance(a,target)>a.range)continue;
+      if(a.hp<=0)continue;
+      if(tacticalPulse(b,a))continue;
+      if(isStunned(b,a)||a.cooldown>0)continue;
+      const target=chosen?.hp>0&&!chosen.shadowed?chosen:selectTarget(b,a);if(!target||distance(a,target)>a.range)continue;
       // One basic strike per attack beat; speed changes strike power/mana instead
       // of creating off-beat attacks. Slow affects those same values temporarily.
       const rate=(2*BEAT_SECONDS)/a.interval*(a.slowUntil>b.time?1-a.slowPower:1);
@@ -3407,6 +3484,12 @@ G.TFT = (() => {
         if(!b.units.every(u=>unit(u)&&[0,1].includes(u.side)&&int(u.x,0,5)&&int(u.y,0,5)&&numbers(u)&&
           ['hp','maxHp','attack','armor','interval','range','mana','shield','manaGain','regen','pierce','slow','cooldown','moveCD','flash','damageDone','damageTaken','blocked','kills','healingDone','shieldingDone'].every(k=>Number.isFinite(u[k]))&&
           u.hp>=0&&u.hp<=u.maxHp&&u.maxHp>0&&u.interval>0&&u.shield>=0&&u.mana>=0&&u.mana<=100&&
+          (u.ambushPending===undefined||u.dex===94&&u.ambushPending===true)&&
+          (u.shadowed===undefined||u.dex===94&&u.shadowed===true&&u.ambushPending===true)&&
+          (u.rescueUsed===undefined||u.dex===282&&typeof u.rescueUsed==='boolean')&&
+          (u.bulletPulses===undefined||u.dex===212&&int(u.bulletPulses,1,3))&&
+          (u.hammerRecovery===undefined||u.dex===959&&u.hammerRecovery===true)&&
+          (u.hammerX===undefined&&u.hammerY===undefined||u.dex===959&&int(u.hammerX,0,5)&&int(u.hammerY,0,5))&&
           (u.populationPulse===undefined||u.dex===925&&int(u.populationPulse,0,2)&&int(u.populationTarget,-6,100000))&&
           (u.bladePending===undefined||u.dex===681&&typeof u.bladePending==='boolean')&&
           Array.isArray(u.types)&&u.types.every(t=>Object.hasOwn(EFFECTS,t))&&['tank','healer','mage','fighter'].includes(u.role)&&
