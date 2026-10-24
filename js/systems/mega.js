@@ -19,6 +19,9 @@ G.Mega=(()=>{
   return true;
  }
  const DEFINITIONS={
+  47:{id:'parasectite',dex:47,name:'Parasectita',form:'Mega Parasect',progress:'parasectBosses',start:'shadow-ball',hp:1,atk:1,spd:1,shiny:false,
+    types:['bug','ghost'],stats:{hp:60,atk:95,def:100,spa:120,spd:100,spe:30},
+    help:'Bicho/Fantasma · Bola Sombra Nv. 2 · Red Fúngica: esporas cada 6 s; los infectados caídos liberan otra nube y te curan. Diseño: ivi.etz.'},
   260:{id:ID,dex:DEX,name:'Swampertita',form:'Mega Swampert',progress:'swampertBosses',start:'bulldoze',hp:1.08,atk:1.23,spd:1.06,
     help:'Mega Swampert comienza con Terratemblor Nv. 2.'},
   257:{id:'blazikenite',dex:257,name:'Blazikenita',form:'Mega Blaziken',progress:'blazikenBosses',start:'karate-chop',hp:1.05,atk:1.23,spd:1.08,shiny:false,
@@ -52,6 +55,7 @@ G.Mega=(()=>{
  function transform(mon,d){
   const form={...mon,megaStone:d.id,name:d.form,hp:Math.round(mon.hp*d.hp),
     atk:+(mon.atk*d.atk).toFixed(3),spd:Math.round(mon.spd*d.spd),megaNoShiny:d.shiny===false};
+  if(d.types)form.types=[...d.types];
   if(d.stats){
    form.baseStats={...d.stats};form.bst=Object.values(d.stats).reduce((a,b)=>a+b,0);
    // Same conversion as tools/fetch_pokedex.py; Potencia is applied separately.
@@ -66,6 +70,7 @@ G.Mega=(()=>{
     form.pa = +(.70 + d.stats.atk * .0055).toFixed(2);
     form.sa = +(.70 + d.stats.spa * .0055).toFixed(2);
     form.df = d.stats.def; form.sd = d.stats.spd;
+    form.atk=Math.max(form.pa,form.sa);
   }
   return form;
  }

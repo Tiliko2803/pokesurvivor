@@ -72,7 +72,7 @@ G.MenuUI = (() => {
     $('menu-partner').style.setProperty('--stage-c', shiny ? '#9ae6ff' : G.U.TYPE_COLOR[mon.types[0]]);
     $('menu-partner').classList.toggle('shiny', shiny);
     $('menu-partner-name').innerHTML = (G.Mega.equipped(s,mon.dex)?'Mega ':'')+mon.name+(shiny?' '+G.Icons.html('shiny',24):'');
-    $('menu-partner-info').innerHTML = G.UI.typeChips(mon.types) + ' ' + G.UI.stars(mon.rarity);
+    $('menu-partner-info').innerHTML = G.UI.typeChips(megaOn&&megaDef.types?megaDef.types:mon.types) + ' ' + G.UI.stars(mon.rarity);
     // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
     const seg = $('menu-shiny');
     seg.classList.toggle('hidden', !G.DB.ownsShiny(mon.dex)||(megaOn&&megaDef.shiny===false));
