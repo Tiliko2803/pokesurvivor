@@ -19,6 +19,12 @@ G.Mega=(()=>{
   return true;
  }
  const DEFINITIONS={
+  530:{id:'excadrillite',dex:530,name:'Excadrillita',form:'Mega Excadrill',progress:'excadrillBosses',start:'metal-claw',hp:1,atk:1,spd:1,shiny:false,
+    types:['ground','steel'],stats:{hp:110,atk:165,def:100,spa:65,spd:65,spe:103},
+    help:'Garra Metal Nv. 2 · Taladro Rompefilas: perforación cada 4 s, atraviesa hordas y hace +50% de daño a sanadores y escuderos.'},
+  154:{id:'meganiumite',dex:154,name:'Meganiumita',form:'Mega Meganium',progress:'meganiumBosses',start:'solar-beam',hp:1,atk:1,spd:1,shiny:false,
+    types:['grass','fairy'],stats:{hp:80,atk:92,def:115,spa:143,spd:115,spe:80},
+    help:'Rayo Solar Nv. 2 sin carga · Jardín Solar: cada 8 s lanza cuatro rayos, ralentiza enemigos cercanos y cura 4% de vida al acertar.'},
   47:{id:'parasectite',dex:47,name:'Parasectita',form:'Mega Parasect',progress:'parasectBosses',start:'shadow-ball',hp:1,atk:1,spd:1,shiny:false,
     types:['bug','ghost'],stats:{hp:60,atk:95,def:100,spa:120,spd:100,spe:30},
     help:'Bicho/Fantasma · Bola Sombra Nv. 2 · Red Fúngica: esporas cada 6 s; los infectados caídos liberan otra nube y te curan. Diseño: ivi.etz.'},

@@ -1,10 +1,9 @@
 /* Repertorio: elección por Pokémon del ataque adicional de inicio. */
 G.Repertoire = (() => {
   function initialMove(mon) {
-    if(mon.dex===47&&mon.megaStone==='parasectite')return 'shadow-ball';
-    if(mon.dex===959&&mon.megaStone==='tinkatonite')return 'gigaton-hammer';
-    if(mon.dex===257&&mon.megaStone==='blazikenite')return 'karate-chop';
-    return mon.dex === 260 && mon.megaStone === 'swampertite' ? 'bulldoze' : G.startMoveOf(mon.dex);
+    const mega=mon.megaStone&&G.Mega.definition(mon.dex);
+    if(mega?.start)return mega.start;
+    return G.startMoveOf(mon.dex);
   }
 
   function pool(mon, save, known = [initialMove(mon)]) {

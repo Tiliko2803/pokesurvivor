@@ -21,6 +21,7 @@ G.Combat = (() => {
   function tick(dt, pl, now) {
     if (pl.dead) return;
     G.Parasect?.tick(dt,pl);
+    G.SurvivorMegas?.tick(dt,pl);
     // Vínculos: todos los movimientos del hueco activo, cada uno con su recarga.
     for (const m of pl.activeGroup()) tickMove(dt, pl, m, now);
   }
@@ -28,9 +29,11 @@ G.Combat = (() => {
   function effectiveMove(pl, m) {
     const area = pl.areaMul || 1, duration = pl.durationMul || 1;
     const power = G.Mega && G.Mega.damageMultiplier ? G.Mega.damageMultiplier(pl, m) : 1;
-    if (area === 1 && duration === 1 && power === 1) return m;
+    const instantSolar=pl.mega==='meganiumite'&&m.id==='solar-beam';
+    if (area === 1 && duration === 1 && power === 1 && !instantSolar) return m;
     const out = Object.assign({}, m);
     out.sourceMove = m;
+    if(instantSolar){out.kind='beam';out.charge=0;}
     if (m.dmg != null) out.dmg = m.dmg * power;
     for (const key of ['radius', 'width', 'size']) if (m[key] != null) out[key] = m[key] * area;
     // No alarga recargas, demoras de meteoros ni viajes de proyectiles.

@@ -6,6 +6,11 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  {d:'2026-10-24',title:['Mega Excadrill y Mega Meganium','Mega Excadrill and Mega Meganium'],new:[
+    ['Mega Excadrill: Taladro Rompefilas atraviesa hordas cada 4 s y hace un 50% más de daño a sanadores y escuderos.', 'Mega Excadrill: a piercing drill every 4 seconds deals 50% extra damage to healers and shielders.'],
+    ['Mega Meganium Planta/Hada: Rayo Solar sin carga y Jardín Solar con cuatro rayos, ralentización y curación del 4% al acertar.', 'Grass/Fairy Mega Meganium: instant Solar Beam and Solar Garden with four rays, slowing and 4% healing on hit.'],
+    ['Sprites nuevos en ocho direcciones. Consigue cada megapiedra venciendo tres jefes en una partida individual con su forma normal y equípala desde el menú.', 'New eight-direction sprites. Earn each Mega Stone by defeating three bosses in a normal solo run with its ordinary form, then equip it in the menu.']
+  ]},
   { d: '2026-10-24', title: ['TFT: Iridio y cinco Megaevoluciones', 'TFT: Iridium and five Mega Evolutions'], chg: [
     ['Tras Oro ★★★, tres copias más de la misma familia, al precio normal de tienda, convierten a Swampert, Blaziken, Tyranitar, Tinkaton o Parasect en su Mega de Iridio ★. Progreso visible, sprites Mega, sin coste extra ni desbloqueos del modo Supervivencia.', 'After Gold ★★★, three additional family copies at their normal shop price turn Swampert, Blaziken, Tyranitar, Tinkaton or Parasect into Iridium ★ Megas. Visible progress and Mega sprites; no extra fee or Survivor unlock required.'],
     ['Diluvios de Swampert, patadas encadenadas de Blaziken, control de objetivos en la arena de Tyranitar, réplica del martillo de Tinkaton y red de esporas de Parasect que drena, cura y se propaga. Paras → Parasect se incorpora al editor de mazos y a la tienda por 2 de oro.', 'Swampert floods, Blaziken chained kicks, Tyranitar sand target control, Tinkaton hammer aftershock, and Parasect draining, healing, spreading spores. Paras → Parasect joins the deck editor and shop for 2 gold.']
