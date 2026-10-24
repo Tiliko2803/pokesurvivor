@@ -91,3 +91,11 @@ test('second tactical wave renders rescue portals, ambush, hammer warning and Bu
  for(const e of events){Object.assign(e,{from:1,to:-1,sx:2,sy:3,tx:2,ty:2});const before=JSON.stringify(e);for(const calm of [false,true]){const count=calls.length;V.draw(ctx,e,units,{calm});assert.ok(calls.length>count);}assert.equal(JSON.stringify(e),before);}
  assert.equal(V.areaCells(events[2],units).length,5);assert.equal(calls.filter(c=>c.kind==='save').length,calls.filter(c=>c.kind==='restore').length);
 });
+test('new quartet renders real Dreepy sprites, three-cell wave bands, leaf fans and throw arcs without altering combat',()=>{
+ const {V,ctx,calls,images}=fixture(),units=[{id:1,dex:887,star:3,x:2,y:5,types:['dragon'],range:3},{id:-1,dex:7,star:1,x:2,y:3,types:['water'],range:1}];
+ V.warm(units);assert.ok(images.some(x=>x.endsWith('/885/Idle.png')));
+ const events=[{kind:'dreepy',returning:true,life:.9,ttl:.3},{kind:'wave',cells:[19,20,21],dx:0,dy:-1,life:.5,ttl:.3},{kind:'leafFan',life:.65,ttl:.3},{kind:'throw',life:.6,ttl:.3},{kind:'flank',ttl:.3}];
+ for(const e of events){Object.assign(e,{from:1,to:-1,sx:2,sy:5,tx:2,ty:3});const before=JSON.stringify(e);for(const calm of [false,true]){const start=calls.length;V.draw(ctx,e,units,{calm});assert.ok(calls.slice(start).some(c=>c.kind==='drawImage'),e.kind);}assert.equal(JSON.stringify(e),before);}
+ assert.equal(JSON.stringify(V.areaCells(events[1],units)),JSON.stringify([19,20,21]));const air=V.travel(units[1],events);assert.equal(air.x,2);assert.equal(air.y,4);assert.ok(air.lift>54);assert.equal(V.travel(units[1],events,true),null);
+ assert.equal(calls.filter(c=>c.kind==='save').length,calls.filter(c=>c.kind==='restore').length);
+});

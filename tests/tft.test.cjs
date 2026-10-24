@@ -327,7 +327,7 @@ test('all 107 families have explicit entrances and executable moves at all 321 b
    const {b,units:[a,t,other,ally]}=battleFor(E,[[dex,star,0,2,3],[133,1,1,2,2],[133,1,1,3,2],[7,1,0,3,3]]);
    a.hp=a.maxHp/2;ally.hp=ally.maxHp/3;const allyHP=ally.hp;a.mana=100;
    E.cast(b,a,t);
-   assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0||a.populationPulse===0||a.ambushPending||a.hammerX!==undefined||a.bulletPulses,`${family.dex} rank ${star} has a real effect`);
+   assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0||a.populationPulse===0||a.ambushPending||a.hammerX!==undefined||a.bulletPulses||a.leafPulse===0||b.waves?.some(w=>w.source===a.id),`${family.dex} rank ${star} has a real effect`);
    assert.ok(ally.hp>=allyHP,'never damages its ally');assert.ok(b.units.every(u=>Number.isFinite(u.hp)&&u.hp>=0&&u.hp<=u.maxHp&&Number.isFinite(u.mana)));
    assert.ok(a.mana>=0&&a.mana<=100);assert.ok(a.shield<=a.maxHp*.5);
    assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
@@ -875,4 +875,81 @@ test('saving after a Gardevoir rescue preserves its spent charge and prevents a 
  s.units=[{id:1,dex:282,star:3,pos:20},{id:2,dex:7,star:1,pos:19}];s.nextId=3;s.opponent=[{id:-1,dex:93,star:2,pos:13}];s.opponentRound=1;E.start(s);
  const [g,ally,foe]=s.battle.units;foe.attack=100000;ally.hp=20;E.cast(s.battle,foe,ally);assert.equal(ally.hp,1);
  const r=E.restore(E.serialize(s));assert.ok(r);assert.equal(r.battle.units[0].rescueUsed,true);E.cast(r.battle,r.battle.units[2],r.battle.units[1]);assert.equal(r.battle.units[1].hp,0);
+});
+
+test('Heracross throws an adjacent enemy behind itself at all stages without moving allies or bosses',()=>{
+ for(let star=1;star<=3;star++){
+  const {E}=fixture(),{b,units:[a,t]}=battleFor(E,[[214,star,0,2,3],[7,1,1,2,2]]);E.cast(b,a,t);
+  assert.ok(t.hp<t.maxHp);assert.equal(t.x,2);assert.equal(t.y,4);assert.equal(a.y,3);assert.ok(b.events.some(e=>e.kind==='throw'));assert.equal(E.moveFor(a),'Llave de Relevo');
+ }
+ for(const mode of ['boss','occupied','edge','range','ally']){
+  const {E}=fixture(),{b,units:[a,t,ally]}=battleFor(E,[[214,3,0,2,3],[7,1,1,2,2],[7,1,0,1,4]]);
+  if(mode==='boss')t.boss=true;if(mode==='occupied')ally.x=2;if(mode==='edge'){a.y=5;t.y=4;}if(mode==='range')t.y=0;if(mode==='ally')t.side=0;
+  const x=t.x,y=t.y,hp=t.hp;E.cast(b,a,t);assert.equal(t.x,x,mode);assert.equal(t.y,y,mode);assert.equal(b.events.some(e=>e.kind==='throw'),false,mode);
+  if(['range','ally'].includes(mode))assert.equal(t.hp,hp,mode);else assert.ok(t.hp<hp,mode);
+ }
+});
+test('Sceptile circles its victim through legal corners, pierces only on a successful rear flank and ends in a friendly-safe cone',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,near,far,ally]}=battleFor(E,[[254,3,0,2,3],[7,1,1,2,2],[7,1,1,1,2],[7,1,1,5,0],[7,1,0,1,3]]);
+ a.attack=100;t.armor=100;t.types=['normal'];const allyHP=ally.hp;E.cast(b,a,t);assert.equal(a.damageDone,0);
+ reworkBeat(E,s);assert.equal(a.x,3);assert.equal(a.y,2);assert.equal(t.maxHp-t.hp,65);
+ reworkBeat(E,s);assert.equal(a.x,2);assert.equal(a.y,1);assert.equal(t.maxHp-t.hp,165);
+ const nearHP=near.hp;reworkBeat(E,s);assert.equal(t.maxHp-t.hp,285);assert.ok(near.hp<nearHP);assert.equal(far.hp,far.maxHp);assert.equal(ally.hp,allyHP);assert.equal(a.leafPulse,undefined);assert.equal(a.mana,0);
+ const live=b.units.filter(u=>u.hp>0);assert.equal(new Set(live.map(u=>u.y*6+u.x)).size,live.length);
+});
+test('blocking both side flanks denies Sceptile bonus penetration; stunned and out-of-range steps are lost',()=>{
+ const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[254,3,0,2,3],[7,1,1,2,2],[7,1,0,1,2],[7,1,0,3,2]]);
+ a.attack=100;t.armor=100;t.types=['normal'];E.cast(b,a,t);reworkBeat(E,s);reworkBeat(E,s);assert.equal(a.x,2);assert.equal(a.y,3);assert.equal(t.maxHp-t.hp,145);assert.equal(b.events.some(e=>e.kind==='flank'),false);
+ const q=battleFor(E,[[254,3,0,2,3],[7,1,1,2,2]]),leaf=q.units[0],foe=q.units[1];E.cast(q.b,leaf,foe);leaf.stunUntil=1;reworkBeat(E,q.s);assert.equal(leaf.damageDone,0);assert.equal(leaf.leafPulse,1);
+ leaf.stunUntil=0;foe.y=0;reworkBeat(E,q.s);assert.equal(leaf.damageDone,0);reworkBeat(E,q.s);assert.ok(leaf.damageDone>0);assert.equal(leaf.leafPulse,undefined);
+});
+test('Empoleon wave advances after movement, hits a three-cell band and never hits the same pushed victim twice',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,wing,out,ally,far]}=battleFor(E,[[395,3,0,2,5],[7,1,1,2,4],[7,1,1,1,4],[7,1,1,4,4],[7,1,0,3,4],[7,1,1,2,1]]);
+ const allyHP=ally.hp;E.cast(b,a,t);assert.equal(a.damageDone,0);assert.equal(b.waves.length,1);reworkBeat(E,s,2);assert.equal(a.damageDone,0,'attack beats do not advance waves');
+ reworkBeat(E,s,1);assert.equal(t.y,3);assert.equal(wing.y,3);assert.ok(t.hp<t.maxHp&&wing.hp<wing.maxHp);assert.equal(out.hp,out.maxHp);assert.equal(ally.hp,allyHP);
+ const hp=t.hp;reworkBeat(E,s,3);assert.equal(t.hp,hp,'pushing into next band cannot re-hit');
+ for(let i=0;i<4;i++)reworkBeat(E,s,1);assert.ok(far.hp<far.maxHp);assert.equal(b.waves.length,0);assert.equal(ally.hp,allyHP);
+});
+test('Empoleon respects blocked pushes, boss immunity and both casting directions; a launched wave keeps its cast power and heading',()=>{
+ for(const mode of ['blocked','boss','reverse','caster-moves']){
+  const {E}=fixture(),{s,b,units:[a,t,block]}=battleFor(E,[[395,3,0,2,5],[7,1,1,2,4],[7,1,0,2,3]]);
+  if(mode==='boss')t.boss=true;if(mode==='reverse'){a.side=1;a.y=0;t.side=0;t.y=1;block.x=5;}
+  const y=t.y;E.cast(b,a,t);if(mode==='caster-moves'){a.x=5;a.attack=1;}
+  reworkBeat(E,s,1);assert.ok(t.hp<t.maxHp,mode);
+  if(mode==='reverse')assert.equal(t.y,2);else assert.equal(t.y,y,mode);
+  if(mode==='caster-moves')assert.ok(a.damageDone>2.5,'damage snapshots cast attack rather than new attack');
+ }
+});
+test('Dragapult fires down distinct corridors, pierces first victims and explodes on the second without hitting allies',()=>{
+ const {E}=fixture(),{b,units:[a,first,second,sideFirst,sideSecond,ally,off]}=battleFor(E,[[887,3,0,2,5],[7,1,1,2,3],[7,1,1,2,1],[7,1,1,3,4],[7,1,1,3,2],[7,1,0,2,4],[7,1,1,0,0]]);
+ const allyHP=ally.hp;E.cast(b,a,first);for(const t of [first,second,sideFirst,sideSecond])assert.ok(t.hp<t.maxHp);
+ assert.equal(ally.hp,allyHP);assert.equal(off.hp,off.maxHp);const darts=b.events.filter(e=>e.kind==='dreepy');assert.equal(darts.length,2);assert.notEqual(darts[0].sx,darts[1].sx);assert.ok(darts.every(e=>e.explodes&&!e.returning));assert.equal(b.events.filter(e=>e.kind==='area'&&e.type==='dragon').length,2);
+});
+test('a lone Dragapult victim is struck on the outbound and return path; an empty corridor causes no extra damage',()=>{
+ const {E}=fixture(),{b,units:[a,t]}=battleFor(E,[[887,3,0,2,5],[7,1,1,2,3]]);a.attack=100;t.armor=100;const old=a.pierce;E.cast(b,a,t);
+ assert.equal(t.maxHp-t.hp,169);assert.equal(a.pierce,old);assert.equal(b.events.filter(e=>e.kind==='spell').length,2);assert.equal(b.events.filter(e=>e.kind==='dreepy'&&e.returning).length,1);assert.equal(b.events.some(e=>e.kind==='area'),false);
+});
+test('Sceptile sequences and moving Empoleon waves resume deterministically and reject invalid stored state',()=>{
+ const {E}=fixture();
+ for(const dex of [254,395]){
+  const family=E.BY[dex].line[0],deck=[family,...E.DEFAULT_DECK.filter(d=>d!==family)].slice(0,10),s=E.create(212,deck);
+  s.units=[{id:1,dex,star:3,pos:dex===395?32:20}];s.nextId=2;s.opponent=[{id:-1,dex:7,star:1,pos:14}];s.opponentRound=1;E.start(s);
+  const [a,t]=s.battle.units;t.hp=t.maxHp=100000;a.cooldown=a.moveCD=t.cooldown=t.moveCD=99;if(dex===395)t.y=4;
+  E.cast(s.battle,a,t);reworkBeat(E,s,dex===395?1:2);const raw=E.serialize(s),restored=E.restore(raw);assert.ok(restored,`${dex} restores`);
+  for(let i=0;i<80;i++){E.tick(s,.05);E.tick(restored,.05);}
+  const clean=b=>JSON.stringify({units:b.units.map(u=>{const x={...u};delete x.entrance;return x;}),waves:b.waves});assert.equal(clean(s.battle),clean(restored.battle));
+  const bad=JSON.parse(raw);if(dex===395)bad.state.battle.waves[0].hit.push(1);else bad.state.battle.units[0].leafPulse=9;assert.equal(E.restore(JSON.stringify(bad)),null);
+ }
+});
+test('the new quartet completes mixed fights without cell collisions and remains deterministic across frame rates',()=>{
+ const {E}=fixture();const run=dt=>{
+  const deck=[214,252,393,885,...E.DEFAULT_DECK.filter(d=>![214,252,393,885].includes(d))].slice(0,10),s=E.create(421,deck);s.level=6;
+  s.units=[214,254,395,887].map((dex,i)=>({id:i+1,dex,star:3,pos:18+i}));s.nextId=5;
+  s.opponent=[214,254,395,887,282,959].map((dex,i)=>({id:-i-1,dex,star:3,pos:12+i}));s.opponentRound=1;E.start(s);
+  for(let i=0;i<1500&&s.phase==='combat';i++){
+   E.tick(s,dt);const live=s.battle.units.filter(u=>u.hp>0);assert.equal(new Set(live.map(u=>u.y*6+u.x)).size,live.length);
+   assert.ok(live.every(u=>u.x>=0&&u.x<6&&u.y>=0&&u.y<6&&Number.isFinite(u.hp)));
+  }
+  assert.notEqual(s.phase,'combat');return JSON.stringify({result:s.result,units:s.battle.units,waves:s.battle.waves});
+ };assert.equal(run(.05),run(.1));
 });

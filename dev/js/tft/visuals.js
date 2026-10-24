@@ -31,6 +31,7 @@ G.TFTVisuals = (() => {
     return m?clamp(m.d.reduce((a,n)=>a+n,0)/60/Math.max(.05,duration),.25,12):1;
   }
   function warm(units) {
+    if(units.some(u=>u.dex===887))G.Sprites.sheet(885,'Idle');
     for(const dex of new Set(units.map(u=>u.dex)))for(const name of ['Idle','Walk','Attack','Shoot','Charge','Hurt','Faint'])
       if(G.Sprites.meta(dex)?.a[name])G.Sprites.sheet(dex,name);
   }
@@ -39,7 +40,7 @@ G.TFTVisuals = (() => {
     for(const e of events){
       if(e.to&&['hit','spell'].includes(e.kind))hurt.add(e.to);
       if(e.periodic)continue;
-      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,flight:4,blink:4,rescue:4}[e.kind]||0;
+      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,flight:4,blink:4,rescue:4,throw:4,flank:4,dreepy:4,leafFan:4}[e.kind]||0;
       if(priority&&(!actions.has(e.from)||actions.get(e.from).priority<priority))actions.set(e.from,{e,priority});
     }
     return {actions,hurt};
@@ -67,7 +68,13 @@ G.TFTVisuals = (() => {
     }
     return {x,y,scale,flash};
   }
+  function travel(u,events,calm=false){
+    if(calm)return null;
+    const e=events.findLast(e=>e.kind==='throw'&&e.to===u.id&&e.ttl>0);if(!e)return null;
+    const p=progress(e);return {x:e.sx+(e.tx-e.sx)*p,y:e.sy+(e.ty-e.sy)*p,lift:Math.sin(p*Math.PI)*55};
+  }
   function areaCells(e,units,time=0) {
+    if(e.kind==='wave')return [...e.cells];
     if(e.control){
       const source=units.find(u=>u.id===e.from);
       return units.filter(u=>source&&u.side!==source.side&&u.hp>0&&e.targets?.includes(u.id)&&u.stunUntil>time).map(u=>u.y*6+u.x);
@@ -86,7 +93,23 @@ G.TFTVisuals = (() => {
       G.VFX.draw(ctx,shape,pal,clamp(x,0,600),clamp(y,0,600),{scale,alpha,angle:rotation,frame:calm?0:frame});
     };
     ctx.save();ctx.imageSmoothingEnabled=false;
-    if(e.kind==='rescue'||e.kind==='blink') {
+    if(e.kind==='dreepy') {
+      const t=calm?1:e.returning?(p<.6?p/.6:(1-p)/.4):Math.min(1,p/.8),x=sx+(tx-sx)*t,y=sy+(ty-sy)*t;
+      const m=G.Sprites.animMeta(885,'Idle'),sheet=G.Sprites.sheet(885,'Idle');
+      if(m&&sheet?.ready){const dir=G.Sprites.dirFromAngle(angle+(e.returning&&p>=.6?Math.PI:0)),k=.9;ctx.globalAlpha=fade;ctx.drawImage(sheet.img,Math.min(frame,m.n-1)*m.w,Math.min(dir,m.r-1)*m.h,m.w,m.h,x-m.ax*k,y-m.ay*k,m.w*k,m.h*k);}
+      else sprite('star','dragon',x,y,.8,fade,angle);
+      if(!calm&&!low)sprite('star','ghost',x-(tx-sx)*.06,y-(ty-sy)*.06,.4,fade*.5,angle);
+      if(e.explodes&&p>.8)sprite('impact','dragon',tx,ty,1.6,fade);
+    } else if(e.kind==='wave') {
+      for(const cell of e.cells){const x=cell%6*100+50,y=Math.floor(cell/6)*100+48,travel=calm?0:(1-p)*70;
+        sprite('ring','water',x-e.dx*travel,y-e.dy*travel,1.5,fade);
+        if(!low)sprite('bubble','water',x,y,.8,fade*.7);
+      }
+    } else if(e.kind==='leafFan') {
+      for(const offset of [-.55,0,.55]){const r=calm?130:p*260;sprite('leaf','grass',sx+Math.cos(angle+offset)*r,sy+Math.sin(angle+offset)*r,.8,fade,angle+offset);}
+    } else if(e.kind==='throw'||e.kind==='flank') {
+      const t=calm?1:p;sprite('ring',e.kind==='throw'?'fighting':'grass',sx+(tx-sx)*t,sy+(ty-sy)*t,.8,fade);
+    } else if(e.kind==='rescue'||e.kind==='blink') {
       const pal=e.kind==='rescue'?'fairy':'ghost';
       sprite('ring',pal,sx,sy,1.8-p,fade);sprite('ring',pal,tx,ty,.8+p,fade);
       if(!calm&&!low)for(let i=0;i<4;i++){const t=clamp(p-i*.12,0,1);sprite('star',pal,sx+(tx-sx)*t,sy+(ty-sy)*t,.45,fade*.6);}
@@ -159,5 +182,5 @@ G.TFTVisuals = (() => {
     const zoom=calm?1:1+1.25*reveal,fx=boss.x*100+50,fy=boss.y*100+51;
     return {active:true,zoom,x:calm?0:(300-fx)*reveal+(1-zoom)*fx,y:calm?0:(235-fy)*reveal+(1-zoom)*fy,reveal:calm?1:reveal};
   }
-  return {bossCamera,style,animation,animationSpeed,warm,actions,areaCells,progress,impact,pose,draw};
+  return {travel,bossCamera,style,animation,animationSpeed,warm,actions,areaCells,progress,impact,pose,draw};
 })();

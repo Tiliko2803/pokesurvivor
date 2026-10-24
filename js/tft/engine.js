@@ -2445,7 +2445,7 @@ G.TFT = (() => {
     BY[dex]={...family,dex,stage,move:family.moves[stage]};
   for(const f of BOSS_DEFINITIONS)BY[f.dex]={...f,stage:0,move:f.moves[0],bossOnly:true};
   const evolvedDex=(dex,star)=>BY[dex].line[Math.min(star-1,BY[dex].line.length-1)];
-  const moveFor=u=>u.dex===212?'Puño Bala':u.dex===94?'Emboscada Sombría':BY[u.dex].moves[u.star-1];
+  const moveFor=u=>u.dex===214?'Llave de Relevo':u.dex===254?'Danza de Hojas':u.dex===395?'Rompeolas':u.dex===212?'Puño Bala':u.dex===94?'Emboscada Sombría':BY[u.dex].moves[u.star-1];
   const DEFAULT_DECK=[1,4,7,172,92,280,529,246,374,661];
   function validDeck(deck,legacy=false) {
     return Array.isArray(deck)&&deck.length===10&&new Set(deck).size===10&&
@@ -2974,12 +2974,16 @@ G.TFT = (() => {
   };
   function abilityFor(u) {
     const tactical={
+      214:{type:'fighting',description:'Llave de Relevo: golpea a un enemigo adyacente con 200/240/280% del ataque según la etapa y lo lanza a la casilla opuesta detrás de Heracross si está libre. No lanza jefes, aliados ni objetivos fuera de alcance; sin espacio conserva el daño.'},
+      254:{type:'grass',description:'Danza de Hojas: tres pulsos de ataque sustituyen sus básicos. Hoja Aguda (130%) intenta un flanqueo lateral; el segundo corte (160%) intenta rodear por detrás y sólo perfora 40% de defensa si lo consigue; termina con Lluevehojas (240%) en cono de alcance 3. Los rodeos requieren dos pasos libres; aturdimiento o falta de alcance pierde el pulso. Sin maná ofensivo durante la secuencia.'},
+      395:{type:'water',description:'Rompeolas: lanza una ola de hasta tres casillas de ancho hacia su objetivo. En cada pulso de movimiento avanza una franja después de moverse las unidades. Cada enemigo recibe como máximo un impacto del 250% del ataque por ola y es empujado una casilla libre en su dirección; los jefes reciben daño sin empuje. La ola conserva su rumbo aunque Empoleon se mueva.'},
+      887:{type:'dragon',description:'Dracoflechas: dispara dos Dreepy por corredores paralelos distintos. Cada uno atraviesa al primer rival (110% del ataque); si encuentra un segundo explota allí (180% en radio 1). Si sólo encuentra uno regresa y golpea de nuevo a esa presa (160%). Ignora 40% de defensa; los aliados no reciben daño ni bloquean los proyectiles.'},
       94:{type:'ghost',description:'Emboscada Sombría: desaparece en el próximo pulso de movimiento y reaparece en el siguiente de ataque junto al enemigo con menor vida proporcional con espacio libre. Golpea con 340% del ataque; una baja devuelve 50 de maná. Aturdirlo interrumpe la emboscada y lo revela.'},
       282:{type:'fairy',description:'Cura y escuda a dos aliados. Rescate pasivo, una vez por combate: evita un golpe letal a otro aliado a 3 casillas, lo deja a 1 PV, lo teletransporta a una casilla libre detrás de Gardevoir y le da un escudo del 25% de la vida máxima del aliado rescatado. Requiere espacio y que Gardevoir pueda actuar.'},
       959:{type:'steel',description:'Martillo Colosal: marca un área de 1 casilla y prepara el golpe hasta el próximo pulso de ataque. Destruye los escudos enemigos en ella y golpea con 450% del ataque. Después pierde un pulso recuperándose. No se mueve durante la preparación; un aturdimiento interrumpe el golpe.'},
       212:{type:'steel',description:'Experto + Puño Bala: durante los tres siguientes pulsos de ataque sustituye su básico por dos golpes de Acero del 60% del ataque, potenciados un 50% por Experto y ajustados a su cadencia. Tiene prioridad; no genera maná ofensivo. Aturdirse o quedar fuera de alcance pierde el pulso.'}
     }[u.dex];
-    if(tactical)return {name:moveFor(u),...tactical,signature:true,special:true,area:u.dex===959};
+    if(tactical)return {name:moveFor(u),...tactical,signature:true,special:true,area:[959,254,395,887].includes(u.dex)};
     const family=BY[u.dex].line[0],signature=SIGNATURES[family],i=u.star-1,move=FAMILY_MOVES[family]?.[i];
     if(move)return {name:moveFor(u),type:move.type,description:move.text,signature:true,special:SPECIAL_FAMILIES.has(family),area:move.shape==='area'};
     if(signature)return {name:moveFor(u),type:signature.types[i],description:signature.text[i],signature:true,special:true};
@@ -3245,7 +3249,71 @@ G.TFT = (() => {
       .filter(q=>q.x>=0&&q.x<COLS&&q.y>=0&&q.y<ROWS&&!b.units.some(u=>u!==a&&u.hp>0&&u.x===q.x&&u.y===q.y))
       .sort((x,y)=>distance(a,x)-distance(a,y)||x.y-y.y||x.x-y.x);
   }
+  function cardinal(a,t){const dx=t.x-a.x,dy=t.y-a.y;return Math.abs(dx)>Math.abs(dy)?{dx:Math.sign(dx)||1,dy:0}:{dx:0,dy:Math.sign(dy)|| (a.side===0?-1:1)};}
+  function freeCell(b,x,y,except=null){return x>=0&&x<COLS&&y>=0&&y<ROWS&&!b.units.some(u=>u!==except&&u.hp>0&&u.x===x&&u.y===y);}
+  function flankStep(b,a,destination){
+    if(!freeCell(b,destination.x,destination.y,a)||distance(a,destination)!==2)return false;
+    const route=[[a.x,destination.y],[destination.x,a.y]].some(([x,y])=>distance(a,{x,y})===1&&distance({x,y},destination)===1&&freeCell(b,x,y,a));
+    if(!route)return false;
+    const sx=a.x,sy=a.y;a.x=destination.x;a.y=destination.y;
+    b.events.push({kind:'flank',from:a.id,sx,sy,tx:a.x,ty:a.y,type:'grass',ttl:.6});return true;
+  }
+  function clearLeaves(a){delete a.leafPulse;delete a.leafTarget;delete a.leafDx;delete a.leafDy;}
+  function advanceWaves(b){
+    const kept=[];
+    for(const w of b.waves||[]){
+      w.step++;const x=w.x+w.dx*w.step,y=w.y+w.dy*w.step;if(x<0||x>=COLS||y<0||y>=ROWS)continue;
+      const a=b.units.find(u=>u.id===w.source);if(!a)continue;
+      const cells=[-1,0,1].map(i=>({x:x-w.dy*i,y:y+w.dx*i})).filter(q=>q.x>=0&&q.x<COLS&&q.y>=0&&q.y<ROWS);
+      b.events.push({kind:'wave',from:a.id,sx:x-w.dx,sy:y-w.dy,tx:x,ty:y,type:'water',cells:cells.map(q=>q.y*COLS+q.x),dx:w.dx,dy:w.dy,ttl:.5,life:.5});
+      const victims=b.units.filter(t=>t.side!==w.side&&t.hp>0&&!t.shadowed&&!w.hit.includes(t.id)&&cells.some(q=>q.x===t.x&&q.y===t.y));
+      for(const t of victims){
+        w.hit.push(t.id);const sx=t.x,sy=t.y;hit(b,a,t,w.power,true,'water');
+        if(t.hp>0&&!t.boss&&t.x===sx&&t.y===sy&&freeCell(b,sx+w.dx,sy+w.dy,t)){t.x+=w.dx;t.y+=w.dy;t.moveCD=Math.max(t.moveCD,.25);}
+      }
+      if(x+w.dx>=0&&x+w.dx<COLS&&y+w.dy>=0&&y+w.dy<ROWS)kept.push(w);
+    }
+    if(b.waves)b.waves=kept;
+  }
+  function dragonDarts(b,a,target){
+    const {dx,dy}=cardinal(a,target),px=-dy,py=dx;
+    const laneHits=offset=>b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&
+      (t.x-a.x)*px+(t.y-a.y)*py===offset&&(t.x-a.x)*dx+(t.y-a.y)*dy>0)
+      .sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id);
+    const sides=[-1,1].filter(i=>freeLane(i));
+    function freeLane(i){const x=a.x+px*i,y=a.y+py*i;return x>=0&&x<COLS&&y>=0&&y<ROWS;}
+    sides.sort((x,y)=>laneHits(y).length-laneHits(x).length||x-y);
+    const old=a.pierce;a.pierce=Math.max(old,.4);
+    for(const offset of [0,sides[0]]){
+      if(offset===undefined)continue;
+      const foes=laneHits(offset),first=foes[0],second=foes[1],sx=a.x+px*offset,sy=a.y+py*offset;
+      let ex=sx,ey=sy;while(ex+dx>=0&&ex+dx<COLS&&ey+dy>=0&&ey+dy<ROWS){ex+=dx;ey+=dy;}
+      const end=second?{x:second.x,y:second.y}:{x:ex,y:ey};
+      b.events.push({kind:'dreepy',from:a.id,to:first?.id,sx,sy,tx:end.x,ty:end.y,returning:!!first&&!second,explodes:!!second,type:'dragon',ttl:.9,life:.9});
+      if(!first)continue;
+      hit(b,a,first,a.attack*1.1,true,'dragon');
+      if(second){
+        const center={x:second.x,y:second.y},victims=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&distance(center,t)<=1);
+        areaEvent(b,a,center,1,'dragon',victims);for(const t of victims)hit(b,a,t,a.attack*1.8,true,'dragon');
+      } else if(first.hp>0&&!first.shadowed)hit(b,a,first,a.attack*1.6,true,'dragon');
+    }
+    a.pierce=old;
+  }
   function tacticalCast(b,a,target) {
+    if(a.dex===214){
+      if(target.side===a.side||distance(a,target)>1||target.hp<=0||target.shadowed)return true;
+      const {dx,dy}=cardinal(a,target),x=a.x-dx,y=a.y-dy,sx=target.x,sy=target.y;
+      hit(b,a,target,a.attack*[2,2.4,2.8][a.star-1],true,'fighting');
+      if(target.hp>0&&!target.boss&&target.x===sx&&target.y===sy&&freeCell(b,x,y,target)){
+        target.x=x;target.y=y;target.moveCD=Math.max(target.moveCD,.25);
+        b.events.push({kind:'throw',from:a.id,to:target.id,sx,sy,tx:x,ty:y,type:'fighting',ttl:.6,life:.6});
+      }
+      return true;
+    }
+    if(a.dex===254){const d=cardinal(a,target);a.leafPulse=0;a.leafTarget=target.id;a.leafDx=d.dx;a.leafDy=d.dy;return true;}
+    if(a.dex===395){const d=cardinal(a,target);if((b.waves?.length||0)<48)(b.waves??=[]).push({source:a.id,side:a.side,x:a.x,y:a.y,dx:d.dx,dy:d.dy,step:0,hit:[],power:a.attack*2.5});return true;}
+    if(a.dex===887){dragonDarts(b,a,target);return true;}
+
     if(a.dex===94){a.ambushPending=true;return true;}
     if(a.dex===959){a.hammerX=target.x;a.hammerY=target.y;areaEvent(b,a,{x:a.hammerX,y:a.hammerY},1,'steel',[]);b.events[b.events.length-1].kind='warning';b.events[b.events.length-1].ttl=1;b.events[b.events.length-1].life=1;return true;}
     if(a.dex===212){a.bulletPulses=3;return true;}
@@ -3270,6 +3338,29 @@ G.TFT = (() => {
     return true;
   }
   function tacticalPulse(b,a) {
+    if(a.leafPulse!==undefined){
+      const stage=a.leafPulse++,target=b.units.find(t=>t.id===a.leafTarget&&t.side!==a.side&&t.hp>0&&!t.shadowed)||selectTarget(b,a);
+      if(target)a.leafTarget=target.id;
+      if(!isStunned(b,a)&&target){
+        if(stage<2&&distance(a,target)<=1){
+          if(stage===0){
+            hit(b,a,target,a.attack*1.3,true,'grass');
+            if(target.hp>0){const options=[{x:target.x-a.leafDy,y:target.y+a.leafDx},{x:target.x+a.leafDy,y:target.y-a.leafDx}];for(const q of options)if(flankStep(b,a,q))break;}
+          }else{
+            const flanked=flankStep(b,a,{x:target.x+a.leafDx,y:target.y+a.leafDy}),old=a.pierce;if(flanked)a.pierce=Math.max(old,.4);
+            hit(b,a,target,a.attack*1.6,true,'grass');a.pierce=old;
+          }
+        }else if(stage===2&&distance(a,target)<=3){
+          const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1;
+          const victims=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&Math.hypot(t.x-a.x,t.y-a.y)<=3&&
+            ((t.x-a.x)*dx+(t.y-a.y)*dy)/(len*(Math.hypot(t.x-a.x,t.y-a.y)||1))>=.65);
+          for(const t of victims)hit(b,a,t,a.attack*2.4,true,'grass');
+          b.events.push({kind:'leafFan',from:a.id,sx:a.x,sy:a.y,tx:target.x,ty:target.y,type:'grass',ttl:.65,life:.65});
+        }
+      }
+      if(a.leafPulse>=3)clearLeaves(a);return true;
+    }
+
     if(a.ambushPending){
       // Only reveal after a movement beat has actually hidden Gengar.
       if(!a.shadowed)return true;
@@ -3382,11 +3473,11 @@ G.TFT = (() => {
         if(a.ambushPending){if(isStunned(b,a))delete a.ambushPending;else a.shadowed=true;continue;}
         if(isStunned(b,a)||a.hammerX!==undefined)continue;
         const steps=a.dex===658?2:1;
-        for(let i=0;i<steps;i++){const target=selectTarget(b,a);if(!target)break;
+        for(let i=0;i<steps;i++){const target=(a.leafPulse!==undefined?b.units.find(t=>t.id===a.leafTarget&&t.side!==a.side&&t.hp>0&&!t.shadowed):null)||selectTarget(b,a);if(!target)break;
           if(i)a.moveCD=0;const x=a.x,y=a.y;moveToward(b,a,target);if(a.x===x&&a.y===y)break;
         }
       }
-      return;
+      advanceWaves(b);return;
     }
     // Choose attacks from the same pulse's initial formation, then resolve in order.
     const attacks=order.filter(a=>a.hp>0).map(a=>({a,target:selectTarget(b,a)}))
@@ -3484,6 +3575,8 @@ G.TFT = (() => {
         if(!b.units.every(u=>unit(u)&&[0,1].includes(u.side)&&int(u.x,0,5)&&int(u.y,0,5)&&numbers(u)&&
           ['hp','maxHp','attack','armor','interval','range','mana','shield','manaGain','regen','pierce','slow','cooldown','moveCD','flash','damageDone','damageTaken','blocked','kills','healingDone','shieldingDone'].every(k=>Number.isFinite(u[k]))&&
           u.hp>=0&&u.hp<=u.maxHp&&u.maxHp>0&&u.interval>0&&u.shield>=0&&u.mana>=0&&u.mana<=100&&
+          (u.leafPulse===undefined&&u.leafTarget===undefined&&u.leafDx===undefined&&u.leafDy===undefined||
+            u.dex===254&&int(u.leafPulse,0,2)&&int(u.leafTarget,-6,100000)&&int(u.leafDx,-1,1)&&int(u.leafDy,-1,1)&&Math.abs(u.leafDx)+Math.abs(u.leafDy)===1)&&
           (u.ambushPending===undefined||u.dex===94&&u.ambushPending===true)&&
           (u.shadowed===undefined||u.dex===94&&u.shadowed===true&&u.ambushPending===true)&&
           (u.rescueUsed===undefined||u.dex===282&&typeof u.rescueUsed==='boolean')&&
@@ -3495,6 +3588,12 @@ G.TFT = (() => {
           Array.isArray(u.types)&&u.types.every(t=>Object.hasOwn(EFFECTS,t))&&['tank','healer','mage','fighter'].includes(u.role)&&
           ['tank','healer','guardian','ranged','diver','fighter'].includes(u.ai)&&(!u.burn||numbers(u.burn)&&['source','power','remaining','cd'].every(k=>Number.isFinite(u.burn[k])))))return null;
         if(new Set(b.units.map(u=>u.id)).size!==b.units.length)return null;
+        if(b.units.some(u=>u.leafPulse!==undefined&&!b.units.some(t=>t.id===u.leafTarget&&t.side!==u.side)))return null;
+        if(b.waves!==undefined&&(!Array.isArray(b.waves)||b.waves.length>48||!b.waves.every(w=>w&&numbers(w)&&
+          int(w.source,-6,100000)&&b.units.some(u=>u.id===w.source&&u.dex===395&&u.side===w.side)&&
+          int(w.x,0,5)&&int(w.y,0,5)&&int(w.dx,-1,1)&&int(w.dy,-1,1)&&Math.abs(w.dx)+Math.abs(w.dy)===1&&int(w.step,0,5)&&
+          Number.isFinite(w.power)&&w.power>0&&w.power<1e12&&Array.isArray(w.hit)&&w.hit.length<=12&&new Set(w.hit).size===w.hit.length&&
+          w.hit.every(id=>Number.isInteger(id)&&b.units.some(u=>u.id===id&&u.side!==w.side)))))return null;
         const live=b.units.filter(u=>u.hp>0);if(new Set(live.map(u=>u.y*6+u.x)).size!==live.length)return null;
         // Transient particles are expendable; never trust persisted display strings.
         b.events=[];for(const u of b.units)delete u.entrance;
