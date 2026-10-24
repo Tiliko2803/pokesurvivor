@@ -39,7 +39,7 @@ G.TFTVisuals = (() => {
     for(const e of events){
       if(e.to&&['hit','spell'].includes(e.kind))hurt.add(e.to);
       if(e.periodic)continue;
-      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4}[e.kind]||0;
+      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,flight:4}[e.kind]||0;
       if(priority&&(!actions.has(e.from)||actions.get(e.from).priority<priority))actions.set(e.from,{e,priority});
     }
     return {actions,hurt};
@@ -59,6 +59,7 @@ G.TFTVisuals = (() => {
       const p=progress(action),dx=(action.tx??action.sx??0)-(action.sx??0),dy=(action.ty??action.sy??0)-(action.sy??0),len=Math.hypot(dx,dy)||1;
       const t=clamp((p-.08)/.72,0,1),lunge=Math.sin(t*Math.PI)*(u.range<=1?12:4);
       x+=dx/len*lunge;y+=dy/len*lunge;scale+=Math.sin(p*Math.PI)*.045;
+      if(action.kind==='flight')y-=Math.sin(p*Math.PI)*65;
     }
     if(hurt&&hurt.ttl>0){
       const p=impact(hurt);if(p>0){const dx=(hurt.tx??u.x)-(hurt.sx??u.x),dy=(hurt.ty??u.y)-(hurt.sy??u.y),len=Math.hypot(dx,dy)||1,recoil=Math.sin(p*Math.PI)*5;
@@ -85,7 +86,17 @@ G.TFTVisuals = (() => {
       G.VFX.draw(ctx,shape,pal,clamp(x,0,600),clamp(y,0,600),{scale,alpha,angle:rotation,frame:calm?0:frame});
     };
     ctx.save();ctx.imageSmoothingEnabled=false;
-    if(['cast','entryCast'].includes(e.kind)) {
+    if(e.kind==='flight') {
+      const travel=calm?1:p,x=sx+(tx-sx)*travel,y=sy+(ty-sy)*travel-(calm?0:Math.sin(p*Math.PI)*65);
+      sprite('star','flying',x,y,1.2,fade,angle);
+      if(!calm&&!low)for(let i=1;i<=3;i++)sprite('star','flying',sx+(tx-sx)*Math.max(0,p-i*.1),sy+(ty-sy)*Math.max(0,p-i*.1),.5,fade*.3,angle);
+    } else if(e.mouse!==undefined) {
+      const travel=calm?1:clamp((p-e.mouse*.1)/.65,0,1),x=sx+(tx-sx)*travel,y=sy+(ty-sy)*travel+(calm?0:Math.sin(travel*Math.PI)*(-20-e.mouse*10));
+      ctx.globalAlpha=fade;ctx.fillStyle='#f6f1df';
+      ctx.beginPath();ctx.ellipse(x,y,12,8,angle,0,Math.PI*2);ctx.fill();
+      for(const offset of [-5,5]){ctx.beginPath();ctx.arc(x+offset,y-8,4,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle='#493d43';ctx.fillRect(x+(tx>=sx?6:-8),y-2,2,2);
+    } else if(['cast','entryCast'].includes(e.kind)) {
       sprite('ring',vis.pal,sx,sy,1+p*1.4,fade*.35);
       if(!calm&&!low)for(let i=0;i<3;i++){const a=i*Math.PI*2/3+p*2;sprite('star',vis.pal,sx+Math.cos(a)*22,sy+Math.sin(a)*12,.35,fade*.5,a);}
     } else if(e.kind==='area') {

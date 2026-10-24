@@ -2423,6 +2423,12 @@ G.TFT = (() => {
     ]
   }
 ]);
+  // Final-form tactical reworks; lower stages retain their learning moves.
+  const rework=(family,index,text)=>{EXPANSION.find(f=>f.line[0]===family).skills[index].text=text;};
+  rework(924,2,'Proliferación: 10 impactos de 55% del ataque en tres pulsos (3/3/4). Sustituye básicos y no genera maná. Continúa sobre enemigos cercanos al caer la presa; aturdirse o quedar fuera de alcance pierde los impactos de ese pulso.');
+  rework(679,2,'Cambio Táctico: Escudo Real concede protección del 30% de la vida. En el siguiente pulso de ataque, Forma Filo consume la mitad del escudo restante para potenciar una estocada que ignora 50% de defensa. Aturdirse retrasa la estocada.');
+  rework(661,2,'Pájaro Osado: vuela hasta una casilla libre junto al enemigo más lejano, golpea a los enemigos a 1 casilla del aterrizaje con 280% del ataque e ignora 30% de defensa. Pierde 10% de su vida máxima por retroceso, sin debilitarse.');
+  rework(656,2,'Shuriken de Agua atraviesa 4 casillas e ignora 25% de defensa. Greninja puede recorrer hasta dos casillas por pulso de movimiento, también al retirarse; respeta obstáculos y alcance.');
   DEFINITIONS.push(...EXPANSION.map(f=>[f.line,f.cost,f.role,f.moves]));
   const ROSTER = DEFINITIONS.map(([line,cost,role,moves]) => ({dex:line[0],line,cost,role,moves,move:moves[0]}));
   for(const f of ROSTER)f.bossOnly=f.dex===384;
@@ -3203,9 +3209,52 @@ G.TFT = (() => {
     if(m.boost)boostCadence(b,a,m.boost);
     return true;
   }
+  function tacticalCast(b,a,target) {
+    if(a.dex===925&&a.star===3){a.populationPulse=0;a.populationTarget=target.id;return true;}
+    if(a.dex===681){a.bladePending=true;shield(b,a,a,a.maxHp*.3);return true;}
+    if(a.dex!==663)return false;
+    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0).sort((x,y)=>distance(a,y)-distance(a,x)||x.id-y.id);
+    let landing=null,victim=null;
+    for(const foe of foes){
+      const cells=[[0,-1],[-1,0],[1,0],[0,1]].map(([dx,dy])=>({x:foe.x+dx,y:foe.y+dy}))
+        .filter(q=>q.x>=0&&q.x<COLS&&q.y>=0&&q.y<ROWS&&!b.units.some(u=>u!==a&&u.hp>0&&u.x===q.x&&u.y===q.y));
+      if(cells.length){cells.sort((x,y)=>distance(a,x)-distance(a,y)||x.y-y.y||x.x-y.x);landing=cells[0];victim=foe;break;}
+    }
+    if(!landing){landing={x:a.x,y:a.y};victim=target;}
+    const sx=a.x,sy=a.y;a.x=landing.x;a.y=landing.y;
+    b.events.push({kind:'flight',from:a.id,to:victim.id,sx,sy,tx:a.x,ty:a.y,type:'flying',ttl:.6});
+    areaEvent(b,a,a,1,'flying',b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=1));
+    const old=a.pierce;a.pierce=Math.max(old,.3);
+    for(const foe of b.units.filter(u=>u.side!==a.side&&u.hp>0&&distance(a,u)<=1))hit(b,a,foe,a.attack*2.8,true,'flying');
+    a.pierce=old;
+    const recoil=Math.min(a.hp-1,a.maxHp*.1);if(recoil>0){a.hp-=recoil;a.damageTaken+=recoil;}
+    return true;
+  }
+  function tacticalPulse(b,a) {
+    if(a.populationPulse!==undefined){
+      const count=[3,3,4][a.populationPulse++];
+      if(!isStunned(b,a))for(let i=0;i<count;i++){
+        let target=b.units.find(u=>u.id===a.populationTarget&&u.side!==a.side&&u.hp>0);
+        if(!target){target=b.units.filter(u=>u.side!==a.side&&u.hp>0).sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id)[0];a.populationTarget=target?.id||0;}
+        if(!target||distance(a,target)>a.range)break;
+        hit(b,a,target,a.attack*.55,true,'normal');
+        const e=b.events[b.events.length-1];e.mouse=i;e.life=.65;e.ttl=.65;
+      }
+      if(a.populationPulse>=3){delete a.populationPulse;delete a.populationTarget;}
+      return true;
+    }
+    if(a.bladePending&&!isStunned(b,a)){
+      const target=selectTarget(b,a);if(!target||distance(a,target)>a.range)return false;
+      const charge=a.shield*.5;a.shield-=charge;delete a.bladePending;
+      b.events.push({kind:'cast',from:a.id,to:target.id,move:'Forma Filo',type:'steel',sx:a.x,sy:a.y,tx:target.x,ty:target.y,ttl:.8});
+      const old=a.pierce;a.pierce=Math.max(old,.5);hit(b,a,target,a.attack*2.8+charge,true,'steel');a.pierce=old;
+      return true;
+    }
+    return false;
+  }
   function cast(b,a,target) {
     a.mana=0;b.events.push({kind:'cast',from:a.id,move:moveFor(a),to:target.id,sx:a.x,sy:a.y,tx:target.x,ty:target.y,beat:b.beat,ttl:.8});
-    if(signature(b,a,target)||familyCast(b,a,target)||areaCast(b,a,target))return;
+    if(tacticalCast(b,a,target)||signature(b,a,target)||familyCast(b,a,target)||areaCast(b,a,target))return;
     if(moveFor(a)==='Fortaleza'){shield(b,a,a,a.maxHp*.3);return;}
     if(a.ai==='guardian') {
       const ally=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id)[0];
@@ -3254,11 +3303,17 @@ G.TFT = (() => {
     // Both teams share one clock. Alternate cell/attack initiative each bar.
     const order=Math.floor((b.beatCount-1)/4)%2?[...b.units].reverse():b.units;
     if(b.beat===1||b.beat===3) {
-      for(const a of order){if(a.hp<=0||isStunned(b,a))continue;const target=selectTarget(b,a);if(target)moveToward(b,a,target);}
+      for(const a of order){if(a.hp<=0||isStunned(b,a))continue;
+        const steps=a.dex===658?2:1;
+        for(let i=0;i<steps;i++){const target=selectTarget(b,a);if(!target)break;
+          if(i)a.moveCD=0;const x=a.x,y=a.y;moveToward(b,a,target);if(a.x===x&&a.y===y)break;
+        }
+      }
       return;
     }
     // Choose attacks from the same pulse's initial formation, then resolve in order.
-    const attacks=order.filter(a=>a.hp>0&&!isStunned(b,a)&&a.cooldown<=0)
+    const busy=new Set();for(const a of order)if(a.hp>0&&tacticalPulse(b,a))busy.add(a.id);
+    const attacks=order.filter(a=>!busy.has(a.id)&&a.hp>0&&!isStunned(b,a)&&a.cooldown<=0)
       .map(a=>({a,target:selectTarget(b,a)})).filter(p=>p.target&&distance(p.a,p.target)<=p.a.range)
       .sort((p,q)=>Number(hasAttackPriority(q.a))-Number(hasAttackPriority(p.a)));
     for(const {a,target:chosen} of attacks) {
@@ -3352,6 +3407,8 @@ G.TFT = (() => {
         if(!b.units.every(u=>unit(u)&&[0,1].includes(u.side)&&int(u.x,0,5)&&int(u.y,0,5)&&numbers(u)&&
           ['hp','maxHp','attack','armor','interval','range','mana','shield','manaGain','regen','pierce','slow','cooldown','moveCD','flash','damageDone','damageTaken','blocked','kills','healingDone','shieldingDone'].every(k=>Number.isFinite(u[k]))&&
           u.hp>=0&&u.hp<=u.maxHp&&u.maxHp>0&&u.interval>0&&u.shield>=0&&u.mana>=0&&u.mana<=100&&
+          (u.populationPulse===undefined||u.dex===925&&int(u.populationPulse,0,2)&&int(u.populationTarget,-6,100000))&&
+          (u.bladePending===undefined||u.dex===681&&typeof u.bladePending==='boolean')&&
           Array.isArray(u.types)&&u.types.every(t=>Object.hasOwn(EFFECTS,t))&&['tank','healer','mage','fighter'].includes(u.role)&&
           ['tank','healer','guardian','ranged','diver','fighter'].includes(u.ai)&&(!u.burn||numbers(u.burn)&&['source','power','remaining','cd'].every(k=>Number.isFinite(u.burn[k])))))return null;
         if(new Set(b.units.map(u=>u.id)).size!==b.units.length)return null;

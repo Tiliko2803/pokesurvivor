@@ -6,6 +6,9 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-24', title: ['TFT: habilidades que cambian la pelea', 'TFT: tactical ability reworks'], chg: [
+    ['Maushold encadena 10 impactos de Proliferación en tres pulsos; perder alcance o quedar aturdido desperdicia impactos. Aegislash convierte su Escudo Real en una estocada al siguiente pulso de ataque. Talonflame vuela a la retaguardia con Pájaro Osado y sufre retroceso. Greninja recorre hasta dos casillas por pulso de movimiento, respetando obstáculos.', 'Maushold chains 10 Population Bomb hits across three attack beats; stun or lost range wastes hits. Aegislash converts King’s Shield into a thrust on the next attack beat. Talonflame flies to the backline with Brave Bird and takes recoil. Greninja travels up to two cells per movement beat while respecting obstacles.']
+  ] },
   { d: '2026-10-23', title: ['TFT: Tyrantrum y Haxorus', 'TFT: Tyrantrum and Haxorus'], new: [
     ['Llegan Axew → Fraxure → Haxorus por 2 de oro y Tyrunt → Tyrantrum por 3. Ambas familias tienen habilidad de entrada y tres movimientos. Rompemoldes permite perforar defensa; Mandíbula Fuerte aumenta el daño. Son adaptaciones para TFT. El catálogo alcanza 106 familias jugables.', 'Axew → Fraxure → Haxorus joins for 2 gold and Tyrunt → Tyrantrum for 3. Both families have an entry ability and three moves. Mold Breaker pierces defense; Strong Jaw boosts damage. These are TFT adaptations. The catalogue reaches 106 playable families.']
   ] },

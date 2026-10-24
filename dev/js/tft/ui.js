@@ -321,6 +321,7 @@ G.TFTUI = (() => {
         if(u.boss){ctx.fillStyle='#ffe08a';ctx.font='bold 10px sans-serif';ctx.fillText('JEFE',x,v.y*cell+9);}
         ctx.fillStyle='#5dbfff';ctx.fillRect(x-34,v.y*cell+29,68*u.mana/100,3);
         if(u.shield>0){ctx.fillStyle='#a4dcff99';ctx.fillRect(x-34,v.y*cell+21,68*Math.min(.5,u.shield/u.maxHp),6);ctx.strokeStyle='#a4dcff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-26,34,Math.PI,2*Math.PI);ctx.stroke();}
+        if(u.bladePending||u.populationPulse!==undefined){ctx.fillStyle='#ffe08a';ctx.font='bold 10px sans-serif';ctx.fillText(u.bladePending?'ESCUDO → FILO':'PROLIFERACIÓN '+[0,3,6][u.populationPulse]+'/10',x,y+25);}
         if(u.burn) {ctx.fillStyle='#ffad59';ctx.fillText('🔥',x+27,y-28);}
         if(E.isStunned(state.battle,u)){ctx.fillStyle='#563125';ctx.fillRect(x+16,y-44,29,16);ctx.fillStyle='#ffe08a';ctx.font='bold 11px sans-serif';ctx.fillText('CC',x+30,y-32);}
       }

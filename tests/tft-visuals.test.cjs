@@ -77,3 +77,11 @@ test('boss camera is deterministic, centres on the boss and removes motion in ca
  assert.equal(V.bossCamera(b,true).zoom,1);assert.equal(V.bossCamera(b,true).x,0);assert.equal(V.bossCamera(b,true).reveal,1);
  b.intro=0;assert.equal(V.bossCamera(b).active,false);assert.equal(V.bossCamera(null).zoom,1);
 });
+test('rework mouse volleys and flights render without changing simulation and flight respects reduced motion',()=>{
+ const {V,ctx,calls}=fixture(),units=[{id:1,dex:925,star:3,x:2,y:3,types:['normal'],range:1},{id:-1,dex:133,star:1,x:2,y:2,types:['normal'],range:1}];
+ for(const e of [{kind:'spell',mouse:2,life:.65,ttl:.3},{kind:'flight',ttl:.3}]){
+  Object.assign(e,{from:1,to:-1,sx:2,sy:3,tx:2,ty:2,type:'normal'});const before=JSON.stringify(e);V.draw(ctx,e,units);assert.equal(JSON.stringify(e),before);
+ }
+ assert.ok(calls.some(c=>c.kind==='ellipse'));
+ const flight={kind:'flight',from:1,sx:2,sy:3,tx:2,ty:0,ttl:.3};assert.ok(V.pose(units[0],flight,null).y<-50);assert.equal(V.pose(units[0],flight,null,{calm:true}).y,0);
+});

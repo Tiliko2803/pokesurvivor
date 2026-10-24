@@ -327,7 +327,7 @@ test('all 107 families have explicit entrances and executable moves at all 321 b
    const {b,units:[a,t,other,ally]}=battleFor(E,[[dex,star,0,2,3],[133,1,1,2,2],[133,1,1,3,2],[7,1,0,3,3]]);
    a.hp=a.maxHp/2;ally.hp=ally.maxHp/3;const allyHP=ally.hp;a.mana=100;
    E.cast(b,a,t);
-   assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0,`${family.dex} rank ${star} has a real effect`);
+   assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0||a.populationPulse===0,`${family.dex} rank ${star} has a real effect`);
    assert.ok(ally.hp>=allyHP,'never damages its ally');assert.ok(b.units.every(u=>Number.isFinite(u.hp)&&u.hp>=0&&u.hp<=u.maxHp&&Number.isFinite(u.mana)));
    assert.ok(a.mana>=0&&a.mana<=100);assert.ok(a.shield<=a.maxHp*.5);
    assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
@@ -752,4 +752,53 @@ test('Ceruledge Bitter Blade and other self-drains heal only the user from effec
  const {E}=fixture(),{b,units:[a,t,ally]}=battleFor(E,[[937,3,0,2,2],[7,1,1,2,3],[1,1,0,1,2]]);a.hp=a.maxHp*.1;ally.hp=ally.maxHp*.1;t.hp=30;t.shield=0;const before=a.hp,other=ally.hp;E.cast(b,a,t);
  assert.equal(a.damageDone,30);assert.ok(Math.abs(a.hp-before-15)<1e-8);assert.equal(ally.hp,other);assert.equal(a.healingDone,15);
  const full=battleFor(E,[[937,3,0,2,2],[7,1,1,2,3]]);full.units[0].hp=full.units[0].maxHp*.1;full.units[1].shield=10000;E.cast(full.b,full.units[0],full.units[1]);assert.equal(full.units[0].healingDone,0);
+});
+
+function reworkBeat(E,s,beat=2){const b=s.battle;b.beatCount=beat-1;b.nextBeat=b.time+.05;E.tick(s,.05);}
+test('Maushold chains 3/3/4 hits on attack pulses, retargets a defeated victim and earns no attacking mana',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,other,ally]}=battleFor(E,[[925,3,0,2,3],[133,1,1,2,2],[133,1,1,3,3],[7,1,0,1,3]]);
+ t.hp=1;const allyHP=ally.hp;E.cast(b,a,t);assert.equal(a.damageDone,0);
+ for(let i=0;i<3;i++){b.events=[];reworkBeat(E,s);assert.equal(b.events.filter(e=>e.mouse!==undefined).length,[3,3,4][i]);assert.equal(a.mana,0);}
+ assert.equal(t.hp,0);assert.ok(other.hp<other.maxHp);assert.equal(ally.hp,allyHP);assert.equal(a.populationPulse,undefined);
+});
+test('Maushold loses a stunned pulse and an out-of-range pulse without delaying the chain',()=>{
+ const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[925,3,0,2,3],[133,1,1,2,2]]);
+ E.cast(b,a,t);a.stunUntil=1;reworkBeat(E,s);assert.equal(a.damageDone,0);assert.equal(a.populationPulse,1);
+ a.stunUntil=0;t.y=0;reworkBeat(E,s);assert.equal(a.damageDone,0);assert.equal(a.populationPulse,2);
+ t.y=2;reworkBeat(E,s);assert.equal(b.events.filter(e=>e.mouse!==undefined).length,4);assert.equal(a.populationPulse,undefined);
+});
+test('Aegislash shields then consumes half remaining protection in a distinct attack pulse; stun delays blade',()=>{
+ const {E}=fixture(),{s,b,units:[a,t]}=battleFor(E,[[681,3,0,2,3],[133,1,1,2,2]]);
+ const hp=t.hp;E.cast(b,a,t);assert.equal(t.hp,hp);assert.equal(a.bladePending,true);const shield=a.shield;
+ a.stunUntil=1;reworkBeat(E,s);assert.equal(a.shield,shield);assert.equal(a.bladePending,true);
+ a.stunUntil=0;reworkBeat(E,s);assert.equal(a.shield,shield/2);assert.ok(t.hp<hp);assert.equal(a.bladePending,undefined);
+ assert.equal(a.mana,0);assert.ok(b.events.some(e=>e.move==='Forma Filo'));
+});
+test('Talonflame flies to the rear without overlapping and damages only landing enemies; recoil cannot kill',()=>{
+ const {E}=fixture(),{b,units:[a,front,rear,ally]}=battleFor(E,[[663,3,0,2,5],[133,1,1,2,4],[133,1,1,2,0],[7,1,0,1,0]]);
+ const hp=front.hp,allyHP=ally.hp;a.hp=1;E.cast(b,a,front);
+ assert.equal(a.hp,1);assert.equal(front.hp,hp);assert.ok(rear.hp<rear.maxHp);assert.equal(ally.hp,allyHP);
+ assert.ok(Math.abs(a.x-rear.x)+Math.abs(a.y-rear.y)===1);
+ const alive=b.units.filter(u=>u.hp>0);assert.equal(new Set(alive.map(u=>u.y*6+u.x)).size,alive.length);assert.ok(b.events.some(e=>e.kind==='flight'));
+});
+test('Greninja advances two legal steps on movement beats while Frogadier advances one; attacks do not move',()=>{
+ for(const [dex,star,steps] of [[658,3,2],[657,2,1]]){
+  const {E}=fixture(),{s,units:[a,t]}=battleFor(E,[[dex,star,0,2,5],[133,1,1,2,0]]);a.moveCD=0;
+  reworkBeat(E,s,1);assert.equal(a.y,5-steps);const y=a.y;reworkBeat(E,s,2);assert.equal(a.y,y);
+ }
+ const {E}=fixture(),{s,b,units:[a]}=battleFor(E,[[658,3,0,2,5],[133,1,1,2,0],[7,1,0,2,4]]);a.moveCD=0;reworkBeat(E,s,1);
+ assert.ok(a.x!==2||a.y!==4);const alive=b.units.filter(u=>u.hp>0);assert.equal(new Set(alive.map(u=>u.y*6+u.x)).size,alive.length);
+});
+test('mid-chain Maushold and shielded Aegislash restore deterministically and reject invalid action counters',()=>{
+ const {E}=fixture();
+ for(const dex of [925,681]){
+  const family=E.BY[dex].line[0],deck=[family,...E.DEFAULT_DECK.filter(d=>d!==family)].slice(0,10),s=E.create(92,deck);
+  s.units=[{id:1,dex,star:3,pos:20}];s.nextId=2;s.opponent=[{id:-1,dex:133,star:1,pos:14}];s.opponentRound=s.round;E.start(s);
+  const a=s.battle.units[0],t=s.battle.units[1];t.hp=t.maxHp=100000;E.cast(s.battle,a,t);
+  const saved=E.serialize(s),restored=E.restore(saved);assert.ok(restored,`${dex}: restores pending action`);
+  for(let i=0;i<70;i++){E.tick(s,.05);E.tick(restored,.05);}
+  const normalize=b=>JSON.stringify(b.units.map(u=>{const x={...u};delete x.entrance;return x;}));
+  assert.equal(normalize(s.battle),normalize(restored.battle));
+  const bad=JSON.parse(saved);bad.state.battle.units[0].populationPulse=999;assert.equal(E.restore(JSON.stringify(bad)),null);
+ }
 });
