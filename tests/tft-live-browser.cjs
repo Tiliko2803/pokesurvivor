@@ -12,7 +12,7 @@ const root=path.join(__dirname,'..'),port=8937;
    await page.goto(`http://127.0.0.1:${port}/index.html?dev`);await page.waitForFunction(()=>window.G?.TFTUI&&document.getElementById('boot').classList.contains('hidden'));
    if(await page.locator('#tap-start').isVisible())await page.locator('#tap-start').click();
    await page.evaluate(async()=>{await G.DB.playAsGuest();G.DB.save.partner=4;G.DB.save.owned[4]={at:Date.now(),from:'test'};G.Flow.goMenu();});
-   await page.evaluate(()=>document.querySelector('#scr-menu [data-go="play"]').click());await page.getByRole('button',{name:'TFT · Oleadas infinitas',exact:true}).click();await page.locator('#tft-deck-start').click();await page.setViewportSize(viewport);
+   await page.evaluate(()=>document.querySelector('#scr-menu [data-go="play"]').click());await page.getByRole('button',{name:'TFT · Oleadas infinitas',exact:true}).click();await page.getByRole('button',{name:'Línea Bulbasaur',exact:true}).click();await page.getByRole('button',{name:'Línea Charcadet',exact:true}).click();await page.locator('#tft-deck-start').click();assert.ok(await page.evaluate(()=>G.TFTUI.state.deck.includes(935)));await page.setViewportSize(viewport);
    assert.match(await page.locator('#tft-stats').innerText(),/5 vidas/);assert.equal(await page.evaluate(()=>!!G.TFT_PREVIEW),false);assert.equal(await page.evaluate(()=>G.TFTUI.state.rankOwner),undefined);
    await page.evaluate(()=>{const s=G.TFTUI.state;s.shop=[4];G.TFT.buy(s,0);G.TFT.place(s,s.units[0].id,20);G.TFTUI.open();});
    for(let loss=1;loss<=5;loss++){

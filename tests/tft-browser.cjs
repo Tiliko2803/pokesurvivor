@@ -33,12 +33,12 @@ async function checkBoard(page,viewport){
    await page.locator('#btn-tft').click();await page.locator('#scr-tft').waitFor({state:'visible'});
    await page.setViewportSize(viewport);
    await page.locator('#tft-deck-panel').waitFor({state:'visible'});
-   assert.equal(await page.locator('#tft-deck-list [data-family]').count(),79);
+   assert.equal(await page.locator('#tft-deck-list [data-family]').count(),104);
    assert.equal(await page.getByRole('button',{name:'Línea Rayquaza',exact:true}).count(),0);
    const familyOrder=await page.locator('#tft-deck-list [data-family]').evaluateAll(nodes=>nodes.map(e=>Number(e.dataset.family)));
    assert.deepEqual(familyOrder,[...familyOrder].sort((a,b)=>a-b));
    await page.locator('#tft-deck-filter').selectOption('1');
-   assert.equal(await page.locator('#tft-deck-list [data-family]').count(),21);
+   assert.equal(await page.locator('#tft-deck-list [data-family]').count(),31);
    const cheapOrder=await page.locator('#tft-deck-list [data-family]').evaluateAll(nodes=>nodes.map(e=>Number(e.dataset.family)));
    assert.deepEqual(cheapOrder,[...cheapOrder].sort((a,b)=>a-b));
    assert.equal(await page.getByRole('button',{name:'Línea Tepig',exact:true}).count(),1);

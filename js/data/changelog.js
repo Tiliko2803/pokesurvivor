@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: 25 familias competitivas', 'TFT: 25 competitive families'], new: [
+    ['El catálogo alcanza 104 familias jugables. Llegan Butterfree, Crobat, Slowbro, Jumpluff, Heracross, Skarmory, Medicham, Camerupt, Sableye, Roserade, Luxray, Hippowdon, Conkeldurr, Whimsicott, Galvantula, Meowstic, Dragalge, Hawlucha, Toxapex, Tsareena, Vikavolt, Hatterene, Grimmsnarl, Maushold y Ceruledge con sus preevoluciones disponibles.',
+     'The catalogue reaches 104 playable families. Butterfree, Crobat, Slowbro, Jumpluff, Heracross, Skarmory, Medicham, Camerupt, Sableye, Roserade, Luxray, Hippowdon, Conkeldurr, Whimsicott, Galvantula, Meowstic, Dragalge, Hawlucha, Toxapex, Tsareena, Vikavolt, Hatterene, Grimmsnarl, Maushold and Ceruledge join with their available pre-evolutions.'],
+    ['Diez cuestan 1 oro, nueve 2, cinco 3 y una 4. Son cinco apoyos de curación, cuatro tanques y dieciséis atacantes. Cada familia tiene habilidad de entrada y tres movimientos con efectos explícitos, adaptados a TFT. Espada Lamento de Ceruledge cura al usuario la mitad del daño efectivo a la vida enemiga, sin curar por escudos ni daño excesivo.',
+     'Ten cost 1 gold, nine cost 2, five cost 3 and one costs 4. They include five healing supports, four tanks and sixteen attackers. Every family has an entry ability and three moves with explicit TFT-adapted effects. Ceruledge Bitter Blade heals its user for half the effective enemy HP damage, excluding shields and overkill.']
+  ] },
   { d: '2026-10-23', title: ['TFT llega al Live', 'TFT goes live'], new: [
     ['TFT · Oleadas infinitas llega al menú principal con evoluciones, rangos de Bronce/Plata/Oro, mazos de diez familias, economía, jefes en solitario y resumen de expedición. Empiezas con cinco vidas y cada derrota, incluido el tiempo agotado, consume exactamente una.',
      'TFT · Endless Waves joins the main menu with evolutions, Bronze/Silver/Gold ranks, ten-family decks, economy, solo bosses and an expedition summary. Start with five lives; every loss, including a timeout, costs exactly one.'],
