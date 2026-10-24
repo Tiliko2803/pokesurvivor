@@ -294,7 +294,7 @@ G.TFTUI = (() => {
       if(u.id===selected){ctx.strokeStyle='#ffe08a';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,y-3,32,12,0,0,Math.PI*2);ctx.stroke();}
       const evo=state.effects.find(e=>e.id===u.id);
       if(evo){ctx.strokeStyle='#ffe08a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y-25,calm?36:28+(1.6-evo.ttl)*15,0,Math.PI*2);ctx.stroke();}
-      drawSprite(ctx,key,u.dex,x,y,u.boss?82:65,dt,u.side,pose.flash,facing,alpha,pose.scale*(evo&&!calm?1+Math.sin(evo.ttl*10)*.1:1));
+      drawSprite(ctx,key,u.dex,x,y,u.boss?100:65,dt,u.side,pose.flash,facing,alpha,pose.scale*(evo&&!calm?1+Math.sin(evo.ttl*10)*.1:1));
       ctx.globalAlpha=alpha;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff';
       if(!camera.active){ctx.fillText(G.DEX_BY[u.dex].name,x,y+12);ctx.fillStyle=E.rankColor(u);ctx.fillText(E.rankLabel(u),x,v.y*cell+15);}
       if(combat&&u.hp>0&&!camera.active){
