@@ -302,3 +302,7 @@ Interés sin tope: floor(oro/5), calculado antes de cobrar. Base 5 + floor((olea
 La UI llama start(s,{presentation:true}) para jefes: intro de 2,8 s en el reloj de simulación. Hasta acabar o saltarla no se aplica entrances ni avanzan time, apertura, estados ni pulsos. Los consumidores sin interfaz pueden omitir la presentación. skipIntro comparte el mismo cierre único. La secuencia se guarda con el combate; vuelve en pausa sin repetir efectos. La cámara se calcula de forma pura en TFTVisuals.bossCamera; pausa y velocidad usan el mismo reloj. Calm y prefers-reduced-motion eliminan zoom y desplazamientos; se conserva la etiqueta sin parpadeos. Las casillas no se pueden seleccionar durante el zoom.
 
 Al agotar los PV aparece un panel desplazable sobre el tablero, con oleada, récord local, victorias, daño/curación acumulados, MVP de daño y equipo final desplegable. Los totales usan el acumulado de toda la expedición, no sólo las últimas 20 oleadas. Ver informe cierra el panel, Ver resumen final lo reabre y Jugar de nuevo usa el reinicio habitual conservando mazos y récords. No añade rankings online.
+
+### Jefes solos · 23 de octubre de 2026
+
+Encuentros de jefe con una sola unidad, sin escoltas, en casilla 8 (fila 2, columna 3). Tamaño de sprite 100 en lugar de 82 (+22%); zoom y cartel se conservan. Multiplicador de vida ×3,5 en lugar de ×3, sin aumentar el ataque. Versión de composición 2: preparación antigua se regenera una vez; combates activos se conservan.

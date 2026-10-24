@@ -6,6 +6,10 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: jefes en solitario', 'TFT: solo bosses'], chg: [
+    ['Los jefes llegan solos, sin esbirros, y ocupan una posición más centrada. Su sprite es un 22% más grande; la entrada con zoom se conserva. Su multiplicador de vida pasa de ×3 a ×3,5 para compensar parte de los apoyos retirados, sin aumentar su daño. La preparación guardada se adapta; los combates en curso continúan intactos.',
+     'Bosses arrive alone, without escorts, in a more central position. Their sprite is 22% larger and the zoom introduction remains. Their health multiplier rises from ×3 to ×3.5 to partly compensate for removed support, without increasing damage. Saved preparation adapts; ongoing fights remain intact.']
+  ] },
   { d: '2026-10-23', title: ['TFT: cada jefe tiene su entrada', 'TFT: every boss makes an entrance'], new: [
     ['Presentaciones de jefe con zoom al Pokémon, banda de nombre inclinada y subtítulo propio. Duran 2,8 segundos, pueden saltarse y respetan pausa, velocidad y movimiento reducido. El combate y las habilidades de entrada esperan al final de la presentación; al volver a una partida guardada se conserva el punto de la secuencia.',
      'Boss introductions zoom onto the Pokémon with an angled name banner and a unique subtitle. They last 2.8 seconds, can be skipped and respect pause, speed and reduced motion. Combat and entry abilities wait until the introduction ends; saved games preserve the sequence position.'],

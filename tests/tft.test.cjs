@@ -575,7 +575,7 @@ test('endless PvE generates themed encounters, specials and rotating bosses past
  const bosses=new Set(),names=new Set();
  for(let wave=1;wave<=120;wave++){
   assert.equal(s.round,wave);assert.ok(E.start(s));const foes=s.battle.units.filter(u=>u.side===1),scout=E.scout(s);names.add(E.waveInfo(wave).name);
-  assert.ok(foes.length>=2&&foes.length<=6);assert.equal(new Set(scout.map(u=>u.pos)).size,scout.length);
+  assert.ok(foes.length>=(wave%10===0?1:2)&&foes.length<=6);if(wave%10===0)assert.equal(foes.length,1);assert.equal(new Set(scout.map(u=>u.pos)).size,scout.length);
   assert.ok(scout.filter(u=>E.BY[u.dex].role==='healer'||E.aiFor(u.dex)==='healer').length<=1);
   assert.equal(foes.some(u=>u.boss),wave%10===0);assert.equal(E.waveInfo(wave).kind,wave%10===0?'boss':wave%5===0?'elite':'normal');
   if(wave%10===0){const boss=foes.find(u=>u.boss);bosses.add(boss.dex);assert.ok(G.DEX_BY[boss.dex]);assert.ok(boss.maxHp>E.preview({...s,opponent:scout}, {...scout.find(u=>u.boss),boss:false}).maxHp*2.9);}
@@ -653,7 +653,7 @@ test('enemy durability and damage grow separately, tanks lose enemy damage only'
 });
 test('older planning saves rebalance once while active fights keep exact state',()=>{
  const {E}=fixture(),s=E.create(123,E.DEFAULT_DECK);s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,35);
- delete s.balanceVersion;const restored=E.restore(E.serialize(s));assert.ok(restored);assert.equal(restored.balanceVersion,1);
+ delete s.balanceVersion;const restored=E.restore(E.serialize(s));assert.ok(restored);assert.equal(restored.balanceVersion,2);
  const seed=restored.seed,foes=JSON.stringify(E.scout(restored)),again=E.restore(E.serialize(restored));assert.equal(again.seed,seed);assert.equal(JSON.stringify(E.scout(again)),foes);
  assert.ok(E.start(s));delete s.balanceVersion;const battle=JSON.stringify(s.battle.units.map(({entrance,...u})=>u)),active=E.restore(E.serialize(s));assert.ok(active);assert.equal(active.phase,'combat');assert.equal(JSON.stringify(active.battle.units),battle);
 });
@@ -713,4 +713,12 @@ test('boss introductions freeze combat and entry effects, save mid-sequence and 
  E.tick(s,.05);E.tick(restored,.05);assert.equal(JSON.stringify(restored.battle.units),JSON.stringify(s.battle.units));
  const bad=JSON.parse(E.serialize(s));bad.state.battle.intro=3;assert.equal(E.restore(JSON.stringify(bad)),null);
  const plain=E.create(118,E.DEFAULT_DECK);plain.gold=100;purchase(E,plain,4);E.place(plain,plain.units[0].id,20);E.start(plain,{presentation:true});assert.equal(plain.battle.intro,0);assert.ok(plain.battle.events.length>0);
+});
+
+test('saved boss preparation loses escorts once and an ongoing boss fight remains intact',()=>{
+ const {E}=fixture(),s=E.create(187,E.DEFAULT_DECK);s.round=9;s.phase='result';E.next(s);s.balanceVersion=1;
+ s.opponent.push({id:-2,dex:4,star:1,pos:9,boss:false,elite:false});
+ const loaded=E.restore(E.serialize(s));assert.ok(loaded);assert.equal(loaded.opponent.length,1);assert.ok(loaded.opponent[0].boss);assert.equal(loaded.opponent[0].pos,8);
+ const again=E.restore(E.serialize(loaded));assert.equal(again.seed,loaded.seed);assert.equal(JSON.stringify(again.opponent),JSON.stringify(loaded.opponent));
+ s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,20);E.start(s);const active=E.restore(E.serialize(s));assert.ok(active);assert.equal(active.battle.units.filter(u=>u.side===1).length,2);
 });
