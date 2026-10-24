@@ -176,10 +176,11 @@ test('Kirlia cleanses burn, slow and stun from the most wounded ally',()=>{
  ally.hp*=.1;ally.burn={remaining:3};ally.slowUntil=9;ally.stunUntil=9;E.cast(b,a,t);
  assert.equal(ally.burn,null);assert.equal(ally.slowUntil,0);assert.equal(ally.stunUntil,0);
 });
-test('Metagross stuns the impact zone, shields itself and prevents stunned actions',()=>{
- const {E}=fixture();const {s,b,units:[a,t,near,far]}=battleFor(E,[[376,3,0,2,4],[133,1,1,2,3],[133,1,1,3,3],[133,1,1,5,5]]);
- E.cast(b,a,t);assert.equal(t.stunUntil,1);assert.equal(near.stunUntil,1);assert.equal(far.stunUntil,undefined);assert.ok(a.shield>0);
- t.cooldown=0;t.moveCD=0;const hp=a.hp,shield=a.shield;E.tick(s,.1);assert.equal(a.hp,hp);assert.equal(a.shield,shield);assert.equal(t.x,2);assert.equal(t.y,3);
+test('Metagross suspends its adjacent victim, then slams a zone without harming allies',()=>{
+ const {E}=fixture();const {s,b,units:[a,t,near,ally]}=battleFor(E,[[376,3,0,2,4],[133,1,1,2,3],[133,1,1,3,1],[7,1,0,1,1]]);
+ E.cast(b,a,t);assert.equal(t.liftedBy,a.id);assert.equal(a.damageDone,0);assert.ok(E.isStunned(b,t));
+ t.cooldown=0;t.moveCD=0;const hp=a.hp;reworkBeat(E,s,1);assert.equal(a.hp,hp);assert.equal(t.y,3);
+ const allyHP=ally.hp;reworkBeat(E,s);assert.equal(t.liftedBy,undefined);assert.equal(a.liftTarget,undefined);assert.equal(t.y,1);assert.ok(near.hp<near.maxHp);assert.equal(ally.hp,allyHP);
 });
 test('ability descriptions change through each of the six signature families',()=>{
  const {E}=fixture();for(const family of [4,7,529,92,280,374]){
@@ -327,7 +328,7 @@ test('all 107 families have explicit entrances and executable moves at all 321 b
    const {b,units:[a,t,other,ally]}=battleFor(E,[[dex,star,0,2,3],[133,1,1,2,2],[133,1,1,3,2],[7,1,0,3,3]]);
    a.hp=a.maxHp/2;ally.hp=ally.maxHp/3;const allyHP=ally.hp;a.mana=100;
    E.cast(b,a,t);
-   assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0||a.populationPulse===0||a.ambushPending||a.hammerX!==undefined||a.bulletPulses||a.leafPulse===0||b.waves?.some(w=>w.source===a.id),`${family.dex} rank ${star} has a real effect`);
+   assert.ok(a.damageDone+a.healingDone+a.shieldingDone>0||a.populationPulse===0||a.ambushPending||a.hammerX!==undefined||a.bulletPulses||a.leafPulse===0||a.liftTarget!==undefined||a.swoopDx!==undefined||a.headPulses||b.waves?.some(w=>w.source===a.id),`${family.dex} rank ${star} has a real effect`);
    assert.ok(ally.hp>=allyHP,'never damages its ally');assert.ok(b.units.every(u=>Number.isFinite(u.hp)&&u.hp>=0&&u.hp<=u.maxHp&&Number.isFinite(u.mana)));
    assert.ok(a.mana>=0&&a.mana<=100);assert.ok(a.shield<=a.maxHp*.5);
    assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
@@ -951,5 +952,47 @@ test('the new quartet completes mixed fights without cell collisions and remains
    assert.ok(live.every(u=>u.x>=0&&u.x<6&&u.y>=0&&u.y<6&&Number.isFinite(u.hp)));
   }
   assert.notEqual(s.phase,'combat');return JSON.stringify({result:s.result,units:s.battle.units,waves:s.battle.waves});
+ };assert.equal(run(.05),run(.1));
+});
+
+test('Hydreigon assigns three heads to different foes, concentrates on a survivor and loses stunned pulses',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,u,v,ally]}=battleFor(E,[[635,3,0,2,3],[7,1,1,2,2],[7,1,1,1,2],[7,1,1,3,2],[7,1,0,2,4]]);
+ a.attack=100;for(const x of [t,u,v]){x.armor=0;x.types=['normal'];}const hp=ally.hp;
+ E.cast(b,a,t);reworkBeat(E,s);assert.deepEqual(b.events.filter(e=>e.kind==='headShot').map(e=>e.to),[t.id,u.id,v.id]);
+ assert.equal(a.damageDone,240);u.hp=v.hp=0;reworkBeat(E,s);assert.equal(a.damageDone,480);assert.equal(a.headPulses,undefined);assert.equal(a.mana,0);assert.equal(ally.hp,hp);
+ E.cast(b,a,t);a.stunUntil=b.time+2;reworkBeat(E,s);assert.equal(a.headPulses,1);assert.equal(a.damageDone,480);
+});
+test('Salamence telegraphs, damages only its corridor, lands without overlap and can be interrupted',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,u,off,ally]}=battleFor(E,[[373,3,0,2,4],[7,1,1,2,3],[7,1,1,2,1],[7,1,1,3,2],[7,1,0,2,0]]);
+ const hp=ally.hp;E.cast(b,a,t);assert.equal(a.damageDone,0);reworkBeat(E,s,1);assert.equal(a.y,4);reworkBeat(E,s);
+ assert.equal(a.y,2);assert.ok(t.hp<t.maxHp&&u.hp<u.maxHp);assert.equal(off.hp,off.maxHp);assert.equal(ally.hp,hp);
+ assert.equal(new Set(b.units.map(u=>u.y*6+u.x)).size,b.units.length);
+ E.cast(b,a,u);const damage=a.damageDone;E.stun(b,t,a,2);reworkBeat(E,s);assert.equal(a.damageDone,damage);assert.equal(a.swoopDx,undefined);
+});
+test('Metagross releases on interruption or death and bosses take damage without being lifted',()=>{
+ const {E}=fixture();for(const death of [false,true]){
+  const {s,b,units:[a,t]}=battleFor(E,[[376,3,0,2,4],[7,1,1,2,3]]);E.cast(b,a,t);
+  if(death)a.hp=0;else E.stun(b,t,a,2);E.tick(s,.05);assert.equal(t.liftedBy,undefined);assert.equal(a.liftTarget,undefined);assert.equal(a.damageDone,0);
+ }
+ const {s,b,units:[a,t]}=battleFor(E,[[376,3,0,2,4],[7,1,1,2,3]]);t.boss=true;E.cast(b,a,t);assert.equal(t.liftedBy,undefined);reworkBeat(E,s);assert.equal(t.y,3);assert.ok(t.hp<t.maxHp);
+});
+test('all three pseudo sequences restore mid-preparation, resume identically and reject broken references',()=>{
+ const {E}=fixture();for(const dex of [635,373,376]){
+  const family=E.BY[dex].line[0],s=E.create(112,[family,...E.DEFAULT_DECK.filter(d=>d!==family)].slice(0,10));
+  s.units=[{id:1,dex,star:3,pos:20}];s.nextId=2;s.opponent=[{id:-1,dex:7,star:1,pos:14}];s.opponentRound=1;E.start(s);
+  const [a,t]=s.battle.units;for(const u of [a,t]){u.hp=u.maxHp=100000;u.cooldown=u.moveCD=99;}t.x=a.x;t.y=a.y-1;E.cast(s.battle,a,t);
+  const raw=E.serialize(s),copy=E.restore(raw);assert.ok(copy,`${dex} saves`);
+  for(let i=0;i<60;i++){E.tick(s,.05);E.tick(copy,.05);}
+  const clean=b=>JSON.stringify(b.units.map(u=>{const x={...u};delete x.entrance;return x;}));assert.equal(clean(s.battle),clean(copy.battle));
+  const bad=JSON.parse(raw),u=bad.state.battle.units[0];if(dex===635)u.headTargets=[9999];if(dex===373)u.swoopDy=8;if(dex===376)delete bad.state.battle.units[1].liftedBy;assert.equal(E.restore(JSON.stringify(bad)),null);
+ }
+});
+test('mixed pseudo fights keep distinct cells, valid saves and deterministic results across frame rates',()=>{
+ const {E}=fixture(),run=dt=>{
+  const s=E.create(777,[633,371,374,...E.DEFAULT_DECK.filter(d=>![633,371,374].includes(d))].slice(0,10));
+  s.units=[635,373,376].map((dex,i)=>({id:i+1,dex,star:3,pos:20+i}));s.nextId=4;
+  s.opponent=[635,373,376].map((dex,i)=>({id:-i-1,dex,star:3,pos:14+i}));s.opponentRound=1;E.start(s);
+  while(s.phase==='combat'){E.tick(s,dt);const live=s.battle.units.filter(u=>u.hp>0);assert.equal(new Set(live.map(u=>u.y*6+u.x)).size,live.length);assert.ok(E.restore(E.serialize(s)));}
+  return JSON.stringify({result:s.result,units:s.battle.units});
  };assert.equal(run(.05),run(.1));
 });

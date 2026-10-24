@@ -40,7 +40,7 @@ G.TFTVisuals = (() => {
     for(const e of events){
       if(e.to&&['hit','spell'].includes(e.kind))hurt.add(e.to);
       if(e.periodic)continue;
-      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,flight:4,blink:4,rescue:4,throw:4,flank:4,dreepy:4,leafFan:4}[e.kind]||0;
+      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,flight:4,blink:4,rescue:4,throw:4,flank:4,dreepy:4,leafFan:4,headShot:4,lift:4}[e.kind]||0;
       if(priority&&(!actions.has(e.from)||actions.get(e.from).priority<priority))actions.set(e.from,{e,priority});
     }
     return {actions,hurt};
@@ -93,7 +93,13 @@ G.TFTVisuals = (() => {
       G.VFX.draw(ctx,shape,pal,clamp(x,0,600),clamp(y,0,600),{scale,alpha,angle:rotation,frame:calm?0:frame});
     };
     ctx.save();ctx.imageSmoothingEnabled=false;
-    if(e.kind==='dreepy') {
+    if(e.kind==='headShot') {
+      const startX=sx+(e.head-1)*20,startY=sy-Math.abs(e.head-1)*12,t=calm?1:p;
+      sprite('star','dragon',startX+(tx-startX)*t,startY+(ty-startY)*t,.9,fade,angle);
+      if(p>.65)sprite('impact','dragon',tx,ty,1.1,fade);
+    } else if(e.kind==='lift') {
+      sprite('ring','steel',tx,ty-30,1.4,fade);if(!low)sprite('star','psychic',tx,ty-45,.8,fade);
+    } else if(e.kind==='dreepy') {
       const t=calm?1:e.returning?(p<.6?p/.6:(1-p)/.4):Math.min(1,p/.8),x=sx+(tx-sx)*t,y=sy+(ty-sy)*t;
       const m=G.Sprites.animMeta(885,'Idle'),sheet=G.Sprites.sheet(885,'Idle');
       if(m&&sheet?.ready){const dir=G.Sprites.dirFromAngle(angle+(e.returning&&p>=.6?Math.PI:0)),k=.9;ctx.globalAlpha=fade;ctx.drawImage(sheet.img,Math.min(frame,m.n-1)*m.w,Math.min(dir,m.r-1)*m.h,m.w,m.h,x-m.ax*k,y-m.ay*k,m.w*k,m.h*k);}
