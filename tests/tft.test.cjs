@@ -7,8 +7,8 @@ function fixture(seed=123) {
   const E=ctx.G.TFT,s=E.create(seed);return {G:ctx.G,E,s};
 }
 function purchase(E,s,dex,n=1) {for(let i=0;i<n;i++){s.shop=[dex];assert.ok(E.buy(s,0));}}
-test('107 complete evolution families use local Pokédex and sprite assets',()=>{
-  const {G,E}=fixture();assert.equal(E.ROSTER.length,107);
+test('108 complete evolution families use local Pokédex and sprite assets',()=>{
+  const {G,E}=fixture();assert.equal(E.ROSTER.length,108);
   for(const family of E.ROSTER)for(const dex of family.line){
     assert.ok(G.DEX_BY[dex]);assert.ok(fs.existsSync(path.join(root,`assets/pokemon/${dex}/Idle.png`)));
   }
@@ -318,7 +318,7 @@ test('invalid, incompatible and incomplete snapshots are rejected safely',()=>{
  }
 });
 
-test('all 107 families have explicit entrances and executable moves at all 321 bronze ranks',()=>{
+test('all 108 families have explicit entrances and executable moves at all 324 bronze ranks',()=>{
  const {E}=fixture(),names=new Set();
  for(const family of E.ROSTER){
   const entry=E.entranceFor({dex:family.dex,star:1});names.add(entry.name);
@@ -334,7 +334,7 @@ test('all 107 families have explicit entrances and executable moves at all 321 b
    assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
   }
  }
- assert.equal(names.size,107,'each family has its own named entrance');
+ assert.equal(names.size,108,'each family has its own named entrance');
 });
 test('iconic moves protect the correct allies, ignore armor and strengthen against wounded targets',()=>{
  const {E}=fixture();
@@ -587,7 +587,7 @@ test('endless PvE generates themed encounters, specials and rotating bosses past
  assert.equal(bosses.size,6);assert.ok(names.size>6);assert.equal(s.completed,120);assert.equal(s.history.length,E.HISTORY_LIMIT);assert.equal(s.wins,120);assert.ok(s.totals.length>0);
 });
 test('legendary families are excluded from decks and shops and older ten-line decks migrate without duplicates',()=>{
- const {E}=fixture();assert.equal(E.PLAYABLE_ROSTER.length,106);assert.equal(E.PLAYABLE_ROSTER.some(f=>f.dex===384),false);
+ const {E}=fixture();assert.equal(E.PLAYABLE_ROSTER.length,107);assert.equal(E.PLAYABLE_ROSTER.some(f=>f.dex===384),false);
  const old=[1,4,7,172,92,280,529,246,374,384];assert.equal(E.validDeck(old),false);const deck=E.migrateDeck(old);assert.ok(E.validDeck(deck));assert.equal(deck.includes(384),false);assert.equal(new Set(deck).size,10);
  const s=E.create(35,deck);s.gold=100000;s.level=6;
  for(let i=0;i<100;i++){E.reroll(s,true);assert.ok(s.shop.every(d=>!E.BY[d].bossOnly));}
@@ -688,7 +688,7 @@ test('shops keep at most two copies, three families when possible and exclude co
   assert.ok([...counts.values()].every(n=>n<=2));assert.ok(counts.size>=3);
  }
  purchase(E,s,4,42);for(let i=0;i<20;i++){E.reroll(s);assert.equal(s.shop.includes(4),false);}
- s.units=s.deck.map((d,i)=>({id:i+1,dex:E.evolvedDex(d,3),star:3,promotion:6,pos:null}));
+ s.units=s.deck.map((d,i)=>({id:i+1,dex:E.evolvedDex(d,3),star:3,promotion:E.MEGAS[E.evolvedDex(d,3)]?7:6,pos:null}));
  const gold=s.gold;assert.equal(E.reroll(s),false);assert.equal(s.gold,gold);assert.ok(E.reroll(s,true));assert.ok(s.shop.every(d=>d===null));
  s.units.pop();assert.ok(E.reroll(s));assert.equal(s.shop.filter(Boolean).length,2);
 });
@@ -994,5 +994,59 @@ test('mixed pseudo fights keep distinct cells, valid saves and deterministic res
   s.opponent=[635,373,376].map((dex,i)=>({id:-i-1,dex,star:3,pos:14+i}));s.opponentRound=1;E.start(s);
   while(s.phase==='combat'){E.tick(s,dt);const live=s.battle.units.filter(u=>u.hp>0);assert.equal(new Set(live.map(u=>u.y*6+u.x)).size,live.length);assert.ok(E.restore(E.serialize(s)));}
   return JSON.stringify({result:s.result,units:s.battle.units});
+ };assert.equal(run(.05),run(.1));
+});
+
+test('five families reach Iridium after exactly three normal-price copies beyond complete Gold; id, placement and resale are preserved',()=>{
+ const {E}=fixture();for(const dex of [260,257,248,959,47]){
+  const family=E.BY[dex].line[0],deck=[family,...E.DEFAULT_DECK.filter(d=>d!==family)].slice(0,10),s=E.create(924,deck);s.gold=10000;
+  purchase(E,s,family,42);const u=s.units[0];assert.equal(u.promotion,6);E.place(s,u.id,20);const id=u.id,price=E.BY[dex].cost,gold=s.gold;
+  assert.ok(E.trainingLabel(u).includes('0/3'));assert.equal(E.isMega(u),false);
+  purchase(E,s,family,2);assert.equal(u.promotion,6);assert.equal(u.training,2);assert.equal(E.unitCopies(u),44);assert.ok(E.restore(E.serialize(s)));
+  for(let i=0;i<25;i++)E.reroll(s,true);assert.ok(s.shop.includes(family)||s.shop.some(Boolean));
+  purchase(E,s,family);assert.equal(E.rankLabel(u),'Iridio ★');assert.equal(E.rank(u),10);assert.equal(E.unitCopies(u),45);assert.equal(u.id,id);assert.equal(u.pos,20);assert.equal(s.gold,gold-3*price);assert.equal(E.isMega(u),true);assert.ok(E.nameFor(u).startsWith('Mega '));assert.ok(E.abilityFor(u).description.length>60);
+  for(let i=0;i<20;i++){E.reroll(s,true);assert.equal(s.shop.includes(family),false);}s.shop=[family];const before=s.gold;assert.equal(E.buy(s,0),false);assert.equal(s.gold,before);assert.ok(E.restore(E.serialize(s)));
+  E.sell(s,id);assert.equal(s.gold,before+45*price);
+ }
+});
+function megaBattle(E,specs){const v=battleFor(E,specs);for(const u of v.units)if(E.MEGAS[u.dex]&&u.side===0)u.promotion=7;return v;}
+test('Mega Swampert sends opposed flood fronts that push without repeat damage, and basic splash avoids allies',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,back,wing,ally]}=megaBattle(E,[[260,3,0,2,3],[7,1,1,2,2],[7,1,1,2,4],[7,1,1,3,2],[7,1,0,1,2]]);
+ E.cast(b,a,t);assert.equal(b.waves.length,2);const hp=ally.hp;reworkBeat(E,s,1);assert.ok(t.hp<t.maxHp&&back.hp<back.maxHp&&wing.hp<wing.maxHp);assert.equal(ally.hp,hp);assert.equal(t.y,1);assert.equal(back.y,5);
+ const before=t.hp;reworkBeat(E,s,3);assert.equal(t.hp,before);
+ const q=megaBattle(E,[[260,3,0,2,3],[7,1,1,2,2],[7,1,1,3,2],[7,1,0,1,2]]);q.units[0].cooldown=0;reworkBeat(E,q.s);assert.ok(q.units[2].hp<q.units[2].maxHp);assert.equal(q.units[3].hp,q.units[3].maxHp);
+});
+test('Mega Blaziken strikes three distinct victims through legal landing cells and stun resets its bounded Impulso',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,u,v,ally]}=megaBattle(E,[[257,3,0,2,4],[7,1,1,2,3],[7,1,1,3,2],[7,1,1,4,1],[7,1,0,1,4]]);
+ E.cast(b,a,t);assert.ok([t,u,v].every(t=>t.hp<t.maxHp&&t.burn));assert.equal(ally.hp,ally.maxHp);assert.equal(new Set(b.units.map(u=>u.y*6+u.x)).size,b.units.length);
+ a.x=2;a.y=4;a.cooldown=0;t.x=2;t.y=3;a.impulse=4;reworkBeat(E,s);assert.equal(a.impulse,5);E.stun(b,t,a,1);assert.equal(a.impulse,0);
+});
+test('Mega Tyranitar sand changes target selection, stops when disabled and cannot pull bosses or allies',()=>{
+ const {E}=fixture(),{s,b,units:[a,foe,out,inside]}=megaBattle(E,[[248,3,0,2,3],[7,1,1,2,2],[7,1,0,2,0],[7,1,0,3,2]]);
+ foe.ai='ranged';foe.range=4;out.hp=1;inside.hp*=.5;assert.equal(E.selectTarget(b,foe).id,inside.id);a.stunUntil=2;assert.equal(E.selectTarget(b,foe).id,out.id);a.stunUntil=0;
+ const hp=inside.hp;foe.boss=true;foe.shield=100;E.cast(b,a,foe);assert.equal(foe.y,2);assert.equal(foe.shield,0);assert.equal(inside.hp,hp);const before=foe.hp;reworkBeat(E,s,1);assert.ok(foe.hp<before);
+});
+test('Mega Tinkaton breaks shields in a wider zone and resolves its delayed echo during recovery',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,far,ally]}=megaBattle(E,[[959,3,0,2,4],[7,1,1,2,3],[7,1,1,4,3],[7,1,0,3,3]]);
+ t.shield=far.shield=1000;const hp=ally.hp;E.cast(b,a,t);assert.equal(a.damageDone,0);reworkBeat(E,s);assert.equal(far.shield,0);assert.ok(far.hp<far.maxHp);assert.ok(a.hammerEcho);const before=t.hp;reworkBeat(E,s);assert.ok(t.hp<before);assert.equal(a.hammerEcho,undefined);assert.equal(a.hammerRecovery,undefined);assert.equal(ally.hp,hp);
+});
+test('Mega Parasect drains, heals nearby allies and spreads each fallen infection only once',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,u,v,ally]}=megaBattle(E,[[47,3,0,2,4],[7,1,1,2,3],[7,1,1,3,3],[7,1,1,2,1],[7,1,0,1,3]]);
+ ally.hp=1;E.cast(b,a,t);const ids=[...a.fungalIds];assert.equal(ids.length,3);assert.equal(new Set(ids).size,3);const hp=ally.hp;reworkBeat(E,s,1);assert.ok(ally.hp>hp);assert.ok(t.hp<t.maxHp);
+ b.units.push({...v,id:9,x:3,y:1,hp:10000});v.hp=0;reworkBeat(E,s,3);assert.ok(a.fungalIds.includes(9));assert.equal(a.fungalBurst.filter(id=>id===v.id).length,1);reworkBeat(E,s,1);assert.equal(a.fungalBurst.filter(id=>id===v.id).length,1);
+ assert.deepEqual(Array.from(E.typesFor(a)),['bug','ghost']);const tr=E.traits([a]);assert.equal(tr.ghost.count,1);assert.equal(tr.grass,undefined);
+});
+test('all five Iridium units resume their active mechanics with valid saves and deterministic mixed battles',()=>{
+ const {E}=fixture(),run=dt=>{
+  const dexes=[260,257,248,959,47],families=dexes.map(d=>E.BY[d].line[0]),s=E.create(313,[...families,...E.DEFAULT_DECK.filter(d=>!families.includes(d))].slice(0,10));s.level=6;
+  s.units=dexes.map((dex,i)=>({id:i+1,dex,star:3,promotion:7,pos:19+i}));s.nextId=6;
+  s.opponent=[635,373,376,282,959,887].map((dex,i)=>({id:-i-1,dex,star:3,pos:12+i}));s.opponentRound=1;E.start(s);
+  for(const a of s.battle.units.filter(u=>u.side===0)){const target=E.selectTarget(s.battle,a);if(target)E.cast(s.battle,a,target);}
+  const raw=E.serialize(s),copy=E.restore(raw);assert.ok(copy);const bad=JSON.parse(raw);bad.state.battle.units[0].promotion=8;assert.equal(E.restore(JSON.stringify(bad)),null);
+  const invalid=JSON.parse(raw);invalid.state.battle.units.find(u=>u.dex===47).fungalIds=[999];assert.equal(E.restore(JSON.stringify(invalid)),null);
+  while(s.phase==='combat'){
+   E.tick(s,dt);E.tick(copy,dt);assert.ok(E.restore(E.serialize(s)));const live=s.battle.units.filter(u=>u.hp>0);assert.equal(new Set(live.map(u=>u.y*6+u.x)).size,live.length);
+  }
+  const clean=b=>JSON.stringify(b.units.map(u=>{const v={...u};delete v.entrance;return v;}));assert.equal(clean(s.battle),clean(copy.battle));return JSON.stringify({result:s.result,units:s.battle.units});
  };assert.equal(run(.05),run(.1));
 });

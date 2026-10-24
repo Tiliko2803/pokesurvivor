@@ -41,6 +41,9 @@ G.TFT = (() => {
   ];
   // TFT adaptations: species identity, rank moves and opening tactics in one place.
   const EXPANSION=[
+    {line:[46,47],cost:2,role:'healer',moves:['Absorber','Espora','Gigadrenado'],entry:'Micelio Protector',passive:['regen',.015,'Regenera un 1,5% de vida por segundo.'],
+      skills:[{type:'grass',power:1.6,selfDrain:.5,text:'Drena vida y recupera la mitad del daño.'},{type:'grass',power:1.8,stun:.5,text:'Esporas que dañan y aturden medio segundo.'},{type:'grass',power:2.4,drain:.7,friends:2,text:'Gigadrenado cura a los dos aliados más heridos con parte del daño causado.'}],
+      openers:[1,2,3].map(n=>({type:'grass',power:.3*n,healing:.4*n,text:'Una nube inicial daña al enemigo y cura a un aliado herido.'}))},
     {line:[129, 130],cost:2,role:"fighter",moves:["Salpicadura", "Cascada", "Vendaval Acuático"],
       entry:"Mirada Intimidante",passive:["intimidate", 0.08, "Reduce un 8% el daño rival durante el combate. No se acumula con otras intimidaciones."],
       skills:[
@@ -2445,7 +2448,7 @@ G.TFT = (() => {
     BY[dex]={...family,dex,stage,move:family.moves[stage]};
   for(const f of BOSS_DEFINITIONS)BY[f.dex]={...f,stage:0,move:f.moves[0],bossOnly:true};
   const evolvedDex=(dex,star)=>BY[dex].line[Math.min(star-1,BY[dex].line.length-1)];
-  const moveFor=u=>u.dex===635?'Tres Cabezas':u.dex===373?'Vuelo Rasante':u.dex===376?'Levitación Magnética':u.dex===214?'Llave de Relevo':u.dex===254?'Danza de Hojas':u.dex===395?'Rompeolas':u.dex===212?'Puño Bala':u.dex===94?'Emboscada Sombría':BY[u.dex].moves[u.star-1];
+  const moveFor=u=>isMega(u)?MEGAS[u.dex].move:u.dex===635?'Tres Cabezas':u.dex===373?'Vuelo Rasante':u.dex===376?'Levitación Magnética':u.dex===214?'Llave de Relevo':u.dex===254?'Danza de Hojas':u.dex===395?'Rompeolas':u.dex===212?'Puño Bala':u.dex===94?'Emboscada Sombría':BY[u.dex].moves[u.star-1];
   const DEFAULT_DECK=[1,4,7,172,92,280,529,246,374,661];
   function validDeck(deck,legacy=false) {
     return Array.isArray(deck)&&deck.length===10&&new Set(deck).size===10&&
@@ -2467,12 +2470,18 @@ G.TFT = (() => {
   }
   function random(s) { s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0; return s.seed/4294967296; }
   const TRAINING_COSTS=[3,4,5,6,7,8];
+  const MEGAS={260:{name:'Mega Swampert',move:'Diluvio Sísmico',type:'water',description:'Lanza dos frentes de inundación en direcciones opuestas, de tres casillas de ancho. Avanzan en pulsos de movimiento; cada frente golpea una vez por enemigo (180%) y empuja una casilla libre. Sus básicos salpican a enemigos adyacentes a la presa (35%).'},257:{name:'Mega Blaziken',move:'Relevos Ígneos',type:'fire',description:'Salta sucesivamente junto a hasta tres enemigos distintos a distancia 4 con casillas libres y les da una patada (160%) que quema durante 3 segundos. Impulso: cada básico gana 10% de potencia y maná, hasta 50%; aturdirlo reinicia la acumulación.'},248:{name:'Mega Tyranitar',move:'Rey de la Tormenta',type:'rock',description:'Mientras pueda actuar, su arena de radio 2 obliga a enemigos dentro a seleccionar objetivos dentro de esa misma tormenta para sus básicos. Cada pulso de movimiento daña dentro (25%). Su habilidad atrae una casilla a enemigos a distancia 3 si hay espacio, rompe sus escudos y golpea (220%). Los jefes no se desplazan.'},959:{name:'Mega Tinkaton',move:'Martillo Cataclísmico',type:'steel',description:'Prepara un martillazo de radio 2 (450%) que destruye escudos; deja una réplica (150%) en el siguiente pulso de ataque. Mantiene recuperación y puede ser interrumpida antes del primer golpe.'},47:{name:'Mega Parasect',move:'Red Fúngica',type:'ghost',description:'Infecta hasta tres enemigos a alcance 3. En cada pulso de movimiento drena 35% del ataque y cura al aliado más herido a distancia 2 de cada víctima. Cada infectado muerto propaga una sola vez a dos enemigos a distancia 2. Sin acumulación de marcas del mismo Parasect.'}};
   const promotion=u=>u.promotion||0;
+  const isMega=u=>promotion(u)===7&&!!MEGAS[u.dex];
+  const typesFor=u=>isMega(u)&&u.dex===47?['bug','ghost']:G.DEX_BY[u.dex].types;
+  const nameFor=u=>isMega(u)?MEGAS[u.dex].name:G.DEX_BY[u.dex].name;
+  const maxPromotion=u=>MEGAS[u.dex]?7:6;
+  const maxed=u=>promotion(u)>=maxPromotion(u);
   const rank=u=>u.star+promotion(u);
-  const rankLabel=u=>['Bronce','Plata','Oro'][Math.floor((rank(u)-1)/3)]+' '+ '★'.repeat((rank(u)-1)%3+1);
-  const rankColor=u=>['#cd9567','#d7e3ed','#ffda6b'][Math.floor((rank(u)-1)/3)];
-  const unitCopies=u=>3**(u.star-1)+TRAINING_COSTS.slice(0,promotion(u)).reduce((a,b)=>a+b,0)+(u.training||0);
-  const trainingLabel=u=>u.star<3?'Tres copias para evolucionar':promotion(u)>=6?'Máximo · Oro ★★★':`Entrenamiento ${u.training||0}/${TRAINING_COSTS[promotion(u)]} copias · siguiente rango`;
+  const rankLabel=u=>isMega(u)?'Iridio ★':['Bronce','Plata','Oro'][Math.floor((rank(u)-1)/3)]+' '+ '★'.repeat((rank(u)-1)%3+1);
+  const rankColor=u=>isMega(u)?'#e6dcff':['#cd9567','#d7e3ed','#ffda6b'][Math.floor((rank(u)-1)/3)];
+  const unitCopies=u=>3**(u.star-1)+TRAINING_COSTS.slice(0,promotion(u)).reduce((a,b)=>a+b,0)+(isMega(u)?3:0)+(u.training||0);
+  const trainingLabel=u=>u.star<3?'Tres copias para evolucionar':isMega(u)?'Máximo · Iridio ★ · '+nameFor(u):promotion(u)===6?(MEGAS[u.dex]?`Megaevolución: ${u.training||0}/3 copias`:'Máximo · Oro ★★★'):`Entrenamiento ${u.training||0}/${TRAINING_COSTS[promotion(u)]} copias · siguiente rango`;
   function roll(s,available) {
     if(!available.length)return null;
     const weights=ODDS[s.level].map((w,i)=>available.some(p=>p.cost===i+1)?w:0);
@@ -2489,7 +2498,7 @@ G.TFT = (() => {
   function planning(s) { return s.phase==='planning'; }
   function reroll(s,free=false) {
     if(!planning(s)||(!free&&s.gold<2))return false;
-    const available=PLAYABLE_ROSTER.filter(p=>s.deck.includes(p.dex)&&!s.units.some(u=>BY[u.dex].line[0]===p.dex&&promotion(u)===6));
+    const available=PLAYABLE_ROSTER.filter(p=>s.deck.includes(p.dex)&&!s.units.some(u=>BY[u.dex].line[0]===p.dex&&maxed(u)));
     if(!available.length){if(free){s.shop=Array(5).fill(null);return true;}return false;}
     if(!free)s.gold-=2;
     const counts=new Map();s.shop=[];
@@ -2519,12 +2528,12 @@ G.TFT = (() => {
     const dex=s.shop[index], def=BY[dex]; if(!def||def.bossOnly||!s.deck.includes(def.line[0])||s.gold<def.cost)return false;
     const trained=s.units.filter(u=>BY[u.dex].line[0]===dex&&u.star===3).sort((a,b)=>promotion(b)-promotion(a)||a.id-b.id)[0];
     if(trained) {
-      if(promotion(trained)>=6)return false;
+      if(maxed(trained))return false;
       s.gold-=def.cost;s.shop[index]=null;trained.training=(trained.training||0)+1;
-      if(trained.training>=TRAINING_COSTS[promotion(trained)]) {
+      if(trained.training>=(promotion(trained)===6?3:TRAINING_COSTS[promotion(trained)])) {
         trained.training=0;trained.promotion=promotion(trained)+1;
         s.effects.push({kind:'evolve',id:trained.id,fromDex:trained.dex,toDex:trained.dex,star:3,promotion:trained.promotion,ttl:1.6});
-        if(promotion(trained)===6)s.shop=s.shop.map(d=>d===dex?null:d);
+        if(maxed(trained))s.shop=s.shop.map(d=>d===dex?null:d);
       }
       return true;
     }
@@ -2552,7 +2561,7 @@ G.TFT = (() => {
     const counts={};const seen=new Set();
     for(const u of units) {
       const family=BY[u.dex].line[0];
-      for(const t of G.DEX_BY[u.dex].types) {
+      for(const t of typesFor(u)) {
         const key=family+':'+t;if(seen.has(key))continue;seen.add(key);
         counts[t]=(counts[t]||0)+1;
       }
@@ -2753,8 +2762,11 @@ G.TFT = (() => {
     if(['charger','jumper','runner'].includes(behavior)&&role==='fighter')return 'diver';
     return role==='tank'?'tank':'fighter';
   }
+  function targetAllowed(b,a,t){
+    return b.units.filter(u=>u.hp>0&&isMega(u)&&u.dex===248&&u.side!==a.side&&!isStunned(b,u)&&!u.shadowed&&distance(a,u)<=2).every(storm=>distance(t,storm)<=2);
+  }
   function selectTarget(b,a) {
-    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed);
+    const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&targetAllowed(b,a,u));
     const priority=u=>['healer','ranged'].includes(u.ai)?0:1;
     return foes.sort((x,y)=>{
       if(a.ai==='diver')return priority(x)-priority(y)||distance(a,x)-distance(a,y)||x.id-y.id;
@@ -2780,12 +2792,12 @@ G.TFT = (() => {
   }
   function fighter(u,side,synergies,round) {
     const p=G.DEX_BY[u.dex],def=BY[u.dex],power=1.8**(u.star-1)*1.18**promotion(u),ai=aiFor(u.dex);
-    const f={...u,side,x:u.pos%COLS,y:Math.floor(u.pos/COLS),types:p.types,role:def.role,
+    const f={...u,side,x:u.pos%COLS,y:Math.floor(u.pos/COLS),types:typesFor(u),role:def.role,
       ai,maxHp:(def.role==='tank'?480:330)*(1+def.cost*.1)*power,
       attack:(35+def.cost*9)*power,armor:def.role==='tank'?40:20,
       interval:Math.max(.65,1.35-(p.spd-90)/100),range:['ranged','healer'].includes(ai)?3:1,
       damageDone:0,damageTaken:0,blocked:0,kills:0,healingDone:0,shieldingDone:0,mana:0,manaGain:0,regen:0,pierce:0,slow:0,shield:0,cooldown:.2,moveCD:0,flash:0};
-    for(const type of p.types) {
+    for(const type of f.types) {
       const tier=synergies[type]?.tier||0;if(!tier)continue;
       switch(EFFECTS[type]) {
         case 'attack':f.attack*=1+.15*tier;break;
@@ -2804,6 +2816,7 @@ G.TFT = (() => {
       if(def.role==='tank'||['tank','guardian'].includes(ai))f.attack*=.8;
     }
     if(def.line[0]===661)f.basicType='flying';
+    if(isMega(u)){f.maxHp*=1.15;f.attack*=1.15;if(u.dex===47)f.types=['bug','ghost'];}
     f.hp=f.maxHp;return f;
   }
   const SIGNATURES={
@@ -2973,6 +2986,7 @@ G.TFT = (() => {
     'Martillo Colosal':{type:'steel',radius:1,power:2.7,center:'target'}
   };
   function abilityFor(u) {
+    if(isMega(u))return {name:MEGAS[u.dex].move,type:MEGAS[u.dex].type,description:MEGAS[u.dex].description,signature:true,special:true,area:true};
     const tactical={
       635:{type:'dragon',description:'Tres Cabezas: fija hasta tres presas dentro de alcance 3 durante dos pulsos de ataque. Cada cabeza golpea con 80% del ataque; las cabezas sin presa ayudan contra las restantes. Si una presa cae o sale de alcance, la cabeza busca otra. Sustituye básicos, sin maná ofensivo; el aturdimiento consume el pulso.'},
       373:{type:'flying',description:'Vuelo Rasante: marca una trayectoria recta hacia su presa y prepara la pasada sin moverse. En el próximo pulso de ataque golpea la línea con 300% del ataque y aterriza en la última casilla libre de la trayectoria. No desplaza aliados ni enemigos; un aturdimiento cancela la pasada.'},
@@ -3037,6 +3051,7 @@ G.TFT = (() => {
     if(a.slow)t.slowUntil=b.time+2,t.slowPower=a.slow;
     b.events.push({kind:spell?'spell':'hit',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,type,move:spell?moveFor(a):null,periodic,amount:lost,absorbed,beat:b.beat,ttl:.45});
     if(rescue)shield(b,rescue,t,t.maxHp*.25);
+    if(!spell&&!periodic&&isMega(a)&&a.dex===260){const center={x:t.x,y:t.y};for(const u of b.units.filter(u=>u!==t&&u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(center,u)<=1))hit(b,a,u,power*.35,true,'water',true);}
     // Reflection is a spell marked periodic: it cannot reflect again or replay a cast.
     if(!spell&&!periodic&&lost>0&&t.thorns&&a.side!==t.side&&a.hp>0&&distance(a,t)<=1)hit(b,t,a,lost*t.thorns,true,'steel',true);
     return lost;
@@ -3085,6 +3100,7 @@ G.TFT = (() => {
     const until=b.time+duration;
     if(until>(t.stunUntil||0)){t.stunUntil=until;t.stunSource=a.id;}
     if(t.dex===959){delete t.hammerX;delete t.hammerY;b.events=b.events.filter(e=>e.kind!=='warning'||e.from!==t.id);}
+    if(isMega(t)&&t.dex===257)t.impulse=0;
     if(t.dex===94)delete t.ambushPending;
     if(t.dex===373){delete t.swoopDx;delete t.swoopDy;}
     if(t.dex===376)releaseLift(b,t);
@@ -3348,6 +3364,40 @@ G.TFT = (() => {
     }
     return false;
   }
+  function megaCast(b,a,target){
+    if(!isMega(a)||a.dex===959)return false;
+    if(a.dex===260){
+      const d=cardinal(a,target);for(const sign of [1,-1])if((b.waves?.length||0)<48)(b.waves??=[]).push({source:a.id,side:a.side,x:a.x,y:a.y,dx:d.dx*sign,dy:d.dy*sign,step:0,hit:[],power:a.attack*1.8});return true;
+    }
+    if(a.dex===257){
+      const used=new Set();for(let i=0;i<3;i++){
+        const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&!used.has(t.id)&&distance(a,t)<=4).sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id);
+        let victim=null,cell=null;for(const t of foes){const cells=adjacentFree(b,a,t);if(cells.length){victim=t;cell=cells[0];break;}}
+        if(!victim)break;used.add(victim.id);const sx=a.x,sy=a.y;a.x=cell.x;a.y=cell.y;
+        b.events.push({kind:'flight',from:a.id,sx,sy,tx:a.x,ty:a.y,type:'fire',ttl:.65,life:.65});hit(b,a,victim,a.attack*1.6,true,'fire');burn(b,a,victim,3,a.attack*.18);
+      }return true;
+    }
+    if(a.dex===248){
+      const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&distance(a,t)<=3).sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id);
+      areaEvent(b,a,a,3,'rock',foes);for(const t of foes){const {dx,dy}=cardinal(a,t);if(!t.boss&&distance(a,t)>1&&freeCell(b,t.x-dx,t.y-dy,t)){t.x-=dx;t.y-=dy;}t.shield=0;hit(b,a,t,a.attack*2.2,true,'rock');}return true;
+    }
+    if(a.dex===47){a.fungalIds??=[];a.fungalBurst??=[];for(const t of b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&distance(a,t)<=3).sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id).slice(0,3))if(!a.fungalIds.includes(t.id))a.fungalIds.push(t.id);return true;}
+    return false;
+  }
+  function megaMovement(b){
+    for(const a of b.units.filter(u=>u.hp>0&&isMega(u)&&!isStunned(b,u)&&!u.shadowed)){
+      if(a.dex===248){const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&distance(a,t)<=2);areaEvent(b,a,a,2,'rock',foes);for(const t of foes)hit(b,a,t,a.attack*.25,true,'rock',true);}
+      if(a.dex===47&&a.fungalIds){
+        const ids=[...a.fungalIds];for(const id of ids){const t=b.units.find(t=>t.id===id);if(!t)continue;
+          if(t.hp>0&&!t.shadowed){const dealt=hit(b,a,t,a.attack*.35,true,'ghost',true),ally=b.units.filter(u=>u.side===a.side&&u.hp>0&&distance(u,t)<=2).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id)[0];if(ally)heal(b,a,ally,dealt);}
+          if(t.hp<=0&&!a.fungalBurst.includes(id)){
+            a.fungalBurst.push(id);const foes=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&!a.fungalIds.includes(u.id)&&distance(u,t)<=2).sort((x,y)=>distance(x,t)-distance(y,t)||x.id-y.id).slice(0,2);
+            for(const u of foes)a.fungalIds.push(u.id);areaEvent(b,a,t,2,'ghost',foes);
+          }
+        }
+      }
+    }
+  }
   function tacticalCast(b,a,target) {
     if(a.dex===635){a.headPulses=2;a.headTargets=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&distance(a,t)<=3).sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id).slice(0,3).map(t=>t.id);return true;}
     if(a.dex===373){const {dx,dy}=cardinal(a,target);a.swoopDx=dx;a.swoopDy=dy;let x=a.x,y=a.y;while(x+dx>=0&&x+dx<COLS&&y+dy>=0&&y+dy<ROWS){x+=dx;y+=dy;}b.events.push({kind:'beam',from:a.id,sx:a.x,sy:a.y,tx:x,ty:y,type:'flying',ttl:1,life:1});return true;}
@@ -3367,7 +3417,7 @@ G.TFT = (() => {
     if(a.dex===887){dragonDarts(b,a,target);return true;}
 
     if(a.dex===94){a.ambushPending=true;return true;}
-    if(a.dex===959){a.hammerX=target.x;a.hammerY=target.y;areaEvent(b,a,{x:a.hammerX,y:a.hammerY},1,'steel',[]);b.events[b.events.length-1].kind='warning';b.events[b.events.length-1].ttl=1;b.events[b.events.length-1].life=1;return true;}
+    if(a.dex===959){a.hammerX=target.x;a.hammerY=target.y;areaEvent(b,a,{x:a.hammerX,y:a.hammerY},isMega(a)?2:1,'steel',[]);b.events[b.events.length-1].kind='warning';b.events[b.events.length-1].ttl=1;b.events[b.events.length-1].life=1;return true;}
     if(a.dex===212){a.bulletPulses=3;return true;}
     if(a.dex===925&&a.star===3){a.populationPulse=0;a.populationTarget=target.id;return true;}
     if(a.dex===681){a.bladePending=true;shield(b,a,a,a.maxHp*.3);return true;}
@@ -3430,13 +3480,14 @@ G.TFT = (() => {
       }
       return true;
     }
-    if(a.hammerRecovery){delete a.hammerRecovery;return true;}
+    if(a.hammerRecovery){delete a.hammerRecovery;if(a.hammerEcho){const center=a.hammerEcho;delete a.hammerEcho;if(!isStunned(b,a)){const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&distance(center,t)<=2);areaEvent(b,a,center,2,'steel',foes);for(const t of foes)hit(b,a,t,a.attack*1.5,true,'steel');}}return true;}
     if(a.hammerX!==undefined){
       const center={x:a.hammerX,y:a.hammerY};delete a.hammerX;delete a.hammerY;
       if(isStunned(b,a))return true;
       a.hammerRecovery=true;
-      const victims=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(center,u)<=1);
-      areaEvent(b,a,center,1,'steel',victims);
+      const radius=isMega(a)?2:1;if(isMega(a))a.hammerEcho={x:center.x,y:center.y};
+      const victims=b.units.filter(u=>u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(center,u)<=radius);
+      areaEvent(b,a,center,radius,'steel',victims);
       for(const t of victims){t.shield=0;hit(b,a,t,a.attack*4.5,true,'steel');}
       return true;
     }
@@ -3474,7 +3525,7 @@ G.TFT = (() => {
   }
   function cast(b,a,target) {
     a.mana=0;b.events.push({kind:'cast',from:a.id,move:moveFor(a),to:target.id,sx:a.x,sy:a.y,tx:target.x,ty:target.y,beat:b.beat,ttl:.8});
-    if(tacticalCast(b,a,target)||signature(b,a,target)||familyCast(b,a,target)||areaCast(b,a,target))return;
+    if(megaCast(b,a,target)||tacticalCast(b,a,target)||signature(b,a,target)||familyCast(b,a,target)||areaCast(b,a,target))return;
     if(moveFor(a)==='Fortaleza'){shield(b,a,a,a.maxHp*.3);return;}
     if(a.ai==='guardian') {
       const ally=b.units.filter(u=>u.side===a.side&&u.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id)[0];
@@ -3531,7 +3582,7 @@ G.TFT = (() => {
           if(i)a.moveCD=0;const x=a.x,y=a.y;moveToward(b,a,target);if(a.x===x&&a.y===y)break;
         }
       }
-      advanceWaves(b);return;
+      advanceWaves(b);megaMovement(b);return;
     }
     // Choose attacks from the same pulse's initial formation, then resolve in order.
     const attacks=order.filter(a=>a.hp>0).map(a=>({a,target:selectTarget(b,a)}))
@@ -3540,11 +3591,12 @@ G.TFT = (() => {
       if(a.hp<=0)continue;
       if(tacticalPulse(b,a))continue;
       if(isStunned(b,a)||a.cooldown>0)continue;
-      const target=chosen?.hp>0&&!chosen.shadowed?chosen:selectTarget(b,a);if(!target||distance(a,target)>a.range)continue;
+      const target=chosen?.hp>0&&!chosen.shadowed&&targetAllowed(b,a,chosen)?chosen:selectTarget(b,a);if(!target||distance(a,target)>a.range)continue;
       // One basic strike per attack beat; speed changes strike power/mana instead
       // of creating off-beat attacks. Slow affects those same values temporarily.
       const rate=(2*BEAT_SECONDS)/a.interval*(a.slowUntil>b.time?1-a.slowPower:1);
-      hit(b,a,target,a.attack*rate,false,a.basicType||a.types[0]);a.mana=Math.min(100,a.mana+(25+a.manaGain)*rate);
+      const impulse=isMega(a)&&a.dex===257?1+.1*(a.impulse=Math.min(5,(a.impulse||0)+1)):1;
+      hit(b,a,target,a.attack*rate*impulse,false,a.basicType||a.types[0]);a.mana=Math.min(100,a.mana+(25+a.manaGain)*rate*impulse);
       a.cooldown=.25;
       if(a.hp>0&&a.mana>=100) {
         const alive=target.hp>0?target:selectTarget(b,a);
@@ -3606,7 +3658,7 @@ G.TFT = (() => {
       if(typeof raw!=='string'||raw.length>300000)return null;
       const data=JSON.parse(raw),s=data.state;
       const int=(n,min,max)=>Number.isInteger(n)&&n>=min&&n<=max;
-      const trained=u=>(u.promotion===undefined||int(u.promotion,0,6))&&(u.training===undefined||int(u.training,0,(TRAINING_COSTS[promotion(u)]||1)-1))&&(!promotion(u)||u.star===3)&&(!(u.training||0)||u.star===3)&&!(u.id<0&&promotion(u));
+      const trained=u=>(u.promotion===undefined||int(u.promotion,0,maxPromotion(u)))&&(u.training===undefined||int(u.training,0,(promotion(u)===6&&MEGAS[u.dex]?3:TRAINING_COSTS[promotion(u)]||1)-1))&&(!promotion(u)||u.star===3)&&(!(u.training||0)||u.star===3)&&!(u.id<0&&promotion(u));
       const unit=u=>u&&trained(u)&&int(u.id,-6,100000)&&u.id!==0&&BY[u.dex]&&int(u.star,1,3)&&evolvedDex(u.dex,u.star)===u.dex&&
         (u.pos===null||int(u.pos,0,35));
       const numbers=o=>Object.values(o).every(v=>typeof v!=='number'||Number.isFinite(v)&&Math.abs(v)<1e12);
@@ -3632,6 +3684,9 @@ G.TFT = (() => {
           u.hp>=0&&u.hp<=u.maxHp&&u.maxHp>0&&u.interval>0&&u.shield>=0&&u.mana>=0&&u.mana<=100&&
           (u.leafPulse===undefined&&u.leafTarget===undefined&&u.leafDx===undefined&&u.leafDy===undefined||
             u.dex===254&&int(u.leafPulse,0,2)&&int(u.leafTarget,-6,100000)&&int(u.leafDx,-1,1)&&int(u.leafDy,-1,1)&&Math.abs(u.leafDx)+Math.abs(u.leafDy)===1)&&
+          (u.impulse===undefined||isMega(u)&&u.dex===257&&int(u.impulse,0,5))&&
+          (u.hammerEcho===undefined||isMega(u)&&u.dex===959&&u.hammerRecovery&&int(u.hammerEcho.x,0,5)&&int(u.hammerEcho.y,0,5))&&
+          (u.fungalIds===undefined&&u.fungalBurst===undefined||isMega(u)&&u.dex===47&&Array.isArray(u.fungalIds)&&Array.isArray(u.fungalBurst)&&u.fungalIds.length<=12&&new Set(u.fungalIds).size===u.fungalIds.length&&new Set(u.fungalBurst).size===u.fungalBurst.length&&u.fungalIds.every(id=>b.units.some(t=>t.id===id&&t.side!==u.side))&&u.fungalBurst.every(id=>u.fungalIds.includes(id)))&&
           (u.headPulses===undefined&&u.headTargets===undefined||u.dex===635&&int(u.headPulses,1,2)&&Array.isArray(u.headTargets)&&u.headTargets.length<=3&&u.headTargets.every(id=>int(id,-6,100000)))&&
           (u.swoopDx===undefined&&u.swoopDy===undefined||u.dex===373&&int(u.swoopDx,-1,1)&&int(u.swoopDy,-1,1)&&Math.abs(u.swoopDx)+Math.abs(u.swoopDy)===1)&&
           (u.liftTarget===undefined||u.dex===376&&int(u.liftTarget,-6,100000))&&
@@ -3650,7 +3705,7 @@ G.TFT = (() => {
         if(b.units.some(u=>u.leafPulse!==undefined&&!b.units.some(t=>t.id===u.leafTarget&&t.side!==u.side)))return null;
         if(b.units.some(u=>u.liftTarget!==undefined&&!b.units.some(t=>t.id===u.liftTarget&&t.side!==u.side&&(t.boss||t.liftedBy===u.id))||u.liftedBy!==undefined&&!b.units.some(t=>t.id===u.liftedBy&&t.dex===376&&t.side!==u.side&&t.liftTarget===u.id)||u.headTargets?.some(id=>!b.units.some(t=>t.id===id&&t.side!==u.side))))return null;
         if(b.waves!==undefined&&(!Array.isArray(b.waves)||b.waves.length>48||!b.waves.every(w=>w&&numbers(w)&&
-          int(w.source,-6,100000)&&b.units.some(u=>u.id===w.source&&u.dex===395&&u.side===w.side)&&
+          int(w.source,-6,100000)&&b.units.some(u=>u.id===w.source&&(u.dex===395||u.dex===260&&isMega(u))&&u.side===w.side)&&
           int(w.x,0,5)&&int(w.y,0,5)&&int(w.dx,-1,1)&&int(w.dy,-1,1)&&Math.abs(w.dx)+Math.abs(w.dy)===1&&int(w.step,0,5)&&
           Number.isFinite(w.power)&&w.power>0&&w.power<1e12&&Array.isArray(w.hit)&&w.hit.length<=12&&new Set(w.hit).size===w.hit.length&&
           w.hit.every(id=>Number.isInteger(id)&&b.units.some(u=>u.id===id&&u.side!==w.side)))))return null;
@@ -3673,5 +3728,5 @@ G.TFT = (() => {
       s.encounter=waveInfo(s.round);s.effects=[];return s;
     } catch(_){return null;}
   }
-  return {skipIntro,TRAINING_COSTS,rank,rankLabel,rankColor,unitCopies,trainingLabel,hasAttackPriority,isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,BEAT_SECONDS,ROSTER,PLAYABLE_ROSTER,BOSS_DEFINITIONS,BY,DEFAULT_DECK,validDeck,migrateDeck,waveInfo,HISTORY_LIMIT,MAX_WAVE,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
+  return {MEGAS,isMega,typesFor,nameFor,maxed,skipIntro,TRAINING_COSTS,rank,rankLabel,rankColor,unitCopies,trainingLabel,hasAttackPriority,isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,BEAT_SECONDS,ROSTER,PLAYABLE_ROSTER,BOSS_DEFINITIONS,BY,DEFAULT_DECK,validDeck,migrateDeck,waveInfo,HISTORY_LIMIT,MAX_WAVE,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
 })();

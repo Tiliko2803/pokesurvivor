@@ -2,7 +2,7 @@
 G.TFTVisuals = (() => {
   'use strict';
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-  const aliases={'Hidropulso':'bubble-beam','Rayo Solar':'solar-beam','Llamarada':'heat-wave','Trueno':'thunderbolt',
+  const aliases={'Diluvio Sísmico':'bubble-beam','Relevos Ígneos':'rolling-kick','Rey de la Tormenta':'meteor-mash','Martillo Cataclísmico':'meteor-mash','Red Fúngica':'shadow-ball','Hidropulso':'bubble-beam','Rayo Solar':'solar-beam','Llamarada':'heat-wave','Trueno':'thunderbolt',
     'Terremoto':'bulldoze','Fuerza Telúrica':'bulldoze','Ventisca':'powder-snow','Cometa Draco':'meteor-mash',
     'Martillo Colosal':'meteor-mash','Martillazo':'meteor-mash','Puño Meteoro':'meteor-mash','Rapidez':'swift',
     'Gigadrenado':'giga-drain','Pulso Cura':'giga-drain','Deseo':'giga-drain','Síntesis':'giga-drain',
@@ -15,7 +15,7 @@ G.TFTVisuals = (() => {
     const vis=G.VFX.forMove({id:aliases[name]||move?.id||'',type});
     // The TFT move's actual damage type wins over the Survivor catalogue type.
     if(vis.pal!=='aura')vis.pal=type;
-    return {...vis,name,meteor:/Cometa|Avalancha|Meteoro|Martillo Colosal/.test(name)};
+    return {...vis,name,meteor:/Cometa|Avalancha|Meteoro|Martillo Colosal|Martillo Cataclísmico/.test(name)};
   }
   function animation(u,e) {
     const meta=G.Sprites.meta(u.dex)?.a||{};

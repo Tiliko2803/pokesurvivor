@@ -354,3 +354,14 @@ Aplicados a las formas finales: Maushold Bronce 3, Aegislash, Talonflame y Greni
 - Salamence marca un corredor cardinal y no se mueve durante la preparación. En el siguiente pulso de ataque golpea el corredor por 300% del ataque y aterriza en la última casilla libre. Aturdirlo cancela la pasada.
 - Metagross levanta a un enemigo adyacente, impidiendo ataques y movimiento a ambos hasta el siguiente pulso de ataque. Lo estrella hasta dos casillas más allá, si hay espacio, por 260% del ataque en radio 1. Los jefes no se levantan ni desplazan. Aturdimiento o muerte del lanzador libera sin impacto. La presa conserva su casilla durante la preparación y puede recibir daño.
 - Mecánicas exclusivas de sus formas finales; estados y referencias se validan al restaurar una partida.
+
+### Iridio y Megaevoluciones (24 octubre 2026)
+
+- Swampert, Blaziken, Tyranitar, Tinkaton y Parasect alcanzan Iridio ★ (ascenso 7) tras Oro ★★★ y tres copias extra de su familia. Se compran en tienda al coste normal, incluso con banco lleno. Progreso 0/3, 1/3, 2/3; no consume monedas ni megapiedras de Supervivencia. Familias sin Mega siguen con máximo Oro ★★★.
+- Iridio conserva id, posición y estadísticas acumuladas; aplica el ascenso de 18% y un multiplicador Mega adicional de 15% de vida y ataque. Venta contabiliza las 45 copias totales. La familia continúa apareciendo mientras no completa Iridio; después sale de las ofertas.
+- Swampert: básicos con salpicadura de 35%; lanza dos frentes opuestos de tres casillas, 180% de daño por frente y empuje en casillas libres, sin impactos repetidos por frente.
+- Blaziken: hasta tres saltos contra presas distintas a distancia 4 y con aterrizaje libre; 160% de daño y quemadura. Impulso gana 10% por básico hasta 50% en potencia y generación de maná; aturdimiento lo reinicia.
+- Tyranitar: tormenta de radio Manhattan 2. Mientras actúa, obliga a enemigos dentro a seleccionar objetivos dentro de la tormenta para sus básicos; no bloquea habilidades de área. Daño de 25% por pulso de movimiento. Habilidad de radio 3 atrae una casilla libre, rompe escudos y golpea por 220%; no mueve jefes.
+- Tinkaton: preparación y recuperación se conservan. Martillo en radio 2, 450%, rompe escudos; réplica de 150% en el siguiente pulso durante recuperación. Aturdimiento interrumpe la preparación y puede impedir la réplica.
+- Paras → Parasect se añade como familia de 2 oro. Mega Parasect es Bicho/Fantasma (también en sinergias). Infecta tres presas a alcance 3; drena 35% por pulso de movimiento y cura al aliado más herido a distancia 2. Cada víctima caída propaga una vez a hasta dos enemigos a distancia 2. Marcas únicas por lanzador, limitadas al número de unidades.
+- Los cinco reutilizan los animadores y atlas existentes; estado Mega, réplicas, olas y esporas se restauran y validan en guardados. La evolución muestra estrella plateada y aro multicolor. No se impone un límite nuevo de Megas por equipo.
