@@ -99,7 +99,7 @@ async function checkBoard(page,viewport){
    // Reproduce a saved final result: the recovery action must stay outside tabs/details.
    for(const terminal of ['result','defeat']){
     await page.evaluate(terminal=>{
-     const s=G.TFTUI.state;s.round=terminal==='result'?12:1;s.life=terminal==='defeat'?1:50;s.opponentRound=0;
+     const s=G.TFTUI.state;s.round=terminal==='result'?12:1;s.life=terminal==='defeat'?1:5;s.opponentRound=0;
      G.TFT.start(s);
      for(const u of s.battle.units)if(u.side===(terminal==='result'?1:0))u.hp=0;
     },terminal);
@@ -129,14 +129,14 @@ async function checkBoard(page,viewport){
     assert.equal(await page.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('ps.tft.decks.v1')))),JSON.stringify(savedDecks));
     await page.locator('#tft-deck-start').click();
     assert.equal(await page.evaluate(()=>G.TFTUI.state.phase),'planning');assert.equal(await page.evaluate(()=>G.TFTUI.state.round),1);
-    assert.equal(await page.evaluate(()=>G.TFTUI.state.life),50);assert.equal(await page.evaluate(()=>G.TFTUI.state.gold),10);
+    assert.equal(await page.evaluate(()=>G.TFTUI.state.life),5);assert.equal(await page.evaluate(()=>G.TFTUI.state.gold),10);
     assert.equal(await page.evaluate(()=>G.TFTUI.state.units.length),0);
     // Recruit and deploy for the next terminal scenario.
     await page.evaluate(()=>{G.TFTUI.state.shop=[4];});await page.locator('#tft-shop [data-buy="0"]').click();
     await page.locator('#tft-tab-team').click();await page.locator('#tft-bench [data-unit]').click();await page.locator('#tft-cells button').nth(20).click();
    }
-   const records=await page.evaluate(()=>JSON.parse(localStorage.getItem('ps.tft.records.v1')));
-   assert.ok(records.some(r=>r.wave===12&&r.life===50));
+   const records=await page.evaluate(()=>JSON.parse(localStorage.getItem('ps.tft.records.v2')));
+   assert.ok(records.some(r=>r.wave===12&&r.life===5));
    assert.match(await page.locator('#tft-best').innerText(),/Oleada 12/);
    assert.equal(await page.evaluate(()=>JSON.stringify(G.DB.save)),before);
    assert.equal(await page.evaluate(()=>localStorage.getItem('tft-account-sentinel')),'{"coins":54321}');

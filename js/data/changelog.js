@@ -6,6 +6,12 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT llega al Live', 'TFT goes live'], new: [
+    ['TFT · Oleadas infinitas llega al menú principal con evoluciones, rangos de Bronce/Plata/Oro, mazos de diez familias, economía, jefes en solitario y resumen de expedición. Empiezas con cinco vidas y cada derrota, incluido el tiempo agotado, consume exactamente una.',
+     'TFT · Endless Waves joins the main menu with evolutions, Bronze/Silver/Gold ranks, ten-family decks, economy, solo bosses and an expedition summary. Start with five lives; every loss, including a timeout, costs exactly one.'],
+    ['Nueva categoría TFT · Oleadas en el ranking, ordenada por oleada alcanzada, con tablas diarias, semanales, mensuales e históricas y filtro de amigos. Participan expediciones nuevas iniciadas con tu cuenta. Las marcas sin conexión quedan pendientes y se reintentan. Invitados, pruebas y partidas anteriores conservan récord local.',
+     'New TFT · Waves leaderboard category, ordered by wave reached, with daily, weekly, monthly and all-time tables and a friends filter. New expeditions started on your account participate. Offline scores queue and retry. Guests, previews and older games retain local records.']
+  ] },
   { d: '2026-10-23', title: ['TFT: jefes en solitario', 'TFT: solo bosses'], chg: [
     ['Los jefes llegan solos, sin esbirros, y ocupan una posición más centrada. Su sprite es un 22% más grande; la entrada con zoom se conserva. Su multiplicador de vida pasa de ×3 a ×3,5 para compensar parte de los apoyos retirados, sin aumentar su daño. La preparación guardada se adapta; los combates en curso continúan intactos.',
      'Bosses arrive alone, without escorts, in a more central position. Their sprite is 22% larger and the zoom introduction remains. Their health multiplier rises from ×3 to ×3.5 to partly compensate for removed support, without increasing damage. Saved preparation adapts; ongoing fights remain intact.']

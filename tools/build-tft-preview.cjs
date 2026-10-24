@@ -14,7 +14,7 @@ const copies={
  'js/data/changelog.js':'dev/js/tft/changelog.js',
  'css/style.css':'dev/style.css'
 };
-let html=fs.readFileSync(path.join(root,'dev/index.html'),'utf8');
+let html=fs.readFileSync(path.join(root,'dev/index.html'),'utf8').replace('G.FIREBASE_CONFIG = null;','G.FIREBASE_CONFIG = null; G.TFT_PREVIEW = true;');
 for(const [src,dest] of Object.entries(copies)) {
  fs.mkdirSync(path.dirname(path.join(root,dest)),{recursive:true});
  fs.copyFileSync(path.join(root,src),path.join(root,dest));

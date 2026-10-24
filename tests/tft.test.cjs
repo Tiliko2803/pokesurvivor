@@ -63,7 +63,7 @@ test('fixed-seed combat is deterministic across frame rates',()=>{
   assert.equal(play(.05),play(.1));
 });
 test('wave twelve continues while only zero life ends the expedition; income pays once',()=>{
- for(const life of [1,50]){const {E,s}=fixture();s.gold=100;s.round=12;s.life=life;
+ for(const life of [1,5]){const {E,s}=fixture();s.gold=100;s.round=12;s.life=life;
   purchase(E,s,1);E.place(s,s.units[0].id,35);E.start(s);s.battle.units.filter(u=>u.side===0).forEach(u=>u.hp=0);E.tick(s,.1);
   assert.equal(s.phase,life===1?'defeat':'result');const gold=s.gold;E.tick(s,.2);assert.equal(s.gold,gold);
   assert.equal(E.next(s),life!==1);if(life!==1)assert.equal(s.round,13);
@@ -580,7 +580,7 @@ test('endless PvE generates themed encounters, specials and rotating bosses past
   assert.equal(foes.some(u=>u.boss),wave%10===0);assert.equal(E.waveInfo(wave).kind,wave%10===0?'boss':wave%5===0?'elite':'normal');
   if(wave%10===0){const boss=foes.find(u=>u.boss);bosses.add(boss.dex);assert.ok(G.DEX_BY[boss.dex]);assert.ok(boss.maxHp>E.preview({...s,opponent:scout}, {...scout.find(u=>u.boss),boss:false}).maxHp*2.9);}
   for(const u of s.battle.units)u.hp=u.side===1?0:u.maxHp;
-  E.tick(s,.05);assert.equal(s.phase,'result');assert.equal(s.life,50);const paid=s.gold;E.tick(s,.1);assert.equal(s.gold,paid);
+  E.tick(s,.05);assert.equal(s.phase,'result');assert.equal(s.life,5);const paid=s.gold;E.tick(s,.1);assert.equal(s.gold,paid);
   const saved=E.restore(E.serialize(s));assert.ok(saved,'restores wave '+wave);assert.equal(saved.round,wave);assert.ok(E.next(s));
  }
  assert.equal(bosses.size,6);assert.ok(names.size>6);assert.equal(s.completed,120);assert.equal(s.history.length,E.HISTORY_LIMIT);assert.equal(s.wins,120);assert.ok(s.totals.length>0);
@@ -608,7 +608,7 @@ test('old active fights safely return to preparation and bosses resist CC withou
 });
 test('late losses stay recoverable and bounded reports retain full expedition totals',()=>{
  const {E}=fixture(),s=E.create(1,E.DEFAULT_DECK);s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,35);s.round=1000;s.opponentRound=0;E.start(s);
- for(const u of s.battle.units)if(u.side===0)u.hp=0;E.tick(s,.05);assert.ok(s.life>=38);assert.equal(s.phase,'result');assert.ok(E.restore(E.serialize(s)));
+ for(const u of s.battle.units)if(u.side===0)u.hp=0;E.tick(s,.05);assert.equal(s.life,4);assert.equal(s.phase,'result');assert.ok(E.restore(E.serialize(s)));
  const a=E.create(61,E.DEFAULT_DECK);a.gold=100;purchase(E,a,4);E.place(a,a.units[0].id,20);
  for(let i=0;i<35;i++){E.start(a);const hero=a.battle.units.find(u=>u.side===0);hero.hp=hero.maxHp;hero.damageDone=10;for(const u of a.battle.units)if(u.side===1)u.hp=0;E.tick(a,.05);E.next(a);}
  assert.equal(a.history.length,20);assert.equal(E.report(a,'match')[0].damage,350);const restored=E.restore(E.serialize(a));assert.ok(restored);assert.equal(E.report(restored,'match')[0].damage,350);
@@ -721,4 +721,12 @@ test('saved boss preparation loses escorts once and an ongoing boss fight remain
  const loaded=E.restore(E.serialize(s));assert.ok(loaded);assert.equal(loaded.opponent.length,1);assert.ok(loaded.opponent[0].boss);assert.equal(loaded.opponent[0].pos,8);
  const again=E.restore(E.serialize(loaded));assert.equal(again.seed,loaded.seed);assert.equal(JSON.stringify(again.opponent),JSON.stringify(loaded.opponent));
  s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,20);E.start(s);const active=E.restore(E.serialize(s));assert.ok(active);assert.equal(active.battle.units.filter(u=>u.side===1).length,2);
+});
+
+test('five trainer lives lose exactly one per defeat including timeout and legacy HP migrates once',()=>{
+ const {E}=fixture(),s=E.create(888,E.DEFAULT_DECK);s.gold=100;purchase(E,s,4);E.place(s,s.units[0].id,20);assert.equal(s.life,5);
+ for(let i=0;i<5;i++){assert.ok(E.start(s));if(i===2){for(const u of s.battle.units){u.hp=u.maxHp;u.attack=0;u.regen=0;u.moveCD=999;}s.battle.time=44.99;s.battle.nextBeat=999;}else for(const u of s.battle.units.filter(u=>u.side===0))u.hp=0;
+  E.tick(s,.05);assert.equal(s.life,4-i);assert.equal(s.phase,i===4?'defeat':'result');assert.equal(E.next(s),i<4);
+ }
+ for(const [hp,lives] of [[50,5],[41,5],[24,3],[1,1],[0,0]]){const a=E.create(89,E.DEFAULT_DECK);a.life=hp;const payload=JSON.parse(E.serialize(a));payload.version=2;payload.state.rankOwner='owner';payload.state.rankRules=1;const restored=E.restore(JSON.stringify(payload));assert.ok(restored);assert.equal(restored.life,lives);assert.equal(restored.rankOwner,undefined);assert.equal(E.restore(E.serialize(restored)).life,lives);}
 });

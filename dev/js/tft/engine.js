@@ -675,7 +675,7 @@ G.TFT = (() => {
   const ODDS = {3:[75,25,0,0,0],4:[50,35,15,0,0],5:[30,35,25,10,0],6:[20,25,30,20,5]};
   function create(seed = Date.now(),deck) {
     if(deck!==undefined&&!validDeck(deck))throw new Error('Elige exactamente 10 líneas distintas.');
-    const s = {seed:seed>>>0,nextId:1,round:1,life:50,gold:10,level:3,xp:0,
+    const s = {seed:seed>>>0,nextId:1,round:1,life:5,gold:10,level:3,xp:0,
       deck:deck?deck.slice():PLAYABLE_ROSTER.map(p=>p.dex),recordId:String(seed>>>0),completed:0,totals:[],history:[],effects:[],units:[],shop:[],locked:false,phase:'planning',battle:null,result:null,wins:0,streak:0};
     reroll(s,true);prepareEnemy(s); return s;
   }
@@ -1442,7 +1442,7 @@ G.TFT = (() => {
     const b=s.battle,won=winner===0;
     if(won) {s.wins++;s.streak=Math.max(0,s.streak)+1;} else {
       s.streak=Math.min(0,s.streak)-1;
-      s.life=Math.max(0,s.life-Math.min(12,3+Math.floor(s.round/10)+b.units.filter(u=>u.side===1&&u.hp>0).length));
+      s.life=Math.max(0,s.life-1);
     }
     const interest=Math.floor(s.gold/5),bonus=Math.min(3,Math.floor(Math.abs(s.streak)/2));
     const encounterBonus=won?(waveInfo(s.round).kind==='boss'?10+2*Math.floor(s.round/10):waveInfo(s.round).kind==='elite'?4:0):0;
@@ -1540,7 +1540,7 @@ G.TFT = (() => {
     s.round++;s.phase='planning';s.battle=null;prepareEnemy(s);
     if(!s.locked)reroll(s,true);return true;
   }
-  const SAVE_VERSION=2;
+  const SAVE_VERSION=3;
   function serialize(s) {return JSON.stringify({version:SAVE_VERSION,state:s});}
   function restore(raw) {
     try {
@@ -1551,8 +1551,8 @@ G.TFT = (() => {
       const unit=u=>u&&trained(u)&&int(u.id,-6,100000)&&u.id!==0&&BY[u.dex]&&int(u.star,1,3)&&evolvedDex(u.dex,u.star)===u.dex&&
         (u.pos===null||int(u.pos,0,35));
       const numbers=o=>Object.values(o).every(v=>typeof v!=='number'||Number.isFinite(v)&&Math.abs(v)<1e12);
-      if(![1,SAVE_VERSION].includes(data.version)||!s||!numbers(s)||!validDeck(s.deck,data.version===1)||!int(s.round,1,MAX_WAVE)||!int(s.level,3,6)||
-        !int(s.seed,0,4294967295)||!int(s.nextId,1,100001)||!int(s.life,0,50)||!int(s.gold,0,999999999999)||!int(s.xp,0,20)||
+      if(![1,2,SAVE_VERSION].includes(data.version)||!s||!numbers(s)||!validDeck(s.deck,data.version===1)||!int(s.round,1,MAX_WAVE)||!int(s.level,3,6)||
+        !int(s.seed,0,4294967295)||!int(s.nextId,1,100001)||!int(s.life,0,data.version<3?50:5)||!int(s.gold,0,999999999999)||!int(s.xp,0,20)||
         s.opponentRound!==s.round||!int(s.wins,0,MAX_WAVE)||!int(s.streak,-MAX_WAVE,MAX_WAVE)||typeof s.locked!=='boolean'||
         !['planning','combat','result','defeat',...(data.version===1?['victory']:[])].includes(s.phase))return null;
       if(!Array.isArray(s.units)||s.units.length>14||!s.units.every(u=>unit(u)&&u.id>0&&u.id<s.nextId&&s.deck.includes(BY[u.dex].line[0])&&(u.pos===null||u.pos>=18))||
@@ -1586,6 +1586,8 @@ G.TFT = (() => {
         if(s.phase==='combat'){s.phase='planning';s.battle=null;s.result=null;}
         if(s.phase==='planning')prepareEnemy(s);
       } else if(!int(s.completed,0,MAX_WAVE)||!report(s.totals,ROSTER.length)||typeof s.recordId!=='string'||s.recordId.length>40)return null;
+      if(data.version<3){s.life=Math.ceil(s.life/10);delete s.rankOwner;delete s.rankRules;delete s.rankSubmitted;}
+      if(s.rankOwner!==undefined&&(typeof s.rankOwner!=='string'||s.rankOwner.length>128))return null;
       // Rebalance cached planning encounters once; an active fight resumes intact.
       if(s.phase==='planning'&&s.balanceVersion!==2)prepareEnemy(s);
       s.encounter=waveInfo(s.round);s.effects=[];return s;

@@ -306,3 +306,11 @@ Al agotar los PV aparece un panel desplazable sobre el tablero, con oleada, réc
 ### Jefes solos · 23 de octubre de 2026
 
 Encuentros de jefe con una sola unidad, sin escoltas, en casilla 8 (fila 2, columna 3). Tamaño de sprite 100 en lugar de 82 (+22%); zoom y cartel se conservan. Multiplicador de vida ×3,5 en lugar de ×3, sin aumentar el ataque. Versión de composición 2: preparación antigua se regenera una vez; combates activos se conservan.
+
+### Publicación Live y ranking · 23 de octubre de 2026
+
+Cinco vidas al empezar, una por derrota o tiempo agotado, sin daño variable al entrenador. Guardado versión 3: las versiones anteriores convierten PV en ceil(PV/10) vidas, mantienen el progreso y quedan fuera del ranking. Los récords locales de las reglas antiguas permanecen en la clave v1; las nuevas usan v2.
+
+Ranking TFT separado: lb/s_tft1_{periodo}/e/{uid} y lbs/s_tft1_{periodo}, compatible con las reglas single player existentes (prefijo s_). t representa oleada alcanzada; lv repite oleada, kills contiene victorias y dex el Pokémon con mayor daño. Sólo expediciones nuevas de una cuenta (rankOwner/rankRules=1), al llegar a cero vidas. Previews G.TFT_PREVIEW e invitados no escriben. Sin recompensas de Survivor ni escrituras en sus tablas. Empates de oleada conservan la marca anterior; no se desempata por tiempo.
+
+Pendientes locales por dueño/tabla, acotados a 40, conservando el histórico. Cuatro transacciones compatibles con las reglas de entrada y resumen; sólo mejoran marcas. Subir una marca no borra un pendiente más reciente; errores y cambios de cuenta dejan la marca pendiente del dueño correcto. Reintentos al recuperar conexión, cada minuto con pendientes y desde el resumen. El ranking se puede leer por periodos y amigos; se oculta el filtro por Pokémon en TFT.
