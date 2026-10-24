@@ -997,8 +997,8 @@ test('mixed pseudo fights keep distinct cells, valid saves and deterministic res
  };assert.equal(run(.05),run(.1));
 });
 
-test('five families reach Iridium after exactly three normal-price copies beyond complete Gold; id, placement and resale are preserved',()=>{
- const {E}=fixture();for(const dex of [260,257,248,959,47]){
+test('seven families reach Iridium after exactly three normal-price copies beyond complete Gold; id, placement and resale are preserved',()=>{
+ const {E}=fixture();for(const dex of [260,257,248,959,47,530,154]){
   const family=E.BY[dex].line[0],deck=[family,...E.DEFAULT_DECK.filter(d=>d!==family)].slice(0,10),s=E.create(924,deck);s.gold=10000;
   purchase(E,s,family,42);const u=s.units[0];assert.equal(u.promotion,6);E.place(s,u.id,20);const id=u.id,price=E.BY[dex].cost,gold=s.gold;
   assert.ok(E.trainingLabel(u).includes('0/3'));assert.equal(E.isMega(u),false);
@@ -1010,6 +1010,67 @@ test('five families reach Iridium after exactly three normal-price copies beyond
  }
 });
 function megaBattle(E,specs){const v=battleFor(E,specs);for(const u of v.units)if(E.MEGAS[u.dex]&&u.side===0)u.promotion=7;return v;}
+test('Mega Excadrill locks a warned tunnel, pierces its enemies and lands free without moving bosses or allies',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,back,boss,blocker,wing]}=megaBattle(E,[[530,3,0,2,5],[7,1,1,2,4],[7,1,1,2,2],[7,1,1,2,1],[7,1,0,2,0],[7,1,1,3,2]]);
+ boss.boss=true;const hp=blocker.hp;E.cast(b,a,t);
+ assert.equal(t.hp,t.maxHp);assert.equal(a.y,5);assert.equal(b.events.filter(e=>e.kind==='drillWarning').length,1);
+ reworkBeat(E,s,1);assert.equal(a.y,5,'cannot move during preparation');
+ reworkBeat(E,s);for(const u of [t,back,boss]){assert.ok(u.hp<u.maxHp);assert.equal(u.healCutUntil,b.time+3);}
+ assert.equal(a.y,3);assert.equal(boss.y,1);assert.equal(blocker.hp,hp);assert.equal(wing.hp,wing.maxHp);
+ assert.equal(new Set(b.units.map(u=>u.y*6+u.x)).size,b.units.length);assert.equal(a.megaDrillDx,undefined);
+});
+test('stun cancels the Mega drill and enemies can dodge the locked direction; ordinary Excadrill retains its immediate drill',()=>{
+ const {E}=fixture();
+ for(const dodge of [false,true]){
+  const {s,b,units:[a,t]}=megaBattle(E,[[530,3,0,2,5],[7,1,1,2,4]]);E.cast(b,a,t);
+  if(dodge)t.x=3;else a.stunUntil=10;
+  reworkBeat(E,s);assert.equal(t.hp,t.maxHp);assert.equal(t.healCutUntil,undefined);assert.equal(a.megaDrillDx,undefined);
+  if(!dodge)assert.equal(a.y,5);
+ }
+ const {b,units:[a,t]}=battleFor(E,[[530,3,0,2,4],[7,1,1,2,3]]);E.cast(b,a,t);
+ assert.ok(t.hp<t.maxHp);assert.equal(t.healCutUntil,undefined);assert.equal(a.megaDrillDx,undefined);
+ const q=megaBattle(E,[[530,3,0,2,5],[7,1,1,2,4]]);E.cast(q.b,q.units[0],q.units[1]);E.stun(q.b,q.units[1],q.units[0],.1);
+ assert.equal(q.units[0].megaDrillDx,undefined);assert.equal(q.b.events.some(e=>e.kind==='drillWarning'),false);
+});
+test('Mega drill halves direct healing and regeneration for three seconds without stacking the reduction',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,healer]}=megaBattle(E,[[530,3,0,2,5],[7,1,1,2,4],[154,3,1,5,0]]);
+ E.cast(b,a,t);reworkBeat(E,s);t.hp=1000;const before=t.hp;E.cast(b,healer,a);
+ assert.equal(t.hp-before,Math.round(healer.attack*1.6*.5));
+ t.regen=.1;const prior=t.hp;E.tick(s,.05);assert.ok(Math.abs(t.hp-prior-t.maxHp*.1*.05*.5)<.00001);
+ b.time=t.healCutUntil+.01;t.regen=0;const after=t.hp;E.cast(b,healer,a);assert.equal(t.hp-after,Math.round(healer.attack*1.6));
+});
+test('Mega Meganium fires four cardinal rays, adds Fairy, cleanses nearby allies and leaves a fixed four-pulse garden',()=>{
+ const {E}=fixture(),{s,b,units:[a,n,e,south,w,diagonal,friend,other,far]}=megaBattle(E,[[154,3,0,2,3],[7,1,1,2,1],[7,1,1,4,3],[7,1,1,2,5],[7,1,1,0,3],[7,1,1,3,2],[7,1,0,1,3],[7,1,0,3,3],[7,1,0,5,5]]);
+ for(const u of [friend,other,far]){u.hp=1;u.burn={};u.slowUntil=u.stunUntil=10;}
+ E.cast(b,a,n);assert.deepEqual(Array.from(E.typesFor(a)),['grass','fairy']);assert.equal(E.traits([a]).fairy.count,1);
+ assert.equal(b.events.filter(e=>e.kind==='solarRay').length,4);
+ for(const u of [n,e,south,w]){assert.ok(u.hp<u.maxHp);assert.equal(u.slowPower,.25);}
+ assert.equal(diagonal.hp,diagonal.maxHp);assert.equal(friend.hp,1);assert.equal(friend.burn,null);assert.equal(friend.stunUntil,0);assert.equal(far.stunUntil,10);
+ a.x=5;a.y=0;far.burn=null;far.stunUntil=0;
+ for(let i=0;i<4;i++)reworkBeat(E,s,1);
+ assert.ok(friend.hp>1&&other.hp>1);assert.equal(far.hp,1);assert.equal(a.gardenTicks,undefined);assert.equal(a.gardenX,undefined);
+ const hp=friend.hp;reworkBeat(E,s,1);assert.equal(friend.hp,hp);
+});
+test('stun consumes a garden pulse without healing and dead Meganium cannot sustain the garden',()=>{
+ const {E}=fixture(),{s,b,units:[a,t,friend]}=megaBattle(E,[[154,3,0,2,3],[7,1,1,2,2],[7,1,0,3,3]]);
+ friend.hp=1;E.cast(b,a,t);a.stunUntil=10;reworkBeat(E,s,1);assert.equal(friend.hp,1);assert.equal(a.gardenTicks,3);
+ a.stunUntil=0;a.hp=0;reworkBeat(E,s,1);assert.equal(friend.hp,1);
+});
+test('new Mega mechanics and antiheal validate, resume active saves and remain deterministic across frame rates',()=>{
+ const {E}=fixture(),run=dt=>{
+  const dexes=[530,154,260,257,248,959],families=dexes.map(d=>E.BY[d].line[0]),s=E.create(991,[...families,...E.DEFAULT_DECK.filter(d=>!families.includes(d))].slice(0,10));s.level=6;
+  s.units=dexes.map((dex,i)=>({id:i+1,dex,star:3,promotion:7,pos:18+i}));s.nextId=7;
+  s.opponent=[635,373,376,282,959,887].map((dex,i)=>({id:-i-1,dex,star:3,pos:12+i}));s.opponentRound=1;E.start(s);
+  for(const a of s.battle.units.filter(u=>u.side===0)){const t=E.selectTarget(s.battle,a);if(t)E.cast(s.battle,a,t);}
+  const raw=E.serialize(s),copy=E.restore(raw);assert.ok(copy);
+  for(const change of [u=>u.megaDrillDy=2,u=>u.gardenTicks=5,u=>u.healCutUntil='bad']){
+   const bad=JSON.parse(raw),u=bad.state.battle.units.find(u=>u.dex===530);change(u);assert.equal(E.restore(JSON.stringify(bad)),null);
+  }
+  while(s.phase==='combat'){E.tick(s,dt);E.tick(copy,dt);assert.ok(E.restore(E.serialize(s)));}
+  const clean=b=>JSON.stringify(b.units.map(u=>{const v={...u};delete v.entrance;return v;}));assert.equal(clean(s.battle),clean(copy.battle));
+  return JSON.stringify({result:s.result,units:s.battle.units});
+ };assert.equal(run(.05),run(.1));
+});
 test('Mega Swampert sends opposed flood fronts that push without repeat damage, and basic splash avoids allies',()=>{
  const {E}=fixture(),{s,b,units:[a,t,back,wing,ally]}=megaBattle(E,[[260,3,0,2,3],[7,1,1,2,2],[7,1,1,2,4],[7,1,1,3,2],[7,1,0,1,2]]);
  E.cast(b,a,t);assert.equal(b.waves.length,2);const hp=ally.hp;reworkBeat(E,s,1);assert.ok(t.hp<t.maxHp&&back.hp<back.maxHp&&wing.hp<wing.maxHp);assert.equal(ally.hp,hp);assert.equal(t.y,1);assert.equal(back.y,5);
