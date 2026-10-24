@@ -11,7 +11,7 @@ G.MegaEvolution = (() => {
   const sound = name => G.Audio?.sfx(name);
   const calm = () => !!G.Settings?.get('calm');
   function assetsReady(subject) {
-    const pack = subject.dex===47 ? G.Parasect : subject.dex===959 ? G.Tinkaton : subject.dex===257 ? G.Blaziken : null;
+    const pack = subject.dex===248 ? G.Tyranitar : subject.dex===47 ? G.Parasect : subject.dex===959 ? G.Tinkaton : subject.dex===257 ? G.Blaziken : null;
     if (pack?.ready) return pack.ready() || pack.failed();
     if (subject.dex===260 && G.MegaArt.atlasReady) return G.MegaArt.atlasReady() || G.MegaArt.atlasFailed();
     return true;

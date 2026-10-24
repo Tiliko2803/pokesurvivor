@@ -58,7 +58,7 @@ function fixture(session = 'real-account', {live=false}={}) {
   G.RunUI.showLevelUp = (lv,list,cb) => { cards=list; pick=cb; };
   G.RunUI.showBond = (opt,cb) => { bond={opt,cb}; G.UI.show('scr-bond'); };
   G.Flow.afterRun = () => G.Game.toUI();
-  G.CHANGELOG=[];if(!live)load('dev/tyranitar.js');
+  G.CHANGELOG=[];load('js/systems/tyranitar.js');
   for(const file of ['dev/boss-rush-rules.js','dev/groudon.js','dev/regis.js','dev/eon.js','dev/boss-rush-bars.js','dev/kyogre.js','dev/rayquaza.js','dev/major-cadence.js','dev/jirachi.js','dev/boss-rush-sprites.js','dev/groudon-fx.js','dev/regis-fx.js','dev/eon-fx.js','dev/kyogre-fx.js','dev/rayquaza-fx.js','dev/jirachi-fx.js',live?'js/systems/boss-rush.js':'dev/boss-rush-preview.js'])load(file);
   const choose = () => { const card=cards.find(c=>c.key==='up:water-gun') || cards.find(c=>c.key==='stat:atk') || cards.find(c=>c.key!=='stat:xp') || cards[0]; const cb=pick; cards=null; pick=null; cb(card); };
   const prepare = () => { let n=0; while((live?G.BossRush:G.BossRushPreview).preparing) { choose(); n++; assert.ok(n<=G.Game.player.level-1); } return n; };

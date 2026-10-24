@@ -32,7 +32,8 @@ test('Preview unlocks all three megas, transforms Tyranitar, and starts Rock Thr
 });
 test('Sand Stream respects attack buffs, rock effectiveness, range, slow and elapsed time',async()=>{
   const {G}=await setup();G.DB.save.partner=248;G.Game.startRun();const p=G.Game.player;
-  p.buffs.atk={n:8,amount:.25,t:12,maxStacks:8,attackSpeedAmount:.05};
+  p.buffs.atk={n:8,amount:.25,t:12,maxStacks:8};
+  p.buffs.patk={n:8,amount:0,t:12,maxStacks:8,attackSpeedAmount:.05};
   assert.equal(p.atk,5.4);assert.equal(p.attackSpeed,1.4);
   let total=0,hits=0,slow=0;const near={x:50,y:0,r:5,types:['fire'],hurt(d){total+=d;hits++;},applySlow(f){slow=f;}};
   const far={...near,x:400,hurt(){throw Error('out of range');}};
@@ -62,6 +63,7 @@ test('Preview setup offers Tyranitar and compatible elected Dragon Dance without
   select.onchange();assert.ok(nodes.get('rush-move-2').options.some(o=>o.value==='dragon-dance'));
   const official=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
   assert.ok(!official.includes('dev/tyranitar.js'));
+  assert.match(official,/js\/systems\/tyranitar.js/);
   const preview=fs.readFileSync(path.join(__dirname,'../dev/index.html'),'utf8');assert.match(preview,/dev\/tyranitar.js/);
 });
 test('Animator remaps source directions and holds or returns from one-shot actions',async()=>{
