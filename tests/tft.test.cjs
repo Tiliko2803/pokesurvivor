@@ -188,8 +188,8 @@ test('ability descriptions change through each of the six signature families',()
   }assert.equal(new Set(descriptions).size,3);
  }
 });
-test('interest grants one per five saved gold, caps at five and uses pre-income gold',()=>{
- for(const [gold,interest] of [[0,0],[4,0],[5,1],[9,1],[10,2],[24,4],[25,5],[100,5]]){
+test('interest grants one per five saved gold, has no five-gold cap and uses pre-income gold',()=>{
+ for(const [gold,interest] of [[0,0],[4,0],[5,1],[9,1],[10,2],[24,4],[25,5],[50,10],[100,20],[1000,200]]){
   const {E,s}=fixture();s.gold=10;purchase(E,s,4);E.place(s,s.units[0].id,20);E.start(s);s.battle.opening=0;s.gold=gold;
   for(const foe of s.battle.units.filter(u=>u.side===1))foe.hp=0;
   E.tick(s,.1);assert.equal(s.result.interest,interest,'saved '+gold);
@@ -656,4 +656,46 @@ test('older planning saves rebalance once while active fights keep exact state',
  delete s.balanceVersion;const restored=E.restore(E.serialize(s));assert.ok(restored);assert.equal(restored.balanceVersion,1);
  const seed=restored.seed,foes=JSON.stringify(E.scout(restored)),again=E.restore(E.serialize(restored));assert.equal(again.seed,seed);assert.equal(JSON.stringify(E.scout(again)),foes);
  assert.ok(E.start(s));delete s.balanceVersion;const battle=JSON.stringify(s.battle.units.map(({entrance,...u})=>u)),active=E.restore(E.serialize(s));assert.ok(active);assert.equal(active.phase,'combat');assert.equal(JSON.stringify(active.battle.units),battle);
+});
+
+test('training spans nine ranks in 42 copies, preserves identity and refunds partial training',()=>{
+ const {E}=fixture(),s=E.create(41,E.DEFAULT_DECK);s.gold=1000;purchase(E,s,4);const id=s.units[0].id;E.place(s,id,20);purchase(E,s,4,8);
+ const u=s.units[0];assert.equal(E.rankLabel(u),'Bronce ★★★');const base=E.preview(s,u);
+ for(let i=0;i<6;i++){
+  purchase(E,s,4,E.TRAINING_COSTS[i]-1);assert.equal(E.rank(u),3+i);assert.equal(E.unitCopies(u),9+E.TRAINING_COSTS.slice(0,i+1).reduce((a,b)=>a+b,0)-1);
+  const raw=E.serialize(s);assert.ok(E.restore(raw));purchase(E,s,4);
+  assert.equal(E.rank(u),4+i);assert.equal(u.id,id);assert.equal(u.pos,20);assert.equal(u.dex,6);assert.equal(E.moveFor(u),'Llamarada');
+  assert.ok(Math.abs(E.preview(s,u).attack/base.attack-1.18**(i+1))<1e-8);
+ }
+ assert.equal(E.rankLabel(u),'Oro ★★★');assert.equal(E.unitCopies(u),42);assert.equal(s.gold,958);s.shop=[4];assert.equal(E.buy(s,0),false);assert.equal(s.gold,958);
+ assert.ok(E.sell(s,id));assert.equal(s.gold,1000);
+ purchase(E,s,4,11);assert.equal(E.unitCopies(s.units[0]),11);E.sell(s,s.units[0].id);assert.equal(s.gold,1000);
+});
+test('training works on a full bench and upgraded fights and reports restore safely',()=>{
+ const {E}=fixture(),s=E.create(42,E.DEFAULT_DECK);s.gold=1000;purchase(E,s,4,9);E.place(s,s.units[0].id,20);
+ for(const dex of [1,7,172,92,280,529,246,374])purchase(E,s,dex);
+ purchase(E,s,4,3);assert.equal(s.units.length,9);assert.equal(s.units[0].promotion,1);assert.ok(E.start(s));
+ const restored=E.restore(E.serialize(s));assert.ok(restored);assert.equal(restored.battle.units.find(u=>u.id===s.units[0].id).promotion,1);
+ for(const foe of s.battle.units.filter(u=>u.side===1))foe.hp=0;E.tick(s,.1);
+ assert.equal(E.report(s)[0].promotion,1);assert.ok(E.restore(E.serialize(s)));assert.equal(E.report(s,'match')[0].promotion,1);
+ const bad=JSON.parse(E.serialize(s));bad.state.units[0].promotion=7;assert.equal(E.restore(JSON.stringify(bad)),null);
+});
+test('shops keep at most two copies, three families when possible and exclude completed gold',()=>{
+ const {E}=fixture(),s=E.create(43,E.DEFAULT_DECK);s.gold=100000;
+ for(let i=0;i<1000;i++){
+  assert.ok(E.reroll(s));const counts=new Map();for(const d of s.shop)counts.set(d,(counts.get(d)||0)+1);
+  assert.ok([...counts.values()].every(n=>n<=2));assert.ok(counts.size>=3);
+ }
+ purchase(E,s,4,42);for(let i=0;i<20;i++){E.reroll(s);assert.equal(s.shop.includes(4),false);}
+ s.units=s.deck.map((d,i)=>({id:i+1,dex:E.evolvedDex(d,3),star:3,promotion:6,pos:null}));
+ const gold=s.gold;assert.equal(E.reroll(s),false);assert.equal(s.gold,gold);assert.ok(E.reroll(s,true));assert.ok(s.shop.every(d=>d===null));
+ s.units.pop();assert.ok(E.reroll(s));assert.equal(s.shop.filter(Boolean).length,2);
+});
+test('later waves pay growing base income and boss loot alongside uncapped interest',()=>{
+ const {E}=fixture();
+ for(const [wave,base,loot] of [[1,5,0],[6,6,0],[24,9,0],[25,9,4],[30,10,16],[100,20,30]]){
+  const s=E.create(wave,E.DEFAULT_DECK);s.round=wave;s.opponentRound=0;s.gold=1000;purchase(E,s,4);E.place(s,s.units[0].id,20);E.start(s);s.gold=100;for(const ally of s.battle.units.filter(u=>u.side===0))ally.hp=ally.maxHp;
+  for(const foe of s.battle.units.filter(u=>u.side===1))foe.hp=0;E.tick(s,.1);
+  assert.equal(s.result.baseIncome,base);assert.equal(s.result.encounterBonus,loot);assert.equal(s.result.interest,20);assert.equal(s.gold,100+base+loot+21);assert.ok(E.restore(E.serialize(s)));
+ }
 });

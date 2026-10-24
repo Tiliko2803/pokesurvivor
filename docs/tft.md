@@ -290,3 +290,9 @@ Validación: 103 pruebas pasan (reglas, visuales, empaquetado y regresiones exis
 ### Balance de oleadas · 23 de octubre de 2026
 
 Máximo 2 tanques por encuentro (incluye IA tanque/guardián) y 1 sanador. Si el tema no tiene candidatos válidos, se completa con familias del mismo límite de precio. Los tanques enemigos infligen un 20% menos de daño; los aliados conservan su ataque. Crecimiento enemigo: +2,5% de vida y +1,5% de ataque por oleada. Dos estrellas desde la 6, todo el grupo a dos desde la 12; primera unidad de tres estrellas en la 25 y una adicional cada 6 oleadas. Los jefes conservan sus estrellas propias. Los encuentros guardados en preparación se regeneran una vez; los combates activos se reanudan intactos y reciben la nueva composición en la siguiente preparación.
+
+### Rangos y economía · 23 de octubre de 2026
+
+Las evoluciones conservan star 1–3 (Bronce). Un Pokémon de Bronce 3 absorbe nuevas compras de su familia en entrenamiento sin ocupar banquillo: 3, 4, 5, 6, 7 y 8 copias para las seis promociones (Plata 1–3 y Oro 1–3). Total 42 copias desde cero. Cada promoción multiplica vida y ataque por 1,18; conserva movimiento, habilidad y estadio final. Vender devuelve todas las copias, incluido entrenamiento parcial. Los enemigos no reciben promociones. Los guardados anteriores equivalen a promoción y entrenamiento cero; los informes conservan el rango.
+
+Interés sin tope: floor(oro/5), calculado antes de cobrar. Base 5 + floor((oleada-1)/5), hasta 20; victoria +1, racha hasta 3. Especial +4 y jefe +10+2*floor(oleada/10) al ganar. La cartera admite hasta 999999999999 por seguridad numérica. Cada tienda conserva probabilidades por precio entre candidatos válidos, máximo 2 ofertas por familia, excluyendo familias propias en Oro 3. Si quedan menos de tres familias puede haber casillas vacías para respetar el límite; sin candidatos no se cobra una renovación.

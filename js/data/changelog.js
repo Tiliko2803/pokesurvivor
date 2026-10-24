@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: Bronce, Plata y Oro', 'TFT: Bronze, Silver and Gold'], new: [
+    ['Nueve rangos: las tres estrellas de Bronce mantienen las evoluciones; 3/4/5/6/7/8 copias adicionales desbloquean los seis rangos de Plata y Oro. Cada rango adicional multiplica vida y daño por 1,18. La ficha muestra el entrenamiento y vender devuelve todas las copias invertidas. Los enemigos conservan sus tres rangos actuales.',
+     'Nine ranks: three Bronze stars keep evolutions; 3/4/5/6/7/8 additional copies unlock six Silver and Gold ranks. Each additional rank multiplies health and damage by 1.18. Unit details show training and selling refunds all invested copies. Enemies keep their existing three ranks.']
+  ], chg: [
+    ['Interés de +1 por cada 5 de oro ahorrados, sin máximo de +5. El ingreso base aumenta en 1 cada cinco oleadas, hasta 20; especiales dan 4 extra y jefes 10 más 2 por cada diez oleadas. Cada tienda ofrece un máximo de dos copias por familia y excluye las completadas en Oro de tres estrellas.',
+     'Interest grants +1 per 5 saved gold, without the old +5 cap. Base income increases by 1 every five waves, up to 20; specials grant 4 extra and bosses 10 plus 2 per ten waves. Each shop offers at most two copies per family and excludes completed three-star Gold families.']
+  ] },
   { d: '2026-10-23', title: ['TFT: oleadas más justas', 'TFT: fairer waves'], chg: [
     ['Máximo dos tanques enemigos por oleada, contando también su IA. Los tanques enemigos hacen un 20% menos de daño. La vida escala un 2,5% y el ataque un 1,5% por oleada, en lugar de un 3,5% ambos. Las dos estrellas empiezan en la oleada 6 y las tres en la 25, con progresión gradual. Los jefes mantienen su progresión propia.',
      'At most two enemy tanks per wave, including tank AI. Enemy tanks deal 20% less damage. Health scales by 2.5% and attack by 1.5% per wave, instead of 3.5% for both. Two stars start on wave 6 and three stars on wave 25, progressing gradually. Bosses keep their own progression.']

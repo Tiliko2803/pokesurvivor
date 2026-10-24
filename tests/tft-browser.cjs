@@ -131,6 +131,19 @@ async function checkBoard(page,viewport){
    assert.match(await page.locator('#tft-best').innerText(),/Oleada 12/);
    assert.equal(await page.evaluate(()=>JSON.stringify(G.DB.save)),before);
    assert.equal(await page.evaluate(()=>localStorage.getItem('tft-account-sentinel')),'{"coins":54321}');
+   // Promote a deployed unit, verify training UI and persistence at every layout.
+   await page.evaluate(()=>{
+    const s=G.TFTUI.state;s.gold=500;
+    for(let n=0;n<12;n++){s.shop=[4];G.TFT.buy(s,0);}G.TFTUI.open();
+   });
+   await page.locator('#tft-cells button').nth(20).click();
+   assert.match(await page.locator('#tft-unit-info').innerText(),/Plata ★/);
+   assert.match(await page.locator('#tft-unit-info').innerText(),/Entrenamiento 1\/4/);
+   await checkBoard(page,viewport);
+   await page.setViewportSize(bootViewport);await page.locator('#tft-exit').click();
+   await page.evaluate(()=>document.querySelector('#scr-menu [data-go="play"]').click());await page.locator('#btn-tft').click();await page.setViewportSize(viewport);
+   assert.equal(await page.evaluate(()=>G.TFTUI.state.units[0].promotion),1);
+   assert.equal(await page.evaluate(()=>G.TFTUI.state.units[0].training),1);
    if(viewport.width===1280){
     await page.evaluate(()=>{
      const s=G.TFTUI.state;Object.assign(s,G.TFT.create(198,G.TFT.DEFAULT_DECK));s.gold=1000;s.level=6;s.round=10;s.opponentRound=0;
