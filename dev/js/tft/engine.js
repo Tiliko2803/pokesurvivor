@@ -680,8 +680,15 @@ G.TFT = (() => {
     reroll(s,true);prepareEnemy(s); return s;
   }
   function random(s) { s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0; return s.seed/4294967296; }
-  function roll(s) {
-    const available=PLAYABLE_ROSTER.filter(p=>s.deck.includes(p.dex));
+  const TRAINING_COSTS=[3,4,5,6,7,8];
+  const promotion=u=>u.promotion||0;
+  const rank=u=>u.star+promotion(u);
+  const rankLabel=u=>['Bronce','Plata','Oro'][Math.floor((rank(u)-1)/3)]+' '+ '★'.repeat((rank(u)-1)%3+1);
+  const rankColor=u=>['#cd9567','#d7e3ed','#ffda6b'][Math.floor((rank(u)-1)/3)];
+  const unitCopies=u=>3**(u.star-1)+TRAINING_COSTS.slice(0,promotion(u)).reduce((a,b)=>a+b,0)+(u.training||0);
+  const trainingLabel=u=>u.star<3?'Tres copias para evolucionar':promotion(u)>=6?'Máximo · Oro ★★★':`Entrenamiento ${u.training||0}/${TRAINING_COSTS[promotion(u)]} copias · siguiente rango`;
+  function roll(s,available) {
+    if(!available.length)return null;
     const weights=ODDS[s.level].map((w,i)=>available.some(p=>p.cost===i+1)?w:0);
     const sum=weights.reduce((a,b)=>a+b,0);
     let cost;
@@ -696,8 +703,15 @@ G.TFT = (() => {
   function planning(s) { return s.phase==='planning'; }
   function reroll(s,free=false) {
     if(!planning(s)||(!free&&s.gold<2))return false;
+    const available=PLAYABLE_ROSTER.filter(p=>s.deck.includes(p.dex)&&!s.units.some(u=>BY[u.dex].line[0]===p.dex&&promotion(u)===6));
+    if(!available.length){if(free){s.shop=Array(5).fill(null);return true;}return false;}
     if(!free)s.gold-=2;
-    s.shop=Array.from({length:5},()=>roll(s)); return true;
+    const counts=new Map();s.shop=[];
+    for(let i=0;i<5;i++) {
+      const options=available.filter(p=>(counts.get(p.dex)||0)<2);
+      const dex=roll(s,options);s.shop.push(dex);if(dex)counts.set(dex,(counts.get(dex)||0)+1);
+    }
+    return true;
   }
   function addUnit(s,dex,star=1,pos=null) { const u={id:s.nextId++,dex,star,pos};s.units.push(u);return u; }
   function combine(s) {
@@ -717,6 +731,17 @@ G.TFT = (() => {
   function buy(s,index) {
     if(!planning(s))return false;
     const dex=s.shop[index], def=BY[dex]; if(!def||def.bossOnly||!s.deck.includes(def.line[0])||s.gold<def.cost)return false;
+    const trained=s.units.filter(u=>BY[u.dex].line[0]===dex&&u.star===3).sort((a,b)=>promotion(b)-promotion(a)||a.id-b.id)[0];
+    if(trained) {
+      if(promotion(trained)>=6)return false;
+      s.gold-=def.cost;s.shop[index]=null;trained.training=(trained.training||0)+1;
+      if(trained.training>=TRAINING_COSTS[promotion(trained)]) {
+        trained.training=0;trained.promotion=promotion(trained)+1;
+        s.effects.push({kind:'evolve',id:trained.id,fromDex:trained.dex,toDex:trained.dex,star:3,promotion:trained.promotion,ttl:1.6});
+        if(promotion(trained)===6)s.shop=s.shop.map(d=>d===dex?null:d);
+      }
+      return true;
+    }
     const merges=s.units.filter(u=>u.dex===dex&&u.star===1).length>=2;
     if(s.units.filter(u=>u.pos===null).length>=BENCH&&!merges)return false;
     s.gold-=def.cost;s.shop[index]=null;addUnit(s,dex);combine(s);return true;
@@ -733,7 +758,7 @@ G.TFT = (() => {
   function sell(s,id) {
     if(!planning(s))return false;
     const u=s.units.find(u=>u.id===id);if(!u)return false;
-    s.gold+=BY[u.dex].cost*3**(u.star-1);s.units=s.units.filter(v=>v!==u);return true;
+    s.gold=Math.min(999999999999,s.gold+BY[u.dex].cost*unitCopies(u));s.units=s.units.filter(v=>v!==u);return true;
   }
   function gainXP(s,n) { s.xp+=n;while(s.level<6&&s.xp>=XP[s.level+1]) {s.xp-=XP[s.level+1];s.level++;}if(s.level===6)s.xp=0; }
   function buyXP(s) {if(!planning(s)||s.level>=6||s.gold<4)return false;s.gold-=4;gainXP(s,4);return true;}
@@ -967,7 +992,7 @@ G.TFT = (() => {
     a.x=options[0].x;a.y=options[0].y;a.moveCD=.45;return true;
   }
   function fighter(u,side,synergies,round) {
-    const p=G.DEX_BY[u.dex],def=BY[u.dex],power=1.8**(u.star-1),ai=aiFor(u.dex);
+    const p=G.DEX_BY[u.dex],def=BY[u.dex],power=1.8**(u.star-1)*1.18**promotion(u),ai=aiFor(u.dex);
     const f={...u,side,x:u.pos%COLS,y:Math.floor(u.pos/COLS),types:p.types,role:def.role,
       ai,maxHp:(def.role==='tank'?480:330)*(1+def.cost*.1)*power,
       attack:(35+def.cost*9)*power,armor:def.role==='tank'?40:20,
@@ -1418,11 +1443,11 @@ G.TFT = (() => {
       s.streak=Math.min(0,s.streak)-1;
       s.life=Math.max(0,s.life-Math.min(12,3+Math.floor(s.round/10)+b.units.filter(u=>u.side===1&&u.hp>0).length));
     }
-    const interest=Math.min(5,Math.floor(s.gold/5)),bonus=Math.min(3,Math.floor(Math.abs(s.streak)/2));
-    const encounterBonus=won?(waveInfo(s.round).kind==='boss'?4:waveInfo(s.round).kind==='elite'?2:0):0;
-    const income=5+interest+bonus+(won?1:0)+encounterBonus;s.gold+=income;gainXP(s,2);
-    const report=b.units.map(u=>({id:u.id,dex:u.dex,star:u.star,side:u.side,damage:u.damageDone,healing:u.healingDone,shielding:u.shieldingDone,taken:u.damageTaken,blocked:u.blocked,kills:u.kills}));
-    s.result={won,draw:winner===-1,income,interest,bonus,encounterBonus,round:s.round,report};
+    const interest=Math.floor(s.gold/5),bonus=Math.min(3,Math.floor(Math.abs(s.streak)/2));
+    const encounterBonus=won?(waveInfo(s.round).kind==='boss'?10+2*Math.floor(s.round/10):waveInfo(s.round).kind==='elite'?4:0):0;
+    const baseIncome=5+Math.min(15,Math.floor((s.round-1)/5)),income=baseIncome+interest+bonus+(won?1:0)+encounterBonus;s.gold=Math.min(999999999999,s.gold+income);gainXP(s,2);
+    const report=b.units.map(u=>({id:u.id,dex:u.dex,star:u.star,promotion:promotion(u),side:u.side,damage:u.damageDone,healing:u.healingDone,shielding:u.shieldingDone,taken:u.damageTaken,blocked:u.blocked,kills:u.kills}));
+    s.result={won,draw:winner===-1,income,interest,bonus,baseIncome,encounterBonus,round:s.round,report};
     s.completed=(s.completed||0)+1;s.totals=aggregateReports([...(s.totals||[]),...report.filter(u=>u.side===0)]);
     s.history.push({round:s.round,won,report});if(s.history.length>HISTORY_LIMIT)s.history.shift();
     s.phase=s.life<=0?'defeat':'result';
@@ -1492,7 +1517,7 @@ G.TFT = (() => {
     const totals=new Map();
     for(const u of rows){const family=BY[u.dex].line[0];let row=totals.get(family);
       if(!row){row={id:family,dex:u.dex,star:u.star,side:0,damage:0,healing:0,shielding:0,taken:0,blocked:0,kills:0};totals.set(family,row);}
-      if(u.star>=row.star){row.dex=u.dex;row.star=u.star;}
+      if(rank(u)>=rank(row)){row.dex=u.dex;row.star=u.star;row.promotion=promotion(u);}
       for(const field of ['damage','healing','shielding','taken','blocked','kills'])row[field]+=u[field];
     }return [...totals.values()].sort((a,b)=>b.damage-a.damage);
   }
@@ -1519,11 +1544,12 @@ G.TFT = (() => {
       if(typeof raw!=='string'||raw.length>300000)return null;
       const data=JSON.parse(raw),s=data.state;
       const int=(n,min,max)=>Number.isInteger(n)&&n>=min&&n<=max;
-      const unit=u=>u&&int(u.id,-6,100000)&&u.id!==0&&BY[u.dex]&&int(u.star,1,3)&&evolvedDex(u.dex,u.star)===u.dex&&
+      const trained=u=>(u.promotion===undefined||int(u.promotion,0,6))&&(u.training===undefined||int(u.training,0,(TRAINING_COSTS[promotion(u)]||1)-1))&&(!promotion(u)||u.star===3)&&(!(u.training||0)||u.star===3)&&!(u.id<0&&promotion(u));
+      const unit=u=>u&&trained(u)&&int(u.id,-6,100000)&&u.id!==0&&BY[u.dex]&&int(u.star,1,3)&&evolvedDex(u.dex,u.star)===u.dex&&
         (u.pos===null||int(u.pos,0,35));
       const numbers=o=>Object.values(o).every(v=>typeof v!=='number'||Number.isFinite(v)&&Math.abs(v)<1e12);
       if(![1,SAVE_VERSION].includes(data.version)||!s||!numbers(s)||!validDeck(s.deck,data.version===1)||!int(s.round,1,MAX_WAVE)||!int(s.level,3,6)||
-        !int(s.seed,0,4294967295)||!int(s.nextId,1,100001)||!int(s.life,0,50)||!int(s.gold,0,1000000)||!int(s.xp,0,20)||
+        !int(s.seed,0,4294967295)||!int(s.nextId,1,100001)||!int(s.life,0,50)||!int(s.gold,0,999999999999)||!int(s.xp,0,20)||
         s.opponentRound!==s.round||!int(s.wins,0,MAX_WAVE)||!int(s.streak,-MAX_WAVE,MAX_WAVE)||typeof s.locked!=='boolean'||
         !['planning','combat','result','defeat',...(data.version===1?['victory']:[])].includes(s.phase))return null;
       if(!Array.isArray(s.units)||s.units.length>14||!s.units.every(u=>unit(u)&&u.id>0&&u.id<s.nextId&&s.deck.includes(BY[u.dex].line[0])&&(u.pos===null||u.pos>=18))||
@@ -1531,7 +1557,7 @@ G.TFT = (() => {
         s.units.filter(u=>u.pos===null).length>BENCH||s.units.filter(u=>u.pos!==null).length>s.level)return null;
       if(!Array.isArray(s.shop)||s.shop.length>5||!s.shop.every(d=>d===null||s.deck.includes(d)))return null;
       if(!Array.isArray(s.opponent)||!s.opponent.length||s.opponent.length>6||!s.opponent.every(u=>unit(u)&&u.id<0&&u.pos<18))return null;
-      const report=(rows,limit=12)=>Array.isArray(rows)&&rows.length<=limit&&rows.every(u=>BY[u.dex]&&int(u.star,1,3)&&[0,1].includes(u.side)&&['damage','healing','shielding','taken','blocked','kills'].every(k=>Number.isFinite(u[k])&&u[k]>=0&&u[k]<1e12));
+      const report=(rows,limit=12)=>Array.isArray(rows)&&rows.length<=limit&&rows.every(u=>BY[u.dex]&&trained(u)&&int(u.star,1,3)&&[0,1].includes(u.side)&&['damage','healing','shielding','taken','blocked','kills'].every(k=>Number.isFinite(u[k])&&u[k]>=0&&u[k]<1e12));
       if(!Array.isArray(s.history)||s.history.length>HISTORY_LIMIT||!s.history.every(h=>int(h.round,1,MAX_WAVE)&&report(h.report)))return null;
       if(s.result&&(!int(s.result.round,1,MAX_WAVE)||!report(s.result.report)||!numbers(s.result)))return null;
       if(['result','victory','defeat'].includes(s.phase)&&!s.result)return null;
@@ -1562,5 +1588,5 @@ G.TFT = (() => {
       s.encounter=waveInfo(s.round);s.effects=[];return s;
     } catch(_){return null;}
   }
-  return {hasAttackPriority,isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,BEAT_SECONDS,ROSTER,PLAYABLE_ROSTER,BOSS_DEFINITIONS,BY,DEFAULT_DECK,validDeck,migrateDeck,waveInfo,HISTORY_LIMIT,MAX_WAVE,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
+  return {TRAINING_COSTS,rank,rankLabel,rankColor,unitCopies,trainingLabel,hasAttackPriority,isStunned,stun,serialize,restore,SAVE_VERSION,scout,entranceFor,COLS,ROWS,BENCH,BEAT_SECONDS,ROSTER,PLAYABLE_ROSTER,BOSS_DEFINITIONS,BY,DEFAULT_DECK,validDeck,migrateDeck,waveInfo,HISTORY_LIMIT,MAX_WAVE,evolvedDex,moveFor,abilityFor,preview,cast,report,AREA_MOVES,aiFor,selectTarget,XP,ODDS,EFFECTS,create,buy,place,sell,buyXP,reroll,traits,start,tick,next};
 })();
