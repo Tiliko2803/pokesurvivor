@@ -1,4 +1,4 @@
-/* PokéSurvivor TFT alpha — isolated rules; no survivor save, coins or rankings. */
+/* PokéSurvivor TFT — independent economy and wave ranking. */
 G.TFT = (() => {
   'use strict';
   const COLS = 6, ROWS = 6, BENCH = 8, MAX_WAVE = 1000000, HISTORY_LIMIT = 20, BEAT_SECONDS = .5;
@@ -643,6 +643,1657 @@ G.TFT = (() => {
       {type:'flying',power:0,text:'Viento Afín aumenta un 16% la cadencia de todos los aliados durante 2 segundos, sin acumular multiplicadores.',allyBoost:.16,friends:6}
     ]
   });
+  // Third expansion: 25 competitive families across all nine regions, ten at one gold.
+  EXPANSION.push(...[
+  {
+    "line": [
+      10,
+      11,
+      12
+    ],
+    "cost": 1,
+    "role": "mage",
+    "moves": [
+      "Disparo Demora",
+      "Fortaleza",
+      "Somnífero"
+    ],
+    "entry": "Polvo Somnífero · Butterfree",
+    "passive": [
+      "mana",
+      25,
+      "Empieza con 25 de maná adicional."
+    ],
+    "skills": [
+      {
+        "type": "bug",
+        "power": 1.5,
+        "slow": 0.2,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "normal",
+        "power": 0,
+        "selfShield": 0.25,
+        "text": "obtiene un escudo del 25% de su vida."
+      },
+      {
+        "type": "grass",
+        "power": 1.4,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "stun": 0.5,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; aturde 0,5 s."
+      }
+    ],
+    "openers": [
+      {
+        "type": "bug",
+        "power": 0.35,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "bug",
+        "power": 0.5,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "bug",
+        "power": 0.65,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      41,
+      42,
+      169
+    ],
+    "cost": 1,
+    "role": "fighter",
+    "moves": [
+      "Mordisco",
+      "Chupavidas",
+      "Tajo Aéreo"
+    ],
+    "entry": "Foco Interno · Crobat",
+    "passive": [
+      "speed",
+      0.1,
+      "Aumenta su potencia de cadencia un 10%."
+    ],
+    "skills": [
+      {
+        "type": "dark",
+        "power": 1.8,
+        "text": "Golpea al enemigo seleccionado."
+      },
+      {
+        "type": "bug",
+        "power": 2,
+        "selfDrain": 0.3,
+        "text": "Golpea al enemigo seleccionado; se cura un 30% del daño efectivo causado."
+      },
+      {
+        "type": "flying",
+        "power": 2.3,
+        "shape": "line",
+        "length": 3,
+        "slow": 0.15,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea; reduce la cadencia enemiga un 15% durante 2 s."
+      }
+    ],
+    "openers": [
+      {
+        "type": "flying",
+        "power": 0,
+        "selfShield": 0.08,
+        "selfCleanse": true,
+        "text": "obtiene un escudo del 8% de su vida; limpia sus quemaduras, ralentizaciones y aturdimientos."
+      },
+      {
+        "type": "flying",
+        "power": 0,
+        "selfShield": 0.08,
+        "selfCleanse": true,
+        "text": "obtiene un escudo del 8% de su vida; limpia sus quemaduras, ralentizaciones y aturdimientos."
+      },
+      {
+        "type": "flying",
+        "power": 0,
+        "selfShield": 0.08,
+        "selfCleanse": true,
+        "text": "obtiene un escudo del 8% de su vida; limpia sus quemaduras, ralentizaciones y aturdimientos."
+      }
+    ]
+  },
+  {
+    "line": [
+      79,
+      80
+    ],
+    "cost": 2,
+    "role": "healer",
+    "moves": [
+      "Confusión",
+      "Pulso Cura",
+      "Relajo"
+    ],
+    "entry": "Regeneración · Slowbro",
+    "passive": [
+      "regen",
+      0.008,
+      "Regenera un 0,8% de vida por segundo."
+    ],
+    "skills": [
+      {
+        "type": "psychic",
+        "power": 1.5,
+        "healing": 1.2,
+        "text": "Golpea al enemigo seleccionado; cura a un aliado por el 120% del ataque."
+      },
+      {
+        "type": "psychic",
+        "power": 0,
+        "healing": 3,
+        "friends": 2,
+        "text": "cura a 2 aliados por el 300% del ataque."
+      },
+      {
+        "type": "psychic",
+        "power": 0,
+        "healing": 3.4,
+        "friends": 2,
+        "selfHealing": 2,
+        "cleanse": true,
+        "text": "cura a 2 aliados por el 340% del ataque; se cura por el 200% del ataque; limpia quemadura, ralentización y aturdimiento de esos aliados."
+      }
+    ],
+    "openers": [
+      {
+        "type": "psychic",
+        "power": 0,
+        "healing": 0.7,
+        "friends": 2,
+        "text": "cura a 2 aliados por el 70% del ataque."
+      },
+      {
+        "type": "psychic",
+        "power": 0,
+        "healing": 0.7,
+        "friends": 2,
+        "text": "cura a 2 aliados por el 70% del ataque."
+      },
+      {
+        "type": "psychic",
+        "power": 0,
+        "healing": 0.7,
+        "friends": 2,
+        "text": "cura a 2 aliados por el 70% del ataque."
+      }
+    ]
+  },
+  {
+    "line": [
+      187,
+      188,
+      189
+    ],
+    "cost": 1,
+    "role": "healer",
+    "moves": [
+      "Absorber",
+      "Drenadoras",
+      "Algodón Espora"
+    ],
+    "entry": "Allanamiento · Jumpluff",
+    "passive": [
+      "pierce",
+      0.12,
+      "Ignora un 12% adicional de defensa."
+    ],
+    "skills": [
+      {
+        "type": "grass",
+        "power": 1.3,
+        "drain": 0.4,
+        "text": "Golpea al enemigo seleccionado; reparte un 40% del daño efectivo causado como curación entre 1 aliados."
+      },
+      {
+        "type": "grass",
+        "power": 1.7,
+        "drain": 0.4,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s; reparte un 40% del daño efectivo causado como curación entre 1 aliados."
+      },
+      {
+        "type": "grass",
+        "power": 1.5,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "slow": 0.3,
+        "healing": 1.5,
+        "friends": 2,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; reduce la cadencia enemiga un 30% durante 2 s; cura a 2 aliados por el 150% del ataque."
+      }
+    ],
+    "openers": [
+      {
+        "type": "grass",
+        "power": 0.35,
+        "slow": 0.2,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "grass",
+        "power": 0.5,
+        "slow": 0.2,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "grass",
+        "power": 0.65,
+        "slow": 0.2,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 20% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      214
+    ],
+    "cost": 3,
+    "role": "fighter",
+    "moves": [
+      "Golpe Roca",
+      "Demolición",
+      "Megacuerno"
+    ],
+    "entry": "Autoestima · Heracross",
+    "passive": [
+      "attack",
+      0.08,
+      "Aumenta su daño un 8%."
+    ],
+    "skills": [
+      {
+        "type": "fighting",
+        "power": 2,
+        "pierce": 0.2,
+        "text": "Golpea al enemigo seleccionado; ignora un 20% de defensa."
+      },
+      {
+        "type": "fighting",
+        "power": 2.5,
+        "breakShield": 0.5,
+        "text": "Golpea al enemigo seleccionado; rompe un 50% del escudo de cada objetivo."
+      },
+      {
+        "type": "bug",
+        "power": 3,
+        "pierce": 0.4,
+        "selfShield": 0.12,
+        "text": "Golpea al enemigo seleccionado; ignora un 40% de defensa; obtiene un escudo del 12% de su vida."
+      }
+    ],
+    "openers": [
+      {
+        "type": "fighting",
+        "power": 0,
+        "boost": 0.12,
+        "selfShield": 0.1,
+        "text": "obtiene un escudo del 10% de su vida; aumenta su cadencia un 12% durante 2 s."
+      },
+      {
+        "type": "fighting",
+        "power": 0,
+        "boost": 0.12,
+        "selfShield": 0.1,
+        "text": "obtiene un escudo del 10% de su vida; aumenta su cadencia un 12% durante 2 s."
+      },
+      {
+        "type": "fighting",
+        "power": 0,
+        "boost": 0.12,
+        "selfShield": 0.1,
+        "text": "obtiene un escudo del 10% de su vida; aumenta su cadencia un 12% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      227
+    ],
+    "cost": 2,
+    "role": "tank",
+    "moves": [
+      "Ala de Acero",
+      "Púas",
+      "Pájaro Osado"
+    ],
+    "entry": "Robustez · Skarmory",
+    "passive": [
+      "shield",
+      0.18,
+      "Empieza con un escudo del 18% de su vida."
+    ],
+    "skills": [
+      {
+        "type": "steel",
+        "power": 1.8,
+        "selfShield": 0.12,
+        "text": "Golpea al enemigo seleccionado; obtiene un escudo del 12% de su vida."
+      },
+      {
+        "type": "steel",
+        "power": 1.6,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "slow": 0.2,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "flying",
+        "power": 2.5,
+        "shape": "line",
+        "length": 3,
+        "selfShield": 0.15,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea; obtiene un escudo del 15% de su vida."
+      }
+    ],
+    "openers": [
+      {
+        "type": "steel",
+        "power": 0,
+        "friendShield": 0.06,
+        "friends": 2,
+        "text": "escuda a 2 aliados con un 6% de la vida de cada receptor."
+      },
+      {
+        "type": "steel",
+        "power": 0,
+        "friendShield": 0.06,
+        "friends": 2,
+        "text": "escuda a 2 aliados con un 6% de la vida de cada receptor."
+      },
+      {
+        "type": "steel",
+        "power": 0,
+        "friendShield": 0.06,
+        "friends": 2,
+        "text": "escuda a 2 aliados con un 6% de la vida de cada receptor."
+      }
+    ]
+  },
+  {
+    "line": [
+      307,
+      308
+    ],
+    "cost": 2,
+    "role": "fighter",
+    "moves": [
+      "Palmeo",
+      "Cabezazo Zen",
+      "Patada Salto Alta"
+    ],
+    "entry": "Energía Pura · Medicham",
+    "passive": [
+      "attack",
+      0.12,
+      "Aumenta su daño un 12%."
+    ],
+    "skills": [
+      {
+        "type": "fighting",
+        "power": 1.9,
+        "stun": 0.25,
+        "text": "Golpea al enemigo seleccionado; aturde 0,25 s."
+      },
+      {
+        "type": "psychic",
+        "power": 2.3,
+        "pierce": 0.3,
+        "text": "Golpea al enemigo seleccionado; ignora un 30% de defensa."
+      },
+      {
+        "type": "fighting",
+        "power": 3,
+        "pierce": 0.45,
+        "selfShield": 0.08,
+        "text": "Golpea al enemigo seleccionado; ignora un 45% de defensa; obtiene un escudo del 8% de su vida."
+      }
+    ],
+    "openers": [
+      {
+        "type": "fighting",
+        "power": 0.35,
+        "pierce": 0.3,
+        "text": "Golpea al enemigo seleccionado; ignora un 30% de defensa."
+      },
+      {
+        "type": "fighting",
+        "power": 0.5,
+        "pierce": 0.3,
+        "text": "Golpea al enemigo seleccionado; ignora un 30% de defensa."
+      },
+      {
+        "type": "fighting",
+        "power": 0.65,
+        "pierce": 0.3,
+        "text": "Golpea al enemigo seleccionado; ignora un 30% de defensa."
+      }
+    ]
+  },
+  {
+    "line": [
+      322,
+      323
+    ],
+    "cost": 1,
+    "role": "mage",
+    "moves": [
+      "Ascuas",
+      "Magnitud",
+      "Estallido"
+    ],
+    "entry": "Llama Interior · Camerupt",
+    "passive": [
+      "shield",
+      0.1,
+      "Empieza con un escudo del 10% de su vida."
+    ],
+    "skills": [
+      {
+        "type": "fire",
+        "power": 1.8,
+        "burn": 0.1,
+        "text": "Golpea al enemigo seleccionado; quema durante 3 s con un 10% del ataque por segundo."
+      },
+      {
+        "type": "ground",
+        "power": 1.9,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo."
+      },
+      {
+        "type": "fire",
+        "power": 2.3,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "burn": 0.12,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; quema durante 3 s con un 12% del ataque por segundo."
+      }
+    ],
+    "openers": [
+      {
+        "type": "fire",
+        "power": 0.35,
+        "burn": 0.06,
+        "text": "Golpea al enemigo seleccionado; quema durante 3 s con un 6% del ataque por segundo."
+      },
+      {
+        "type": "fire",
+        "power": 0.5,
+        "burn": 0.06,
+        "text": "Golpea al enemigo seleccionado; quema durante 3 s con un 6% del ataque por segundo."
+      },
+      {
+        "type": "fire",
+        "power": 0.65,
+        "burn": 0.06,
+        "text": "Golpea al enemigo seleccionado; quema durante 3 s con un 6% del ataque por segundo."
+      }
+    ]
+  },
+  {
+    "line": [
+      302
+    ],
+    "cost": 2,
+    "role": "mage",
+    "moves": [
+      "Impresionar",
+      "Fuego Fatuo",
+      "Pulso Umbrío"
+    ],
+    "entry": "Bromista · Sableye",
+    "passive": [
+      "mana",
+      35,
+      "Empieza con 35 de maná adicional."
+    ],
+    "skills": [
+      {
+        "type": "ghost",
+        "power": 1.7,
+        "stun": 0.25,
+        "text": "Golpea al enemigo seleccionado; aturde 0,25 s."
+      },
+      {
+        "type": "fire",
+        "power": 1.3,
+        "burn": 0.18,
+        "text": "Golpea al enemigo seleccionado; quema durante 3 s con un 18% del ataque por segundo."
+      },
+      {
+        "type": "dark",
+        "power": 2.3,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "breakShield": 0.4,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; rompe un 40% del escudo de cada objetivo."
+      }
+    ],
+    "openers": [
+      {
+        "type": "ghost",
+        "power": 0.35,
+        "slow": 0.2,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "ghost",
+        "power": 0.5,
+        "slow": 0.2,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "ghost",
+        "power": 0.65,
+        "slow": 0.2,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 20% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      406,
+      315,
+      407
+    ],
+    "cost": 2,
+    "role": "healer",
+    "moves": [
+      "Absorber",
+      "Gigadrenado",
+      "Danza Pétalo"
+    ],
+    "entry": "Cura Natural · Roserade",
+    "passive": [
+      "regen",
+      0.006,
+      "Regenera un 0,6% de vida por segundo."
+    ],
+    "skills": [
+      {
+        "type": "grass",
+        "power": 1.4,
+        "drain": 0.4,
+        "text": "Golpea al enemigo seleccionado; reparte un 40% del daño efectivo causado como curación entre 1 aliados."
+      },
+      {
+        "type": "grass",
+        "power": 1.9,
+        "drain": 0.4,
+        "friends": 2,
+        "text": "Golpea al enemigo seleccionado; reparte un 40% del daño efectivo causado como curación entre 2 aliados."
+      },
+      {
+        "type": "grass",
+        "power": 2.1,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "drain": 0.25,
+        "friends": 3,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; reparte un 25% del daño efectivo causado como curación entre 3 aliados."
+      }
+    ],
+    "openers": [
+      {
+        "type": "grass",
+        "power": 0,
+        "friendShield": 0.05,
+        "friends": 2,
+        "cleanse": true,
+        "text": "escuda a 2 aliados con un 5% de la vida de cada receptor; limpia quemadura, ralentización y aturdimiento de esos aliados."
+      },
+      {
+        "type": "grass",
+        "power": 0,
+        "friendShield": 0.05,
+        "friends": 2,
+        "cleanse": true,
+        "text": "escuda a 2 aliados con un 5% de la vida de cada receptor; limpia quemadura, ralentización y aturdimiento de esos aliados."
+      },
+      {
+        "type": "grass",
+        "power": 0,
+        "friendShield": 0.05,
+        "friends": 2,
+        "cleanse": true,
+        "text": "escuda a 2 aliados con un 5% de la vida de cada receptor; limpia quemadura, ralentización y aturdimiento de esos aliados."
+      }
+    ]
+  },
+  {
+    "line": [
+      403,
+      404,
+      405
+    ],
+    "cost": 1,
+    "role": "fighter",
+    "moves": [
+      "Chispa",
+      "Colmillo Rayo",
+      "Voltio Cruel"
+    ],
+    "entry": "Intimidación · Luxray",
+    "passive": [
+      "intimidate",
+      0.08,
+      "Reduce un 8% el daño rival. No se acumula con otras intimidaciones."
+    ],
+    "skills": [
+      {
+        "type": "electric",
+        "power": 1.8,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "electric",
+        "power": 2.2,
+        "stun": 0.3,
+        "text": "Golpea al enemigo seleccionado; aturde 0,3 s."
+      },
+      {
+        "type": "electric",
+        "power": 2.7,
+        "shape": "line",
+        "length": 3,
+        "breakShield": 0.25,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea; rompe un 25% del escudo de cada objetivo."
+      }
+    ],
+    "openers": [
+      {
+        "type": "electric",
+        "power": 0.35,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "electric",
+        "power": 0.5,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "electric",
+        "power": 0.65,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      449,
+      450
+    ],
+    "cost": 2,
+    "role": "tank",
+    "moves": [
+      "Excavar",
+      "Terremoto",
+      "Relajo"
+    ],
+    "entry": "Chorro Arena · Hippowdon",
+    "passive": [
+      "armor",
+      12,
+      "Obtiene 12 de defensa."
+    ],
+    "skills": [
+      {
+        "type": "ground",
+        "power": 1.8,
+        "selfShield": 0.12,
+        "text": "Golpea al enemigo seleccionado; obtiene un escudo del 12% de su vida."
+      },
+      {
+        "type": "ground",
+        "power": 2.1,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "slow": 0.2,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "ground",
+        "power": 1.8,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "selfHealing": 3,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; se cura por el 300% del ataque."
+      }
+    ],
+    "openers": [
+      {
+        "type": "ground",
+        "power": 0.35,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "slow": 0.15,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "ground",
+        "power": 0.5,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "slow": 0.15,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "ground",
+        "power": 0.65,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "slow": 0.15,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; reduce la cadencia enemiga un 15% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      532,
+      533,
+      534
+    ],
+    "cost": 1,
+    "role": "fighter",
+    "moves": [
+      "Golpe Roca",
+      "Machada",
+      "Puño Drenaje"
+    ],
+    "entry": "Agallas · Conkeldurr",
+    "passive": [
+      "attack",
+      0.08,
+      "Aumenta su daño un 8%."
+    ],
+    "skills": [
+      {
+        "type": "fighting",
+        "power": 1.8,
+        "pierce": 0.15,
+        "text": "Golpea al enemigo seleccionado; ignora un 15% de defensa."
+      },
+      {
+        "type": "fighting",
+        "power": 2.4,
+        "breakShield": 0.35,
+        "text": "Golpea al enemigo seleccionado; rompe un 35% del escudo de cada objetivo."
+      },
+      {
+        "type": "fighting",
+        "power": 2.5,
+        "selfDrain": 0.4,
+        "text": "Golpea al enemigo seleccionado; se cura un 40% del daño efectivo causado."
+      }
+    ],
+    "openers": [
+      {
+        "type": "fighting",
+        "power": 0,
+        "boost": 0.1,
+        "selfCleanse": true,
+        "text": "aumenta su cadencia un 10% durante 2 s; limpia sus quemaduras, ralentizaciones y aturdimientos."
+      },
+      {
+        "type": "fighting",
+        "power": 0,
+        "boost": 0.1,
+        "selfCleanse": true,
+        "text": "aumenta su cadencia un 10% durante 2 s; limpia sus quemaduras, ralentizaciones y aturdimientos."
+      },
+      {
+        "type": "fighting",
+        "power": 0,
+        "boost": 0.1,
+        "selfCleanse": true,
+        "text": "aumenta su cadencia un 10% durante 2 s; limpia sus quemaduras, ralentizaciones y aturdimientos."
+      }
+    ]
+  },
+  {
+    "line": [
+      546,
+      547
+    ],
+    "cost": 1,
+    "role": "healer",
+    "moves": [
+      "Absorber",
+      "Drenadoras",
+      "Viento Afín"
+    ],
+    "entry": "Bromista · Whimsicott",
+    "passive": [
+      "mana",
+      30,
+      "Empieza con 30 de maná adicional."
+    ],
+    "skills": [
+      {
+        "type": "grass",
+        "power": 1.2,
+        "drain": 0.35,
+        "text": "Golpea al enemigo seleccionado; reparte un 35% del daño efectivo causado como curación entre 1 aliados."
+      },
+      {
+        "type": "grass",
+        "power": 1.6,
+        "drain": 0.4,
+        "friends": 2,
+        "text": "Golpea al enemigo seleccionado; reparte un 40% del daño efectivo causado como curación entre 2 aliados."
+      },
+      {
+        "type": "flying",
+        "power": 0,
+        "healing": 2.5,
+        "allyBoost": 0.15,
+        "friends": 3,
+        "text": "aumenta la cadencia de 3 aliados un 15% durante 2 s; cura a 3 aliados por el 250% del ataque."
+      }
+    ],
+    "openers": [
+      {
+        "type": "fairy",
+        "power": 0,
+        "friendShield": 0.06,
+        "allyMana": 10,
+        "friends": 2,
+        "text": "escuda a 2 aliados con un 6% de la vida de cada receptor; da 10 de maná a 2 aliados."
+      },
+      {
+        "type": "fairy",
+        "power": 0,
+        "friendShield": 0.06,
+        "allyMana": 10,
+        "friends": 2,
+        "text": "escuda a 2 aliados con un 6% de la vida de cada receptor; da 10 de maná a 2 aliados."
+      },
+      {
+        "type": "fairy",
+        "power": 0,
+        "friendShield": 0.06,
+        "allyMana": 10,
+        "friends": 2,
+        "text": "escuda a 2 aliados con un 6% de la vida de cada receptor; da 10 de maná a 2 aliados."
+      }
+    ]
+  },
+  {
+    "line": [
+      595,
+      596
+    ],
+    "cost": 2,
+    "role": "mage",
+    "moves": [
+      "Electrotela",
+      "Chispazo",
+      "Trueno"
+    ],
+    "entry": "Ojo Compuesto · Galvantula",
+    "passive": [
+      "pierce",
+      0.1,
+      "Ignora un 10% adicional de defensa."
+    ],
+    "skills": [
+      {
+        "type": "electric",
+        "power": 1.5,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "slow": 0.25,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; reduce la cadencia enemiga un 25% durante 2 s."
+      },
+      {
+        "type": "electric",
+        "power": 2,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario."
+      },
+      {
+        "type": "electric",
+        "power": 2.6,
+        "shape": "line",
+        "length": 4,
+        "stun": 0.25,
+        "text": "Atraviesa 4 casillas y daña a los enemigos en la línea; aturde 0,25 s."
+      }
+    ],
+    "openers": [
+      {
+        "type": "electric",
+        "power": 0.35,
+        "shape": "line",
+        "length": 3,
+        "slow": 0.15,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "electric",
+        "power": 0.5,
+        "shape": "line",
+        "length": 3,
+        "slow": 0.15,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "electric",
+        "power": 0.65,
+        "shape": "line",
+        "length": 3,
+        "slow": 0.15,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea; reduce la cadencia enemiga un 15% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      677,
+      678
+    ],
+    "cost": 1,
+    "role": "mage",
+    "moves": [
+      "Confusión",
+      "Psicorrayo",
+      "Psíquico"
+    ],
+    "entry": "Vista Lince · Meowstic",
+    "passive": [
+      "mana",
+      25,
+      "Empieza con 25 de maná adicional."
+    ],
+    "skills": [
+      {
+        "type": "psychic",
+        "power": 1.7,
+        "text": "Golpea al enemigo seleccionado."
+      },
+      {
+        "type": "psychic",
+        "power": 2,
+        "shape": "line",
+        "length": 3,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea."
+      },
+      {
+        "type": "psychic",
+        "power": 2.4,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "pierce": 0.25,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; ignora un 25% de defensa."
+      }
+    ],
+    "openers": [
+      {
+        "type": "psychic",
+        "power": 0.35,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "psychic",
+        "power": 0.5,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "psychic",
+        "power": 0.65,
+        "slow": 0.15,
+        "text": "Golpea al enemigo seleccionado; reduce la cadencia enemiga un 15% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      690,
+      691
+    ],
+    "cost": 2,
+    "role": "mage",
+    "moves": [
+      "Ácido",
+      "Bomba Lodo",
+      "Pulso Dragón"
+    ],
+    "entry": "Adaptable · Dragalge",
+    "passive": [
+      "pierce",
+      0.12,
+      "Ignora un 12% adicional de defensa."
+    ],
+    "skills": [
+      {
+        "type": "poison",
+        "power": 1.8,
+        "pierce": 0.2,
+        "text": "Golpea al enemigo seleccionado; ignora un 20% de defensa."
+      },
+      {
+        "type": "poison",
+        "power": 2.1,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "slow": 0.2,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "dragon",
+        "power": 2.6,
+        "shape": "line",
+        "length": 4,
+        "pierce": 0.35,
+        "text": "Atraviesa 4 casillas y daña a los enemigos en la línea; ignora un 35% de defensa."
+      }
+    ],
+    "openers": [
+      {
+        "type": "poison",
+        "power": 0.35,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "slow": 0.15,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "poison",
+        "power": 0.5,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "slow": 0.15,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; reduce la cadencia enemiga un 15% durante 2 s."
+      },
+      {
+        "type": "poison",
+        "power": 0.65,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "slow": 0.15,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; reduce la cadencia enemiga un 15% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      701
+    ],
+    "cost": 3,
+    "role": "fighter",
+    "moves": [
+      "Golpe Karate",
+      "Plancha Voladora",
+      "A Bocajarro"
+    ],
+    "entry": "Liviano · Hawlucha",
+    "passive": [
+      "speed",
+      0.12,
+      "Aumenta su potencia de cadencia un 12%."
+    ],
+    "skills": [
+      {
+        "type": "fighting",
+        "power": 2,
+        "pierce": 0.2,
+        "text": "Golpea al enemigo seleccionado; ignora un 20% de defensa."
+      },
+      {
+        "type": "flying",
+        "power": 2.5,
+        "pierce": 0.3,
+        "text": "Golpea al enemigo seleccionado; ignora un 30% de defensa."
+      },
+      {
+        "type": "fighting",
+        "power": 2.6,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "selfShield": 0.1,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; obtiene un escudo del 10% de su vida."
+      }
+    ],
+    "openers": [
+      {
+        "type": "flying",
+        "power": 0,
+        "boost": 0.1,
+        "selfShield": 0.08,
+        "text": "obtiene un escudo del 8% de su vida; aumenta su cadencia un 10% durante 2 s."
+      },
+      {
+        "type": "flying",
+        "power": 0,
+        "boost": 0.1,
+        "selfShield": 0.08,
+        "text": "obtiene un escudo del 8% de su vida; aumenta su cadencia un 10% durante 2 s."
+      },
+      {
+        "type": "flying",
+        "power": 0,
+        "boost": 0.1,
+        "selfShield": 0.08,
+        "text": "obtiene un escudo del 8% de su vida; aumenta su cadencia un 10% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      747,
+      748
+    ],
+    "cost": 3,
+    "role": "tank",
+    "moves": [
+      "Púas Tóxicas",
+      "Hidroariete",
+      "Recuperación"
+    ],
+    "entry": "Regeneración · Toxapex",
+    "passive": [
+      "regen",
+      0.008,
+      "Regenera un 0,8% de vida por segundo."
+    ],
+    "skills": [
+      {
+        "type": "poison",
+        "power": 1.5,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "slow": 0.2,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "water",
+        "power": 2.2,
+        "shape": "line",
+        "length": 3,
+        "selfShield": 0.12,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea; obtiene un escudo del 12% de su vida."
+      },
+      {
+        "type": "water",
+        "power": 0,
+        "selfHealing": 4,
+        "selfShield": 0.15,
+        "selfCleanse": true,
+        "text": "obtiene un escudo del 15% de su vida; se cura por el 400% del ataque; limpia sus quemaduras, ralentizaciones y aturdimientos."
+      }
+    ],
+    "openers": [
+      {
+        "type": "poison",
+        "power": 0,
+        "selfShield": 0.1,
+        "selfHealing": 0.6,
+        "text": "obtiene un escudo del 10% de su vida; se cura por el 60% del ataque."
+      },
+      {
+        "type": "poison",
+        "power": 0,
+        "selfShield": 0.1,
+        "selfHealing": 0.6,
+        "text": "obtiene un escudo del 10% de su vida; se cura por el 60% del ataque."
+      },
+      {
+        "type": "poison",
+        "power": 0,
+        "selfShield": 0.1,
+        "selfHealing": 0.6,
+        "text": "obtiene un escudo del 10% de su vida; se cura por el 60% del ataque."
+      }
+    ]
+  },
+  {
+    "line": [
+      761,
+      762,
+      763
+    ],
+    "cost": 2,
+    "role": "fighter",
+    "moves": [
+      "Hoja Afilada",
+      "Pisotón",
+      "Patada Tropical"
+    ],
+    "entry": "Presencia Regia · Tsareena",
+    "passive": [
+      "shield",
+      0.1,
+      "Empieza con un escudo del 10% de su vida."
+    ],
+    "skills": [
+      {
+        "type": "grass",
+        "power": 1.7,
+        "shape": "line",
+        "length": 3,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea."
+      },
+      {
+        "type": "normal",
+        "power": 2.2,
+        "stun": 0.35,
+        "text": "Golpea al enemigo seleccionado; aturde 0,35 s."
+      },
+      {
+        "type": "grass",
+        "power": 2.5,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "slow": 0.25,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; reduce la cadencia enemiga un 25% durante 2 s."
+      }
+    ],
+    "openers": [
+      {
+        "type": "grass",
+        "power": 0.35,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "slow": 0.2,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "grass",
+        "power": 0.5,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "slow": 0.2,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; reduce la cadencia enemiga un 20% durante 2 s."
+      },
+      {
+        "type": "grass",
+        "power": 0.65,
+        "shape": "area",
+        "radius": 1,
+        "center": "self",
+        "slow": 0.2,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del usuario; reduce la cadencia enemiga un 20% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      736,
+      737,
+      738
+    ],
+    "cost": 1,
+    "role": "mage",
+    "moves": [
+      "Picadura",
+      "Chispa",
+      "Electrocañón"
+    ],
+    "entry": "Carga Eléctrica · Vikavolt",
+    "passive": [
+      "mana",
+      25,
+      "Empieza con 25 de maná adicional."
+    ],
+    "skills": [
+      {
+        "type": "bug",
+        "power": 1.7,
+        "text": "Golpea al enemigo seleccionado."
+      },
+      {
+        "type": "electric",
+        "power": 2,
+        "pierce": 0.2,
+        "text": "Golpea al enemigo seleccionado; ignora un 20% de defensa."
+      },
+      {
+        "type": "electric",
+        "power": 2.8,
+        "shape": "line",
+        "length": 4,
+        "slow": 0.2,
+        "text": "Atraviesa 4 casillas y daña a los enemigos en la línea; reduce la cadencia enemiga un 20% durante 2 s."
+      }
+    ],
+    "openers": [
+      {
+        "type": "electric",
+        "power": 0.35,
+        "shape": "line",
+        "length": 3,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea."
+      },
+      {
+        "type": "electric",
+        "power": 0.5,
+        "shape": "line",
+        "length": 3,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea."
+      },
+      {
+        "type": "electric",
+        "power": 0.65,
+        "shape": "line",
+        "length": 3,
+        "text": "Atraviesa 3 casillas y daña a los enemigos en la línea."
+      }
+    ]
+  },
+  {
+    "line": [
+      856,
+      857,
+      858
+    ],
+    "cost": 3,
+    "role": "healer",
+    "moves": [
+      "Confusión",
+      "Pulso Cura",
+      "Brillo Mágico"
+    ],
+    "entry": "Espejo Mágico · Hatterene",
+    "passive": [
+      "shield",
+      0.12,
+      "Empieza con un escudo del 12% de su vida."
+    ],
+    "skills": [
+      {
+        "type": "psychic",
+        "power": 1.7,
+        "healing": 1.5,
+        "text": "Golpea al enemigo seleccionado; cura a un aliado por el 150% del ataque."
+      },
+      {
+        "type": "psychic",
+        "power": 0,
+        "healing": 3,
+        "friends": 3,
+        "cleanse": true,
+        "text": "cura a 3 aliados por el 300% del ataque; limpia quemadura, ralentización y aturdimiento de esos aliados."
+      },
+      {
+        "type": "fairy",
+        "power": 2.2,
+        "shape": "area",
+        "radius": 1,
+        "center": "target",
+        "healing": 2,
+        "friends": 3,
+        "text": "Daña a los enemigos en un radio de 1 casilla alrededor del objetivo; cura a 3 aliados por el 200% del ataque."
+      }
+    ],
+    "openers": [
+      {
+        "type": "fairy",
+        "power": 0,
+        "friendShield": 0.06,
+        "friends": 3,
+        "cleanse": true,
+        "text": "escuda a 3 aliados con un 6% de la vida de cada receptor; limpia quemadura, ralentización y aturdimiento de esos aliados."
+      },
+      {
+        "type": "fairy",
+        "power": 0,
+        "friendShield": 0.06,
+        "friends": 3,
+        "cleanse": true,
+        "text": "escuda a 3 aliados con un 6% de la vida de cada receptor; limpia quemadura, ralentización y aturdimiento de esos aliados."
+      },
+      {
+        "type": "fairy",
+        "power": 0,
+        "friendShield": 0.06,
+        "friends": 3,
+        "cleanse": true,
+        "text": "escuda a 3 aliados con un 6% de la vida de cada receptor; limpia quemadura, ralentización y aturdimiento de esos aliados."
+      }
+    ]
+  },
+  {
+    "line": [
+      859,
+      860,
+      861
+    ],
+    "cost": 3,
+    "role": "tank",
+    "moves": [
+      "Sorpresa",
+      "Reflejo",
+      "Pantalla de Luz"
+    ],
+    "entry": "Bromista · Grimmsnarl",
+    "passive": [
+      "mana",
+      30,
+      "Empieza con 30 de maná adicional."
+    ],
+    "skills": [
+      {
+        "type": "dark",
+        "power": 1.8,
+        "stun": 0.3,
+        "text": "Golpea al enemigo seleccionado; aturde 0,3 s."
+      },
+      {
+        "type": "psychic",
+        "power": 0,
+        "friendShield": 0.15,
+        "friends": 3,
+        "text": "escuda a 3 aliados con un 15% de la vida de cada receptor."
+      },
+      {
+        "type": "psychic",
+        "power": 0,
+        "friendShield": 0.15,
+        "friends": 6,
+        "allyMana": 10,
+        "text": "escuda a 6 aliados con un 15% de la vida de cada receptor; da 10 de maná a 6 aliados."
+      }
+    ],
+    "openers": [
+      {
+        "type": "fairy",
+        "power": 0,
+        "friendShield": 0.04,
+        "friends": 6,
+        "text": "escuda a 6 aliados con un 4% de la vida de cada receptor."
+      },
+      {
+        "type": "fairy",
+        "power": 0,
+        "friendShield": 0.05,
+        "friends": 6,
+        "text": "escuda a 6 aliados con un 5% de la vida de cada receptor."
+      },
+      {
+        "type": "fairy",
+        "power": 0,
+        "friendShield": 0.06,
+        "friends": 6,
+        "text": "escuda a 6 aliados con un 6% de la vida de cada receptor."
+      }
+    ]
+  },
+  {
+    "line": [
+      924,
+      925
+    ],
+    "cost": 1,
+    "role": "fighter",
+    "moves": [
+      "Placaje",
+      "Bomba Germen",
+      "Proliferación"
+    ],
+    "entry": "Compiescolta · Maushold",
+    "passive": [
+      "teamShield",
+      0.03,
+      "Concede al equipo un escudo del 3% de la vida de cada aliado."
+    ],
+    "skills": [
+      {
+        "type": "normal",
+        "power": 1.7,
+        "text": "Golpea al enemigo seleccionado."
+      },
+      {
+        "type": "grass",
+        "power": 2,
+        "text": "Golpea al enemigo seleccionado."
+      },
+      {
+        "type": "normal",
+        "power": 3.1,
+        "breakShield": 0.3,
+        "text": "Golpea al enemigo seleccionado; rompe un 30% del escudo de cada objetivo."
+      }
+    ],
+    "openers": [
+      {
+        "type": "normal",
+        "power": 0,
+        "allyBoost": 0.04,
+        "friends": 3,
+        "text": "aumenta la cadencia de 3 aliados un 4% durante 2 s."
+      },
+      {
+        "type": "normal",
+        "power": 0,
+        "allyBoost": 0.06,
+        "friends": 3,
+        "text": "aumenta la cadencia de 3 aliados un 6% durante 2 s."
+      },
+      {
+        "type": "normal",
+        "power": 0,
+        "allyBoost": 0.08,
+        "friends": 3,
+        "text": "aumenta la cadencia de 3 aliados un 8% durante 2 s."
+      }
+    ]
+  },
+  {
+    "line": [
+      935,
+      937
+    ],
+    "cost": 4,
+    "role": "fighter",
+    "moves": [
+      "Nitrocarga",
+      "Garra Umbría",
+      "Espada Lamento"
+    ],
+    "entry": "Armadura Fragmentada · Ceruledge",
+    "passive": [
+      "speed",
+      0.1,
+      "Aumenta su potencia de cadencia un 10%."
+    ],
+    "skills": [
+      {
+        "type": "fire",
+        "power": 2,
+        "burn": 0.12,
+        "boost": 0.1,
+        "text": "Golpea al enemigo seleccionado; aumenta su cadencia un 10% durante 2 s; quema durante 3 s con un 12% del ataque por segundo."
+      },
+      {
+        "type": "ghost",
+        "power": 2.5,
+        "pierce": 0.4,
+        "text": "Golpea al enemigo seleccionado; ignora un 40% de defensa."
+      },
+      {
+        "type": "fire",
+        "power": 2.8,
+        "selfDrain": 0.5,
+        "text": "Golpea al enemigo seleccionado; se cura un 50% del daño efectivo causado."
+      }
+    ],
+    "openers": [
+      {
+        "type": "fire",
+        "power": 0,
+        "selfShield": 0.12,
+        "boost": 0.08,
+        "text": "obtiene un escudo del 12% de su vida; aumenta su cadencia un 8% durante 2 s."
+      },
+      {
+        "type": "fire",
+        "power": 0,
+        "selfShield": 0.12,
+        "boost": 0.08,
+        "text": "obtiene un escudo del 12% de su vida; aumenta su cadencia un 8% durante 2 s."
+      },
+      {
+        "type": "fire",
+        "power": 0,
+        "selfShield": 0.12,
+        "boost": 0.08,
+        "text": "obtiene un escudo del 12% de su vida; aumenta su cadencia un 8% durante 2 s."
+      }
+    ]
+  }
+]);
   DEFINITIONS.push(...EXPANSION.map(f=>[f.line,f.cost,f.role,f.moves]));
   const ROSTER = DEFINITIONS.map(([line,cost,role,moves]) => ({dex:line[0],line,cost,role,moves,move:moves[0]}));
   for(const f of ROSTER)f.bossOnly=f.dex===384;
@@ -1409,6 +3060,7 @@ G.TFT = (() => {
     a.pierce=oldPierce;
     if(m.selfShield)shield(b,a,a,a.maxHp*m.selfShield);
     if(m.selfHealing)heal(b,a,a,a.attack*m.selfHealing);
+    if(m.selfDrain)heal(b,a,a,total*m.selfDrain);
     if(m.selfCleanse){a.burn=null;a.slowUntil=0;a.stunUntil=0;}
     if(m.selfMana)a.mana=Math.min(100,a.mana+m.selfMana);
     for(const ally of friends){
