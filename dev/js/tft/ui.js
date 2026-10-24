@@ -3,7 +3,7 @@ G.TFTUI = (() => {
   'use strict';
   const $=id=>document.getElementById(id),E=G.TFT,V=G.TFTVisuals;
   let state=null,selected=null,active=false,frame=0,last=0,paused=false,speed=1,quitPending=false;
-  const DECK_KEY='ps.tft.decks.v1',MATCH_KEY='ps.tft.match.v1',RECORD_KEY='ps.tft.records.v1';
+  const DECK_KEY='ps.tft.decks.v1',MATCH_KEY='ps.tft.match.v1',RECORD_KEY='ps.tft.records.v2';
   let records=loadRecords();
   let saveClock=0,panel='shop',panelsCollapsed=false;
   let decks=loadDecks(),slot=0,picks=new Set(decks[0]),editing=true;
@@ -24,7 +24,7 @@ G.TFTUI = (() => {
     catch(_){} return Array.from({length:3},()=>E.DEFAULT_DECK.slice());
   }
   function loadRecords() {
-    try {const rows=JSON.parse(localStorage.getItem(RECORD_KEY));if(Array.isArray(rows))return rows.filter(r=>r&&typeof r.id==='string'&&r.id.length<=40&&Number.isInteger(r.wave)&&r.wave>0&&r.wave<=E.MAX_WAVE&&Number.isInteger(r.life)&&r.life>=0&&r.life<=50).sort((a,b)=>b.wave-a.wave||b.life-a.life).slice(0,10);}catch(_){}return [];
+    try {const rows=JSON.parse(localStorage.getItem(RECORD_KEY));if(Array.isArray(rows))return rows.filter(r=>r&&typeof r.id==='string'&&r.id.length<=40&&Number.isInteger(r.wave)&&r.wave>0&&r.wave<=E.MAX_WAVE&&Number.isInteger(r.life)&&r.life>=0&&r.life<=5).sort((a,b)=>b.wave-a.wave||b.life-a.life).slice(0,10);}catch(_){}return [];
   }
   function saveRecord() {
     if(!state?.result||!['result','defeat'].includes(state.phase))return;
@@ -34,7 +34,7 @@ G.TFTUI = (() => {
   }
   function renderRecords() {
     $('tft-best').textContent=records.length?'Récord local · Oleada '+records[0].wave:'Supervivencia PvE · Sin límite de oleadas';
-    $('tft-records').innerHTML=records.length?records.map((r,i)=>`<li>${i+1}. Oleada ${r.wave} · ${r.life} PV</li>`).join(''):'<li>Completa una oleada para registrar tu expedición.</li>';
+    $('tft-records').innerHTML=records.length?records.map((r,i)=>`<li>${i+1}. Oleada ${r.wave} · ${r.life} vidas</li>`).join(''):'<li>Completa una oleada para registrar tu expedición.</li>';
   }
   function saveDeck() {
     const deck=[...picks];if(!E.validDeck(deck))return false;
@@ -45,7 +45,7 @@ G.TFTUI = (() => {
   }
   function persist() {
     if(!state)return false;
-    try {localStorage.setItem(MATCH_KEY,E.serialize(state));saveRecord();if($('tft-save-status').textContent!=='Partida guardada en este dispositivo.')$('tft-save-status').textContent='Partida guardada en este dispositivo.';return true;}
+    try {localStorage.setItem(MATCH_KEY,E.serialize(state));saveRecord();if(state.phase==='defeat')submitRanking();if($('tft-save-status').textContent!=='Partida guardada en este dispositivo.')$('tft-save-status').textContent='Partida guardada en este dispositivo.';return true;}
     catch(_){$('tft-save-status').textContent='No se pudo guardar. Mantén esta pestaña abierta para conservar la partida.';return false;}
   }
   function loadMatch() {try{return E.restore(localStorage.getItem(MATCH_KEY));}catch(_){return null;}}
@@ -86,10 +86,10 @@ G.TFTUI = (() => {
     active=true;quitPending=false;document.body.classList.add('tft-active');document.body.classList.toggle('tft-calm',!!G.Settings?.get('calm'));G.UI.chrome(false);G.UI.show('scr-tft');
     if(!state)state=loadMatch();
     paused=state?.phase==='combat';
-    if(state)showMatch();else editDeck();
+    if(state)showMatch();else editDeck();G.TFTRanking?.flush();
     last=0;if(!editing)render();cancelAnimationFrame(frame);frame=requestAnimationFrame(loop);
   }
-  function reset() {if(!saveDeck())return;state=E.create(Date.now(),[...picks]);paused=false;showMatch();persist();}
+  function reset() {if(!saveDeck())return;state=E.create(Date.now(),[...picks]);if(!G.TFT_PREVIEW&&G.DB.online){state.rankOwner=G.DB.fb.uid;state.rankRules=1;}paused=false;showMatch();persist();}
   function close() {
     if(state&&!persist()&&!quitPending){quitPending=true;render();return;}
     active=false;quitPending=false;cancelAnimationFrame(frame);anims.clear();state=null;
@@ -113,7 +113,7 @@ G.TFTUI = (() => {
   function render() {
     if(!state)return;
     const s=state,planning=s.phase==='planning',deployed=s.units.filter(u=>u.pos!==null),u=s.units.find(u=>u.id===selected);
-    $('tft-stats').textContent=`Oleada ${s.round} · ${s.life} PV · ${s.gold} oro · Equipo ${deployed.length}/${s.level}`;
+    $('tft-stats').textContent=`Oleada ${s.round} · ${s.life} vidas · ${s.gold} oro · Equipo ${deployed.length}/${s.level}`;
     const encounter=E.waveInfo(s.round);document.querySelector('#scr-tft .tft-arena').dataset.encounter=encounter.kind;
     $('tft-wave-banner').textContent=s.phase==='defeat'?'Expedición terminada · Oleada '+s.round:'OLEADA '+s.round+' · '+encounter.name;
     $('tft-wave-banner').classList.toggle('hidden',s.phase==='result'||s.phase==='combat'&&s.battle.opening<=0);
@@ -148,6 +148,22 @@ G.TFTUI = (() => {
     syncCells();renderInfo();renderReport();renderScout();renderFinale();
     V.warm(currentUnits());
     paint(0);
+  }
+  let rankBusy=false,rankRetryAt=0;
+  async function submitRanking(force=false) {
+    if(!state||state.phase!=='defeat'||rankBusy)return;
+    const status=$('tft-rank-status'),retry=$('tft-rank-retry');
+    if(!G.TFTRanking?.eligible(state)){status.textContent=G.TFT_PREVIEW?'Pruebas: esta expedición no se publica en el ranking.':'Ranking: empieza una expedición nueva con tu cuenta para participar.';retry.classList.add('hidden');return;}
+    if(state.rankSubmitted){status.textContent='Marca procesada en el ranking TFT. Se conserva tu mejor oleada.';retry.classList.add('hidden');return;}
+    if(!force&&Date.now()<rankRetryAt)return;
+    const expedition=state;rankBusy=true;retry.disabled=true;retry.classList.remove('hidden');status.textContent='Guardando marca en el ranking TFT…';
+    try {
+      G.TFTRanking.enqueue(expedition);const result=await G.TFTRanking.flush();
+      if(state!==expedition)return;
+      if(result.ok&&result.owner===expedition.rankOwner){expedition.rankSubmitted=true;localStorage.setItem(MATCH_KEY,E.serialize(expedition));status.textContent='Marca procesada en el ranking TFT. Se conserva tu mejor oleada.';retry.classList.add('hidden');}
+      else status.textContent='Marca pendiente de conexión. Se reintentará sin perder tu récord local.';
+    } catch(_){if(state===expedition)status.textContent='No se pudo publicar la marca. Conserva esta partida y reintenta.';}
+    finally {rankBusy=false;rankRetryAt=Date.now()+30000;retry.disabled=false;}
   }
   function renderFinale() {
     const show=state.phase==='defeat';
@@ -390,6 +406,9 @@ G.TFTUI = (() => {
   $('tft-fight').onclick=()=>{selected=null;act(()=>E.start(state,{presentation:true}));if(state.phase==='combat')selectPanel('info',true);};
   $('tft-next').onclick=()=>{act(()=>E.next(state));selectPanel('shop');};
   $('tft-intro-skip').onclick=()=>act(()=>E.skipIntro(state));
+  $('tft-rank-retry').onclick=()=>submitRanking(true);
+  $('tft-end-ranking').onclick=()=>{if(!G.DB.online){G.UI.toast('Inicia sesión para consultar el ranking.');return;}close();G.RankingUI.open('tft');};
+  window.addEventListener('online',()=>{if(active)submitRanking(true);});
   $('tft-end-report').onclick=()=>{finaleDismissed=true;renderFinale();selectPanel('report');$('tft-tab-report').focus();};
   $('tft-end-open').onclick=()=>{finaleDismissed=false;renderFinale();$('tft-end-title').focus();};
   $('tft-end-restart').onclick=()=>$('tft-restart').click();

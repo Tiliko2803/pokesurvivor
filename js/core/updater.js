@@ -40,6 +40,7 @@ G.Updater = (() => {
 
   /** ¿Se puede recargar ahora sin cortar nada? */
   function safe() {
+    if (G.TFTUI?.active) return false; // TFT has an independent match clock.
     if (!G.Game || G.Game.state !== 'ui') return false;                   // en partida o en el resumen
     if (['scr-gacha', 'scr-upgrades', 'scr-settings', 'scr-gifts'].some(id => document.getElementById(id) && G.UI.isOpen(id))) return false;
     const fx = document.getElementById('pull-fx');

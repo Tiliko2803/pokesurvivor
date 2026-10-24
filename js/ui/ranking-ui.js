@@ -32,7 +32,8 @@ G.RankingUI = (() => {
     tabs(); load();
   }
 
-  function open() {
+  function open(nextMode) {
+    if(nextMode==='tft'){mode='tft';dex=null;$('rk-poke').value='';}
     if (!G.SocialUI.needOnline()) return;
     G.UI.show('scr-rank', true);
     if (!G.Social.started) G.Social.start();
@@ -52,8 +53,11 @@ G.RankingUI = (() => {
         box.appendChild(b);
       }
     };
-    mk($('rk-mode'), [['s', `<b>${G.Icons.html('user', 16)} Solo</b>`], ['g', `<b>${G.Icons.html('friends', 16)} Grupo</b>`]],
-       mode, k => { mode = k; }, 'gen-tab');
+    mk($('rk-mode'), [['s', `<b>${G.Icons.html('user', 16)} Solo</b>`], ['g', `<b>${G.Icons.html('friends', 16)} Grupo</b>`], ['tft','<b>TFT · Oleadas</b>']],
+       mode, k => { mode = k;if(k==='tft'){dex=null;$('rk-poke').value='';} }, 'gen-tab');
+    $('rk-poke').classList.toggle('hidden',mode==='tft');
+    $('rk-metric').textContent=mode==='tft'?'· oleada alcanzada':'· tiempo aguantado';
+    $('rk-clear').classList.toggle('hidden',!dex);
     mk($('rk-period'), G.Ranking.PERIODS, period, k => {
       period = k;
       if (k !== 'a' && dex) { dex = null; $('rk-poke').value = ''; $('rk-clear').classList.add('hidden'); }
@@ -61,7 +65,7 @@ G.RankingUI = (() => {
     mk($('rk-scope'), [['all', 'Todos'], ['friends', 'Sólo amigos']], scope, k => { scope = k; }, 'chip');
   }
 
-  const fmt = t => t >= 3600 ? Math.floor(t / 3600) + ':' + G.U.mmss(t % 3600).padStart(5, '0') : G.U.mmss(t);
+  const fmt = t => mode==='tft'?(G.I18n.lang==='en'?'Wave ':'Oleada ')+Math.floor(t): t >= 3600 ? Math.floor(t / 3600) + ':' + G.U.mmss(t % 3600).padStart(5, '0') : G.U.mmss(t);
 
   async function load() {
     const my = ++token;
@@ -93,7 +97,7 @@ G.RankingUI = (() => {
     const pn = en ? { d: 'today', w: 'this week', m: 'this month', y: 'this year', a: 'of all time' }[period]
                   : { d: 'de hoy', w: 'de esta semana', m: 'de este mes', y: 'de este año', a: 'de siempre' }[period];
     const mon = dex ? G.DEX_BY[dex].name : '';
-    const where = en ? (mode === 's' ? 'solo' : 'group') + (dex ? ' with ' + mon : '')
+    const where = mode==='tft'?'TFT':en ? (mode === 's' ? 'solo' : 'group') + (dex ? ' with ' + mon : '')
                      : (mode === 's' ? 'en solitario' : 'en grupo') + (dex ? ' con ' + mon : '');
     $('rk-me').innerHTML = !G.Social.me ? 'Elige un apodo (en Amigos) para salir en el ranking.'
       : me && me.out ? (en ? `<span translate="no">You're not in the top 50 ${where} ${pn} yet. Your exact rank is in All-time.</span>`
@@ -112,7 +116,7 @@ G.RankingUI = (() => {
     r.dex.forEach((d, i) => { if (G.DEX_BY[d]) mons.appendChild(G.UI.spriteCanvas(d, 44, 40, { scale: 1, shiny: !!r.shiny[i] })); });
     el.appendChild(mons);
     el.insertAdjacentHTML('beforeend',
-      `<span class="who"><b translate="no">${r.names.map((n, i) => `<a href="#" class="plink" data-u="${esc(r.uids[i] || '')}">${esc(n)}</a>`).join(' · ')}</b><small>Nv. ${r.lv || 1} · ${(r.kills || 0).toLocaleString('es')} derrotados</small></span>
+      `<span class="who"><b translate="no">${r.names.map((n, i) => `<a href="#" class="plink" data-u="${esc(r.uids[i] || '')}">${esc(n)}</a>`).join(' · ')}</b><small>${mode==='tft'?`${r.kills||0} ${G.I18n.lang==='en'?'waves won':'oleadas ganadas'}`:`Nv. ${r.lv || 1} · ${(r.kills || 0).toLocaleString('es')} derrotados`}</small></span>
        <span class="time">${fmt(r.t)}</span>`);
     el.querySelectorAll('.plink').forEach(a => { a.onclick = e => { e.preventDefault(); G.ProfileUI.show(a.dataset.u); }; });
     // Reportar una marca sospechosa (no la tuya). Lo revisa el admin (mod-ui.js).

@@ -73,7 +73,7 @@ G.Ranking = (() => {
 
   /** El filtro por Pokémon sólo existe en el histórico. */
   function board(mode, period, dex) {
-    return mode + '_' + periodIds()[period] + (dex && period === 'a' ? '_p' + dex : '');
+    return mode==='tft'?'s_tft1_'+periodIds()[period]:mode + '_' + periodIds()[period] + (dex && period === 'a' ? '_p' + dex : '');
   }
 
   const col = b => fbx().fs.collection('lb').doc(b).collection('e');
@@ -303,7 +303,7 @@ G.Ranking = (() => {
     const ck = 'f:' + b + ':' + circle.slice().sort().join(',');
     let extra = cacheGet(ck);
     if (extra === undefined) {
-      if (mode === 's') {
+      if (mode !== 'g') {
         const missing = circle.filter(u => !inTop.some(r => r.id === u));
         const docs = await Promise.all(missing.map(u => col(b).doc(u).get().catch(() => null)));
         extra = docs.filter(d => d && d.exists).map(d => rowOf(d.id, d.data()));
@@ -332,10 +332,10 @@ G.Ranking = (() => {
     const c = cacheGet(ck);
     if (c !== undefined) return c;
     // Si este navegador ya sabe que no tienes marca en esta tabla, no se mira.
-    const kb = bests(), mk = b + ':' + (mode === 's' ? fb.uid : '*');
+    const kb = bests(), mk = b + ':' + (mode !== 'g' ? fb.uid : '*');
     if (kb[mk] === 0) { cacheSet(ck, null); return null; }
     let mine = null;
-    if (mode === 's') {
+    if (mode !== 'g') {
       const d = await col(b).doc(fb.uid).get();
       if (d.exists) mine = rowOf(d.id, d.data());
     } else {
@@ -383,6 +383,7 @@ G.Ranking = (() => {
     const ids = periodIds();
     const boards = new Set();
     for (const m of ['s', 'g']) for (const [p] of PERIODS) boards.add(m + '_' + ids[p]);
+    for(const [p] of PERIODS)boards.add('s_tft1_'+ids[p]);
     for (const k of Object.keys(bests())) boards.add(k.split(':')[0]);
     await Promise.all([...boards].map(b => fb.fs.runTransaction(async tx => {
       const s = await tx.get(sumRef(b));
@@ -457,9 +458,10 @@ G.Ranking = (() => {
 
   /** Admin: quita la marca de un jugador o equipo de todas las tablas de ahora (y de `also`). */
   async function removeEverywhere(e, mode, dexes = [], also = null) {
+    if(also?.startsWith('s_tft1_'))mode='tft';
     const ids = periodIds();
-    const boards = new Set(PERIODS.map(([p]) => mode + '_' + ids[p]));
-    for (const d of dexes) boards.add(mode + '_' + ALL + '_p' + d);
+    const boards = new Set(PERIODS.map(([p]) => mode==='tft'?'s_tft1_'+ids[p]:mode + '_' + ids[p]));
+    if(mode!=='tft')for (const d of dexes) boards.add(mode + '_' + ALL + '_p' + d);
     if (also) boards.add(also);
     await Promise.all([...boards].map(b => removeEntry(b, e)));
   }
@@ -474,6 +476,7 @@ G.Ranking = (() => {
     const all = await fs.collection('lbs').get();
     let rows = 0, boards = 0, n = 0;
     for (const d of all.docs) {
+      if(d.id.startsWith('s_tft1_'))continue;
       n++;
       if (onProgress && n % 50 === 0) onProgress(n, all.size);
       const top = d.data().top || {};
@@ -511,6 +514,10 @@ G.Ranking = (() => {
       t1: (v.tickets || {}).t1 || 0, t10: (v.tickets || {}).t10 || 0, owned: Object.keys(v.owned || {}).length }; });
   }
 
-  return { PERIODS, periodIds, board, runStarted, submitSolo, submitGroup, top, myRank, removeMine,
+  function invalidateBoard(b) {
+    for(const k of [...mem.keys()])if(k.includes(b))mem.delete(k);
+    try {for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith('ps.rk.c.')&&k.includes(b))localStorage.removeItem(k);}const known=bests();for(const k of Object.keys(known))if(k.startsWith(b+':'))delete known[k];saveBests(known);}catch(_){}
+  }
+  return { invalidateBoard, PERIODS, periodIds, board, runStarted, submitSolo, submitGroup, top, myRank, removeMine,
            report, reported, isAdmin, reports, entryInfo, removeEntry, purgeAbove, removeEverywhere, setMarked, dismiss, markedAccounts };
 })();

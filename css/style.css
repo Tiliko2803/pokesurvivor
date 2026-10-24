@@ -1010,3 +1010,250 @@ a.btn { text-decoration: none; display: inline-block; color: var(--ink); }
 @media (max-height: 460px) {
   #scr-over .run-over-box { max-height: calc(100dvh - 12px); }
 }
+
+/* TFT alpha — scrollable touch-first mode, including portrait Android. */
+body.tft-active #rotate { display:none!important; }
+#scr-tft { display:block; overflow:auto; z-index:45; padding:12px; background:#0b1425; }
+.tft-shell { max-width:1120px; margin:0 auto; padding-bottom:24px; }
+.tft-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.tft-header h2 { margin:0; color:#ffe08a; font-size:26px; }
+.tft-header h2 small { font:11px sans-serif; color:#a8c8ed; }
+.tft-header p { margin:7px 0 13px; }
+.tft-layout { display:grid; grid-template-columns:minmax(280px,1.1fr) minmax(300px,1fr); gap:20px; align-items:start; }
+.tft-board-wrap { width:100%; max-width:580px; aspect-ratio:1; position:relative; margin:10px auto; border:2px solid #587091; border-radius:10px; overflow:hidden; }
+#tft-board { display:block; width:100%; height:100%; }
+#tft-cells { position:absolute; inset:0; display:grid; grid-template-columns:repeat(6,1fr); grid-template-rows:repeat(6,1fr); }
+#tft-cells button { background:transparent; border:0; padding:0; min-width:0; cursor:pointer; border-radius:3px; }
+#tft-cells button.tft-selected-cell { box-shadow:inset 0 0 0 3px #ffe08a; }
+#tft-cells button:focus-visible { outline:3px solid #ffe08a; outline-offset:-4px; }
+#tft-cells button:not(:disabled):hover { background:#ffffff12; }
+.tft-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.tft-actions .btn { min-height:42px; white-space:normal; }
+.tft-hint { font-size:15px; line-height:1.35; min-height:40px; color:#c4d4e9; }
+.tft-management h3 { margin:12px 0 8px; font-size:19px; }
+#tft-bench { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+#tft-shop { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:5px; margin-bottom:10px; }
+.tft-card { color:#edf6ff; background:#1b2d49; border:1px solid #4b678d; border-radius:8px; min-width:0; padding:3px 2px 7px; font:inherit; display:flex; flex-direction:column; align-items:center; cursor:pointer; }
+.tft-card:disabled { opacity:.55; cursor:default; }
+.tft-card b { font-size:13px; overflow-wrap:anywhere; }
+.tft-card span { color:#ffe08a; font-size:14px; }
+.tft-card small { font-size:10px; line-height:1.25; }
+.tft-card canvas { display:block; width:100%; max-width:110px; height:auto; image-rendering:pixelated; }
+.tft-card.tft-selected { border:2px solid #ffe08a; background:#31475c; }
+.tft-empty { justify-content:center; font-size:12px; opacity:.55; cursor:default; }
+.tft-bench-empty { min-height:35px; border:1px dashed #3d5575; border-radius:7px; text-align:center; color:#587091; }
+#tft-traits { display:flex; gap:6px; flex-wrap:wrap; }
+.tft-trait { display:block; border:1px solid #3a506b; border-radius:6px; padding:5px 8px; font-size:14px; color:#9cacc4; }
+.tft-trait.on { color:#b6ffdf; border-color:#5caa8c; background:#123b36; }
+.tft-trait small { display:block; font-size:11px; }
+.tft-rules { margin-top:16px; color:#bfcee3; font-size:14px; line-height:1.4; }
+.tft-rules summary { cursor:pointer; color:#ffe08a; padding:10px 0; }
+.tft-notice { background:#523545; border:1px solid #eead8f; border-radius:8px; padding:12px; margin-bottom:12px; }
+.tft-notice .tft-actions { margin-top:8px; }
+#tft-result { color:#ffe08a; line-height:1.4; }
+@media(max-width:700px) {
+ #scr-tft { padding:8px; }
+ .tft-layout { grid-template-columns:minmax(0,1fr); gap:6px; }
+ .tft-header h2 { font-size:22px; }
+ .tft-header p { font-size:14px; }
+ .tft-actions .btn { font-size:14px; padding:7px 10px; }
+ .tft-hint { font-size:14px; min-height:0; }
+ #tft-shop .tft-card b { font-size:12px; }
+ #tft-bench { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
+
+/* TFT decks: three local slots, ten complete evolution families per deck. */
+#tft-deck-panel { max-width:1000px; margin:15px auto; }
+#tft-deck-panel .tft-actions { margin:12px 0; }
+#tft-deck-filter { width:auto; max-width:160px; }
+#tft-deck-list { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; }
+#tft-deck-list .tft-card { padding:8px; min-height:150px; }
+#tft-deck-list .tft-card small { font-size:12px; color:#c1d3eb; }
+#tft-deck-list .tft-card b { font-size:16px; }
+#tft-deck-status { color:#a9f3cd; }
+@media(max-width:700px) {
+ #tft-deck-list { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+ #tft-deck-list .tft-card { padding:5px; min-height:145px; }
+ #tft-deck-list .tft-card b { font-size:14px; }
+ #tft-deck-list .tft-card small { font-size:10px; }
+}
+
+.tft-unit-info { margin-top:14px; padding:10px 12px; border:1px solid #526d8f; border-radius:10px; background:#14283d; }
+.tft-unit-info h3 { color:#ffe08a; margin:0 0 7px; }
+.tft-unit-info p { font-size:14px; line-height:1.4; margin:8px 0; }
+.tft-unit-info dl { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:10px 0; }
+.tft-unit-info dt { color:#adc4df; font-size:12px; }
+.tft-unit-info dd { margin:2px 0 0; font-size:17px; }
+#tft-evolution { display:flex; align-items:center; justify-content:center; border:2px solid #ffe08a; border-radius:10px; background:#253553; color:#ffe08a; margin:10px 0; padding:5px; animation:tft-evolve .6s ease-out; }
+#tft-evolution canvas { width:65px; height:50px; object-fit:contain; image-rendering:pixelated; }
+#tft-evolution p { margin:4px 0; font-size:14px; }
+@keyframes tft-evolve { from { transform:scale(.92); opacity:.3; } to { transform:scale(1); opacity:1; } }
+@media(prefers-reduced-motion:reduce) { #tft-evolution { animation:none; } }
+
+.tft-beats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:10px; font-size:13px; color:#adc2dc; }
+.tft-beats span { padding:7px 4px; border:1px solid #3d5474; border-radius:8px; text-align:center; background:#122338; }
+.tft-beats b { display:inline-block; margin-right:3px; color:#fff; }
+.tft-beats[data-beat="1"] [data-pulse="1"],.tft-beats[data-beat="2"] [data-pulse="2"],.tft-beats[data-beat="3"] [data-pulse="3"],.tft-beats[data-beat="4"] [data-pulse="4"] { color:#ffe08a; border-color:#ffe08a; background:#3c3550; box-shadow:inset 0 0 0 1px #ffe08a55; }
+
+.tft-report { margin-top:12px; padding:10px; background:#152840; border:1px solid #557192; border-radius:9px; }
+.tft-report summary { cursor:pointer; color:#ffe08a; padding:5px 0 10px; font-size:18px; }
+.tft-report p { font-size:13px; line-height:1.4; }
+.tft-report-scroll { overflow-x:auto; max-width:100%; }
+.tft-report table { width:100%; min-width:450px; border-collapse:collapse; font-size:13px; }
+.tft-report th,.tft-report td { padding:8px 5px; border-bottom:1px solid #365371; text-align:right; }
+.tft-report th:first-child,.tft-report td:first-child { text-align:left; }
+.tft-report th { color:#b6d4f4; }
+.tft-report-total { color:#ffe08a; font-weight:bold; }
+.tft-report [aria-pressed="true"] { border-color:#ffe08a; color:#ffe08a; }
+body.tft-calm #tft-evolution { animation:none; }
+
+.tft-ability { margin-top:12px; padding:12px; border-left:3px solid #77bfff; border-radius:8px; background:#102037; }
+.tft-ability.tft-entry { border-color:#ffe08a; }
+.tft-ability small { color:#adc4df; font-size:11px; letter-spacing:.5px; }
+.tft-ability h4 { margin:6px 0; font-size:17px; color:#ffe08a; }
+.tft-ability p { margin:0; }
+.tft-entrances { margin-top:10px; padding:12px; border:1px solid #ffe08a; border-radius:10px; background:#26374e; color:#ffe08a; font-size:14px; line-height:1.6; }
+#tft-scout .tft-actions { gap:5px; }
+#tft-scout .btn { white-space:normal; text-align:left; }
+
+/* Fixed arena: only the chosen management pane scrolls. */
+#scr-tft { padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)); overflow:hidden; height:100dvh; }
+.tft-shell { height:100%; max-width:1480px; padding:0; display:flex; flex-direction:column; gap:6px; min-height:0; }
+.tft-header { flex:none; gap:8px; }
+.tft-header h2 { font-size:19px; line-height:1.2; }
+.tft-header p { font-size:12px; margin:4px 0 0; line-height:1.4; }
+.tft-header .btn { min-height:36px; padding:6px 12px; }
+#tft-deck-panel { flex:1; min-height:0; overflow:auto; margin:0; width:100%; overscroll-behavior:contain; }
+#tft-match { flex:1; min-height:0; }
+.tft-layout { height:100%; grid-template-columns:minmax(0,1fr) minmax(300px,360px); gap:12px; align-items:stretch; }
+.tft-arena { min-height:0; min-width:0; display:flex; flex-direction:column; align-items:stretch; gap:5px; }
+.tft-toolbar { justify-content:center; gap:6px; flex:none; font-size:13px; }
+.tft-actions .btn { min-height:34px; padding:6px 9px; font-size:12px; }
+.tft-toolbar .btn { min-height:30px; }
+.tft-beats { margin:0; gap:4px; flex:none; font-size:11px; }
+.tft-beats span { padding:4px 2px; }
+.tft-board-wrap { flex:none; width:min(100%,calc(100dvh - 202px)); max-width:760px; margin:0 auto; border-color:#3e607b; border-radius:12px; background:#10243c; }
+.tft-hint { min-height:0; margin:0; height:17px; line-height:17px; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tft-primary { justify-content:center; flex:none; }
+.tft-primary .btn { min-height:34px; }
+.tft-board-overlay { position:absolute; left:5px; right:5px; bottom:5px; z-index:2; pointer-events:none; }
+#tft-entrances { margin:0; padding:6px 8px; background:#142940ed; font-size:10px; line-height:1.5; max-height:50px; overflow:hidden; border-radius:7px; }
+#tft-evolution { margin:0; padding:3px; background:#253553ee; }
+#tft-evolution p { font-size:11px; }
+#tft-evolution canvas { width:48px; height:38px; }
+.tft-management { min-width:0; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:auto minmax(0,1fr); gap:5px; background:#102036; border:1px solid #304a66; border-radius:12px; padding:7px; overflow:hidden; }
+.tft-tabs { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:3px; min-width:0; }
+.tft-tab { min-width:0; padding:9px 2px; font:inherit; font-size:11px; color:#b5c8df; border:1px solid transparent; background:#172d46; border-radius:6px; cursor:pointer; }
+.tft-tab[aria-selected="true"] { color:#ffe08a; border-color:#d2ad55; background:#34404a; }
+.tft-tab:focus-visible { outline:2px solid #ffe08a; outline-offset:-2px; }
+.tft-panel-toggle { grid-column:1/-1; grid-row:2; justify-self:end; font-size:10px!important; padding:3px 7px!important; min-height:24px!important; }
+.tft-panel-body { grid-column:1/-1; grid-row:3; min-height:0; overflow:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+.tft-management { grid-template-rows:auto auto minmax(0,1fr); }
+.tft-pane { min-width:0; padding:0 2px 6px; }
+.tft-pane h3 { font-size:14px; margin:8px 0; }
+.tft-pane .tft-unit-info { margin:0; padding:9px; }
+.tft-pane .tft-report { margin:0; padding:6px; }
+.tft-pane .tft-report summary { font-size:14px; }
+.tft-pane p { font-size:12px; }
+.tft-pane .tft-rules { margin-top:8px; font-size:12px; }
+#tft-shop .tft-card canvas { max-height:60px; object-fit:contain; }
+#tft-shop .tft-card small { display:none; }
+#tft-shop .tft-card b { font-size:10px; }
+#tft-shop .tft-card span { font-size:11px; }
+#tft-shop .tft-card { min-height:90px; padding:2px 1px 6px; }
+#tft-bench .tft-card canvas { max-height:52px; object-fit:contain; }
+#tft-bench .tft-card small { display:none; }
+#tft-bench .tft-card b { font-size:11px; }
+.tft-unit-actions { margin:8px 0; }
+.tft-trait { font-size:11px; padding:5px 6px; }
+.tft-trait small { font-size:10px; }
+.tft-management.collapsed .tft-panel-body { display:none; }
+.tft-layout.panel-collapsed { grid-template-columns:minmax(0,1fr) 88px; }
+.tft-management.collapsed { grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto; align-content:start; }
+.tft-management.collapsed .tft-tabs { grid-template-columns:minmax(0,1fr); }
+#tft-quit { position:absolute; top:65px; left:12px; right:12px; z-index:5; }
+@media (max-width:700px) and (orientation:portrait) {
+ .tft-layout { grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); gap:6px; }
+ .tft-board-wrap { width:min(100%,calc(100dvh - 320px)); }
+ .tft-header h2 { font-size:16px; }
+ .tft-header p { font-size:11px; }
+ .tft-management { padding:5px; gap:4px; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:auto minmax(0,1fr); }
+ .tft-tabs { grid-column:1; grid-row:1; }
+ .tft-tab { font-size:10px; padding:8px 1px; }
+ .tft-panel-toggle { grid-column:2; grid-row:1; align-self:center; font-size:9px!important; max-width:55px; white-space:normal; }
+ .tft-panel-body { grid-row:2; }
+ .tft-pane h3 { display:none; }
+ .tft-pane .tft-unit-info h3 { display:block; }
+ .tft-pane .tft-unit-info dl { margin:5px 0; }
+ #tft-shop .tft-card { min-height:82px; }
+ #tft-shop .tft-card canvas { max-height:45px; }
+ .tft-layout.panel-collapsed { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; }
+ .panel-collapsed .tft-arena { justify-content:center; }
+ .panel-collapsed .tft-board-wrap { width:min(100%,calc(100dvh - 190px)); }
+ .tft-management.collapsed { grid-template-columns:minmax(0,1fr) auto; grid-template-rows:auto; }
+ .tft-management.collapsed .tft-tabs { grid-template-columns:repeat(5,minmax(0,1fr)); }
+}
+@media (orientation:landscape) and (max-height:540px) {
+ .tft-header h2 { font-size:14px; }
+ .tft-header>div { display:flex; align-items:center; gap:12px; }
+ .tft-header p { font-size:11px; margin:0; }
+ .tft-header .btn { min-height:27px; font-size:11px; padding:4px 8px; }
+ .tft-layout { grid-template-columns:minmax(0,1fr) minmax(270px,36%); gap:8px; }
+ .tft-board-wrap { width:min(100%,calc(100dvh - 133px)); }
+ .tft-arena { gap:3px; }
+ .tft-toolbar { font-size:11px; }
+ .tft-toolbar .btn { min-height:26px; font-size:10px; padding:3px 7px; }
+ .tft-beats { font-size:10px; }
+ .tft-beats span { padding:2px; }
+ .tft-hint { display:none; }
+ .tft-primary .btn { min-height:28px; font-size:11px; padding:3px 8px; }
+ .tft-management { padding:5px; }
+ .tft-tab { font-size:10px; padding:7px 1px; }
+ .tft-pane h3 { font-size:12px; }
+}
+@media (orientation:landscape) and (max-width:650px) {
+ .tft-toolbar #tft-phase { max-width:70px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:10px; }
+ .tft-toolbar { gap:4px; }
+}
+
+/* TFT survival presentation: overlays keep the board and controls in place. */
+.tft-record-label { font-size:10px!important; color:#8bc5c8; margin:2px 0 0!important; }
+.tft-wave-banner { position:absolute; top:8px; left:8px; right:8px; margin:auto; width:max-content; max-width:90%; padding:6px 12px; border:1px solid #6d8f9c; border-radius:8px; background:#102333e8; color:#d9f0e8; font-size:12px; text-align:center; pointer-events:none; box-shadow:0 3px 14px #0006; }
+.tft-arena[data-encounter="elite"] .tft-wave-banner { border-color:#bd88ed; color:#e5c6ff; background:#29203aee; }
+.tft-arena[data-encounter="boss"] .tft-wave-banner { border-color:#f1bf64; color:#ffe3a3; background:#38251bee; }
+.tft-arena[data-encounter="boss"] .tft-board-wrap { border-color:#dba960; box-shadow:0 0 18px #c9902b28; }
+#tft-records { padding-left:0; list-style:none; color:#c2d7de; font-size:12px; line-height:1.8; }
+@media(max-height:420px) { .tft-record-label { display:none; } .tft-wave-banner { padding:3px 8px; font-size:10px; } }
+
+/* TFT boss introductions and expedition finale. All timing follows the paused simulation. */
+.tft-boss-intro { position:absolute; inset:0; z-index:6; overflow:hidden; pointer-events:none; background:radial-gradient(ellipse at 50% 36%,transparent 18%,#070d1b99 95%); border-block:clamp(8px,3vw,22px) solid #070c16; }
+.tft-boss-card { position:absolute; left:-3%; right:-3%; bottom:17%; padding:12px 8%; background:linear-gradient(100deg,#edb857 0%,#f8d580 70%,#b77d35); color:#171b27; border-block:3px solid #fff0be; box-shadow:0 8px 0 #050b17aa; text-align:left; clip-path:polygon(0 0,100% 4%,98% 100%,1% 94%); }
+.tft-boss-card small,.tft-boss-card strong,.tft-boss-card span { display:block; }
+.tft-boss-card small { font:700 clamp(8px,1.5vw,12px)/1.4 var(--font); letter-spacing:.16em; }
+.tft-boss-card strong { font:900 clamp(24px,5vw,52px)/1.05 var(--font); text-transform:uppercase; letter-spacing:-.04em; overflow-wrap:anywhere; }
+.tft-boss-card span { margin-top:4px; font:700 clamp(10px,2vw,17px)/1.2 var(--font); }
+#tft-intro-skip { position:absolute; bottom:3%; right:4%; pointer-events:auto; background:#0d192be8; color:#fff; min-height:32px; }
+.tft-finale { position:absolute; inset:0; z-index:7; overflow:auto; overscroll-behavior:contain; background:radial-gradient(ellipse at 50% 0,#29324a,#0c1727 70%); color:#eef5f9; text-align:center; padding:clamp(8px,2vw,22px); }
+.tft-end-content { max-width:480px; margin:auto; }
+.tft-end-kicker { color:#e8bc7a; letter-spacing:.18em; font:700 10px/1.5 var(--font); }
+#tft-end-title { margin:6px 0; font:800 clamp(15px,2.5vw,25px)/1.2 var(--font); }
+.tft-end-score { margin:8px 0 0; color:#c1d3e8; font:700 12px/1 var(--font); letter-spacing:.15em; }
+.tft-end-score strong { display:block; color:#ffe0a2; font:900 clamp(36px,8vw,76px)/1.1 var(--font); letter-spacing:-.06em; }
+#tft-end-record { color:#d6bd84; font:12px/1.4 var(--font); margin:4px 0 12px; }
+.tft-end-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+.tft-end-stats div { background:#ffffff08; border:1px solid #a9c0de26; padding:8px 3px; border-radius:8px; min-width:0; }
+.tft-end-stats b,.tft-end-stats span { display:block; overflow-wrap:anywhere; font:700 clamp(12px,2.5vw,20px)/1.3 var(--font); }
+.tft-end-stats span { font:10px/1.4 var(--font); color:#aac0d7; }
+.tft-end-mvp { display:flex; align-items:center; justify-content:center; gap:8px; margin:10px 0; padding:5px; background:#dfb66b0a; border:1px solid #dfb66b4d; border-radius:10px; text-align:left; }
+.tft-end-mvp canvas { width:82px; height:52px; image-rendering:pixelated; flex-shrink:0; }
+.tft-end-mvp small,.tft-end-mvp b,.tft-end-mvp span { display:block; font:10px/1.5 var(--font); }
+.tft-end-mvp small { color:#c4ad81; font-size:8px; letter-spacing:.05em; }
+.tft-end-mvp b { font-size:15px; }
+.tft-end-roster { font:11px/1.4 var(--font); text-align:left; padding:6px; }
+#tft-end-team { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); text-align:center; gap:6px; }
+#tft-end-team canvas { width:72px; height:46px; image-rendering:pixelated; }
+#tft-end-team span,#tft-end-team small { display:block; font-size:9px; }
+.tft-end-local { color:#8ba6c1; font:10px/1.4 var(--font); }
+.tft-end-actions { display:flex; justify-content:center; gap:6px; position:sticky; bottom:0; background:#0c1727ed; padding:6px 0; flex-wrap:wrap; }
+.tft-end-actions .btn { min-height:34px; font-size:11px; padding:6px 10px; }
+@media(max-width:400px) { .tft-end-mvp { margin:6px 0; } #tft-end-record { margin-bottom:6px; } .tft-boss-card { padding-block:8px; } }

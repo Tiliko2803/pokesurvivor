@@ -6,9 +6,142 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT llega al Live', 'TFT goes live'], new: [
+    ['TFT · Oleadas infinitas llega al menú principal con evoluciones, rangos de Bronce/Plata/Oro, mazos de diez familias, economía, jefes en solitario y resumen de expedición. Empiezas con cinco vidas y cada derrota, incluido el tiempo agotado, consume exactamente una.',
+     'TFT · Endless Waves joins the main menu with evolutions, Bronze/Silver/Gold ranks, ten-family decks, economy, solo bosses and an expedition summary. Start with five lives; every loss, including a timeout, costs exactly one.'],
+    ['Nueva categoría TFT · Oleadas en el ranking, ordenada por oleada alcanzada, con tablas diarias, semanales, mensuales e históricas y filtro de amigos. Participan expediciones nuevas iniciadas con tu cuenta. Las marcas sin conexión quedan pendientes y se reintentan. Invitados, pruebas y partidas anteriores conservan récord local.',
+     'New TFT · Waves leaderboard category, ordered by wave reached, with daily, weekly, monthly and all-time tables and a friends filter. New expeditions started on your account participate. Offline scores queue and retry. Guests, previews and older games retain local records.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: jefes en solitario', 'TFT: solo bosses'], chg: [
+    ['Los jefes llegan solos, sin esbirros, y ocupan una posición más centrada. Su sprite es un 22% más grande; la entrada con zoom se conserva. Su multiplicador de vida pasa de ×3 a ×3,5 para compensar parte de los apoyos retirados, sin aumentar su daño. La preparación guardada se adapta; los combates en curso continúan intactos.',
+     'Bosses arrive alone, without escorts, in a more central position. Their sprite is 22% larger and the zoom introduction remains. Their health multiplier rises from ×3 to ×3.5 to partly compensate for removed support, without increasing damage. Saved preparation adapts; ongoing fights remain intact.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: cada jefe tiene su entrada', 'TFT: every boss makes an entrance'], new: [
+    ['Presentaciones de jefe con zoom al Pokémon, banda de nombre inclinada y subtítulo propio. Duran 2,8 segundos, pueden saltarse y respetan pausa, velocidad y movimiento reducido. El combate y las habilidades de entrada esperan al final de la presentación; al volver a una partida guardada se conserva el punto de la secuencia.',
+     'Boss introductions zoom onto the Pokémon with an angled name banner and a unique subtitle. They last 2.8 seconds, can be skipped and respect pause, speed and reduced motion. Combat and entry abilities wait until the introduction ends; saved games preserve the sequence position.'],
+    ['Nuevo resumen de fin de expedición: oleada alcanzada, marca local, victorias, daño y curación acumulados, Pokémon con mayor daño y equipo final. Acceso directo a otra partida y al informe detallado; puedes volver a abrir el resumen.',
+     'New expedition finale: wave reached, local best, wins, cumulative damage and healing, top damage Pokémon and final team. Direct access to a new game and the detailed report; the summary can be reopened.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: Bronce, Plata y Oro', 'TFT: Bronze, Silver and Gold'], new: [
+    ['Nueve rangos: las tres estrellas de Bronce mantienen las evoluciones; 3/4/5/6/7/8 copias adicionales desbloquean los seis rangos de Plata y Oro. Cada rango adicional multiplica vida y daño por 1,18. La ficha muestra el entrenamiento y vender devuelve todas las copias invertidas. Los enemigos conservan sus tres rangos actuales.',
+     'Nine ranks: three Bronze stars keep evolutions; 3/4/5/6/7/8 additional copies unlock six Silver and Gold ranks. Each additional rank multiplies health and damage by 1.18. Unit details show training and selling refunds all invested copies. Enemies keep their existing three ranks.']
+  ], chg: [
+    ['Interés de +1 por cada 5 de oro ahorrados, sin máximo de +5. El ingreso base aumenta en 1 cada cinco oleadas, hasta 20; especiales dan 4 extra y jefes 10 más 2 por cada diez oleadas. Cada tienda ofrece un máximo de dos copias por familia y excluye las completadas en Oro de tres estrellas.',
+     'Interest grants +1 per 5 saved gold, without the old +5 cap. Base income increases by 1 every five waves, up to 20; specials grant 4 extra and bosses 10 plus 2 per ten waves. Each shop offers at most two copies per family and excludes completed three-star Gold families.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: oleadas más justas', 'TFT: fairer waves'], chg: [
+    ['Máximo dos tanques enemigos por oleada, contando también su IA. Los tanques enemigos hacen un 20% menos de daño. La vida escala un 2,5% y el ataque un 1,5% por oleada, en lugar de un 3,5% ambos. Las dos estrellas empiezan en la oleada 6 y las tres en la 25, con progresión gradual. Los jefes mantienen su progresión propia.',
+     'At most two enemy tanks per wave, including tank AI. Enemy tanks deal 20% less damage. Health scales by 2.5% and attack by 1.5% per wave, instead of 3.5% for both. Two stars start on wave 6 and three stars on wave 25, progressing gradually. Bosses keep their own progression.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: supervivencia PvE infinita', 'TFT: endless PvE survival'], new: [
+    ['El desafío de 12 rondas se convierte en oleadas infinitas: Enjambre, Vanguardia, Artillería, Bastión y Expedición, especiales cada 5 y jefes cada 10. Articuno, Zapdos, Moltres, Kyogre, Groudon y Rayquaza rotan como jefes. Hasta 6 enemigos y un sanador por encuentro; dificultad creciente.',
+     'The 12-round challenge becomes endless waves: Swarm, Vanguard, Artillery, Bastion and Expedition, specials every 5 waves and bosses every 10. Articuno, Zapdos, Moltres, Kyogre, Groudon and Rayquaza rotate as bosses. Up to 6 enemies and one healer per encounter, with increasing difficulty.'],
+    ['Récords locales por oleada alcanzada y PV restantes, preparación sin límite de tiempo, botín extra en especiales y jefes, y pérdida de hasta 12 PV por derrota. Los equipos se curan entre oleadas y el interés conserva su máximo de 5 oro. Los jefes reciben la mitad de duración de aturdimiento.',
+     'Local records by wave reached and remaining HP, unlimited preparation time, extra loot for specials and bosses, and up to 12 HP lost per defeat. Teams heal between waves and interest remains capped at 5 gold. Bosses take half stun duration.']
+  ], chg: [
+    ['Los legendarios quedan reservados para los enemigos. Rayquaza sale del editor y la tienda; los mazos anteriores se ajustan y sus copias compradas se reembolsan. Las victorias antiguas permiten continuar; los combates antiguos vuelven a preparación al convertirse. El guardado de expediciones largas conserva el informe acumulado con un historial reciente limitado.',
+     'Legendaries are reserved for enemies. Rayquaza leaves the editor and shop; older decks are adjusted and purchased copies are refunded. Old victories can continue; old active battles return to preparation on conversion. Long-run saves keep cumulative reports with a bounded recent history.'],
+    ['Animaciones más cuidadas: impulso de ataque, retroceso al impacto, barras de vida con caída gradual, trazos de lanzamiento, destellos de impacto y distintivos de oleada especial y jefe. Se respetan pausa, velocidad, modo tranquilo y gráficos bajos.',
+     'More polished animations: attack lunges, impact recoil, trailing health bars, casting effects, impact sparks and special-wave and boss badges. Pause, speed, calm mode and low graphics are respected.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: Talonflame y Alas Vendaval', 'TFT: Talonflame and Gale Wings'], new: [
+    ['La línea Fletchling → Fletchinder → Talonflame llega por 2 oro. Alas Vendaval da prioridad dentro de los pulsos de ataque mientras conserve toda la vida; perder vida la desactiva y curarse al máximo la recupera. La ficha muestra si está activa. Es una adaptación para TFT y respeta alcance y aturdimientos.',
+     'The Fletchling → Fletchinder → Talonflame line joins for 2 gold. Gale Wings grants priority within attack beats while at full HP; losing HP disables it and healing to full restores it. The unit card shows whether it is active. This TFT adaptation respects range and stuns.'],
+    ['Al entrar, Viento Afín aumenta la cadencia aliada un 8/12/16% durante 2 segundos según las estrellas, sin acumular multiplicadores. Básicos Voladores, Picotazo, Nitrocarga con quemadura y Pájaro Osado en área completan la familia. El roster alcanza 80 familias.',
+     'On entry, Tailwind increases allied cadence by 8/12/16% for 2 seconds based on stars, without stacking multipliers. Flying basics, Peck, burning Flame Charge and area Brave Bird complete the family. The roster reaches 80 families.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: familias por orden de Pokédex', 'TFT: families in Pokédex order'], chg: [
+    ['El editor de mazos ordena las familias por el número de Pokédex de su Pokémon inicial, también al filtrar por precio.',
+     'The deck editor sorts families by the Pokédex number of their starting Pokémon, including when filtering by price.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: 25 familias y más opciones de un oro', 'TFT: 25 families and more one-gold options'], new: [
+    ['El roster crece de 54 a 79 familias. Diez nuevas cuestan 1 oro: Nidoking, Clefable, Arcanine, Poliwrath, Azumarill, Breloom, Emboar, Chesnaught, Rillaboom y Corviknight con sus preevoluciones. Otras ocho cuestan 2, cinco cuestan 3 y dos cuestan 4.',
+     'The roster grows from 54 to 79 families. Ten new families cost 1 gold: Nidoking, Clefable, Arcanine, Poliwrath, Azumarill, Breloom, Emboar, Chesnaught, Rillaboom and Corviknight with their pre-evolutions. Eight more cost 2, five cost 3 and two cost 4.'],
+    ['Se completan los 27 iniciales de las nueve generaciones. También llegan Weavile, Snorlax, Aggron, Rotom, Ferrothorn, Chandelure, Aegislash y Archaludon. Todas las familias tienen entrada propia y movimientos para sus tres niveles. Rotom mantiene su forma base al potenciarse.',
+     'All 27 regional starters across nine generations are represented. Weavile, Snorlax, Aggron, Rotom, Ferrothorn, Chandelure, Aegislash and Archaludon also join. Every family has its own entrance and moves at all three ranks. Rotom keeps its base form when empowered.'],
+    ['Puntas de Acero de Ferrothorn devuelve parte del daño de ataques básicos adyacentes, sin cadenas de reflejo; Descanso de Snorlax lo cura y limpia sus estados. Las habilidades son adaptaciones para TFT y sus fichas describen el efecto real.',
+     'Ferrothorn Steel Spikes returns some damage from adjacent basic attacks without reflection chains; Snorlax Rest heals itself and clears its statuses. Abilities are TFT adaptations and their cards describe the actual effects.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: volver a jugar al terminar', 'TFT: start again after a finished match'], fix: [
+    ['Nueva partida queda junto al tablero, accesible al terminar y al recuperar una victoria o derrota guardada. Ya no está escondida dentro de Equipo y Opciones. Reinicia la partida TFT y conserva tus mazos.',
+     'New match sits beside the board, accessible after finishing and when restoring a saved victory or defeat. It is no longer hidden inside Team and Options. It resets the TFT match while keeping your decks.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: veinte familias nuevas', 'TFT: twenty new evolution families'], new: [
+    ['El roster crece de 34 a 54 familias, repartidas entre las nueve generaciones. Se suman Gyarados, Dragonite, Typhlosion, Feraligatr, Sceptile, Milotic, Torterra, Infernape, Empoleon, Garchomp, Serperior, Samurott, Hydreigon, Greninja, Goodra, Decidueye, Incineroar, Kommo-o, Dragapult y Baxcalibur con sus preevoluciones.',
+     'The roster grows from 34 to 54 families across all nine generations. Gyarados, Dragonite, Typhlosion, Feraligatr, Sceptile, Milotic, Torterra, Infernape, Empoleon, Garchomp, Serperior, Samurott, Hydreigon, Greninja, Goodra, Decidueye, Incineroar, Kommo-o, Dragapult and Baxcalibur join with their pre-evolutions.'],
+    ['Cada familia tiene habilidades adaptadas a TFT, movimientos en sus tres niveles y una entrada propia: barreras, oleadas, quemaduras, ralentizaciones, perforación y control. Magikarp se protege; al evolucionar, Gyarados intimida y lanza una oleada. La intimidación compartida con Salamence e Incineroar no se acumula.',
+     'Each family has TFT-adapted abilities, moves at all three ranks and its own entrance: barriers, waves, burns, slows, piercing and control. Magikarp protects itself; after evolving, Gyarados intimidates and launches a wave. Intimidation shared with Salamence and Incineroar does not stack.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: más entradas activas y CC más claro', 'TFT: more active entrances and clearer crowd control'], new: [
+    ['Entradas activas para las familias de Charizard, Blastoise, Raichu, Gengar, Gardevoir, Metagross, Lapras, Tyranitar y Swampert: fuego, oleadas, descargas, sombra, barreras, meteoros y arena. Se suman a la entrada sísmica de Excadrill; mejoran con estrellas y respetan el alcance y los bandos.',
+     'Active entrances for the Charizard, Blastoise, Raichu, Gengar, Gardevoir, Metagross, Lapras, Tyranitar and Swampert families: fire, waves, sparks, shadow, barriers, meteors and sand. They join Excadrill seismic entrance, scale with stars and respect range and teams.']
+  ], fix: [
+    ['La presentación de habilidades ya no pausa a todos: el combate empieza de inmediato. El CC se identifica con una marca propia, duración y autor en la ficha. Las zonas de aturdimiento resaltan sólo a enemigos afectados, sin pintar aliados como objetivos.',
+     'Ability presentation no longer pauses everyone: combat starts immediately. CC has its own marker, remaining duration and source in the unit card. Stun zones highlight affected enemies only, without marking allies as targets.'],
+    ['Todos los aturdimientos pasan por una comprobación común que rechaza aliados y al lanzador. Un Pokémon aturdido durante el pulso tampoco puede ejecutar un ataque que ya estuviese preparado.',
+     'All stuns pass a shared check that rejects allies and the caster. A Pokémon stunned during a beat cannot execute a strike already queued for that beat.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: tablero siempre visible', 'TFT: keep the board in view'], chg: [
+    ['Nueva disposición de TFT: tablero fijo y paneles de Tienda, Equipo, Ficha, Rival e Informe con desplazamiento independiente. En vertical los paneles van debajo y en horizontal al lado. Puedes ocultarlos para despejar el tablero.',
+     'New TFT layout: a fixed board with independently scrolling Shop, Team, Unit, Opponent and Report panels. Panels sit below in portrait and beside the board in landscape. Hide them for a clearer arena.'],
+    ['Durante el combate los paneles se recogen; tocar una unidad abre su ficha. El informe aparece al acabar la ronda. Avisos de evolución y habilidades de entrada quedan sobre el tablero sin mover los controles.',
+     'Panels collapse during combat; tapping a unit opens its card. The report appears at round end. Evolution and entrance notices overlay the board without shifting the controls.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: animaciones del Survivor', 'TFT: Survivor attack animations'], chg: [
+    ['TFT reutiliza los sprites pixel art de ataque del Survivor: llamas, burbujas, electricidad, hielo, garras, impactos, curaciones y meteoros. Rayos y perforaciones tienen estelas; las áreas conservan las casillas afectadas.',
+     'TFT reuses Survivor pixel-art attack sprites: flames, bubbles, electricity, ice, claws, impacts, healing and meteors. Beams and drills have trails; areas retain their affected-cell highlights.'],
+    ['Los Pokémon usan sus poses disponibles de carga, ataque, disparo y daño, precargadas antes de combatir. Una habilidad de área reproduce una sola acción; las quemaduras no hacen repetir la animación del lanzador. Pausa, velocidad doble, gráficos bajos y modo tranquilo se respetan.',
+     'Pokémon use their available charge, attack, shoot and hurt poses, preloaded before combat. An area ability plays one action; burns do not restart caster animations. Pause, double speed, low graphics and calm mode are respected.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: entrada sísmica y sprites de frente', 'TFT: seismic entrance and front-facing sprites'], chg: [
+    ['Drilbur y Excadrill son iniciadores de control: Entrada Sísmica se activa al comenzar cada combate. Excadrill perfora hasta 3 casillas y aturde alrededor del aterrizaje; radio y duración mejoran con estrellas. Sus movimientos de maná también aturden al aterrizar.',
+     'Drilbur and Excadrill initiate crowd control: Seismic Entrance activates at the beginning of each battle. Excadrill drills up to 3 cells and stuns around its landing; radius and duration improve with stars. Its mana moves also stun on landing.'],
+    ['Los sprites del editor de mazos, tienda, banquillo y anuncio de evolución miran de frente. En combate siguen orientándose hacia sus objetivos.',
+     'Deck editor, shop, bench and evolution announcement sprites face the viewer. Combat units continue facing their targets.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: habilidades para todas las familias', 'TFT: abilities for every family'], new: [
+    ['Las 34 familias tienen habilidades de entrada propias y movimientos definidos en sus tres niveles, sin depender del movimiento genérico de su rol. Las fichas muestran el tipo y efecto de cada movimiento.',
+     'All 34 families have named entrance abilities and moves defined at all three ranks, without relying on generic role moves. Cards show the actual move type and effect.'],
+    ['Efectos especiales para Eevee/Vaporeon, Lucario, Lapras, Tyranitar, Swampert, Salamence, Tinkaton y Rayquaza, además de las doce familias ya personalizadas: protección de aliados, maná compartido, remates, perforación, aturdimientos y cadencia temporal.',
+     'Special effects for Eevee/Vaporeon, Lucario, Lapras, Tyranitar, Swampert, Salamence, Tinkaton and Rayquaza, alongside the twelve previously customized families: ally protection, shared mana, finishers, piercing, stuns and temporary speed.']
+  ] },
+  { d: '2026-10-23', title: ['TFT: habilidades de entrada, guardado y exploración', 'TFT: entrance abilities, saves and scouting'], new: [
+    ['Habilidades de entrada visibles antes del primer pulso: escudos, maná y bonos propios para cada familia. Los movimientos cargados conservan su activación con 100 de maná. Fichas separadas con el efecto y momento de activación.',
+     'Visible entrance abilities before the first beat: shields, mana and family bonuses. Charged moves still activate at 100 mana. Separate cards explain each effect and its trigger.'],
+    ['Guardado automático local de la partida, incluso en combate. Al volver, el combate queda en pausa; conserva oro, tienda, posiciones, rival e informes.',
+     'Local automatic match saves, including combat. Returning to a battle pauses it; gold, shop, formation, opponent and reports are preserved.'],
+    ['Explora el rival antes de luchar: formación real en el tablero, roles, sinergias y ficha de habilidades. Comprar o mover aliados no cambia el rival.',
+     'Scout the next opponent: actual board formation, roles, synergies and ability cards. Buying or moving allies does not reroll the enemy.'],
+    ['Movimientos propios para Venusaur, Raichu, Machamp, Meganium, Blaziken y Alakazam: drenaje, rayos encadenados, ruptura de escudos, limpieza de equipo, impulso temporal y rayos perforantes. Ya son 12 familias con movimientos únicos.',
+     'Signature moves for Venusaur, Raichu, Machamp, Meganium, Blaziken and Alakazam: drain, chain lightning, shield breaking, team cleansing, temporary speed boosts and piercing beams. Twelve families now have unique moves.']
+  ] },
+  { d: '2026-10-22', title: ['TFT: compás, informe y más especies', 'TFT: rhythm, battle report and more species'], new: [
+    ['Compás común de cuatro pulsos: salto y avance, ataque, movimiento, ataque. Cada pulso dura medio segundo; la velocidad de ataque aumenta potencia y maná por golpe sin romper el ritmo.',
+     'Shared four-beat rhythm: hop and advance, attack, move, attack. Each beat lasts half a second; attack speed increases strike power and mana without breaking the rhythm.'],
+    ['Informe al terminar cada ronda: daño, curación, escudos concedidos y daño bloqueado de ambos equipos; acumulado de la partida por línea evolutiva.',
+     'End-of-round report: damage, healing, granted shields and blocked damage for both teams; match totals grouped by evolution family.'],
+    ['34 líneas disponibles: se suman Sandshrew, Weedle, Mareep, Geodude, Lotad, Spheal, Happiny, Onix, Bagon y Tinkatink con sus evoluciones.',
+     '34 available families: Sandshrew, Weedle, Mareep, Geodude, Lotad, Spheal, Happiny, Onix, Bagon and Tinkatink join with their evolutions.'],
+    ['Daño en área por movimiento: Terremoto, Terratemblor, Fuerza Telúrica, Agua Lodosa, Ventisca, Chispazo, Cometa Draco y Martillo Colosal, entre otros. Las casillas afectadas se iluminan; los aliados no reciben daño.',
+     'Move-specific area damage for Earthquake, Bulldoze, Earth Power, Muddy Water, Blizzard, Discharge, Draco Meteor and Gigaton Hammer, among others. Affected cells light up; allies take no damage.']
+  ] },
+  { d: '2026-10-22', title: ['TFT: mazos, evoluciones y habilidades propias', 'TFT: decks, evolutions and signature abilities'], new: [
+    ['Intereses de TFT: cada 5 de oro ahorrados dan +1 por ronda, con un máximo de +5 al ahorrar 25.',
+     'TFT interest: every 5 saved gold grants +1 per round, capped at +5 when saving 25.'],
+    ['Tres mazos locales de diez líneas evolutivas. Elige entre las 24 familias; la tienda sólo ofrece las de tu mazo. Puedes consultar las líneas elegidas durante la partida.',
+     'Three local decks of ten evolution families. Choose from the 24 families; the shop only offers your chosen lines. Inspect your deck during a match.'],
+    ['Animación al evolucionar, desplazamiento suave, proyectiles por tipo, escudos visibles y ficha de vida, daño, defensa, maná, habilidad y sinergias al tocar unidades, también durante el combate.',
+     'Evolution animations, smooth movement, type-colored projectiles, visible shields and a unit inspector for HP, damage, armor, mana, ability and synergies, including during combat.'],
+    ['Habilidades propias para las líneas de Charizard, Blastoise, Excadrill, Gengar, Gardevoir y Metagross: quemaduras, empujes, perforación, robo de vida, curación con limpieza y aturdimiento en zona. Cambian al evolucionar.',
+     'Signature abilities for the Charizard, Blastoise, Excadrill, Gengar, Gardevoir and Metagross families: burns, knockback, piercing, life drain, healing with cleansing and area stun. Abilities change on evolution.']
+  ] },
   { d: '2026-10-22', title: ['Estadísticas al terminar la partida', 'End-of-run statistics'], new: [
     ['Al terminar una partida también puedes ver el daño y DPS de cada movimiento, estadísticas finales, objeto y cartas. El resumen guarda los valores justo al terminar y se puede desplazar en móvil.',
      'At the end of a run you can also see damage and DPS per move, final stats, held item and cards. The summary captures values at the moment the run ends and scrolls on mobile.']
+  ] },
+  { d: '2026-10-22', title: ['TFT · Evoluciones (alpha)', 'TFT · Evolutions (alpha)'], new: [
+    ['Modo individual de 12 rondas con tienda, oro propio, banquillo, posiciones tácticas y combates automáticos. 24 familias de Pokémon; tres copias se fusionan y evolucionan con nuevo sprite, tipos y movimiento. Sinergias de 2/4 familias por tipo, experiencia y límite de equipo. Interfaz táctil, pausa y velocidad doble. Partida local de sesión, sin recompensas ni cambios al progreso del Survivor.',
+     'A 12-round solo mode with a shop, separate gold, bench, tactical positioning and automatic battles. 24 Pokémon families; three copies merge and evolve with new sprites, types and moves. Type synergies at 2/4 families, experience and team limits. Touch interface, pause and double speed. Local session matches, with no rewards or changes to Survivor progression.']
   ] },
   { d: '2026-10-20', title: ['Una frase sorpresa en el menú', 'A surprise line on the menu'], new: [
     ['32 frases cortas sobre Arceus, los curanderos, las builds y la panadería de Tiliko. Cada visita al juego elige una; conserva la misma al volver al menú y evita repetir la anterior cuando es posible.',
