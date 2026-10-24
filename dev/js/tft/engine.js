@@ -2294,6 +2294,135 @@ G.TFT = (() => {
     ]
   }
 ]);
+  EXPANSION.push(...[
+  {
+    "line": [
+      610,
+      611,
+      612
+    ],
+    "cost": 2,
+    "role": "fighter",
+    "moves": [
+      "Garra Dragón",
+      "Danza Dragón",
+      "Enfado"
+    ],
+    "entry": "Rompemoldes · Haxorus",
+    "passive": [
+      "pierce",
+      0.2,
+      "Adaptación TFT: ignora un 20% de defensa; no anula habilidades rivales."
+    ],
+    "skills": [
+      {
+        "type": "dragon",
+        "power": 2.1,
+        "pierce": 0.25,
+        "text": "Golpea al objetivo e ignora un 25% de defensa."
+      },
+      {
+        "type": "dragon",
+        "power": 1.8,
+        "boost": 0.2,
+        "selfShield": 0.1,
+        "text": "Golpea al objetivo, obtiene un escudo del 10% de su vida y aumenta su cadencia un 20% durante 2 s."
+      },
+      {
+        "type": "dragon",
+        "power": 3.2,
+        "shape": "area",
+        "center": "self",
+        "radius": 1,
+        "pierce": 0.3,
+        "text": "Golpea a los enemigos a 1 casilla del usuario e ignora un 30% de defensa."
+      }
+    ],
+    "openers": [
+      {
+        "type": "dragon",
+        "power": 0.6,
+        "pierce": 0.35,
+        "breakShield": 0.2,
+        "text": "golpea al objetivo ignorando un 35% de defensa y elimina un 20% de su escudo."
+      },
+      {
+        "type": "dragon",
+        "power": 0.8,
+        "pierce": 0.35,
+        "breakShield": 0.30000000000000004,
+        "text": "golpea al objetivo ignorando un 35% de defensa y elimina un 30% de su escudo."
+      },
+      {
+        "type": "dragon",
+        "power": 1.0,
+        "pierce": 0.35,
+        "breakShield": 0.4,
+        "text": "golpea al objetivo ignorando un 35% de defensa y elimina un 40% de su escudo."
+      }
+    ]
+  },
+  {
+    "line": [
+      696,
+      697
+    ],
+    "cost": 3,
+    "role": "fighter",
+    "moves": [
+      "Mordisco",
+      "Triturar",
+      "Testarazo"
+    ],
+    "entry": "Mandíbula Fuerte · Tyrantrum",
+    "passive": [
+      "attack",
+      0.1,
+      "Adaptación TFT: aumenta su daño un 10%."
+    ],
+    "skills": [
+      {
+        "type": "dark",
+        "power": 2,
+        "stun": 0.3,
+        "text": "Muerde al objetivo y lo aturde durante 0,3 s."
+      },
+      {
+        "type": "dark",
+        "power": 2.6,
+        "pierce": 0.4,
+        "text": "Muerde al objetivo e ignora un 40% de defensa."
+      },
+      {
+        "type": "rock",
+        "power": 3.6,
+        "push": 1,
+        "stun": 0.5,
+        "text": "Golpea al objetivo, lo empuja 1 casilla si hay espacio y lo aturde durante 0,5 s."
+      }
+    ],
+    "openers": [
+      {
+        "type": "dark",
+        "power": 0.7,
+        "stun": 0.25,
+        "text": "muerde al objetivo y lo aturde durante 0.25 s."
+      },
+      {
+        "type": "dark",
+        "power": 0.8999999999999999,
+        "stun": 0.35,
+        "text": "muerde al objetivo y lo aturde durante 0.35 s."
+      },
+      {
+        "type": "dark",
+        "power": 1.1,
+        "stun": 0.45,
+        "text": "muerde al objetivo y lo aturde durante 0.45 s."
+      }
+    ]
+  }
+]);
   DEFINITIONS.push(...EXPANSION.map(f=>[f.line,f.cost,f.role,f.moves]));
   const ROSTER = DEFINITIONS.map(([line,cost,role,moves]) => ({dex:line[0],line,cost,role,moves,move:moves[0]}));
   for(const f of ROSTER)f.bossOnly=f.dex===384;

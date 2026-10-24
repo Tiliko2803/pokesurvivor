@@ -322,3 +322,8 @@ Pendientes locales por dueño/tabla, acotados a 40, conservando el histórico. C
 Familias: Caterpie, Zubat, Slowpoke; Hoppip, Heracross, Skarmory; Meditite, Numel, Sableye; Budew, Shinx, Hippopotas; Timburr, Cottonee, Joltik; Espurr, Skrelp, Hawlucha; Mareanie, Bounsweet, Grubbin; Hatenna, Impidimp; Tandemaus, Charcadet. Slowpoke sigue la rama Slowbro, Charcadet la rama Ceruledge. Las familias de una o dos etapas potencian la forma final al tercer rango.
 
 Se reutilizan hojas locales de sprites. Las habilidades son adaptaciones explícitas, no copias exactas de todas las mecánicas de los juegos originales: Espejo Mágico limpia estados y protege aliados al entrar; Presencia Regia ralentiza enemigos cercanos; Compiescolta concede protección y cadencia. Nuevo selfDrain: curación propia proporcional al daño efectivo contra vida (hit devuelve lost), sin escudos ni overkill. Lo usan Chupavidas, Puño Drenaje y Espada Lamento. El catálogo crece sin modificar las composiciones de oleadas ni reiniciar partidas, mazos o ranking. Se eligen las familias desde el editor antes de una nueva expedición.
+
+### Tyrantrum y Haxorus · 23 octubre 2026
+- Axew → Fraxure → Haxorus: 2 oro, atacante. Rompemoldes adaptado ignora 20% de defensa (no anula habilidades). Entrada rompe 20/30/40% de escudo y perfora defensa. Garra Dragón, Danza Dragón y Enfado; este último golpea enemigos en radio de 1 casilla del usuario.
+- Tyrunt → Tyrantrum: 3 oro, atacante. Mandíbula Fuerte adaptada aumenta daño 10%. Entrada mordisco con aturdimiento de 0,25/0,35/0,45 s. Mordisco, Triturar y Testarazo; este último empuja y aturde al objetivo. Tyrantrum permanece en su forma final en Bronce 3.
+- 106 familias jugables; mantienen las reglas de mejoras, mazos y guardados actuales.

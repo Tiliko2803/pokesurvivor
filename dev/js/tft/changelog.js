@@ -6,6 +6,9 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-23', title: ['TFT: Tyrantrum y Haxorus', 'TFT: Tyrantrum and Haxorus'], new: [
+    ['Llegan Axew → Fraxure → Haxorus por 2 de oro y Tyrunt → Tyrantrum por 3. Ambas familias tienen habilidad de entrada y tres movimientos. Rompemoldes permite perforar defensa; Mandíbula Fuerte aumenta el daño. Son adaptaciones para TFT. El catálogo alcanza 106 familias jugables.', 'Axew → Fraxure → Haxorus joins for 2 gold and Tyrunt → Tyrantrum for 3. Both families have an entry ability and three moves. Mold Breaker pierces defense; Strong Jaw boosts damage. These are TFT adaptations. The catalogue reaches 106 playable families.']
+  ] },
   { d: '2026-10-23', title: ['TFT: 25 familias competitivas', 'TFT: 25 competitive families'], new: [
     ['El catálogo alcanza 104 familias jugables. Llegan Butterfree, Crobat, Slowbro, Jumpluff, Heracross, Skarmory, Medicham, Camerupt, Sableye, Roserade, Luxray, Hippowdon, Conkeldurr, Whimsicott, Galvantula, Meowstic, Dragalge, Hawlucha, Toxapex, Tsareena, Vikavolt, Hatterene, Grimmsnarl, Maushold y Ceruledge con sus preevoluciones disponibles.',
      'The catalogue reaches 104 playable families. Butterfree, Crobat, Slowbro, Jumpluff, Heracross, Skarmory, Medicham, Camerupt, Sableye, Roserade, Luxray, Hippowdon, Conkeldurr, Whimsicott, Galvantula, Meowstic, Dragalge, Hawlucha, Toxapex, Tsareena, Vikavolt, Hatterene, Grimmsnarl, Maushold and Ceruledge join with their available pre-evolutions.'],

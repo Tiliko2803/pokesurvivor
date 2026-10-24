@@ -7,8 +7,8 @@ function fixture(seed=123) {
   const E=ctx.G.TFT,s=E.create(seed);return {G:ctx.G,E,s};
 }
 function purchase(E,s,dex,n=1) {for(let i=0;i<n;i++){s.shop=[dex];assert.ok(E.buy(s,0));}}
-test('105 complete evolution families use local Pokédex and sprite assets',()=>{
-  const {G,E}=fixture();assert.equal(E.ROSTER.length,105);
+test('107 complete evolution families use local Pokédex and sprite assets',()=>{
+  const {G,E}=fixture();assert.equal(E.ROSTER.length,107);
   for(const family of E.ROSTER)for(const dex of family.line){
     assert.ok(G.DEX_BY[dex]);assert.ok(fs.existsSync(path.join(root,`assets/pokemon/${dex}/Idle.png`)));
   }
@@ -317,7 +317,7 @@ test('invalid, incompatible and incomplete snapshots are rejected safely',()=>{
  }
 });
 
-test('all 105 families have explicit entrances and executable moves at all 315 bronze ranks',()=>{
+test('all 107 families have explicit entrances and executable moves at all 321 bronze ranks',()=>{
  const {E}=fixture(),names=new Set();
  for(const family of E.ROSTER){
   const entry=E.entranceFor({dex:family.dex,star:1});names.add(entry.name);
@@ -333,7 +333,7 @@ test('all 105 families have explicit entrances and executable moves at all 315 b
    assert.ok(b.events.filter(e=>e.kind==='spell').every(e=>e.type===ability.type),`${family.dex} uses the advertised damage type`);
   }
  }
- assert.equal(names.size,105,'each family has its own named entrance');
+ assert.equal(names.size,107,'each family has its own named entrance');
 });
 test('iconic moves protect the correct allies, ignore armor and strengthen against wounded targets',()=>{
  const {E}=fixture();
@@ -586,7 +586,7 @@ test('endless PvE generates themed encounters, specials and rotating bosses past
  assert.equal(bosses.size,6);assert.ok(names.size>6);assert.equal(s.completed,120);assert.equal(s.history.length,E.HISTORY_LIMIT);assert.equal(s.wins,120);assert.ok(s.totals.length>0);
 });
 test('legendary families are excluded from decks and shops and older ten-line decks migrate without duplicates',()=>{
- const {E}=fixture();assert.equal(E.PLAYABLE_ROSTER.length,104);assert.equal(E.PLAYABLE_ROSTER.some(f=>f.dex===384),false);
+ const {E}=fixture();assert.equal(E.PLAYABLE_ROSTER.length,106);assert.equal(E.PLAYABLE_ROSTER.some(f=>f.dex===384),false);
  const old=[1,4,7,172,92,280,529,246,374,384];assert.equal(E.validDeck(old),false);const deck=E.migrateDeck(old);assert.ok(E.validDeck(deck));assert.equal(deck.includes(384),false);assert.equal(new Set(deck).size,10);
  const s=E.create(35,deck);s.gold=100000;s.level=6;
  for(let i=0;i<100;i++){E.reroll(s,true);assert.ok(s.shop.every(d=>!E.BY[d].bossOnly));}
@@ -740,7 +740,7 @@ test('third expansion adds 25 unique families across nine generations with ten o
 });
 test('all new families execute friendly-safe entrances, finish fights and restore at each bronze rank',()=>{
  const {E}=fixture();
- for(const family of NEW_COMPETITIVE_FAMILIES)for(let star=1;star<=3;star++){
+ for(const family of [...NEW_COMPETITIVE_FAMILIES,610,696])for(let star=1;star<=3;star++){
   const deck=E.DEFAULT_DECK.includes(family)?E.DEFAULT_DECK:[family,...E.DEFAULT_DECK.slice(1)],s=E.create(family*10+star,deck);s.gold=1000;purchase(E,s,family,3**(star-1));const hero=s.units[0];E.place(s,hero.id,20);s.opponent=[{id:-1,dex:661,star:1,pos:8}];s.opponentRound=s.round;
   assert.ok(E.start(s));assert.ok(E.restore(E.serialize(s)),`${family}/${star} saves entry`);
   const own=s.battle.units.filter(u=>u.side===0);assert.ok(own.every(u=>u.hp===u.maxHp),'entry never damages allies');
