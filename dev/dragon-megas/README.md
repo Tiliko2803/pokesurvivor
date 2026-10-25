@@ -30,3 +30,7 @@ The preview now uses the corrected dorsal sword design (dark blade core, ice edg
 Repacking: `python dev/dragon-megas/tools/pack_baxcalibur_v2.py SOURCE.png OUTPUT.png`. The downloaded PNG is the normalized 5x5 atlas ready for use. The source image hash and each source crop/flip are recorded in atlas.json.
 
 Validation: all 25 crops are nonempty with padding; the actual preview was loaded in Chromium at 1100x720 and 844x390. All 56 combinations of 8 facings and 7 animation states rendered nonempty. Survivor enters with Baxcaliburite and the correct animator, TFT resolves its shared Mega animator, and the versioned new atlas loads with no page errors or missing assets.
+
+## Baxcalibur sprite revision 3
+
+The dorsal sword now follows the sagittal head-spine-tail plane. Front and rear poses show its thin edge; side poses show its broad dark face. The whole 25-pose sheet was regenerated from the official reference and revision-2 art, then component-cropped and packed with consistent foot anchors. The regenerated poses retain their source orientation without extra mirroring. Revision 3 retains cell dimensions and animator timings. Repack with `dev/dragon-megas/tools/pack_baxcalibur_v3.py`.

@@ -17,7 +17,7 @@ G.SurvivorMegas=(()=>{
   const img=new Image(),entry={img,ready:false,failed:false};images.set(dex,entry);
   img.onload=()=>{entry.ready=img.naturalWidth===W*5&&img.naturalHeight===H*5;entry.failed=!entry.ready;};
   img.onerror=()=>{entry.failed=true;console.error('[Survivor Mega] Atlas unavailable',dex);};
-  img.src=`${[373,998].includes(dex)?"dev/":""}assets/pokemon/${dex}/mega/poses.webp?v=dragon-preview-bax-v2`;
+  img.src=`${[373,998].includes(dex)?"dev/":""}assets/pokemon/${dex}/mega/poses.webp?v=dragon-preview-bax-v3`;
  }
  class Animator{
   constructor(dex,scale=1){
