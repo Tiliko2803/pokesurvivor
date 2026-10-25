@@ -1,0 +1,404 @@
+{
+  "version": 3,
+  "cell": [
+    176,
+    176
+  ],
+  "anchor": [
+    88,
+    164
+  ],
+  "rows": [
+    "south",
+    "southwest",
+    "west",
+    "northwest",
+    "north"
+  ],
+  "columns": [
+    "idle",
+    "walk-left",
+    "walk-right",
+    "windup",
+    "release"
+  ],
+  "design": "Dorsal blade in head-spine-tail plane: edge-on front/rear, broad side profile; short abdominal hilt",
+  "sourceSha256": "c9256903c357bf69e43323e17e23bffc56272da487f7dfef4dc7d887abe38cab",
+  "frames": [
+    {
+      "row": 0,
+      "col": 0,
+      "sourceBounds": [
+        66,
+        35,
+        186,
+        236
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        79,
+        132
+      ]
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "sourceBounds": [
+        317,
+        35,
+        435,
+        235
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        78,
+        132
+      ]
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "sourceBounds": [
+        568,
+        35,
+        686,
+        236
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        78,
+        132
+      ]
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "sourceBounds": [
+        809,
+        35,
+        952,
+        237
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        94,
+        133
+      ]
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "sourceBounds": [
+        1055,
+        47,
+        1202,
+        237
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        97,
+        125
+      ]
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "sourceBounds": [
+        48,
+        282,
+        212,
+        489
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        108,
+        136
+      ]
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "sourceBounds": [
+        298,
+        282,
+        476,
+        489
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        117,
+        136
+      ]
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "sourceBounds": [
+        546,
+        284,
+        711,
+        489
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        109,
+        135
+      ]
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "sourceBounds": [
+        793,
+        285,
+        970,
+        489
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        117,
+        134
+      ]
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "sourceBounds": [
+        1050,
+        288,
+        1211,
+        489
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        106,
+        132
+      ]
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "sourceBounds": [
+        22,
+        526,
+        244,
+        743
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        146,
+        143
+      ]
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "sourceBounds": [
+        273,
+        525,
+        496,
+        743
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        147,
+        143
+      ]
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "sourceBounds": [
+        519,
+        525,
+        756,
+        743
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        156,
+        143
+      ]
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "sourceBounds": [
+        793,
+        530,
+        981,
+        746
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        124,
+        142
+      ]
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "sourceBounds": [
+        1032,
+        540,
+        1237,
+        745
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        135,
+        135
+      ]
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "sourceBounds": [
+        34,
+        790,
+        223,
+        991
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        124,
+        132
+      ]
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "sourceBounds": [
+        290,
+        790,
+        477,
+        991
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        123,
+        132
+      ]
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "sourceBounds": [
+        545,
+        790,
+        732,
+        991
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        123,
+        132
+      ]
+    },
+    {
+      "row": 3,
+      "col": 3,
+      "sourceBounds": [
+        800,
+        791,
+        970,
+        991
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        112,
+        132
+      ]
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "sourceBounds": [
+        1037,
+        794,
+        1237,
+        991
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        132,
+        130
+      ]
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "sourceBounds": [
+        64,
+        1028,
+        187,
+        1237
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        81,
+        138
+      ]
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "sourceBounds": [
+        314,
+        1028,
+        436,
+        1237
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        80,
+        138
+      ]
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "sourceBounds": [
+        566,
+        1027,
+        687,
+        1237
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        80,
+        138
+      ]
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "sourceBounds": [
+        809,
+        1029,
+        941,
+        1237
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        87,
+        137
+      ]
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "sourceBounds": [
+        1056,
+        1038,
+        1207,
+        1234
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        99,
+        129
+      ]
+    }
+  ]
+}

@@ -2474,6 +2474,8 @@ G.TFT = (() => {
   Object.assign(MEGAS,{
     214:{name:'Mega Heracross',move:'Batería Rompeasedios',type:'bug',description:'Artillería de alcance 3: dispara cinco impactos del 85% del ataque en un cono. Reparte los tiros entre enemigos vivos de la zona; los sobrantes se concentran en los supervivientes. Ignora 50% de defensa. El quinto duplica su daño si esa presa recibió al menos tres impactos de la ráfaga. Retrocede si se le acercan.'},
     282:{name:'Mega Gardevoir',move:'Coro Protector',type:'fairy',description:'Cura a dos aliados por 300% del ataque y los escuda con 15% de su vida; una onda de Hada daña a enemigos a 2 casillas (180%) y ralentiza 25%. Rescate conserva un uso por combate y prepara una Contravoz en el siguiente pulso de ataque: golpea con 220% alrededor del punto de llegada, empuja una casilla sin mover jefes y escuda a aliados próximos. Aturdirla interrumpe la Contravoz.'},
+    373:{name:'Mega Salamence',move:'Ala Creciente',type:'flying',description:'Prepara una pasada aérea y, en el siguiente pulso de ataque, barre una franja de tres casillas de ancho con 240% de ataque. Aterriza en la última casilla libre de la línea central. Los enemigos pueden esquivarla; un aturdimiento cancela la preparación.'},
+    998:{name:'Mega Baxcalibur',move:'Espadón Glacial',type:'ice',description:'Proyecta su espadón a lo largo de cuatro casillas hacia su presa: 360% de ataque como Hielo, con 40% de penetración de defensa y ralentización de 35% durante 3 segundos. No desplaza al usuario ni a los jefes.'},
     530:{name:'Mega Excadrill',move:'Taladro Rompefilas',type:'ground',description:'Prepara una perforación recta de hasta 5 casillas y la ejecuta en el siguiente pulso de ataque. Atraviesa enemigos con 280% del ataque, ignora 50% de defensa y reduce a la mitad la curación recibida durante 3 segundos. Termina en la última casilla libre; los aliados bloquean el túnel. Aturdirlo cancela la preparación. Los enemigos pueden salir de la trayectoria.'},
     154:{name:'Mega Meganium',move:'Jardín Solar',type:'grass',description:'Dispara cuatro rayos cardinales de alcance 4 (150% del ataque) que ralentizan 25% durante 2 segundos. Limpia quemaduras, ralentizaciones y aturdimientos de aliados a 2 casillas. Deja un jardín fijo de radio 2 durante cuatro pulsos de movimiento: cura a los dos aliados más heridos por 75% del ataque por pulso. Aturdida pierde el pulso; al caer cesa el jardín. Planta/Hada.'}
   });
@@ -3356,11 +3358,11 @@ G.TFT = (() => {
       if(isStunned(b,a))return true;
       const sx=a.x,sy=a.y;let end={x:sx,y:sy},landing={...end};
       while(end.x+dx>=0&&end.x+dx<COLS&&end.y+dy>=0&&end.y+dy<ROWS){end={x:end.x+dx,y:end.y+dy};if(freeCell(b,end.x,end.y,a))landing={...end};}
-      const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&(t.x-sx)*dy===(t.y-sy)*dx&&(t.x-sx)*dx+(t.y-sy)*dy>0);
+      const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&Math.abs((t.x-sx)*dy-(t.y-sy)*dx)<=(isMega(a)?1:0)&&(t.x-sx)*dx+(t.y-sy)*dy>0);
       a.x=landing.x;a.y=landing.y;
       b.events.push({kind:'flight',from:a.id,sx,sy,tx:a.x,ty:a.y,type:'flying',ttl:.7,life:.7});
       b.events.push({kind:'beam',from:a.id,sx,sy,tx:end.x,ty:end.y,type:'flying',ttl:.6});
-      for(const t of foes)hit(b,a,t,a.attack*3,true,'flying');return true;
+      for(const t of foes)hit(b,a,t,a.attack*(isMega(a)?2.4:3),true,'flying');return true;
     }
     if(a.liftTarget!==undefined){
       const t=b.units.find(t=>t.id===a.liftTarget);releaseLift(b,a);
@@ -3425,6 +3427,16 @@ G.TFT = (() => {
       for(const ally of friends){heal(b,a,ally,a.attack*3);shield(b,a,ally,ally.maxHp*.15);}
       guardWave(b,a,{x:a.x,y:a.y},1.8);return true;
     }
+    if(a.dex===998){
+      const {dx,dy}=cardinal(a,target),old=a.pierce;a.pierce=Math.max(old||0,.4);
+      b.events.push({kind:'beam',from:a.id,sx:a.x,sy:a.y,tx:Math.max(0,Math.min(COLS-1,a.x+dx*4)),ty:Math.max(0,Math.min(ROWS-1,a.y+dy*4)),type:'ice',ttl:.7,life:.7});
+      try{for(const t of b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed)){
+        const along=(t.x-a.x)*dx+(t.y-a.y)*dy,across=(t.x-a.x)*dy-(t.y-a.y)*dx;
+        if(along<=0||along>4||across!==0)continue;
+        hit(b,a,t,a.attack*3.6,true,'ice');
+        if(t.hp>0){t.slowPower=Math.max(t.slowUntil>b.time?t.slowPower||0:0,.35);t.slowUntil=Math.max(t.slowUntil||0,b.time+3);}
+      }}finally{a.pierce=old;}return true;
+    }
     if(a.dex===530){
       const {dx,dy}=cardinal(a,target);a.megaDrillDx=dx;a.megaDrillDy=dy;
       const {cells}=megaDrillPath(b,a,dx,dy),last=cells.at(-1);
@@ -3487,7 +3499,7 @@ G.TFT = (() => {
   }
   function tacticalCast(b,a,target) {
     if(a.dex===635){a.headPulses=2;a.headTargets=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&distance(a,t)<=3).sort((x,y)=>distance(a,x)-distance(a,y)||x.id-y.id).slice(0,3).map(t=>t.id);return true;}
-    if(a.dex===373){const {dx,dy}=cardinal(a,target);a.swoopDx=dx;a.swoopDy=dy;let x=a.x,y=a.y;while(x+dx>=0&&x+dx<COLS&&y+dy>=0&&y+dy<ROWS){x+=dx;y+=dy;}b.events.push({kind:'beam',from:a.id,sx:a.x,sy:a.y,tx:x,ty:y,type:'flying',ttl:1,life:1});return true;}
+    if(a.dex===373){const {dx,dy}=cardinal(a,target);a.swoopDx=dx;a.swoopDy=dy;let x=a.x,y=a.y;while(x+dx>=0&&x+dx<COLS&&y+dy>=0&&y+dy<ROWS){x+=dx;y+=dy;}for(const offset of (isMega(a)?[-1,0,1]:[0])){const sx=a.x-dy*offset,sy=a.y+dx*offset,tx=x-dy*offset,ty=y+dx*offset;if(sx>=0&&sx<COLS&&sy>=0&&sy<ROWS)b.events.push({kind:'beam',from:a.id,sx,sy,tx,ty,type:'flying',ttl:1,life:1});}return true;}
     if(a.dex===376){if(distance(a,target)<=1&&target.hp>0&&!target.shadowed&&target.liftedBy===undefined){a.liftTarget=target.id;if(!target.boss)target.liftedBy=a.id;b.events.push({kind:'lift',from:a.id,to:target.id,sx:a.x,sy:a.y,tx:target.x,ty:target.y,type:'steel',ttl:1,life:1});}return true;}
     if(a.dex===214){
       if(target.side===a.side||distance(a,target)>1||target.hp<=0||target.shadowed)return true;

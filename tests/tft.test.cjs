@@ -997,8 +997,8 @@ test('mixed pseudo fights keep distinct cells, valid saves and deterministic res
  };assert.equal(run(.05),run(.1));
 });
 
-test('nine families reach Iridium after exactly three normal-price copies beyond complete Gold; id, placement and resale are preserved',()=>{
- const {E}=fixture();for(const dex of [260,257,248,959,47,530,154,214,282]){
+test('eleven families reach Iridium after exactly three normal-price copies beyond complete Gold; id, placement and resale are preserved',()=>{
+ const {E}=fixture();for(const dex of [260,257,248,959,47,530,154,214,282,373,998]){
   const family=E.BY[dex].line[0],deck=[family,...E.DEFAULT_DECK.filter(d=>d!==family)].slice(0,10),s=E.create(924,deck);s.gold=10000;
   purchase(E,s,family,42);const u=s.units[0];assert.equal(u.promotion,6);E.place(s,u.id,20);const id=u.id,price=E.BY[dex].cost,gold=s.gold;
   assert.ok(E.trainingLabel(u).includes('0/3'));assert.equal(E.isMega(u),false);
@@ -1163,4 +1163,18 @@ test('all five Iridium units resume their active mechanics with valid saves and 
   }
   const clean=b=>JSON.stringify(b.units.map(u=>{const v={...u};delete v.entrance;return v;}));assert.equal(clean(s.battle),clean(copy.battle));return JSON.stringify({result:s.result,units:s.battle.units});
  };assert.equal(run(.05),run(.1));
+});
+
+test('Mega Salamence widens its warned flight, preserves allied cells and remains interruptible',()=>{
+ const {E}=fixture();
+ const {s,b,units:[a,center,wing,outside,ally]}=megaBattle(E,[[373,3,0,2,5],[7,1,1,2,3],[7,1,1,3,3],[7,1,1,4,3],[7,1,0,1,3]]);
+ E.cast(b,a,center);assert.equal(center.hp,center.maxHp);reworkBeat(E,s);
+ assert.ok(center.hp<center.maxHp);assert.ok(wing.hp<wing.maxHp);assert.equal(outside.hp,outside.maxHp);assert.equal(ally.hp,ally.maxHp);
+ const q=megaBattle(E,[[373,3,0,2,5],[7,1,1,2,3]]);E.cast(q.b,q.units[0],q.units[1]);E.stun(q.b,q.units[1],q.units[0],1);reworkBeat(E,q.s);assert.equal(q.units[1].hp,q.units[1].maxHp);
+});
+test('Mega Baxcalibur cuts a bounded ice line and slows bosses without moving allies or caster',()=>{
+ const {E}=fixture(),{b,units:[a,front,back,side,ally]}=megaBattle(E,[[998,3,0,2,5],[7,1,1,2,4],[7,1,1,2,1],[7,1,1,3,4],[7,1,0,2,3]]);
+ back.boss=true;const old=a.pierce;E.cast(b,a,front);
+ for(const t of [front,back]){assert.ok(t.hp<t.maxHp);assert.equal(t.slowPower,.35);assert.equal(t.slowUntil,b.time+3);}
+ assert.equal(side.hp,side.maxHp);assert.equal(ally.hp,ally.maxHp);assert.equal(a.y,5);assert.equal(back.y,1);assert.equal(a.pierce,old);
 });

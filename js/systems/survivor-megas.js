@@ -6,7 +6,7 @@ G.SurvivorMegas=(()=>{
  const frames={Idle:[0],Walk:[0,1,0,2],Attack:[3,4,0],Shoot:[3,4,0],Charge:[3,4],Hurt:[3],Faint:[0]};
  const rows=[0,1,2,3,4,3,2,1],mirror=[false,true,true,true,false,false,false,false];
  const images=new Map();
- const DEXES=[530,154,214,282];
+ const DEXES=[530,154,214,282,373,998];
  function pack(dex){
   if(!DEXES.includes(+dex))return null;
   const entry=images.get(+dex);
@@ -17,7 +17,7 @@ G.SurvivorMegas=(()=>{
   const img=new Image(),entry={img,ready:false,failed:false};images.set(dex,entry);
   img.onload=()=>{entry.ready=img.naturalWidth===W*5&&img.naturalHeight===H*5;entry.failed=!entry.ready;};
   img.onerror=()=>{entry.failed=true;console.error('[Survivor Mega] Atlas unavailable',dex);};
-  img.src=`assets/pokemon/${dex}/mega/poses.webp?v=survivor-1`;
+  img.src=`assets/pokemon/${dex}/mega/poses.webp?v=mega-dragons-live-v3`;
  }
  class Animator{
   constructor(dex,scale=1){
@@ -103,7 +103,7 @@ G.SurvivorMegas=(()=>{
   if(!(dmg>0))return false;
   e.hurt(dmg,color,dx,dy,knock);pl.onDealt(dmg);pl.dmgDealt+=dmg;return true;
  }
- function ray(pl,angle,length,width,move,base,color,bonus=false){
+ function ray(pl,angle,length,width,move,base,color,bonus=false,touched=null){
   const ca=Math.cos(angle),sa=Math.sin(angle);
   // Pass through enemies, but respect arena walls just like ordinary beams.
   for(let d=8;d<length;d+=8)if(G.World.isWall(pl.x+ca*d,pl.y+sa*d)){length=d;break;}
@@ -113,18 +113,26 @@ G.SurvivorMegas=(()=>{
    const dx=e.x-pl.x,dy=e.y-pl.y,r=e.r||0,along=dx*ca+dy*sa;
    if(along< -r||along>length+r||Math.abs(-dx*sa+dy*ca)>width/2+r)continue;
    const support=bonus&&(e.behavior==='healer'||e.behavior==='shielder');
-   if(hit(pl,e,move,base*(support?1.5:1),color,ca,sa,bonus&&!e.boss?100:0))hits++;
+   if(hit(pl,e,move,base*(support?1.5:1),color,ca,sa,bonus&&!e.boss?100:0)){hits++;touched?.add(e);}
   }
   return hits;
  }
  function tick(dt,pl){
-  if(!['excadrillite','meganiumite','heracronite','gardevoirite'].includes(pl.mega)||pl.dead||pl.remote||pl.frozen||!Number.isFinite(dt)||dt<=0)return;
+  if(!['excadrillite','meganiumite','heracronite','gardevoirite','salamencite','baxcaliburite'].includes(pl.mega)||pl.dead||pl.remote||pl.frozen||!Number.isFinite(dt)||dt<=0)return;
   let s=states.get(pl);if(!s){s={timer:1.5};states.set(pl,s);}
   if(pl.mega==='heracronite'){heracrossTick(dt,pl,s);return;}
   if(pl.mega==='gardevoirite'){gardevoirTick(dt,pl,s);return;}
   s.timer-=dt;if(s.timer>0)return;
   const area=pl.areaMul||1,angle=Number.isFinite(pl.aim)?pl.aim:0;
-  if(pl.mega==='excadrillite'){
+  if(pl.mega==='salamencite'){
+   s.timer=5;const wind={id:'mega-crescent',type:'flying',cat:'physical',category:'physical'};
+   for(const offset of [-.28,0,.28])ray(pl,angle+offset,320*area,34*area,wind,24+pl.level*2,'#c6e9ff');
+  }else if(pl.mega==='baxcaliburite'){
+   s.timer=7;const ice={id:'mega-glaive',type:'ice',cat:'physical',category:'physical'};
+   const touched=new Set();
+   ray(pl,angle,380*area,64*area,ice,85+pl.level*4,'#a6f4ff',false,touched);
+   for(const e of touched)e.applySlow(e.boss?.15:.4,2);
+  }else if(pl.mega==='excadrillite'){
    s.timer=4;ray(pl,angle,360*area,52*area,drill,65+pl.level*4,'#e7b080',true);
   }else{
    s.timer=8;let hits=0;

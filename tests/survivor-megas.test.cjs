@@ -115,3 +115,25 @@ test('Meganium Solar Beam becomes instant without mutating the normal move or it
  G.Combat.clearFields();G.Moves.evolve(m);m.t=0;p.mega='meganiumite';
  G.Combat.tick(.01,p,1);assert.equal(G.Combat.fieldCount,0);assert.equal(m.kind,'charge');
 });
+
+test('dragon stones unlock, equip and start actual runs with their shared atlas animator',()=>{
+ const f=setup(),{G}=f;f.load('js/systems/mega-evolution.js');G.SurvivorMegas.pack=()=>({ready:()=>true});
+ for(const [dex,stone,move] of [[373,'salamencite','air-slash'],[998,'baxcaliburite','dragon-claw']]){
+  const s=G.DB.save;s.owned[dex]={at:1};s.partner=dex;
+  assert.ok(G.Mega.finishRun(s,{dex,mon:G.DEX_BY[dex],bosses:3},{clean:true}));
+  assert.ok(G.Mega.equip(s,dex,true));G.Game.startRun();const p=G.Game.player;
+  assert.equal(p.mega,stone);assert.ok(p.anim instanceof G.SurvivorMegas.Animator);
+  assert.equal(p.moves[0].def.id,move);assert.equal(p.moves[0].lvl,2);G.Game.toUI();
+ }
+});
+test('dragon passives respect aiming, walls, control, boss slow and cooldowns',()=>{
+ const {G}=setup();let targets=[];G.EnemyMgr.queryCircle=()=>targets;
+ for(const stone of ['salamencite','baxcaliburite']){
+  const p=fighter(stone),front=enemy(100),behind=enemy(-100),side=enemy(100,150);targets=[front,behind,side];
+  for(const flag of ['dead','remote','frozen']){p[flag]=true;G.SurvivorMegas.tick(20,p);p[flag]=false;assert.equal(front.hits.length,0);}
+  G.SurvivorMegas.tick(1.5,p);assert.ok(front.hits.length);assert.equal(behind.hits.length,0);assert.equal(side.hits.length,0);
+  const count=front.hits.length;G.SurvivorMegas.tick(1,p);assert.equal(front.hits.length,count);
+  G.World.isWall=x=>x>=40;G.SurvivorMegas.tick(20,p);assert.equal(front.hits.length,count);G.World.isWall=()=>false;
+  if(stone==='baxcaliburite'){assert.deepEqual(front.slows[0],[.4,2]);front.boss=true;G.SurvivorMegas.tick(7,p);assert.deepEqual(front.slows.at(-1),[.15,2]);}
+ }
+});
