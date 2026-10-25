@@ -1,5 +1,5 @@
 {
-  "status": "draft-art-needs-visual-review",
+  "version": 2,
   "cell": [
     176,
     176
@@ -22,22 +22,383 @@
     "windup",
     "release"
   ],
-  "sourceBoxes": {
-    "x": [
-      0,
-      252,
-      495,
-      733,
-      975,
-      1312
-    ],
-    "y": [
-      0,
-      232,
-      468,
-      700,
-      933,
-      1178
-    ]
-  }
+  "design": "Official Mega Baxcalibur: enormous dark dorsal blade with icy edges; short abdominal hilt",
+  "sourceSha256": "a41d6a2b32d19f25b41bc85691d7e6ef3b71033faca1b84eff6547ca2cec8f3c",
+  "frames": [
+    {
+      "row": 0,
+      "col": 0,
+      "sourceBounds": [
+        65,
+        8,
+        200,
+        248
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        80,
+        142
+      ]
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "sourceBounds": [
+        316,
+        8,
+        450,
+        248
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        79,
+        142
+      ]
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "sourceBounds": [
+        564,
+        8,
+        698,
+        248
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        79,
+        142
+      ]
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "sourceBounds": [
+        809,
+        5,
+        972,
+        248
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        97,
+        144
+      ]
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "sourceBounds": [
+        1061,
+        5,
+        1230,
+        248
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        100,
+        144
+      ]
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "sourceBounds": [
+        48,
+        264,
+        227,
+        505
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        106,
+        143
+      ]
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "sourceBounds": [
+        313,
+        263,
+        505,
+        505
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        114,
+        144
+      ]
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "sourceBounds": [
+        567,
+        267,
+        752,
+        505
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        110,
+        141
+      ]
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "sourceBounds": [
+        805,
+        267,
+        1013,
+        505
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        123,
+        141
+      ]
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "sourceBounds": [
+        1062,
+        267,
+        1246,
+        505
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        109,
+        141
+      ]
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "sourceBounds": [
+        20,
+        514,
+        268,
+        751
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        147,
+        141
+      ]
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "sourceBounds": [
+        276,
+        514,
+        508,
+        751
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        138,
+        141
+      ]
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "sourceBounds": [
+        513,
+        513,
+        776,
+        751
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        156,
+        141
+      ]
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "sourceBounds": [
+        780,
+        514,
+        979,
+        751
+      ],
+      "mirrorSource": true,
+      "packedSize": [
+        118,
+        141
+      ]
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "sourceBounds": [
+        1013,
+        523,
+        1247,
+        751
+      ],
+      "mirrorSource": true,
+      "packedSize": [
+        139,
+        135
+      ]
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "sourceBounds": [
+        58,
+        759,
+        262,
+        985
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        121,
+        134
+      ]
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "sourceBounds": [
+        314,
+        759,
+        524,
+        985
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        125,
+        134
+      ]
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "sourceBounds": [
+        572,
+        760,
+        773,
+        985
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        119,
+        133
+      ]
+    },
+    {
+      "row": 3,
+      "col": 3,
+      "sourceBounds": [
+        784,
+        759,
+        975,
+        985
+      ],
+      "mirrorSource": true,
+      "packedSize": [
+        113,
+        134
+      ]
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "sourceBounds": [
+        1022,
+        759,
+        1259,
+        988
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        141,
+        136
+      ]
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "sourceBounds": [
+        65,
+        990,
+        200,
+        1230
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        80,
+        142
+      ]
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "sourceBounds": [
+        315,
+        990,
+        450,
+        1231
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        80,
+        143
+      ]
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "sourceBounds": [
+        564,
+        996,
+        698,
+        1236
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        79,
+        142
+      ]
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "sourceBounds": [
+        815,
+        995,
+        971,
+        1236
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        93,
+        143
+      ]
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "sourceBounds": [
+        1061,
+        1004,
+        1234,
+        1224
+      ],
+      "mirrorSource": false,
+      "packedSize": [
+        103,
+        130
+      ]
+    }
+  ]
 }

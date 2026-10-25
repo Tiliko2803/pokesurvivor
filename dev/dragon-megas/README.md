@@ -22,3 +22,11 @@ Generation prompts requested a transparent five-by-five pixel-art sheet, rows so
 ## Validation
 
 Automated suites cover Survivor unlock/equip/actual run entry, initial attacks, passives, pause/control guards, walls and boss slow; TFT Iridium purchases/resale/persistence, expanded flight, interruption, line damage and ally safety. Browser QA remains pending: this environment has no Playwright Chromium executable installed.
+
+## Baxcalibur sprite revision 2
+
+The preview now uses the corrected dorsal sword design (dark blade core, ice edges, lavender tips and short abdominal hilt). Twenty-five connected source poses were isolated separately, scaled together and foot-aligned inside padded 176px cells. Three left-facing attack source poses were mirrored for directional consistency. The new atlas retains the existing 880x880 layout and all animation timing. This replaces the earlier preliminary Baxcalibur artwork only in /dev/; Live and Salamence art are unchanged.
+
+Repacking: `python dev/dragon-megas/tools/pack_baxcalibur_v2.py SOURCE.png OUTPUT.png`. The downloaded PNG is the normalized 5x5 atlas ready for use. The source image hash and each source crop/flip are recorded in atlas.json.
+
+Validation: all 25 crops are nonempty with padding; the actual preview was loaded in Chromium at 1100x720 and 844x390. All 56 combinations of 8 facings and 7 animation states rendered nonempty. Survivor enters with Baxcaliburite and the correct animator, TFT resolves its shared Mega animator, and the versioned new atlas loads with no page errors or missing assets.
