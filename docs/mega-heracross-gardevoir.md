@@ -1,0 +1,38 @@
+# Mega Heracross and Mega Gardevoir
+
+Both forms are available in Survivor and TFT. Survivor uses its existing permanent Mega Stone mission: defeat three bosses in one clean normal solo run as the ordinary Pokémon, then equip its stone in the partner menu. TFT uses existing copy progression: 45 family copies in total, including three regular-price copies after complete Gold, reach Iridium. Shiny artwork is not supplied. Existing forms, saves, cloud merge, stats screens and rainbow transformation are retained.
+
+## Survivor
+
+**Mega Heracross** is Bug/Fighting with base stats 80/185/115/40/105/75 and level-2 Karate Chop. Encadenado starts after a 1.5-second warmup and initiates one five-shot volley every five simulation seconds. Shots are separated by 0.12 seconds, lock the starting aim, travel at speed 430 for one second and pierce two additional enemies. Each has physical Bug base damage `14 + level * 1.1`, using the player's physical attack. The fifth deals double damage against a target hit by at least three earlier shots from that same volley. Per-volley WeakMaps prevent duplicate targets or separate volleys/owners sharing combo credit. Collision, walls, type/weather/defense, criticals, damage accounting and cooperative enemy-hit replication use the normal projectile resolver. Suspended frames do not bank bursts; dead, remote and frozen owners cannot emit shots.
+
+**Mega Gardevoir** is Psychic/Fairy with base stats 68/85/65/165/135/100 and level-2 Hyper Voice. Pixilate converts Hyper Voice and its evolved instance to Fairy with 20% extra damage, without modifying ordinary instances. Remote cast visuals use the same conversion. Dominio Psíquico begins after a 1.5-second warmup and recurs every eight simulation seconds. It creates one fixed radius-160 zone at the current target within 320 units, or 140 units along the current aim. Walls stop the center's placement. The zone lasts four seconds, pulses Psychic special damage `12 + level * .7` at creation and every .5 seconds, and slows ordinary enemies 35% and bosses 15% for .8 seconds. It ends in Fairy special damage `70 + level * 3`, knocking back ordinary enemies only. Area upgrades scale the radius once. Owner death, remote state or freezing disables progression; a new run owns a fresh state.
+
+## TFT
+
+**Mega Heracross — Batería Rompeasedios:** becomes ranged artillery with range three and retreats from nearby enemies. Its spell releases five Bug impacts at 85% attack each into a cone of radius three. Each shot chooses a living, visible enemy with the fewest assigned hits, then distance/id for deterministic ties. Remaining shots concentrate on survivors. The fifth doubles its damage if its chosen target has already taken three hits in that volley. The volley uses at least 50% armor penetration, restored afterward; allies and targets outside the cone are unaffected. Its ordinary form's grappling identity remains intact.
+
+**Mega Gardevoir — Coro Protector:** heals the two most injured living allies for 300% attack and grants shields worth 15% of each recipient's maximum HP. A radius-two Fairy wave deals 180% attack and slows enemies by 25% for two seconds. Its original single-use rescue still saves a different ally from lethal damage, finds a legal free landing behind Gardevoir and grants a 25% shield. The Mega additionally queues **Contravoz** at that landing point for the next attack beat: 220% Fairy damage in radius two, a one-cell push for ordinary enemies, and a 15% shield for allies within radius one. Bosses are not moved. Stun cancels the queued wave; death prevents its execution. Shield caps, antiheal and rescue limits still apply. Pending wave coordinates and rescue usage validate and survive active-game reloads.
+
+## Sprites
+
+Generated with the built-in image-generation tool from official-design references:
+
+- Mega Heracross reference: `https://assets.pokemon.com/assets/cms2/img/pokedex/full/214_f2.png`.
+- Mega Gardevoir reference: `https://archives.bulbagarden.net/media/upload/3/3d/0282Gardevoir-Mega.png`.
+
+Final game assets are `assets/pokemon/214/mega/poses.webp` and `assets/pokemon/282/mega/poses.webp`. Each folder includes the generated `poses-source.webp` and crop manifest `atlas.json`. Run `python tools/prepare_hera_gardevoir.py DEX SOURCE.png` to repack supplied artwork. Atlases are 880×880, with 176×176 cells and foot anchor (88,164). Five supplied facings plus mirrored side views cover eight directions. Standing, two walking poses and two arm-action poses animate idle, walk, casting and attacks. Hurt/faint reuse those poses with recoil/sinking/fading; no separate faint or shiny sheet is claimed. Encoder fringes are removed; manually inspected row dividers preserve Heracross's full horns and feet.
+
+Heracross prompt:
+
+> Transparent pixel-art animation sprite sheet of Mega Heracross, the blue beetle Pokémon in the reference. Preserve its bulky navy blue body, orange forehead and orange joint seams, yellow eyes, big rounded forearms, white claws, segmented abdomen and long upward horn. Exactly FIVE columns and FIVE rows, 25 separate full-body poses. Equal cells, generous transparent padding around every pose, no clipping of horn or feet. Rows: front, front-left, left, back-left, back. Columns: standing, walking left step, walking right step, arms drawing inward, arms reaching forward. Maintain each row's viewing direction throughout its five poses. Show its real back in the last rows. Crisp outlined pixel art for a Pokémon Mystery Dungeon style top-down game. Consistent scale and anatomy. No effects, text, labels, grid, shadows, accessories, ground or background.
+
+Gardevoir prompt:
+
+> Production pixel art GAME SPRITE SHEET of official Mega Gardevoir from reference. Preserve its pale green rounded bob hairstyle, white face, red eyes, pointed white face side fins, two red chest fins, slender white arms, and magnificent wide white ball gown. Exactly FIVE COLUMNS by FIVE ROWS, 25 full-body sprites in equal cells on transparent background, generous empty transparent margins on all sides of EVERY sprite including outer edges. Consistent game scale and crisp dark pixel outlines, limited palette pixel clusters, Pokémon Mystery Dungeon top-down action game style. Rows show south front, southwest front-left, west left profile, northwest back-left, north full back. Every column in each row MUST keep that row's facing. Columns: idle arms slightly open; walking/gliding step left with skirt sway; walking/gliding step right with skirt sway; psychic cast windup hands brought inward; psychic release arms spread and skirt slightly open. Actual back in last two rows, no face facing viewer. Keep head, hands and full gown hem entirely INSIDE each cell. No added effects, text, grid lines, labels, shadows, objects, background or cropped character parts. True transparent background.
+
+## Validation
+
+`node --test tests/tft*.test.cjs tests/survivor-megas.test.cjs tests/mega-*.test.cjs tests/github-pages-publish.test.cjs` covers all nine Iridium families, stone missions, equip/removal, stat conversion, real projectile collision/combo damage, domain placement and timing, Pixilate, cone allocation, rescue/counterwave limits, interruption, bosses, invalid saves and deterministic combat after reload.
+
+`MEGA_DEXES=214,282 node tests/survivor-megas-browser.cjs` checks the real published entry point at desktop and mobile landscape sizes, eight distinct facings, atlas readiness, level-2 starters, transformation, enemy damage, pause and removal. `node tests/tft-hera-gardevoir-browser.cjs` checks main-source desktop and /dev/ mobile portrait, 45-copy purchases, sprites, five-shot/wave effects and saved-game reload. Both browser scripts require Playwright Chromium.

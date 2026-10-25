@@ -16,9 +16,9 @@ const root=path.join(__dirname,'..'),port=8897;
    page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()===404)missing.push(r.url());});
    await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
    await page.goto(`http://127.0.0.1:${port}/`);
-   await page.waitForFunction(()=>window.G?.SurvivorMegas&&window.G?.Flow);
+   await page.waitForFunction(()=>window.G?.SurvivorMegas&&window.G?.Flow&&document.getElementById('boot').classList.contains('hidden'));
    await page.evaluate(()=>{document.getElementById('tap-start').classList.add('hidden');G.DB.playAsGuest();});
-   for(const dex of [530,154]){
+   for(const dex of (process.env.MEGA_DEXES?process.env.MEGA_DEXES.split(',').map(Number):[530,154,214,282])){
     await page.evaluate(dex=>{
      const s=G.DB.save;s.partner=dex;s.owned[dex]={at:1};s.megaStones[G.Mega.definition(dex).id]=1;
      G.Mega.equip(s,dex,true);G.Flow.goMenu();

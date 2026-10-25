@@ -997,8 +997,8 @@ test('mixed pseudo fights keep distinct cells, valid saves and deterministic res
  };assert.equal(run(.05),run(.1));
 });
 
-test('seven families reach Iridium after exactly three normal-price copies beyond complete Gold; id, placement and resale are preserved',()=>{
- const {E}=fixture();for(const dex of [260,257,248,959,47,530,154]){
+test('nine families reach Iridium after exactly three normal-price copies beyond complete Gold; id, placement and resale are preserved',()=>{
+ const {E}=fixture();for(const dex of [260,257,248,959,47,530,154,214,282]){
   const family=E.BY[dex].line[0],deck=[family,...E.DEFAULT_DECK.filter(d=>d!==family)].slice(0,10),s=E.create(924,deck);s.gold=10000;
   purchase(E,s,family,42);const u=s.units[0];assert.equal(u.promotion,6);E.place(s,u.id,20);const id=u.id,price=E.BY[dex].cost,gold=s.gold;
   assert.ok(E.trainingLabel(u).includes('0/3'));assert.equal(E.isMega(u),false);
@@ -1010,6 +1010,59 @@ test('seven families reach Iridium after exactly three normal-price copies beyon
  }
 });
 function megaBattle(E,specs){const v=battleFor(E,specs);for(const u of v.units)if(E.MEGAS[u.dex]&&u.side===0)u.promotion=7;return v;}
+test('Mega Heracross becomes ranged artillery and spreads five shots only among living foes in its cone',()=>{
+ const {E}=fixture(),{b,units:[a,t,v,off,ally]}=megaBattle(E,[[214,3,0,2,4],[7,1,1,2,3],[7,1,1,3,2],[7,1,1,5,4],[7,1,0,1,3]]);
+ const p=E.preview({units:[]},{dex:214,star:3,promotion:7,pos:26,id:9});assert.equal(p.ai,'ranged');assert.equal(p.range,3);
+ const ordinary=E.preview({units:[]},{dex:214,star:3,pos:26,id:9});assert.equal(ordinary.range,1);
+ const hp=ally.hp;E.cast(b,a,t);const shots=b.events.filter(e=>e.kind==='barrageSeed');
+ assert.equal(shots.length,5);assert.equal(shots.filter(e=>e.to===t.id).length,3);assert.equal(shots.filter(e=>e.to===v.id).length,2);
+ assert.equal(off.hp,off.maxHp);assert.equal(ally.hp,hp);assert.equal(a.pierce,0);
+});
+test('a lone surviving target receives Heracross remaining shots and the chained fifth is enhanced',()=>{
+ const {E}=fixture(),{b,units:[a,t,next]}=megaBattle(E,[[214,3,0,2,4],[7,1,1,2,3],[7,1,1,2,2]]);
+ t.hp=1;E.cast(b,a,t);const shots=b.events.filter(e=>e.kind==='barrageSeed');
+ assert.equal(shots.length,5);assert.equal(shots.filter(e=>e.to===t.id).length,1);assert.equal(shots.filter(e=>e.to===next.id).length,4);
+ assert.equal(shots[4].finisher,true);assert.equal(t.hp,0);
+ const q=megaBattle(E,[[214,3,0,2,4],[7,1,1,2,3]]);q.units[1].shadowed=true;E.cast(q.b,q.units[0],q.units[1]);assert.equal(q.b.events.filter(e=>e.kind==='barrageSeed').length,0);
+});
+function rescueMatch(E,mega=true){
+ const q=(mega?megaBattle:battleFor)(E,[[282,3,0,2,3],[7,1,0,2,2],[68,3,1,2,1],[7,1,1,3,4],[7,1,1,2,5]]);
+ const [g,ally,foe,near,boss]=q.units;boss.boss=true;ally.hp=1;E.cast(q.b,foe,ally);return {...q,g,ally,foe,near,boss};
+}
+test('Mega Gardevoir turns its single rescue into a delayed Fairy counterwave, shielding allies without moving bosses',()=>{
+ const {E}=fixture(),q=rescueMatch(E),{s,b,g,ally,near,boss}=q;
+ assert.equal(g.rescueUsed,true);assert.equal(ally.hp,1);assert.equal(g.rescueWaveX,ally.x);assert.equal(g.rescueWaveY,ally.y);
+ const x=boss.x,y=boss.y,shield=ally.shield,hp=near.hp;reworkBeat(E,s);
+ assert.equal(g.rescueWaveX,undefined);assert.ok(near.hp<hp);assert.equal(near.x,4);assert.equal(boss.x,x);assert.equal(boss.y,y);
+ assert.ok(ally.shield>shield);assert.ok(ally.shield<=ally.maxHp*.5);assert.ok(b.events.some(e=>e.kind==='guardWave'));
+ ally.shield=0;ally.hp=1;E.cast(b,q.foe,ally);assert.equal(ally.hp,0,'rescue remains once per combat');
+});
+test('stun interrupts the counterwave, ordinary Gardevoir keeps its original rescue and death prevents the counterattack',()=>{
+ const {E}=fixture(),normal=rescueMatch(E,false);assert.equal(normal.g.rescueUsed,true);assert.equal(normal.g.rescueWaveX,undefined);
+ for(const dead of [false,true]){
+  const q=rescueMatch(E),hp=q.near.hp;
+  if(dead)q.g.hp=0;else E.stun(q.b,q.foe,q.g,.1);
+  reworkBeat(E,q.s);assert.equal(q.near.hp,hp);assert.equal(q.ally.hp,1);
+  if(!dead)assert.equal(q.g.rescueWaveX,undefined);
+ }
+});
+test('Mega Gardevoir active chorus heals two friends and controls nearby enemies without harming allies',()=>{
+ const {E}=fixture(),{b,units:[g,ally,other,foe,far]}=megaBattle(E,[[282,3,0,2,3],[7,1,0,1,3],[7,1,0,3,3],[7,1,1,2,2],[7,1,1,5,0]]);
+ ally.hp=other.hp=1;E.cast(b,g,foe);assert.ok(ally.hp>1&&other.hp>1);assert.ok(ally.shield>0&&other.shield>0);
+ assert.ok(foe.hp<foe.maxHp);assert.equal(foe.slowPower,.25);assert.equal(far.hp,far.maxHp);
+});
+test('new Iridium pair preserves a pending counterwave through valid saves and deterministic combat',()=>{
+ const {E}=fixture(),run=dt=>{
+  const deck=[214,280,...E.DEFAULT_DECK.filter(d=>d!==280)].slice(0,10),s=E.create(1314,deck);s.level=6;
+  s.units=[{id:1,dex:214,star:3,promotion:7,pos:24},{id:2,dex:282,star:3,promotion:7,pos:26},{id:3,dex:7,star:1,pos:20}];s.nextId=4;
+  s.opponent=[{id:-1,dex:68,star:3,pos:14},{id:-2,dex:7,star:1,pos:15}];s.opponentRound=1;E.start(s);
+  const ally=s.battle.units.find(u=>u.id===3),foe=s.battle.units.find(u=>u.id===-1);ally.hp=1;ally.shield=0;E.cast(s.battle,foe,ally);
+  const g=s.battle.units.find(u=>u.dex===282);assert.equal(g.rescueUsed,true);assert.notEqual(g.rescueWaveX,undefined);
+  const raw=E.serialize(s),copy=E.restore(raw);assert.ok(copy);const invalid=JSON.parse(raw);invalid.state.battle.units.find(u=>u.dex===282).rescueWaveX=7;assert.equal(E.restore(JSON.stringify(invalid)),null);
+  while(s.phase==='combat'){E.tick(s,dt);E.tick(copy,dt);assert.ok(E.restore(E.serialize(s)));}
+  const clean=b=>JSON.stringify(b.units.map(u=>{const v={...u};delete v.entrance;return v;}));assert.equal(clean(s.battle),clean(copy.battle));return JSON.stringify(s.result);
+ };assert.equal(run(.05),run(.1));
+});
 test('Mega Excadrill locks a warned tunnel, pierces its enemies and lands free without moving bosses or allies',()=>{
  const {E}=fixture(),{s,b,units:[a,t,back,boss,blocker,wing]}=megaBattle(E,[[530,3,0,2,5],[7,1,1,2,4],[7,1,1,2,2],[7,1,1,2,1],[7,1,0,2,0],[7,1,1,3,2]]);
  boss.boss=true;const hp=blocker.hp;E.cast(b,a,t);

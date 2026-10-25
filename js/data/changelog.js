@@ -6,6 +6,11 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  {d:'2026-10-25',title:['Mega Heracross y Mega Gardevoir','Mega Heracross and Mega Gardevoir'],new:[
+    ['Survivor: Mega Heracross encadena cinco disparos perforantes; Mega Gardevoir crea un Dominio Psíquico y transforma Vozarrón en Hada. Consigue sus piedras venciendo tres jefes en solitario con la forma normal.', 'Survivor: Mega Heracross chains five piercing shots; Mega Gardevoir creates a Psychic Domain and turns Hyper Voice into Fairy. Earn their stones by defeating three solo bosses with the normal form.'],
+    ['TFT: Heracross pasa a artillería con cinco disparos repartidos en cono. Gardevoir cura y protege; tras un rescate prepara una Contravoz que aparta enemigos y escuda el punto de llegada.', 'TFT: Heracross becomes artillery with five shots shared across a cone. Gardevoir heals and protects; after a rescue it prepares a counterwave that pushes enemies away and shields the landing point.'],
+    ['Nuevos sprites en ocho direcciones, ataques y megaevolución. En TFT ambos alcanzan Iridio con tres copias adicionales después de completar Oro.', 'New eight-direction sprites, attacks and Mega Evolution. In TFT both reach Iridium with three additional copies after complete Gold.']
+  ]},
   {d:'2026-10-24',title:['TFT: Mega Excadrill y Mega Meganium','TFT: Mega Excadrill and Mega Meganium'],new:[
     ['Dos nuevas megas de Iridio: completa Oro y compra tres copias más de Drilbur o Chikorita al precio normal. Conservan posición, sinergias, guardado y valor de venta.', 'Two new Iridium Megas: complete Gold and buy three more regular-price Drilbur or Chikorita copies. Placement, traits, saves and resale value are preserved.'],
     ['Mega Excadrill prepara Taladro Rompefilas: atraviesa una línea, perfora defensas y reduce la curación rival. Puedes interrumpirlo o salir de la trayectoria.', 'Mega Excadrill prepares a piercing tunnel that penetrates armor and reduces enemy healing. It can be interrupted or dodged.'],

@@ -1,6 +1,15 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
 const root=path.join(__dirname,'..');
+test('Heracross volleys and Gardevoir counterwaves render without global FX or combat mutations',()=>{
+ const {V,ctx,calls}=fixture(),units=[{id:1,dex:214,star:3,promotion:7,x:2,y:4,range:3,types:['bug','fighting']},{id:2,dex:282,star:3,promotion:7,x:3,y:4,range:3,types:['psychic','fairy']},{id:-1,dex:7,star:1,x:2,y:2,range:1,types:['water']}];
+ const events=[{kind:'barrageSeed',from:1,to:-1,sx:2,sy:4,tx:2,ty:2,shot:4,finisher:true,type:'bug',ttl:.4,life:.9},
+  {kind:'guardWarning',from:2,x:3,y:4,radius:2,type:'fairy',ttl:.5,life:1},{kind:'guardWave',from:2,x:3,y:4,radius:2,type:'fairy',ttl:.3,life:.7}];
+ const before=JSON.stringify({units,events});
+ for(const calm of [false,true])for(const quality of [0,2])for(const e of events){const n=calls.length;V.draw(ctx,e,units,{calm,quality});assert.ok(calls.length>n);}
+ assert.equal(JSON.stringify({units,events}),before);assert.equal(V.animation(units[0],events[0])[0].name,'Shoot');
+ assert.equal(V.actions(events).actions.get(1).e.kind,'barrageSeed');assert.equal(V.actions(events).actions.get(2).e.kind,'guardWave');
+});
 test('new Mega warnings, solar rays and gardens render in full and reduced modes without mutating combat',()=>{
  const {G,E,V,ctx,calls}=fixture(),loaded=[];
  G.SurvivorMegas={preload:d=>loaded.push(d),duration:{Attack:.42,Shoot:.48,Charge:.65}};

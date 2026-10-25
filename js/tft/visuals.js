@@ -8,7 +8,8 @@ G.TFTVisuals = (() => {
     'Gigadrenado':'giga-drain','Pulso Cura':'giga-drain','Deseo':'giga-drain','Síntesis':'giga-drain',
     'Amortiguador':'giga-drain','Aromaterapia':'giga-drain','Taladradora':'metal-claw','Demolición':'karate-chop',
     'A Bocajarro':'karate-chop','Doble Patada':'rolling-kick','Patada Ígnea':'rolling-kick',
-    'Taladro Rompefilas':'metal-claw','Jardín Solar':'solar-beam'};
+    'Taladro Rompefilas':'metal-claw','Jardín Solar':'solar-beam',
+    'Batería Rompeasedios':'poison-sting','Coro Protector':'hyper-voice'};
   const moves=new Map((G.Moves?.ALL||[]).map(m=>[m.name,m]));
   function style(u,e) {
     const name=e.move||(e.kind==='spell'?G.TFT.moveFor(u):''),move=moves.get(name);
@@ -19,7 +20,7 @@ G.TFTVisuals = (() => {
     return {...vis,name,meteor:/Cometa|Avalancha|Meteoro|Martillo Colosal|Martillo Cataclísmico/.test(name)};
   }
   function animation(u,e) {
-    if(G.TFT.isMega(u)&&[530,154].includes(u.dex)){
+    if(G.TFT.isMega(u)&&[530,154,214,282].includes(u.dex)){
       if(e.kind==='drillWarning')return [{name:'Charge',duration:.5}];
       return [{name:u.dex===530?'Attack':'Shoot',duration:.4}];
     }
@@ -32,12 +33,12 @@ G.TFTVisuals = (() => {
     return [{name:strike,duration:special?.35:.25}];
   }
   function animationSpeed(dex,name,duration,mega=false) {
-    if(mega&&[530,154].includes(dex)&&G.SurvivorMegas)return G.SurvivorMegas.duration[name]/Math.max(.05,duration);
+    if(mega&&[530,154,214,282].includes(dex)&&G.SurvivorMegas)return G.SurvivorMegas.duration[name]/Math.max(.05,duration);
     const m=G.Sprites.animMeta(dex,name);
     return m?clamp(m.d.reduce((a,n)=>a+n,0)/60/Math.max(.05,duration),.25,12):1;
   }
   function warm(units) {
-    for(const u of units)if(G.TFT.isMega(u)&&[530,154].includes(u.dex))G.SurvivorMegas?.preload(u.dex);
+    for(const u of units)if(G.TFT.isMega(u)&&[530,154,214,282].includes(u.dex))G.SurvivorMegas?.preload(u.dex);
     if(units.some(u=>u.dex===887))G.Sprites.sheet(885,'Idle');
     for(const dex of new Set(units.map(u=>u.dex)))for(const name of ['Idle','Walk','Attack','Shoot','Charge','Hurt','Faint'])
       if(G.Sprites.meta(dex)?.a[name])G.Sprites.sheet(dex,name);
@@ -47,7 +48,7 @@ G.TFTVisuals = (() => {
     for(const e of events){
       if(e.to&&['hit','spell'].includes(e.kind))hurt.add(e.to);
       if(e.periodic)continue;
-      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,megaDrill:4,drillWarning:4,solarRay:4,flight:4,blink:4,rescue:4,throw:4,flank:4,dreepy:4,leafFan:4,headShot:4,lift:4}[e.kind]||0;
+      const priority={hit:1,spell:2,cast:3,entryCast:3,drill:4,megaDrill:4,drillWarning:4,solarRay:4,barrageSeed:4,guardWave:4,flight:4,blink:4,rescue:4,throw:4,flank:4,dreepy:4,leafFan:4,headShot:4,lift:4}[e.kind]||0;
       if(priority&&(!actions.has(e.from)||actions.get(e.from).priority<priority))actions.set(e.from,{e,priority});
     }
     return {actions,hurt};
@@ -100,7 +101,15 @@ G.TFTVisuals = (() => {
       G.VFX.draw(ctx,shape,pal,clamp(x,0,600),clamp(y,0,600),{scale,alpha,angle:rotation,frame:calm?0:frame});
     };
     ctx.save();ctx.imageSmoothingEnabled=false;
-    if(e.kind==='drillWarning') {
+    if(e.kind==='barrageSeed') {
+      const t=calm?1:clamp((p-e.shot*.09)/.55,0,1);
+      sprite('ball','bug',sx+(tx-sx)*t,sy+(ty-sy)*t,e.finisher?1.3:.8,fade,angle);
+      if(t>.8)sprite('impact','bug',tx,ty,e.finisher?1.8:1,fade);
+    } else if(e.kind==='guardWave'||e.kind==='guardWarning') {
+      const cx=e.x*100+50,cy=e.y*100+48,r=e.kind==='guardWarning'?1.5:1+p*7;
+      sprite('ring','fairy',cx,cy,r,e.kind==='guardWarning'?.5:fade);
+      if(e.kind==='guardWave'&&!low)for(let i=0;i<6;i++){const a=i*Math.PI/3;sprite('star','fairy',cx+Math.cos(a)*p*160,cy+Math.sin(a)*p*160,.6,fade);}
+    } else if(e.kind==='drillWarning') {
       ctx.strokeStyle='#ffd09b';ctx.lineWidth=3;ctx.globalAlpha=calm?.7:.4+Math.sin(p*Math.PI*4)*.15;
       for(const cell of e.cells)ctx.strokeRect(cell%6*100+12,Math.floor(cell/6)*100+12,74,74);
     } else if(e.kind==='garden') {

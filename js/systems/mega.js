@@ -19,6 +19,12 @@ G.Mega=(()=>{
   return true;
  }
  const DEFINITIONS={
+  214:{id:'heracronite',dex:214,name:'Heracronita',form:'Mega Heracross',progress:'heracrossBosses',start:'karate-chop',hp:1,atk:1,spd:1,shiny:false,
+    types:['bug','fighting'],stats:{hp:80,atk:185,def:115,spa:40,spd:105,spe:75},
+    help:'Golpe Kárate Nv. 2 · Encadenado: cinco disparos perforantes cada 5 s; el último duplica su daño si la presa recibió al menos tres de esa ráfaga.'},
+  282:{id:'gardevoirite',dex:282,name:'Gardevoirita',form:'Mega Gardevoir',progress:'gardevoirBosses',start:'hyper-voice',hp:1,atk:1,spd:1,shiny:false,
+    types:['psychic','fairy'],stats:{hp:68,atk:85,def:65,spa:165,spd:135,spe:100},
+    help:'Vozarrón Nv. 2 · Piel Feérica: Vozarrón es Hada y +20% daño · Dominio Psíquico: zona fija que ralentiza y termina en una explosión de Hada.'},
   530:{id:'excadrillite',dex:530,name:'Excadrillita',form:'Mega Excadrill',progress:'excadrillBosses',start:'metal-claw',hp:1,atk:1,spd:1,shiny:false,
     types:['ground','steel'],stats:{hp:110,atk:165,def:100,spa:65,spd:65,spe:103},
     help:'Garra Metal Nv. 2 · Taladro Rompefilas: perforación cada 4 s, atraviesa hordas y hace +50% de daño a sanadores y escuderos.'},
@@ -81,6 +87,7 @@ G.Mega=(()=>{
   return form;
  }
  function damageMultiplier(pl,m){
+  if(pl?.mega==='gardevoirite'&&m?.id==='hyper-voice')return 1.2;
   if(!pl||pl.mega!=='tinkatonite'||!m||!(m.dmg>0))return 1;
   const category=m.category||(m.def&&m.def.category);
   if(category==='physical')return 2;

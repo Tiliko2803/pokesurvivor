@@ -1,4 +1,4 @@
-/* Survivor-only Mega Excadrill and Mega Meganium. Timers belong to each
+/* Survivor Mega sprite packs and passives. Timers belong to each
  * local player and advance exclusively through the combat simulation. */
 G.SurvivorMegas=(()=>{
  const W=176,H=176,AX=88,AY=164;
@@ -6,8 +6,9 @@ G.SurvivorMegas=(()=>{
  const frames={Idle:[0],Walk:[0,1,0,2],Attack:[3,4,0],Shoot:[3,4,0],Charge:[3,4],Hurt:[3],Faint:[0]};
  const rows=[0,1,2,3,4,3,2,1],mirror=[false,true,true,true,false,false,false,false];
  const images=new Map();
+ const DEXES=[530,154,214,282];
  function pack(dex){
-  if(+dex!==530&&+dex!==154)return null;
+  if(!DEXES.includes(+dex))return null;
   const entry=images.get(+dex);
   return {ready:()=>!!entry?.ready,failed:()=>!!entry?.failed};
  }
@@ -52,6 +53,50 @@ G.SurvivorMegas=(()=>{
  const states=new WeakMap();
  const drill={id:'mega-drill',type:'ground',cat:'physical',category:'physical'};
  const solar={id:'mega-solar',type:'grass',cat:'special',category:'special'};
+ const psychic={id:'gardevoir-domain',type:'psychic',cat:'special',category:'special'};
+ const voice={id:'gardevoir-crescendo',type:'fairy',cat:'special',category:'special'};
+ const seed={id:'heracross-barrage',type:'bug',cat:'physical',category:'physical'};
+ function projectileMultiplier(p,e){
+  if(!p.heracrossVolley)return 1;
+  const n=p.heracrossVolley.get(e)||0;p.heracrossVolley.set(e,n+1);
+  return p.heracrossFinisher&&n>=3?2:1;
+ }
+ function heracrossTick(dt,pl,s){
+  s.timer-=dt;
+  if(s.timer<=0&&!s.shots){s.timer=5;s.shots=5;s.shotT=0;s.angle=Number.isFinite(pl.aim)?pl.aim:0;s.volley=new WeakMap();pl.anim?.play('Shoot');}
+  if(!s.shots)return;
+  s.shotT-=dt;if(s.shotT>0)return;
+  const angle=s.angle,area=pl.areaMul||1;s.shotT=.12;
+  G.Projectiles.spawn({x:pl.x+Math.cos(angle)*8,y:pl.y+Math.sin(angle)*8,
+   vx:Math.cos(angle)*430,vy:Math.sin(angle)*430,dmg:(14+pl.level*1.1)*pl.atkFor(seed),
+   r:6*area,life:1,pierce:2,hits:new Set(),owner:pl,color:'#bed16d',vis:G.VFX.forType('bug'),
+   mtype:'bug',mcat:'physical',heracrossVolley:s.volley,heracrossFinisher:s.shots===1});
+  s.shots--;if(!s.shots)s.volley=null;
+ }
+ function domainPulse(pl,zone,final=false){
+  const radius=zone.radius,move=final?voice:psychic;
+  G.FX.ring(zone.x,zone.y,final?20:radius*.8,radius,final?'#ffb5dd':'#b7a8f1',final ? .65 : .45,3);
+  for(const e of G.EnemyMgr.queryCircle(zone.x,zone.y,radius)){
+   if(Math.hypot(e.x-zone.x,e.y-zone.y)>radius+(e.r||0))continue;
+   const touched=hit(pl,e,move,final?70+pl.level*3:12+pl.level*.7,final?'#ffb5dd':'#b7a8f1',e.x-zone.x,e.y-zone.y,final&&!e.boss?180:0);
+   if(touched&&!final&&!e.dead)e.applySlow(e.boss ? .15 : .35,.8);
+  }
+ }
+ function gardevoirTick(dt,pl,s){
+  s.timer-=dt;
+  if(s.zone){
+   const z=s.zone;z.left-=dt;z.pulse-=dt;
+   if(z.left<=0){domainPulse(pl,z,true);pl.anim?.play('Shoot');s.zone=null;}
+   else if(z.pulse<=0){z.pulse=.5;domainPulse(pl,z);}
+  }
+  if(s.timer>0||s.zone)return;
+  s.timer=8;const a=Number.isFinite(pl.aim)?pl.aim:0;
+  const target=pl.target&&!pl.target.dead&&Math.hypot(pl.target.x-pl.x,pl.target.y-pl.y)<=320?pl.target:null;
+  let x=target?target.x:pl.x+Math.cos(a)*140,y=target?target.y:pl.y+Math.sin(a)*140;
+  const length=Math.hypot(x-pl.x,y-pl.y),dx=(x-pl.x)/(length||1),dy=(y-pl.y)/(length||1);
+  for(let d=8;d<=length;d+=8)if(G.World.isWall(pl.x+dx*d,pl.y+dy*d)){x=pl.x+dx*Math.max(0,d-8);y=pl.y+dy*Math.max(0,d-8);break;}
+  s.zone={x,y,radius:160*(pl.areaMul||1),left:4,pulse:.5};pl.anim?.play('Charge');domainPulse(pl,s.zone);
+ }
  function hit(pl,e,move,base,color,dx=0,dy=0,knock=0){
   if(e.dead||!(e.hp>0))return false;
   const dmg=base*pl.atkFor(move)*G.Types.mult(move.type,e.types)*G.Weather.mult(move.type)*G.Stats.taken(e.mon,move.cat);
@@ -73,8 +118,10 @@ G.SurvivorMegas=(()=>{
   return hits;
  }
  function tick(dt,pl){
-  if(!['excadrillite','meganiumite'].includes(pl.mega)||pl.dead||pl.remote||pl.frozen||!Number.isFinite(dt)||dt<=0)return;
+  if(!['excadrillite','meganiumite','heracronite','gardevoirite'].includes(pl.mega)||pl.dead||pl.remote||pl.frozen||!Number.isFinite(dt)||dt<=0)return;
   let s=states.get(pl);if(!s){s={timer:1.5};states.set(pl,s);}
+  if(pl.mega==='heracronite'){heracrossTick(dt,pl,s);return;}
+  if(pl.mega==='gardevoirite'){gardevoirTick(dt,pl,s);return;}
   s.timer-=dt;if(s.timer>0)return;
   const area=pl.areaMul||1,angle=Number.isFinite(pl.aim)?pl.aim:0;
   if(pl.mega==='excadrillite'){
@@ -89,5 +136,5 @@ G.SurvivorMegas=(()=>{
    if(hits)pl.heal(pl.maxHp*.04);
   }
  }
- return {Animator,duration,frames,rows,mirror,cell:[W,H],anchor:[AX,AY],preload,pack,tick,ray};
+ return {Animator,duration,frames,rows,mirror,cell:[W,H],anchor:[AX,AY],preload,pack,tick,ray,projectileMultiplier,DEXES};
 })();

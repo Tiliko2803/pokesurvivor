@@ -34,6 +34,7 @@ G.Combat = (() => {
     const out = Object.assign({}, m);
     out.sourceMove = m;
     if(instantSolar){out.kind='beam';out.charge=0;}
+    if(pl.mega==='gardevoirite'&&m.id==='hyper-voice')out.type='fairy';
     if (m.dmg != null) out.dmg = m.dmg * power;
     for (const key of ['radius', 'width', 'size']) if (m[key] != null) out[key] = m[key] * area;
     // No alarga recargas, demoras de meteoros ni viajes de proyectiles.
@@ -746,7 +747,7 @@ G.Combat = (() => {
     ghost = true;
     try {
       pl.cast(m);
-      run(pl, effectiveMove({ areaMul: area || pl.areaMul, durationMul: duration || pl.durationMul }, m));
+      run(pl, effectiveMove({ mega:pl.mega,mon:pl.mon,areaMul: area || pl.areaMul, durationMul: duration || pl.durationMul }, m));
     } finally { ghost = false; }
   }
 
@@ -875,7 +876,8 @@ G.Combat = (() => {
         }
 
         const crit = isCrit(pl);
-        const k = (p.mtype ? typeK(p.mtype, e) : 1) * G.Stats.taken(e.mon, p.mcat) * (crit ? pl.critMul || 1.5 : 1);
+        const link=G.SurvivorMegas?.projectileMultiplier(p,e)||1;
+        const k = (p.mtype ? typeK(p.mtype, e) : 1) * G.Stats.taken(e.mon, p.mcat) * (crit ? pl.critMul || 1.5 : 1)*link;
         e.hurt(p.dmg * k, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), p.knock,
                crit ? 'crit' : p.mtype ? G.Types.label(G.Types.mult(p.mtype, e.types)) : null);
         if (Math.random() < 0.5) G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });

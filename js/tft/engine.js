@@ -2472,6 +2472,8 @@ G.TFT = (() => {
   const TRAINING_COSTS=[3,4,5,6,7,8];
   const MEGAS={260:{name:'Mega Swampert',move:'Diluvio Sísmico',type:'water',description:'Lanza dos frentes de inundación en direcciones opuestas, de tres casillas de ancho. Avanzan en pulsos de movimiento; cada frente golpea una vez por enemigo (180%) y empuja una casilla libre. Sus básicos salpican a enemigos adyacentes a la presa (35%).'},257:{name:'Mega Blaziken',move:'Relevos Ígneos',type:'fire',description:'Salta sucesivamente junto a hasta tres enemigos distintos a distancia 4 con casillas libres y les da una patada (160%) que quema durante 3 segundos. Impulso: cada básico gana 10% de potencia y maná, hasta 50%; aturdirlo reinicia la acumulación.'},248:{name:'Mega Tyranitar',move:'Rey de la Tormenta',type:'rock',description:'Mientras pueda actuar, su arena de radio 2 obliga a enemigos dentro a seleccionar objetivos dentro de esa misma tormenta para sus básicos. Cada pulso de movimiento daña dentro (25%). Su habilidad atrae una casilla a enemigos a distancia 3 si hay espacio, rompe sus escudos y golpea (220%). Los jefes no se desplazan.'},959:{name:'Mega Tinkaton',move:'Martillo Cataclísmico',type:'steel',description:'Prepara un martillazo de radio 2 (450%) que destruye escudos; deja una réplica (150%) en el siguiente pulso de ataque. Mantiene recuperación y puede ser interrumpida antes del primer golpe.'},47:{name:'Mega Parasect',move:'Red Fúngica',type:'ghost',description:'Infecta hasta tres enemigos a alcance 3. En cada pulso de movimiento drena 35% del ataque y cura al aliado más herido a distancia 2 de cada víctima. Cada infectado muerto propaga una sola vez a dos enemigos a distancia 2. Sin acumulación de marcas del mismo Parasect.'}};
   Object.assign(MEGAS,{
+    214:{name:'Mega Heracross',move:'Batería Rompeasedios',type:'bug',description:'Artillería de alcance 3: dispara cinco impactos del 85% del ataque en un cono. Reparte los tiros entre enemigos vivos de la zona; los sobrantes se concentran en los supervivientes. Ignora 50% de defensa. El quinto duplica su daño si esa presa recibió al menos tres impactos de la ráfaga. Retrocede si se le acercan.'},
+    282:{name:'Mega Gardevoir',move:'Coro Protector',type:'fairy',description:'Cura a dos aliados por 300% del ataque y los escuda con 15% de su vida; una onda de Hada daña a enemigos a 2 casillas (180%) y ralentiza 25%. Rescate conserva un uso por combate y prepara una Contravoz en el siguiente pulso de ataque: golpea con 220% alrededor del punto de llegada, empuja una casilla sin mover jefes y escuda a aliados próximos. Aturdirla interrumpe la Contravoz.'},
     530:{name:'Mega Excadrill',move:'Taladro Rompefilas',type:'ground',description:'Prepara una perforación recta de hasta 5 casillas y la ejecuta en el siguiente pulso de ataque. Atraviesa enemigos con 280% del ataque, ignora 50% de defensa y reduce a la mitad la curación recibida durante 3 segundos. Termina en la última casilla libre; los aliados bloquean el túnel. Aturdirlo cancela la preparación. Los enemigos pueden salir de la trayectoria.'},
     154:{name:'Mega Meganium',move:'Jardín Solar',type:'grass',description:'Dispara cuatro rayos cardinales de alcance 4 (150% del ataque) que ralentizan 25% durante 2 segundos. Limpia quemaduras, ralentizaciones y aturdimientos de aliados a 2 casillas. Deja un jardín fijo de radio 2 durante cuatro pulsos de movimiento: cura a los dos aliados más heridos por 75% del ataque por pulso. Aturdida pierde el pulso; al caer cesa el jardín. Planta/Hada.'}
   });
@@ -2820,7 +2822,7 @@ G.TFT = (() => {
       if(def.role==='tank'||['tank','guardian'].includes(ai))f.attack*=.8;
     }
     if(def.line[0]===661)f.basicType='flying';
-    if(isMega(u)){f.maxHp*=1.15;f.attack*=1.15;if(u.dex===47)f.types=['bug','ghost'];}
+    if(isMega(u)){f.maxHp*=1.15;f.attack*=1.15;if(u.dex===47)f.types=['bug','ghost'];if(u.dex===214){f.ai='ranged';f.range=3;}}
     f.hp=f.maxHp;return f;
   }
   const SIGNATURES={
@@ -3054,7 +3056,10 @@ G.TFT = (() => {
     t.flash=.16;t.mana=Math.min(100,t.mana+8);
     if(a.slow)t.slowUntil=b.time+2,t.slowPower=a.slow;
     b.events.push({kind:spell?'spell':'hit',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,type,move:spell?moveFor(a):null,periodic,amount:lost,absorbed,beat:b.beat,ttl:.45});
-    if(rescue)shield(b,rescue,t,t.maxHp*.25);
+    if(rescue){
+      shield(b,rescue,t,t.maxHp*.25);
+      if(isMega(rescue)){rescue.rescueWaveX=t.x;rescue.rescueWaveY=t.y;b.events.push({kind:'guardWarning',from:rescue.id,x:t.x,y:t.y,radius:2,type:'fairy',ttl:1,life:1});}
+    }
     if(!spell&&!periodic&&isMega(a)&&a.dex===260){const center={x:t.x,y:t.y};for(const u of b.units.filter(u=>u!==t&&u.side!==a.side&&u.hp>0&&!u.shadowed&&distance(center,u)<=1))hit(b,a,u,power*.35,true,'water',true);}
     // Reflection is a spell marked periodic: it cannot reflect again or replay a cast.
     if(!spell&&!periodic&&lost>0&&t.thorns&&a.side!==t.side&&a.hp>0&&distance(a,t)<=1)hit(b,t,a,lost*t.thorns,true,'steel',true);
@@ -3104,6 +3109,7 @@ G.TFT = (() => {
     const until=b.time+duration;
     if(until>(t.stunUntil||0)){t.stunUntil=until;t.stunSource=a.id;}
     if(t.dex===959){delete t.hammerX;delete t.hammerY;b.events=b.events.filter(e=>e.kind!=='warning'||e.from!==t.id);}
+    if(t.rescueWaveX!==undefined){delete t.rescueWaveX;delete t.rescueWaveY;b.events=b.events.filter(e=>e.kind!=='guardWarning'||e.from!==t.id);}
     if(t.megaDrillDx!==undefined){delete t.megaDrillDx;delete t.megaDrillDy;b.events=b.events.filter(e=>e.kind!=='drillWarning'||e.from!==t.id);}
     if(isMega(t)&&t.dex===257)t.impulse=0;
     if(t.dex===94)delete t.ambushPending;
@@ -3388,8 +3394,37 @@ G.TFT = (() => {
     a.pierce=old;a.x=landing.x;a.y=landing.y;
     b.events.push({kind:'megaDrill',from:a.id,sx,sy,tx:last===undefined?sx:last%COLS,ty:last===undefined?sy:Math.floor(last/COLS),type:'ground',ttl:.7,life:.7});
   }
+  function guardWave(b,a,center,power,pushEnemies=false){
+    const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&distance(center,t)<=2);
+    b.events.push({kind:'guardWave',from:a.id,x:center.x,y:center.y,radius:2,type:'fairy',ttl:.7,life:.7});
+    for(const t of foes){
+      hit(b,a,t,a.attack*power,true,'fairy');
+      if(t.hp<=0)continue;
+      t.slowPower=Math.max(t.slowUntil>b.time?t.slowPower||0:0,.25);t.slowUntil=Math.max(t.slowUntil||0,b.time+2);
+      if(pushEnemies&&!t.boss)push(b,center,t,1);
+    }
+    if(pushEnemies)for(const ally of b.units.filter(t=>t.side===a.side&&t.hp>0&&distance(center,t)<=1))shield(b,a,ally,ally.maxHp*.15);
+  }
   function megaCast(b,a,target){
     if(!isMega(a)||a.dex===959)return false;
+    if(a.dex===214){
+      const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1,counts=new Map(),old=a.pierce;
+      a.pierce=Math.max(old,.5);
+      for(let shot=0;shot<5;shot++){
+        const foes=b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed&&Math.hypot(t.x-a.x,t.y-a.y)<=3&&
+          ((t.x-a.x)*dx+(t.y-a.y)*dy)/(len*(Math.hypot(t.x-a.x,t.y-a.y)||1))>=.65)
+          .sort((x,y)=>(counts.get(x.id)||0)-(counts.get(y.id)||0)||distance(a,x)-distance(a,y)||x.id-y.id);
+        const t=foes[0];if(!t)break;const n=counts.get(t.id)||0,final=shot===4&&n>=3;
+        counts.set(t.id,n+1);hit(b,a,t,a.attack*.85*(final?2:1),true,'bug');
+        b.events.push({kind:'barrageSeed',from:a.id,to:t.id,sx:a.x,sy:a.y,tx:t.x,ty:t.y,shot,finisher:final,type:'bug',ttl:.9,life:.9});
+      }
+      a.pierce=old;return true;
+    }
+    if(a.dex===282){
+      const friends=b.units.filter(t=>t.side===a.side&&t.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id).slice(0,2);
+      for(const ally of friends){heal(b,a,ally,a.attack*3);shield(b,a,ally,ally.maxHp*.15);}
+      guardWave(b,a,{x:a.x,y:a.y},1.8);return true;
+    }
     if(a.dex===530){
       const {dx,dy}=cardinal(a,target);a.megaDrillDx=dx;a.megaDrillDy=dy;
       const {cells}=megaDrillPath(b,a,dx,dy),last=cells.at(-1);
@@ -3492,6 +3527,10 @@ G.TFT = (() => {
     return true;
   }
   function tacticalPulse(b,a) {
+    if(a.rescueWaveX!==undefined){
+      const center={x:a.rescueWaveX,y:a.rescueWaveY};delete a.rescueWaveX;delete a.rescueWaveY;
+      if(!isStunned(b,a)&&!a.shadowed)guardWave(b,a,center,2.2,true);return true;
+    }
     if(a.megaDrillDx!==undefined){megaDrillPulse(b,a);return true;}
     if(a.liftedBy!==undefined)return true;
     if(pseudoPulse(b,a))return true;
@@ -3749,6 +3788,7 @@ G.TFT = (() => {
           (u.liftedBy===undefined||!u.boss&&int(u.liftedBy,-6,100000))&&
           (u.ambushPending===undefined||u.dex===94&&u.ambushPending===true)&&
           (u.shadowed===undefined||u.dex===94&&u.shadowed===true&&u.ambushPending===true)&&
+          (u.rescueWaveX===undefined&&u.rescueWaveY===undefined||isMega(u)&&u.dex===282&&u.rescueUsed===true&&int(u.rescueWaveX,0,5)&&int(u.rescueWaveY,0,5))&&
           (u.rescueUsed===undefined||u.dex===282&&typeof u.rescueUsed==='boolean')&&
           (u.bulletPulses===undefined||u.dex===212&&int(u.bulletPulses,1,3))&&
           (u.hammerRecovery===undefined||u.dex===959&&u.hammerRecovery===true)&&
