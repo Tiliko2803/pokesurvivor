@@ -287,7 +287,7 @@ G.Player = class Player {
     this.invuln = 0.45;
     this.flash = 0.14;
     G.Audio.sfx('hurt');
-    if((this.mega==='blazikenite'||this.mega==='tinkatonite'||this.mega==='parasectite'||this.mega==='excadrillite'||this.mega==='meganiumite'||this.mega==='heracronite'||this.mega==='gardevoirite'||this.mega==='salamencite'||this.mega==='baxcaliburite')&&this.hp>0)this.anim.play('Hurt');
+    if((this.mega==='blazikenite'||this.mega==='tinkatonite'||this.mega==='parasectite'||this.mega==='excadrillite'||this.mega==='meganiumite'||this.mega==='heracronite'||this.mega==='gardevoirite'||this.mega==='salamencite'||this.mega==='baxcaliburite'||this.mega==='metagrossite'||this.mega==='dragoninite')&&this.hp>0)this.anim.play('Hurt');
     G.Camera.kick(0.28);
     if (!this.remote) G.Pad.rumble(0.25 + Math.min(0.75, d / this.maxHp * 3), 140);
     G.FX.dmgText(this.x, this.y - this.bodyH - 4, '-' + Math.round(d), eff === 'super' ? '#ff3048' : eff === 'weak' ? '#c9a0a8' : '#ff6b7a', eff === 'super');
