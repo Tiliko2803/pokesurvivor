@@ -10,7 +10,7 @@ G.BossRushPreview = (() => {
   let bosses = [], bars = null;
   let returnFromUpgrades = false;
   let chosen = ['water-gun', 'bubble'], ox = 0, oy = 0;
-  const roster = [260, 257, 254, 248, 373, 998];
+  const roster = [260, 257, 254, 248, 373, 998, 376, 149];
   const normalPause = G.Game.togglePause;
   const originals = {};
   const wrap = (obj, name, fn) => { const old = obj[name]; originals[name] = old; obj[name] = function(...args) { return fn.call(this, old, ...args); }; };
@@ -354,7 +354,7 @@ G.BossRushPreview = (() => {
       try { if (session === null) localStorage.removeItem('ps.session'); else localStorage.setItem('ps.session', session); } catch (_) {}
       const s = G.DB.save; s.partner = s.starter = 260; s.coins = 100000; s.pupg = {}; s.megaEquipped = {};
       for (const dex of roster) s.owned[dex] = { at: Date.now(), from: 'boss-rush-preview' };
-      for (const dex of [260,257,248,373,998]) {
+      for (const dex of [260,257,248,373,998,376,149]) {
         s.megaStones[G.Mega.definition(dex).id] = Date.now(); G.Mega.equip(s,dex,true);
       }
       return true;

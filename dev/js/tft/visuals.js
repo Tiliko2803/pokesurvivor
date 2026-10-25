@@ -8,7 +8,7 @@ G.TFTVisuals = (() => {
     'Gigadrenado':'giga-drain','Pulso Cura':'giga-drain','Deseo':'giga-drain','Síntesis':'giga-drain',
     'Amortiguador':'giga-drain','Aromaterapia':'giga-drain','Taladradora':'metal-claw','Demolición':'karate-chop',
     'A Bocajarro':'karate-chop','Doble Patada':'rolling-kick','Patada Ígnea':'rolling-kick',
-    'Ala Creciente':'air-slash','Espadón Glacial':'ice-shard','Taladro Rompefilas':'metal-claw','Jardín Solar':'solar-beam',
+    'Cruz Meteórica':'meteor-mash','Pulso del Guardián':'dragon-breath','Ala Creciente':'air-slash','Espadón Glacial':'ice-shard','Taladro Rompefilas':'metal-claw','Jardín Solar':'solar-beam',
     'Batería Rompeasedios':'poison-sting','Coro Protector':'hyper-voice'};
   const moves=new Map((G.Moves?.ALL||[]).map(m=>[m.name,m]));
   function style(u,e) {
@@ -20,7 +20,7 @@ G.TFTVisuals = (() => {
     return {...vis,name,meteor:/Cometa|Avalancha|Meteoro|Martillo Colosal|Martillo Cataclísmico/.test(name)};
   }
   function animation(u,e) {
-    if(G.TFT.isMega(u)&&[530,154,214,282,373,998].includes(u.dex)){
+    if(G.TFT.isMega(u)&&[530,154,214,282,373,998,376,149].includes(u.dex)){
       if(e.kind==='drillWarning')return [{name:'Charge',duration:.5}];
       return [{name:u.dex===530?'Attack':'Shoot',duration:.4}];
     }
@@ -33,12 +33,12 @@ G.TFTVisuals = (() => {
     return [{name:strike,duration:special?.35:.25}];
   }
   function animationSpeed(dex,name,duration,mega=false) {
-    if(mega&&[530,154,214,282,373,998].includes(dex)&&G.SurvivorMegas)return G.SurvivorMegas.duration[name]/Math.max(.05,duration);
+    if(mega&&[530,154,214,282,373,998,376,149].includes(dex)&&G.SurvivorMegas)return G.SurvivorMegas.duration[name]/Math.max(.05,duration);
     const m=G.Sprites.animMeta(dex,name);
     return m?clamp(m.d.reduce((a,n)=>a+n,0)/60/Math.max(.05,duration),.25,12):1;
   }
   function warm(units) {
-    for(const u of units)if(G.TFT.isMega(u)&&[530,154,214,282,373,998].includes(u.dex))G.SurvivorMegas?.preload(u.dex);
+    for(const u of units)if(G.TFT.isMega(u)&&[530,154,214,282,373,998,376,149].includes(u.dex))G.SurvivorMegas?.preload(u.dex);
     if(units.some(u=>u.dex===887))G.Sprites.sheet(885,'Idle');
     for(const dex of new Set(units.map(u=>u.dex)))for(const name of ['Idle','Walk','Attack','Shoot','Charge','Hurt','Faint'])
       if(G.Sprites.meta(dex)?.a[name])G.Sprites.sheet(dex,name);

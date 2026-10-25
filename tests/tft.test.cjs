@@ -997,8 +997,8 @@ test('mixed pseudo fights keep distinct cells, valid saves and deterministic res
  };assert.equal(run(.05),run(.1));
 });
 
-test('eleven families reach Iridium after exactly three normal-price copies beyond complete Gold; id, placement and resale are preserved',()=>{
- const {E}=fixture();for(const dex of [260,257,248,959,47,530,154,214,282,373,998]){
+test('thirteen families reach Iridium after exactly three normal-price copies beyond complete Gold; id, placement and resale are preserved',()=>{
+ const {E}=fixture();for(const dex of [260,257,248,959,47,530,154,214,282,373,998,376,149]){
   const family=E.BY[dex].line[0],deck=[family,...E.DEFAULT_DECK.filter(d=>d!==family)].slice(0,10),s=E.create(924,deck);s.gold=10000;
   purchase(E,s,family,42);const u=s.units[0];assert.equal(u.promotion,6);E.place(s,u.id,20);const id=u.id,price=E.BY[dex].cost,gold=s.gold;
   assert.ok(E.trainingLabel(u).includes('0/3'));assert.equal(E.isMega(u),false);
@@ -1177,4 +1177,20 @@ test('Mega Baxcalibur cuts a bounded ice line and slows bosses without moving al
  back.boss=true;const old=a.pierce;E.cast(b,a,front);
  for(const t of [front,back]){assert.ok(t.hp<t.maxHp);assert.equal(t.slowPower,.35);assert.equal(t.slowUntil,b.time+3);}
  assert.equal(side.hp,side.maxHp);assert.equal(ally.hp,ally.maxHp);assert.equal(a.y,5);assert.equal(back.y,1);assert.equal(a.pierce,old);
+});
+test('Mega Metagross cross hits only cardinal foes, stuns bosses less and caps its shield',()=>{
+ const {E}=fixture(),{b,units:[a,n,e,s,w,diagonal,ally]}=megaBattle(E,[[376,3,0,2,2],[7,3,1,2,0],[7,3,1,4,2],[7,3,1,2,4],[7,3,1,0,2],[7,3,1,4,4],[7,3,0,3,2]]);
+ n.boss=true;for(const t of [n,e,s,w])t.hp=t.maxHp=100000;
+ E.cast(b,a,n);for(const t of [n,e,s,w])assert.ok(t.hp<t.maxHp);
+ assert.equal(n.stunUntil,b.time+.3);assert.equal(e.stunUntil,b.time+.6);assert.equal(diagonal.hp,diagonal.maxHp);assert.equal(ally.hp,ally.maxHp);
+ assert.equal(a.shield,Math.round(a.maxHp*.2));for(let i=0;i<5;i++)E.cast(b,a,n);assert.ok(a.shield<=a.maxHp*.5);
+ const q=megaBattle(E,[[376,3,0,0,0],[7,3,1,3,3]]);E.cast(q.b,q.units[0],q.units[1]);assert.equal(q.units[0].shield,0);
+});
+test('Mega Dragonite heals two injured nearby allies only after line contact and respects antiheal',()=>{
+ const {E}=fixture(),{b,units:[a,target,friend,second,far,offaxis]}=megaBattle(E,[[149,3,0,2,5],[7,3,1,2,1],[7,3,0,1,5],[7,3,0,3,5],[7,3,0,5,3],[7,3,1,4,2]]);
+ target.hp=target.maxHp=100000;friend.hp=1;second.hp=2;far.hp=1;friend.healCutUntil=10;
+ const f=friend.hp,s=second.hp;E.cast(b,a,target);assert.ok(target.hp<target.maxHp);assert.equal(offaxis.hp,offaxis.maxHp);
+ assert.equal(friend.hp-f,Math.min(friend.maxHp-f,Math.round(a.attack*1.2*.5)));assert.equal(second.hp-s,Math.min(second.maxHp-s,Math.round(a.attack*1.2)));assert.equal(far.hp,1);
+ const q=megaBattle(E,[[149,3,0,0,5],[7,3,1,3,1],[7,3,0,1,5]]);q.units[2].hp=1;E.cast(q.b,q.units[0],q.units[1]);assert.equal(q.units[2].hp,1);
+ for(const flag of ['dead','stunned','shadowed']){const x=megaBattle(E,[[149,3,0,2,5],[7,3,1,2,1],[7,3,0,1,5]]);x.units[2].hp=1;if(flag==='dead')x.units[0].hp=0;else if(flag==='stunned')x.units[0].stunUntil=10;else x.units[0].shadowed=true;E.cast(x.b,x.units[0],x.units[1]);assert.equal(x.units[2].hp,1);assert.equal(x.units[1].hp,x.units[1].maxHp);}
 });

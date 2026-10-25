@@ -137,3 +137,21 @@ test('dragon passives respect aiming, walls, control, boss slow and cooldowns',(
   if(stone==='baxcaliburite'){assert.deepEqual(front.slows[0],[.4,2]);front.boss=true;G.SurvivorMegas.tick(7,p);assert.deepEqual(front.slows.at(-1),[.15,2]);}
  }
 });
+test('Metagross and Dragonite stones unlock and equip with their own starters',()=>{
+ const {G}=setup(),s=G.DB.save;
+ for(const [dex,stone,move] of [[376,'metagrossite','meteor-mash'],[149,'dragoninite','dragon-breath']]){
+  s.owned[dex]={at:1};const p={dex,mon:G.DEX_BY[dex],bosses:3};
+  assert.ok(G.Mega.finishRun(s,p,{clean:true}));assert.ok(G.Mega.equip(s,dex,true));
+  const mon=G.Mega.form(p.mon,s);assert.equal(mon.megaStone,stone);assert.equal(G.Repertoire.initialMove(mon),move);
+  assert.ok(G.Mega.has(G.DB.merge(s,{...s,updated:s.updated+1,megaProgress:{}}),dex));
+ }
+});
+test('Metagross cross respects its axes and walls; Dragonite heals once per successful pulse',()=>{
+ const {G}=setup(),p=fighter('metagrossite');const targets=[enemy(90),enemy(0,90),enemy(-90),enemy(0,-90),enemy(120,120),enemy(400)];G.EnemyMgr.queryCircle=()=>targets;
+ G.SurvivorMegas.tick(1.5,p);for(const e of targets.slice(0,4))assert.equal(e.hits.length,1);for(const e of targets.slice(4))assert.equal(e.hits.length,0);
+ G.World.isWall=x=>Math.abs(x)>=40;G.SurvivorMegas.tick(6,p);assert.equal(targets[0].hits.length,1);assert.equal(targets[2].hits.length,1);G.World.isWall=()=>false;
+ const d=fighter('dragoninite');targets.splice(0,targets.length,enemy(100),enemy(200),enemy(-100));
+ G.SurvivorMegas.tick(1.5,d);assert.equal(d.hp,54);assert.equal(targets[0].hits.length,1);assert.equal(targets[1].hits.length,1);assert.equal(targets[2].hits.length,0);
+ G.EnemyMgr.queryCircle=()=>[];G.SurvivorMegas.tick(8,d);assert.equal(d.hp,54);
+ for(const stone of ['metagrossite','dragoninite'])for(const flag of ['dead','frozen','remote']){const q=fighter(stone);q[flag]=true;G.EnemyMgr.queryCircle=()=>targets;const n=targets[0].hits.length;G.SurvivorMegas.tick(30,q);assert.equal(targets[0].hits.length,n);assert.equal(q.hp,50);}
+});

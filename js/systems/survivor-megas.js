@@ -6,7 +6,7 @@ G.SurvivorMegas=(()=>{
  const frames={Idle:[0],Walk:[0,1,0,2],Attack:[3,4,0],Shoot:[3,4,0],Charge:[3,4],Hurt:[3],Faint:[0]};
  const rows=[0,1,2,3,4,3,2,1],mirror=[false,true,true,true,false,false,false,false];
  const images=new Map();
- const DEXES=[530,154,214,282,373,998];
+ const DEXES=[530,154,214,282,373,998,376,149];
  function pack(dex){
   if(!DEXES.includes(+dex))return null;
   const entry=images.get(+dex);
@@ -17,7 +17,7 @@ G.SurvivorMegas=(()=>{
   const img=new Image(),entry={img,ready:false,failed:false};images.set(dex,entry);
   img.onload=()=>{entry.ready=img.naturalWidth===W*5&&img.naturalHeight===H*5;entry.failed=!entry.ready;};
   img.onerror=()=>{entry.failed=true;console.error('[Survivor Mega] Atlas unavailable',dex);};
-  img.src=`assets/pokemon/${dex}/mega/poses.webp?v=mega-dragons-live-v3`;
+  img.src=`assets/pokemon/${dex}/mega/poses.webp?v=mega-meta-dragonite-live-1`;
  }
  class Animator{
   constructor(dex,scale=1){
@@ -118,13 +118,19 @@ G.SurvivorMegas=(()=>{
   return hits;
  }
  function tick(dt,pl){
-  if(!['excadrillite','meganiumite','heracronite','gardevoirite','salamencite','baxcaliburite'].includes(pl.mega)||pl.dead||pl.remote||pl.frozen||!Number.isFinite(dt)||dt<=0)return;
+  if(!['excadrillite','meganiumite','heracronite','gardevoirite','salamencite','baxcaliburite','metagrossite','dragoninite'].includes(pl.mega)||pl.dead||pl.remote||pl.frozen||!Number.isFinite(dt)||dt<=0)return;
   let s=states.get(pl);if(!s){s={timer:1.5};states.set(pl,s);}
   if(pl.mega==='heracronite'){heracrossTick(dt,pl,s);return;}
   if(pl.mega==='gardevoirite'){gardevoirTick(dt,pl,s);return;}
   s.timer-=dt;if(s.timer>0)return;
   const area=pl.areaMul||1,angle=Number.isFinite(pl.aim)?pl.aim:0;
-  if(pl.mega==='salamencite'){
+  if(pl.mega==='metagrossite'){
+   s.timer=6;const steel={id:'mega-meteor-cross',type:'steel',cat:'physical',category:'physical'};
+   pl.anim?.play('Attack');for(let i=0;i<4;i++)ray(pl,angle+i*Math.PI/2,240*area,48*area,steel,38+pl.level*2.5,'#d9dfed');
+  }else if(pl.mega==='dragoninite'){
+   s.timer=8;const dragon={id:'mega-guardian-pulse',type:'dragon',cat:'special',category:'special'};
+   pl.anim?.play('Shoot');if(ray(pl,angle,440*area,60*area,dragon,65+pl.level*3,'#b9e8dd'))pl.heal(pl.maxHp*.04);
+  }else if(pl.mega==='salamencite'){
    s.timer=5;const wind={id:'mega-crescent',type:'flying',cat:'physical',category:'physical'};
    for(const offset of [-.28,0,.28])ray(pl,angle+offset,320*area,34*area,wind,24+pl.level*2,'#c6e9ff');
   }else if(pl.mega==='baxcaliburite'){

@@ -2472,6 +2472,8 @@ G.TFT = (() => {
   const TRAINING_COSTS=[3,4,5,6,7,8];
   const MEGAS={260:{name:'Mega Swampert',move:'Diluvio Sísmico',type:'water',description:'Lanza dos frentes de inundación en direcciones opuestas, de tres casillas de ancho. Avanzan en pulsos de movimiento; cada frente golpea una vez por enemigo (180%) y empuja una casilla libre. Sus básicos salpican a enemigos adyacentes a la presa (35%).'},257:{name:'Mega Blaziken',move:'Relevos Ígneos',type:'fire',description:'Salta sucesivamente junto a hasta tres enemigos distintos a distancia 4 con casillas libres y les da una patada (160%) que quema durante 3 segundos. Impulso: cada básico gana 10% de potencia y maná, hasta 50%; aturdirlo reinicia la acumulación.'},248:{name:'Mega Tyranitar',move:'Rey de la Tormenta',type:'rock',description:'Mientras pueda actuar, su arena de radio 2 obliga a enemigos dentro a seleccionar objetivos dentro de esa misma tormenta para sus básicos. Cada pulso de movimiento daña dentro (25%). Su habilidad atrae una casilla a enemigos a distancia 3 si hay espacio, rompe sus escudos y golpea (220%). Los jefes no se desplazan.'},959:{name:'Mega Tinkaton',move:'Martillo Cataclísmico',type:'steel',description:'Prepara un martillazo de radio 2 (450%) que destruye escudos; deja una réplica (150%) en el siguiente pulso de ataque. Mantiene recuperación y puede ser interrumpida antes del primer golpe.'},47:{name:'Mega Parasect',move:'Red Fúngica',type:'ghost',description:'Infecta hasta tres enemigos a alcance 3. En cada pulso de movimiento drena 35% del ataque y cura al aliado más herido a distancia 2 de cada víctima. Cada infectado muerto propaga una sola vez a dos enemigos a distancia 2. Sin acumulación de marcas del mismo Parasect.'}};
   Object.assign(MEGAS,{
+    376:{name:'Mega Metagross',move:'Cruz Meteórica',type:'steel',description:'Dispara cuatro golpes cardinales de alcance 3 por 200% de ataque como Acero. Los enemigos alcanzados quedan aturdidos 0,6 segundos (jefes: la mitad). Si alcanza al menos un enemigo, gana un escudo del 20% de su vida máxima, sujeto al límite normal del 50%. No desplaza aliados ni enemigos.'},
+    149:{name:'Mega Dragonite',move:'Pulso del Guardián',type:'dragon',description:'Un rayo Dragón atraviesa hasta 5 casillas en dirección cardinal por 260% de ataque. Si alcanza enemigos, cura por 120% de ataque a los dos aliados vivos más heridos a distancia 2, incluido él mismo. Si no acierta no cura. Respeta la reducción de curación y no desplaza unidades.'},
     214:{name:'Mega Heracross',move:'Batería Rompeasedios',type:'bug',description:'Artillería de alcance 3: dispara cinco impactos del 85% del ataque en un cono. Reparte los tiros entre enemigos vivos de la zona; los sobrantes se concentran en los supervivientes. Ignora 50% de defensa. El quinto duplica su daño si esa presa recibió al menos tres impactos de la ráfaga. Retrocede si se le acercan.'},
     282:{name:'Mega Gardevoir',move:'Coro Protector',type:'fairy',description:'Cura a dos aliados por 300% del ataque y los escuda con 15% de su vida; una onda de Hada daña a enemigos a 2 casillas (180%) y ralentiza 25%. Rescate conserva un uso por combate y prepara una Contravoz en el siguiente pulso de ataque: golpea con 220% alrededor del punto de llegada, empuja una casilla sin mover jefes y escuda a aliados próximos. Aturdirla interrumpe la Contravoz.'},
     373:{name:'Mega Salamence',move:'Ala Creciente',type:'flying',description:'Prepara una pasada aérea y, en el siguiente pulso de ataque, barre una franja de tres casillas de ancho con 240% de ataque. Aterriza en la última casilla libre de la línea central. Los enemigos pueden esquivarla; un aturdimiento cancela la preparación.'},
@@ -3409,6 +3411,24 @@ G.TFT = (() => {
   }
   function megaCast(b,a,target){
     if(!isMega(a)||a.dex===959)return false;
+    if(a.dex===376||a.dex===149){
+      if(a.hp<=0||a.shadowed||isStunned(b,a))return true;
+      const direction=cardinal(a,target),dirs=a.dex===376?[[0,-1],[1,0],[0,1],[-1,0]]:[[direction.dx,direction.dy]];
+      const foes=new Set(),length=a.dex===376?3:5,type=a.dex===376?'steel':'dragon';
+      for(const [dx,dy] of dirs){
+        b.events.push({kind:'beam',from:a.id,sx:a.x,sy:a.y,tx:Math.max(0,Math.min(COLS-1,a.x+dx*length)),ty:Math.max(0,Math.min(ROWS-1,a.y+dy*length)),type,ttl:.7,life:.7});
+        for(const t of b.units.filter(t=>t.side!==a.side&&t.hp>0&&!t.shadowed)){
+          const along=(t.x-a.x)*dx+(t.y-a.y)*dy,across=(t.x-a.x)*dy-(t.y-a.y)*dx;
+          if(along<=0||along>length||across!==0||foes.has(t.id))continue;
+          foes.add(t.id);hit(b,a,t,a.attack*(a.dex===376?2:2.6),true,type);
+          if(a.dex===376&&t.hp>0)stun(b,a,t,.6);
+        }
+      }
+      if(foes.size){
+        if(a.dex===376)shield(b,a,a,a.maxHp*.2);
+        else for(const t of b.units.filter(t=>t.side===a.side&&t.hp>0&&distance(a,t)<=2).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp||x.id-y.id).slice(0,2))heal(b,a,t,a.attack*1.2);
+      }return true;
+    }
     if(a.dex===214){
       const dx=target.x-a.x,dy=target.y-a.y,len=Math.hypot(dx,dy)||1,counts=new Map(),old=a.pierce;
       a.pierce=Math.max(old,.5);

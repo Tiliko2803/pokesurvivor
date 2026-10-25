@@ -19,6 +19,11 @@ G.Mega=(()=>{
   return true;
  }
  const DEFINITIONS={
+  376:{id:'metagrossite',dex:376,name:'Metagrossita',form:'Mega Metagross',progress:'metagrossBosses',start:'meteor-mash',hp:1,atk:1,spd:1,shiny:false,
+    types:['steel','psychic'],stats:{hp:80,atk:145,def:150,spa:105,spd:110,spe:110},
+    help:'Puño Meteoro Nv. 2 · Cruz Meteórica: cada 6 s lanza cuatro golpes de Acero siguiendo tu orientación.'},
+  149:{id:'dragoninite',dex:149,name:'Dragonitita',form:'Mega Dragonite',progress:'dragoniteBosses',start:'dragon-breath',hp:1.1,atk:1.22,spd:1.08,shiny:false,
+    types:['dragon','flying'],help:'Dragoaliento Nv. 2 · Pulso del Guardián: cada 8 s lanza un rayo Dragón; al acertar recupera 4% de vida. Balance propio del fork.'},
   214:{id:'heracronite',dex:214,name:'Heracronita',form:'Mega Heracross',progress:'heracrossBosses',start:'karate-chop',hp:1,atk:1,spd:1,shiny:false,
     types:['bug','fighting'],stats:{hp:80,atk:185,def:115,spa:40,spd:105,spe:75},
     help:'Golpe Kárate Nv. 2 · Encadenado: cinco disparos perforantes cada 5 s; el último duplica su daño si la presa recibió al menos tres de esa ráfaga.'},
