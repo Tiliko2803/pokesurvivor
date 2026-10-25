@@ -1,0 +1,43 @@
+{
+  "status": "draft-art-needs-visual-review",
+  "cell": [
+    176,
+    176
+  ],
+  "anchor": [
+    88,
+    164
+  ],
+  "rows": [
+    "south",
+    "southwest",
+    "west",
+    "northwest",
+    "north"
+  ],
+  "columns": [
+    "idle",
+    "walk-left",
+    "walk-right",
+    "windup",
+    "release"
+  ],
+  "sourceBoxes": {
+    "x": [
+      0,
+      252,
+      495,
+      733,
+      975,
+      1312
+    ],
+    "y": [
+      0,
+      232,
+      468,
+      700,
+      933,
+      1178
+    ]
+  }
+}
