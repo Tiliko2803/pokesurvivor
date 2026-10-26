@@ -1194,3 +1194,6 @@ test('Mega Dragonite heals two injured nearby allies only after line contact and
  const q=megaBattle(E,[[149,3,0,0,5],[7,3,1,3,1],[7,3,0,1,5]]);q.units[2].hp=1;E.cast(q.b,q.units[0],q.units[1]);assert.equal(q.units[2].hp,1);
  for(const flag of ['dead','stunned','shadowed']){const x=megaBattle(E,[[149,3,0,2,5],[7,3,1,2,1],[7,3,0,1,5]]);x.units[2].hp=1;if(flag==='dead')x.units[0].hp=0;else if(flag==='stunned')x.units[0].stunUntil=10;else x.units[0].shadowed=true;E.cast(x.b,x.units[0],x.units[1]);assert.equal(x.units[2].hp,1);assert.equal(x.units[1].hp,x.units[1].maxHp);}
 });
+test('Tyrunt and Tyrantrum use melee basics despite their inherited Survivor behavior',()=>{
+ const {E,s}=fixture();for(const [dex,star] of [[696,1],[697,2],[697,3]]){assert.equal(E.aiFor(dex),'fighter');const f=E.preview(s,{id:1,dex,star,pos:20});assert.equal(f.range,1);}
+});

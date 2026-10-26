@@ -2762,6 +2762,7 @@ G.TFT = (() => {
   }
   // Reuse the Survivor personality classifier, adapting its decisions to a grid.
   function aiFor(dex) {
+    if(dex===696||dex===697)return 'fighter'; // Tyrunt/Tyrantrum bite in melee, regardless of Survivor AI.
     const behavior=G.Enemies?.behaviorOf?.(G.DEX_BY[dex])||'chase';
     const role=BY[dex].role;
     if(behavior==='healer'||role==='healer')return 'healer';

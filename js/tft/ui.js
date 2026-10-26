@@ -63,13 +63,25 @@ G.TFTUI = (() => {
     $('tft-deck-slots').innerHTML=decks.map((_,i)=>`<button class="btn small ${i===slot?'gold':''}" data-slot="${i}" aria-pressed="${i===slot}">Mazo ${i+1}</button>`).join('');
     $('tft-deck-slots').querySelectorAll('button').forEach(b=>b.onclick=()=>{slot=Number(b.dataset.slot);picks=new Set(decks[slot]);$('tft-deck-status').textContent='';renderDeck();});
     const cost=Number($('tft-deck-filter').value);
-    $('tft-deck-list').innerHTML=E.PLAYABLE_ROSTER.filter(f=>!cost||f.cost===cost).sort((a,b)=>a.dex-b.dex).map(f=>`<button class="tft-card ${picks.has(f.dex)?'tft-selected':''}" data-family="${f.dex}" aria-label="Línea ${G.DEX_BY[f.dex].name}" aria-pressed="${picks.has(f.dex)}"><canvas width="110" height="70" data-tft-dex="${f.dex}" aria-hidden="true"></canvas><b>${G.DEX_BY[f.dex].name}</b><span>${f.cost} oro ${picks.has(f.dex)?'✓':''}</span><small>${f.line.map(d=>G.DEX_BY[d].name).join(' → ')}</small></button>`).join('');
-    $('tft-deck-list').querySelectorAll('button').forEach(b=>b.onclick=()=>{
-      const d=Number(b.dataset.family);
-      if(picks.has(d))picks.delete(d);else if(picks.size<10)picks.add(d);else {G.UI.toast('Quita una línea antes de elegir otra: el mazo tiene 10 espacios.');return;}
-      $('tft-deck-status').textContent='';renderDeck();
-    });
+    $('tft-deck-list').innerHTML=E.PLAYABLE_ROSTER.filter(f=>!cost||f.cost===cost).sort((a,b)=>a.dex-b.dex).map(f=>{
+      const final=f.line.at(-1),ai=E.aiFor(final),role=['healer','guardian'].includes(ai)?'💚 Apoyo':ai==='tank'?'🛡️ Tanque':'⚔️ Atacante';
+      return `<article class="tft-card tft-family-card ${picks.has(f.dex)?'tft-selected':''}"><span class="tft-family-cost">${f.cost} 🪙</span><button class="tft-family-pick" data-family="${f.dex}" aria-label="${picks.has(f.dex)?'Quitar':'Elegir'} ${G.DEX_BY[f.dex].name}" aria-pressed="${picks.has(f.dex)}">${picks.has(f.dex)?'✓':'+'}</button><button class="tft-family-view" data-family-info="${f.dex}" aria-label="Ver ficha de ${G.DEX_BY[f.dex].name}"><canvas width="110" height="70" data-tft-dex="${f.dex}" aria-hidden="true"></canvas><b>${G.DEX_BY[f.dex].name}</b><small>${role}</small></button>${E.MEGAS[final]?'<span class="tft-family-mega" title="Megaevolución disponible" aria-label="Megaevolución disponible">'+G.Icons.html('mega',16)+'</span>':''}</article>`;
+    }).join('');
+    $('tft-deck-list').querySelectorAll('[data-family]').forEach(b=>b.onclick=()=>toggleFamily(Number(b.dataset.family)));
+    $('tft-deck-list').querySelectorAll('[data-family-info]').forEach(b=>b.onclick=()=>showFamilyInfo(Number(b.dataset.familyInfo)));
     paintCards(0);
+  }
+  function toggleFamily(d) {
+    if(picks.has(d))picks.delete(d);else if(picks.size<10)picks.add(d);else {G.UI.toast('Quita una línea antes de elegir otra: el mazo tiene 10 espacios.');return;}
+    $('tft-deck-status').textContent='';renderDeck();
+  }
+  function showFamilyInfo(d) {
+    let dialog=$('tft-family-dialog');
+    if(!dialog){dialog=document.createElement('dialog');dialog.id='tft-family-dialog';document.body.appendChild(dialog);dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});}
+    const family=E.BY[d],dex=family.line.at(-1),u={id:1,dex,star:3,pos:20},f=E.preview({units:[],opponent:[],round:1},u),ability=E.abilityFor(u);
+    dialog.innerHTML=`<button class="btn small tft-family-close" aria-label="Cerrar ficha">✕</button><h3>${G.DEX_BY[dex].name}</h3><p>${roleLabel(u)}</p><dl><div><dt>Vida</dt><dd>${Math.round(f.maxHp)}</dd></div><div><dt>Ataque</dt><dd>${Math.round(f.attack)}</dd></div><div><dt>Defensa</dt><dd>${f.armor}</dd></div><div><dt>Ataques / s</dt><dd>${(1/f.interval).toFixed(2)}</dd></div><div><dt>Alcance</dt><dd>${f.range} casilla${f.range===1?'':'s'}</dd></div></dl><small>Evolución final · Bronce ★★★ · sin sinergias</small><h4>${ability.name}</h4><p>${ability.description}</p><p class="sub">${family.line.map(n=>G.DEX_BY[n].name).join(' → ')}</p><button class="btn gold tft-family-confirm">${picks.has(d)?'Quitar del equipo':'Elegir para el equipo'}</button>`;
+    dialog.querySelector('.tft-family-close').onclick=()=>dialog.close();dialog.querySelector('.tft-family-confirm').onclick=()=>{toggleFamily(d);dialog.close();};
+    if(!dialog.open)dialog.showModal();
   }
   const anims=new Map(),views=new Map();
   let finaleDismissed=false;

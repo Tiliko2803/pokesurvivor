@@ -1257,3 +1257,21 @@ body.tft-calm #tft-evolution { animation:none; }
 .tft-end-actions { display:flex; justify-content:center; gap:6px; position:sticky; bottom:0; background:#0c1727ed; padding:6px 0; flex-wrap:wrap; }
 .tft-end-actions .btn { min-height:34px; font-size:11px; padding:6px 10px; }
 @media(max-width:400px) { .tft-end-mvp { margin:6px 0; } #tft-end-record { margin-bottom:6px; } .tft-boss-card { padding-block:8px; } }
+
+/* Sprite-first family picker: details stay behind the sprite tap. */
+#tft-deck-list .tft-family-card { position:relative; padding:32px 4px 18px; min-height:155px; }
+.tft-family-view { display:flex; flex-direction:column; align-items:center; width:100%; padding:0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; }
+#tft-deck-list .tft-family-view canvas { width:100%; max-width:176px; }
+#tft-deck-list .tft-family-view small { margin-top:3px; font-size:12px; }
+.tft-family-pick { position:absolute; top:2px; right:2px; width:36px; height:32px; border:1px solid #768eaf; border-radius:8px; background:#213858; color:#ffe08a; font:bold 22px sans-serif; cursor:pointer; }
+#tft-deck-list .tft-family-cost { position:absolute; top:9px; left:7px; font-size:12px; }
+#tft-deck-list .tft-family-mega { position:absolute; bottom:3px; right:5px; line-height:16px; }
+.tft-family-view:focus-visible,.tft-family-pick:focus-visible { outline:2px solid #ffe08a; outline-offset:2px; }
+#tft-family-dialog { width:min(420px,90vw); max-height:85dvh; overflow:auto; box-sizing:border-box; border:1px solid #6a86af; border-radius:14px; background:#15243b; color:#edf6ff; padding:20px; font:inherit; }
+#tft-family-dialog::backdrop { background:#060c19c9; }
+.tft-family-close { float:right; }
+#tft-family-dialog dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+#tft-family-dialog dl div { background:#213650; padding:8px; border-radius:6px; }
+#tft-family-dialog dd { margin:0; color:#ffe08a; }
+#tft-family-dialog small { color:#bbcde5; }
+@media(max-width:600px) { #tft-deck-list .tft-family-card { min-height:135px; } #tft-deck-list .tft-family-view small { font-size:11px; } }

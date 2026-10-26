@@ -6,6 +6,9 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  {d:'2026-10-25',title:['TFT: selección más visual','TFT: a cleaner team picker'],chg:[
+    ['El selector destaca el sprite y muestra solo nombre, rol, coste y disponibilidad de mega. Toca el sprite para ver la ficha y usa + / ✓ para elegir o quitar la familia.','The picker highlights the sprite and shows only name, role, cost and Mega availability. Tap the sprite for details and use + / ✓ to select or remove the family.']
+  ],fix:[['Tyrunt y Tyrantrum usan básicos cuerpo a cuerpo; ya no heredan el comportamiento de distancia de Survivor. Sus habilidades se conservan.','Tyrunt and Tyrantrum now use melee basic attacks instead of inheriting ranged Survivor behavior. Their abilities are preserved.']]},
   {
   "d": "2026-10-25",
   "title": [
