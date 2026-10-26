@@ -6,6 +6,43 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  {
+  "d": "2026-10-25",
+  "title": [
+    "Cuatro megas nuevas: Salamence, Baxcalibur, Metagross y Dragonite",
+    "Four new Megas: Salamence, Baxcalibur, Metagross and Dragonite"
+  ],
+  "new": [
+    [
+      "Ya disponibles en Survivor y TFT, con sprites de movimiento y acciones. Son formas del Pokémon normal: no aparecen como capturas separadas en la Pokédex ni como otra familia de tienda.",
+      "Now available in Survivor and TFT with movement and action sprites. These are forms of the regular Pokémon, not separate Pokédex catches or shop families."
+    ],
+    [
+      "Survivor: consigue cada megapiedra venciendo 3 jefes en una partida normal en solitario con ese Pokémon sin mega. Selecciónalo como compañero y equipa su piedra desde el menú principal. Empiezan con su ataque inicial al nivel 2.",
+      "Survivor: earn each Mega Stone by defeating 3 bosses in one normal solo run using that Pokémon without Mega Evolution. Select it as your partner and equip its stone from the main menu. Their starting move begins at level 2."
+    ],
+    [
+      "Mega Salamence — Ala Creciente: en Survivor lanza tres cortes de viento físico cada 5 s. En TFT prepara una pasada aérea de tres casillas de ancho que puedes interrumpir con aturdimiento.",
+      "Mega Salamence — Crescent Wing: Survivor fires three physical wind cuts every 5 seconds. TFT prepares a three-cell-wide flight that can be interrupted by stun."
+    ],
+    [
+      "Mega Baxcalibur — Espadón Glacial: en Survivor perfora en línea cada 7 s y ralentiza. En TFT su corte de Hielo alcanza hasta cuatro casillas, penetra defensas y ralentiza. Espada dorsal alineada con la cabeza y la cola.",
+      "Mega Baxcalibur — Glacial Glaive: Survivor pierces a line every 7 seconds and slows enemies. TFT cuts through up to four cells with Ice damage, armor penetration and slowing. Its dorsal blade follows the head-to-tail axis."
+    ],
+    [
+      "Mega Metagross — Cruz Meteórica: en Survivor golpea en cuatro direcciones cada 6 s. En TFT sus golpes cardinales aturden y, al conectar, le otorgan un escudo.",
+      "Mega Metagross — Meteor Cross: Survivor strikes in four directions every 6 seconds. TFT cardinal strikes stun enemies and grant a self-shield on contact."
+    ],
+    [
+      "Mega Dragonite — Pulso del Guardián: en Survivor lanza un rayo Dragón cada 8 s y recupera vida al acertar. En TFT el rayo cura a los dos aliados vivos más heridos a distancia 2 si alcanza enemigos.",
+      "Mega Dragonite — Guardian Pulse: Survivor fires a Dragon beam every 8 seconds and heals on hit. In TFT, hitting enemies heals the two most injured living allies within distance 2."
+    ],
+    [
+      "TFT: completa Oro y compra tres copias adicionales de su misma familia al precio normal para alcanzar Iridio. No necesitas desbloquear las piedras de Survivor.",
+      "TFT: complete Gold and buy three additional regular-price copies of the same family to reach Iridium. Survivor stones are not required."
+    ]
+  ]
+},
   {d:'2026-10-25',title:['Mega Heracross y Mega Gardevoir','Mega Heracross and Mega Gardevoir'],new:[
     ['Survivor: Mega Heracross encadena cinco disparos perforantes; Mega Gardevoir crea un Dominio Psíquico y transforma Vozarrón en Hada. Consigue sus piedras venciendo tres jefes en solitario con la forma normal.', 'Survivor: Mega Heracross chains five piercing shots; Mega Gardevoir creates a Psychic Domain and turns Hyper Voice into Fairy. Earn their stones by defeating three solo bosses with the normal form.'],
     ['TFT: Heracross pasa a artillería con cinco disparos repartidos en cono. Gardevoir cura y protege; tras un rescate prepara una Contravoz que aparta enemigos y escuda el punto de llegada.', 'TFT: Heracross becomes artillery with five shots shared across a cone. Gardevoir heals and protects; after a rescue it prepares a counterwave that pushes enemies away and shields the landing point.'],
